@@ -1,6 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 #include "Logger.h"
+#include <GL/glew.h>
 
 class Map;
 class Entity;
@@ -44,6 +45,8 @@ public:
 private:
     glm::vec3 cameraPos_;
     glm::vec2 resolution_;
+
+	GLuint mapProgram_;
 
     static LoggerPtr logger_;
 };

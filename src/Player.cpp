@@ -1,6 +1,7 @@
 #include "Player.h"
-#include "Renderer.h"
 #include <SDL/SDL.h>
+#include "Renderer.h"
+#include "ParamReader.h"
 
 LocalPlayer::LocalPlayer(int64_t playerID, OpenGLRenderer *renderer) :
     Player(playerID)
@@ -29,10 +30,7 @@ void LocalPlayer::update(float dt)
     else if (y == res.y - 1)
         dir.y = 1;
 
-    if (dir != glm::vec2())
-        std::cout << "Pan dir: " << dir.x << ' ' << dir.y << '\n';
-
-    const float CAMERA_PAN_SPEED = 10.f;
+    const float CAMERA_PAN_SPEED = getParam("camera.panspeed");
 
     renderer_->updateCamera(glm::vec3(dir.x, 0.f, dir.y) * CAMERA_PAN_SPEED * dt);
 }

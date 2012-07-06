@@ -3,6 +3,7 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "Engine.h"
 #include "Entity.h"
 #include "Map.h"
@@ -22,6 +23,9 @@ OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution) :
         logger_->fatal() << "Unable to initialize graphics resources\n";
         exit(1);
     }
+
+	// Load resources
+	mapProgram_ = loadProgram("shaders/map.v.glsl", "shaders/map.f.glsl");
 }
 
 OpenGLRenderer::~OpenGLRenderer()
@@ -38,10 +42,20 @@ void OpenGLRenderer::renderMap(Map *map)
 {
     const glm::vec2 &mapSize = map->getSize();
 
-    renderRectangleColor(glm::rotate(
+	const glm::vec4 mapColor(0.25, 0.2, 0.15, 1.0);
+
+	std::cout << "map size: " << mapSize.x << ' ' << mapSize.y << '\n';
+
+	glUseProgram(mapProgram_);
+    GLuint colorUniform = glGetUniformLocation(mapProgram_, "color");
+    GLuint mapSizeUniform = glGetUniformLocation(mapProgram_, "mapSize");
+    glUniform4fv(colorUniform, 1, glm::value_ptr(mapColor));
+    glUniform2fv(mapSizeUniform, 1, glm::value_ptr(mapSize));
+
+	glm::mat4 transform = glm::rotate(
                 glm::scale(glm::mat4(1.f), glm::vec3(mapSize.x, 1.f, mapSize.y)),
-                90.f, glm::vec3(1, 0, 0)),
-            glm::vec4(0.25, 0.2, 0.15, 1));
+                90.f, glm::vec3(1, 0, 0));
+    renderRectangleProgram(transform);
 }
 
 void OpenGLRenderer::startRender()

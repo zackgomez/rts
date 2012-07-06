@@ -12,8 +12,6 @@ static MatrixStack viewStack;
 static MatrixStack projStack;
 
 static int loadResources();
-static GLuint loadShader(GLenum type, const std::string &filename);
-static GLuint linkProgram(GLuint vert, GLuint frag);
 
 static struct
 {
@@ -102,6 +100,36 @@ void renderRectangleColor(const glm::mat4 &modelMatrix, const glm::vec4 &color)
     glUseProgram(0);
 }
 
+void renderRectangleProgram(const glm::mat4 &modelMatrix)
+{
+	GLuint program;
+	glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*) &program);
+	if (!program)
+	{
+		logger->warning() << "No active program on call to renderRectangleProgram\n";
+		return;
+	}
+    GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
+    GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
+
+    // Enable program and set up values
+    glUseProgram(program);
+    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projStack.current()));
+    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewStack.current() * modelMatrix));
+
+    // Bind attributes
+    glBindBuffer(GL_ARRAY_BUFFER, resources.rectBuffer);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // RENDER
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    // Clean up
+    glDisableVertexAttribArray(0);
+    glUseProgram(0);
+}
+
 MatrixStack& getViewStack()
 {
     return viewStack;
@@ -112,33 +140,19 @@ MatrixStack& getProjectionStack()
     return projStack;
 }
 
-// -------- STATIC FUNCTIONS ---------
-
-static int loadResources()
+GLuint loadProgram(const std::string &vert, const std::string &frag)
 {
-    const float rectPositions[] = {
-        0.5, 0.5, 0.0f, 1.0f,
-        0.5, -0.5, 0.0f, 1.0f,
-        -0.5, 0.5, 0.0f, 1.0f,
-        -0.5, -0.5, 0.0f, 1.0f,
-    };
+	GLuint program;
+    GLuint vertsh = loadShader(GL_VERTEX_SHADER, vert);
+    GLuint fragsh = loadShader(GL_FRAGMENT_SHADER, frag);
+    program = linkProgram(vertsh, fragsh);
+    glDeleteShader(vertsh);
+    glDeleteShader(fragsh);
 
-    glGenBuffers(1, &resources.rectBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, resources.rectBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(rectPositions), rectPositions, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    // Create solid color program
-    GLuint vert = loadShader(GL_VERTEX_SHADER, "shaders/color.v.glsl");
-    GLuint frag = loadShader(GL_FRAGMENT_SHADER, "shaders/color.f.glsl");
-    resources.colorProgram = linkProgram(vert, frag);
-    //glDeleteShader(vert);
-    //glDeleteShader(frag);
-
-    return 1;
+	return program;
 }
 
-static GLuint loadShader(GLenum type, const std::string &filename)
+GLuint loadShader(GLenum type, const std::string &filename)
 {
     // Load file
     std::ifstream file(filename.c_str());
@@ -182,7 +196,7 @@ static GLuint loadShader(GLenum type, const std::string &filename)
     return shader;
 }
 
-static GLuint linkProgram(GLuint vert, GLuint frag)
+GLuint linkProgram(GLuint vert, GLuint frag)
 {
     GLuint program = glCreateProgram();
 
@@ -205,9 +219,31 @@ static GLuint linkProgram(GLuint vert, GLuint frag)
         return 0;
     }
 
-    //glDetachShader(program, vert);
-    //glDetachShader(program, frag);
+    glDetachShader(program, vert);
+    glDetachShader(program, frag);
 
     return program;
+}
+
+// -------- STATIC FUNCTIONS ---------
+
+static int loadResources()
+{
+    const float rectPositions[] = {
+        0.5, 0.5, 0.0f, 1.0f,
+        0.5, -0.5, 0.0f, 1.0f,
+        -0.5, 0.5, 0.0f, 1.0f,
+        -0.5, -0.5, 0.0f, 1.0f,
+    };
+
+    glGenBuffers(1, &resources.rectBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, resources.rectBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(rectPositions), rectPositions, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    // Create solid color program for renderRectangleColor
+	resources.colorProgram = loadProgram("shaders/color.v.glsl", "shaders/color.f.glsl");
+
+    return 1;
 }
 

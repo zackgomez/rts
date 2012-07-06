@@ -50,5 +50,7 @@ public:
     // Called when the entity is being removed (from the destructor)
     // You should not query the object during or after this point
     virtual void removal() = 0;
+    // When the object is "killed" or destroyed in game
+    virtual void killed() { }
 };
 

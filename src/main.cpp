@@ -44,7 +44,8 @@ void mainloop()
     glm::vec2 res(getParam("resolution.x"), getParam("resolution.y"));
     renderer = new OpenGLRenderer(res);
     player = new LocalPlayer(1, renderer);
-    game = new LocalGame(new Map(glm::vec2(20, 20)), player);
+	std::vector<Player *> players; players.push_back(player);
+    game = new HostGame(new Map(glm::vec2(20, 20)), players);
     game->addRenderer(renderer);
 
     running = true;

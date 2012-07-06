@@ -28,7 +28,7 @@ protected:
 class HostGame : public Game
 {
 public:
-    explicit HostGame(std::vector<Player *> players);
+    explicit HostGame(Map *map, const std::vector<Player *> &players);
     virtual ~HostGame();
 
     virtual void update(float dt);
@@ -39,6 +39,7 @@ protected:
 };
 
 // TODO rename to ProxyGame a game that gets its information from somewhere else
+/*
 class LocalGame : public Game
 {
 public:
@@ -50,4 +51,5 @@ public:
 private:
     Player *localPlayer_;
 };
+*/
 
