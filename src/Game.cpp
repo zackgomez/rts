@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "Renderer.h"
 #include "Map.h"
+#include "Player.h"
 
 Game::~Game()
 {
@@ -10,6 +11,7 @@ Game::~Game()
 void Game::addRenderer(Renderer *renderer)
 {
     renderers_.insert(renderer);
+    renderer->setGame(this);
 }
 
 
@@ -27,6 +29,7 @@ LocalGame::~LocalGame()
 void LocalGame::update(float dt)
 {
     // Read input
+    localPlayer_->update(dt);
 
     // Update entities
 

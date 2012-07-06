@@ -1,11 +1,12 @@
 CXX=g++
 GLM=lib/glm-0.9.2.7
-CXXFLAGS=-g -O0 -Wall -I$(GLM) -std=c++0x
+JSON=lib/jsoncpp
+CXXFLAGS=-g -O0 -Wall -I$(GLM) -std=c++0x -I$(JSON)
 LDFLAGS=-lSDL -lGL -lGLEW
 OBJDIR=obj
 SRCDIR=src
 
-OBJECTS = $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(SRCDIR)/*.cpp)))
+OBJECTS = $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(SRCDIR)/*.cpp))) $(JSON)/jsoncpp.o
 
 all: obj rts
 
@@ -14,6 +15,9 @@ rts: $(OBJECTS)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	$(CXX) -c $(CXXFLAGS) -o $(OBJDIR)/$*.o $<
+
+$(JSON)/jsoncpp.o: $(JSON)/jsoncpp.cpp
+	$(CXX) -c $(CXXFLAGS) -o $@ $^
 
 clean:
 	rm -f rts obj/*

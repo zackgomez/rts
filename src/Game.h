@@ -1,11 +1,12 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <set>
-#include "Entity.h"
-#include "Player.h"
+#include <vector>
 
 class Renderer;
 class Map;
+class Entity;
+class Player;
 
 class Game
 {
@@ -20,6 +21,19 @@ public:
 protected:
     std::set<Renderer *> renderers_;
     Map *map_;
+};
+
+class HostGame : public Game
+{
+public:
+    explicit HostGame(std::vector<Player *> players);
+    virtual ~HostGame();
+
+    virtual void update(float dt);
+
+protected:
+    std::vector<Player *> players_;
+    std::vector<Entity *> entities_;
 };
 
 class LocalGame : public Game

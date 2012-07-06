@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <string>
 #include <set>
+#include <string>
+#include <json/json.h>
 
 const int64_t NO_PLAYER = -1;
 
@@ -24,6 +26,12 @@ public:
     virtual void update(float dt) = 0;
     // When true, will be destructed by engine
     virtual bool needsRemoval() const = 0;
+
+    std::string serialize() const;
+
+protected:
+    // TODO a serialize protected helper function
+    virtual void serialize(Json::Value &obj) = 0;
 
 private:
     uint64_t id_;

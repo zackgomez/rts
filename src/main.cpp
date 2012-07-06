@@ -53,9 +53,9 @@ void mainloop()
     {
         handleInput();
 
-        game->update(1.f / 30.f); // 30 fps
+        game->update(1.f / 60.f); // 30 fps
         // Regulate frame rate
-        SDL_Delay(33);
+        SDL_Delay(16);
     }
 }
 

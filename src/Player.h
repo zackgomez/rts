@@ -13,6 +13,7 @@ public:
 
     int64_t getPlayerID() const { return playerID_; }
 
+    virtual void update(float dt) = 0;
     virtual PlayerAction getAction() = 0;
 
 protected:
@@ -37,6 +38,7 @@ public:
     LocalPlayer(int64_t playerID, OpenGLRenderer *renderer);
     virtual ~LocalPlayer();
 
+    virtual void update(float dt);
     virtual PlayerAction getAction();
 
     virtual void handleEvent(const SDL_Event &event);
