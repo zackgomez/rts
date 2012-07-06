@@ -8,6 +8,7 @@ class Map;
 class Entity;
 class Player;
 
+// Abstract base Game class
 class Game
 {
 public:
@@ -23,6 +24,7 @@ protected:
     Map *map_;
 };
 
+// Actually runs the game logic
 class HostGame : public Game
 {
 public:
@@ -36,6 +38,7 @@ protected:
     std::vector<Entity *> entities_;
 };
 
+// TODO rename to ProxyGame a game that gets its information from somewhere else
 class LocalGame : public Game
 {
 public:

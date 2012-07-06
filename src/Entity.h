@@ -16,7 +16,7 @@ public:
     explicit Entity(int64_t playerID);
     virtual ~Entity();
 
-    virtual std::string getType() = 0;
+    virtual std::string getType() const = 0;
     uint64_t getID() const { return id_; }
     int64_t getPlayerID() const { return playerID_; }
 
@@ -31,7 +31,7 @@ public:
 
 protected:
     // TODO a serialize protected helper function
-    virtual void serialize(Json::Value &obj) = 0;
+    virtual void serialize(Json::Value &obj) const = 0;
 
 private:
     uint64_t id_;

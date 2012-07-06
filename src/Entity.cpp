@@ -31,3 +31,15 @@ void Entity::removeListener(EntityListener *listener)
     if (it != listeners_.end())
         listeners_.erase(it);
 }
+
+std::string Entity::serialize() const
+{
+	Json::Value obj;
+	obj["type"] = getType();
+	obj["id"] = (Json::Value::UInt64) id_;
+
+	serialize(obj);
+
+	Json::FastWriter writer;
+	return writer.write(obj);
+}
