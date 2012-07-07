@@ -36,7 +36,7 @@ OpenGLRenderer::~OpenGLRenderer()
 void OpenGLRenderer::render(const Entity *entity)
 {
     const glm::vec3 &pos = entity->getPosition();
-    float rotAngle = 180.f / M_PI * acosf(glm::dot(glm::vec2(0, 1), entity->getDirection()));
+    float rotAngle = entity->getAngle();
 
     glm::mat4 transform = glm::scale(
             glm::rotate(

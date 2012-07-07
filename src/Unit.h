@@ -78,11 +78,11 @@ public:
     virtual ~MoveState() { }
 
     virtual void update(float dt);
+    virtual float calculate_angle(glm::vec3 &diff);
     virtual void stop() { }
     virtual UnitState * next();
 
 protected:
     glm::vec3 target_;
-    glm::vec3 prev_target_;
 };
 

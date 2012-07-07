@@ -28,6 +28,7 @@ public:
 
     const glm::vec3 getPosition() const { return pos_; }
     const glm::vec2 getDirection() const { return glm::vec2(cos(angle_*M_PI/180), sin(angle_*M_PI/180)); }
+    const float getAngle() const {return angle_;}
     // This unit's rough bounding radius
     const float getRadius() const { return radius_; }
 

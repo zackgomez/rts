@@ -67,6 +67,9 @@ MoveState::MoveState(const glm::vec3 &target, Unit *unit) :
     target_.y += unit_->getRadius(); 
     reached_ = false;
     unit_->vel_ = unit_->maxSpeed_ * (target_ - unit_->getPosition());
+    glm::vec3 diff = target_ - unit_->pos_;
+    unit_->desired_angle_ = MoveState::calculate_angle(diff);
+    unit_->vel_ = glm::vec3(0.05f);
 }
 
 void MoveState::update(float dt)
@@ -74,41 +77,34 @@ void MoveState::update(float dt)
 	if (reached_)
 		return;
 
+	float radius = unit_->getRadius();
 	glm::vec3 diff = target_ - unit_->pos_;
-	if (fabs(diff.x) < 0.5 &&
-		fabs(diff.y) < 0.5 &&
-		fabs(diff.z) < 0.5)
+	if (fabs(diff.x) <= radius &&
+		fabs(diff.y) <= radius &&
+		fabs(diff.z) <= radius)
 	{
 		unit_->vel_ = glm::vec3(0.f);
 		reached_ = true;
 	}
+}
 
-	else if (target_ == prev_target_)
-	{
-		return;
-	}
+float MoveState::calculate_angle(glm::vec3 &diff)
+{
+	float angle = 0;
 
-	else {
-		float angle = 0;
+	if (abs(diff.x) < 0.001)
+		angle = 90.0f;
+	else
+		angle = 180.0f * atan(fabs(diff.z) / fabs(diff.x)) / M_PI;
 
-		if (abs(diff.x) < 0.001)
-			angle = 90.0f;
-		else
-			angle = 180.0f * atan(fabs(diff.z) / fabs(diff.x)) / M_PI;
+	if (diff.x < 0 && diff.z < 0)
+		angle += 180.0f;
+	else if (diff.x < 0)
+		angle = 180.0f - angle;
+	else if (diff.z < 0)
+		angle = 360.0f - angle;
 
-		if (diff.x < 0 && diff.z < 0)
-			angle += 180.0f;
-		else if (diff.x < 0)
-			angle = 180.0f - angle;
-		else if (diff.z < 0)
-			angle = 360.0f - angle;
-
-		unit_->desired_angle_ = angle;
-		unit_->vel_ = glm::vec3(0.05f);
-
-		prev_target_ = target_;
-	}
-
+	return angle;
 }
 
 UnitState * MoveState::next()
