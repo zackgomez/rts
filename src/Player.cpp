@@ -99,13 +99,15 @@ LocalPlayer::handleEvent(const SDL_Event &event) {
                 glm::vec3 target = renderer_->screenToTerrain (screenCoord);
                 if (target != glm::vec3 (HUGE_VAL))
                 {
-                    /*
-                    std::cout << "Ordering " << selection_ << " to " <<
-                        target.x << ' ' << target.y << ' ' << target.z << '\n';
-                        */
-
+                    // Visual feedback
                     renderer_->highlight(glm::vec2(target.x, target.z));
-                    // TODO send message to unit id selection_ to move to target location
+
+                    // Queue up action
+                    PlayerAction action;
+                    action["type"] = ActionTypes::MOVE;
+                    action["entity"] = (Json::Value::UInt64) selection_;
+                    action["target"] = toJson(target);
+                    actions_.push(action);
                 }
             }
                 

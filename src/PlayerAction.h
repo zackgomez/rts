@@ -7,4 +7,5 @@ typedef Json::Value PlayerAction;
 namespace ActionTypes
 {
 const std::string NONE = "NONE";
+const std::string MOVE = "MOVE";
 };

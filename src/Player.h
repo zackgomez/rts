@@ -1,5 +1,5 @@
 #pragma once
-#include <glm/glm.hpp>
+#include "glm.h"
 #include <SDL/SDL.h>
 #include "Entity.h"
 #include <queue>
