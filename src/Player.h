@@ -3,8 +3,9 @@
 #include <SDL/SDL.h>
 #include "Entity.h"
 #include <queue>
+#include <json/json.h>
+#include "PlayerAction.h"
 
-struct PlayerAction;
 class OpenGLRenderer;
 
 class Player
@@ -20,15 +21,6 @@ public:
 
 protected:
     int64_t playerID_;
-};
-
-struct PlayerAction
-{
-    enum ActionType {
-        NONE = 0,
-    };
-
-    ActionType type;
 };
 
 class LocalPlayer : public Player

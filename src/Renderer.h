@@ -8,6 +8,7 @@
 class Map;
 class LocalPlayer;
 class Game;
+struct MapHighlight;
 
 class Renderer
 {
@@ -20,7 +21,7 @@ public:
     virtual void render(const Entity *entity) = 0;
     virtual void renderMap(const Map *map) = 0;
 
-    virtual void startRender() = 0;
+    virtual void startRender(float dt) = 0;
     virtual void endRender() = 0;
 
 protected:
@@ -36,7 +37,7 @@ public:
     virtual void render(const Entity *entity);
     virtual void renderMap(const Map *map);
 
-    virtual void startRender();
+    virtual void startRender(float dt);
     virtual void endRender();
 
     const glm::vec2& getResolution() const { return resolution_; }
@@ -51,15 +52,30 @@ public:
     // is not on the map returns glm::vec3(HUGE_VAL).
     glm::vec3 screenToTerrain (const glm::vec2 &screenCoord) const;
 
+    void highlight(const glm::vec2 &mapCoord);
+
 private:
+    glm::vec3 screenToNDC(const glm::vec2 &screenCoord) const;
+
     glm::vec3 cameraPos_;
     glm::vec2 resolution_;
+    float dt_;
 
     GLuint mapProgram_;
 
     std::map<const Entity *, glm::vec3> ndcCoords_;
     eid_t selection_;
 
+    std::vector<MapHighlight> highlights_;
+
+
     static LoggerPtr logger_;
+};
+
+
+struct MapHighlight
+{
+    glm::vec2 pos;
+    float remaining;
 };
 

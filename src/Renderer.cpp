@@ -46,7 +46,6 @@ void OpenGLRenderer::render(const Entity *entity)
 
     transform = glm::rotate(transform, 90.f, glm::vec3(1, 0, 0));
 
-    logger_->debug() << "Selection: " << selection_ << '\n';
     // if selected draw as green
     glm::vec4 color = entity->getID() == selection_ ?  glm::vec4(0, 1, 0, 1) : glm::vec4(0, 0, 1, 1);
     renderRectangleColor(transform, color);
@@ -54,8 +53,6 @@ void OpenGLRenderer::render(const Entity *entity)
     glm::vec4 ndc = getProjectionStack().current() * getViewStack().current() *
         transform * glm::vec4(0, 0, 0, 1);
     ndc /= ndc.w;
-
-
     ndcCoords_[entity] = glm::vec3(ndc);
 }
 
@@ -75,10 +72,38 @@ void OpenGLRenderer::renderMap(const Map *map)
                 glm::scale(glm::mat4(1.f), glm::vec3(mapSize.x, 1.f, mapSize.y)),
                 90.f, glm::vec3(1, 0, 0));
     renderRectangleProgram(transform);
+
+    // Render each of the highlights
+    for (auto& hl : highlights_)
+    {
+        hl.remaining -= dt_;
+        glm::mat4 transform =
+            glm::scale(
+                    glm::rotate(
+                        glm::translate(glm::mat4(1.f),
+                            glm::vec3(hl.pos.x, 0.01f, hl.pos.y)),
+                        90.f, glm::vec3(1, 0, 0)),
+                    glm::vec3(0.33f));
+        renderRectangleColor(transform, glm::vec4(1, 0, 0, 1));
+    }
+    // Remove done highlights
+    for (int i = 0; i < highlights_.size(); )
+    {
+        if (highlights_[i].remaining <= 0.f)
+        {
+            std::swap(highlights_[i], highlights_[highlights_.size() - 1]);
+            highlights_.pop_back();
+        }
+        else
+            i++;
+    }
+
 }
 
-void OpenGLRenderer::startRender()
+void OpenGLRenderer::startRender(float dt)
 {
+    dt_ = dt;
+
     glClearColor(0.f, 0.f, 0.f, 0.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
@@ -92,8 +117,8 @@ void OpenGLRenderer::startRender()
     getViewStack().clear();
     getViewStack().current() =
         glm::lookAt(cameraPos_,
-                    glm::vec3(cameraPos_.x, 0, cameraPos_.z + 0.5f),
-                    glm::vec3(0, 0, 1));
+                    glm::vec3(cameraPos_.x, 0, cameraPos_.z - 0.5f),
+                    glm::vec3(0, 0, -1));
 
     // Clear coordinates
     ndcCoords_.clear();
@@ -106,19 +131,18 @@ void OpenGLRenderer::endRender()
 
 void OpenGLRenderer::updateCamera(const glm::vec3 &delta)
 {
-    // TODO why does this need to be negative?
-    cameraPos_ += -delta;
+    cameraPos_ += delta;
 
     glm::vec2 mapSize = game_->getMap()->getSize() / 2.f;
     cameraPos_ = glm::clamp(
             cameraPos_,
             glm::vec3(-mapSize.x, 0.f, -mapSize.y),
-            glm::vec3(mapSize.x, 100.f, mapSize.y));
+            glm::vec3(mapSize.x, 20.f, mapSize.y));
 }
 
 uint64_t OpenGLRenderer::selectEntity (const glm::vec2 &screenCoord) const
 {
-    glm::vec2 pos = screenCoord * 2.f - glm::vec2(1.f);
+    glm::vec2 pos = glm::vec2(screenToNDC(screenCoord));
 
     // TODO Make this find the BEST instead of the first
     for (auto& pair : ndcCoords_)
@@ -138,8 +162,43 @@ void OpenGLRenderer::setSelection(eid_t eid)
     selection_ = eid;
 }
 
-glm::vec3
-OpenGLRenderer::screenToTerrain (const glm::vec2 &screenCoord) const
+void OpenGLRenderer::highlight(const glm::vec2 &mapCoord)
 {
-    return glm::vec3(HUGE_VAL);
+    MapHighlight hl;
+    hl.pos = mapCoord;
+    hl.remaining = 0.5f;
+    highlights_.push_back(hl);
 }
+
+// TODO this only works alright 
+glm::vec3 OpenGLRenderer::screenToTerrain(const glm::vec2 &screenCoord) const
+{
+    glm::vec4 ndc = glm::vec4(screenToNDC(screenCoord), 1.f);
+
+    ndc = glm::inverse(getProjectionStack().current() * getViewStack().current()) * ndc;
+    ndc /= ndc.w;
+
+    glm::vec3 dir = glm::normalize(glm::vec3(ndc) - cameraPos_);
+
+    glm::vec3 terrain = glm::vec3(ndc) - dir * ndc.y / dir.y;
+
+    logger_->info() << "terrain: " << ndc.x << ' ' << ndc.y << ' ' << ndc.z << '\n';
+
+    const glm::vec2 mapSize = game_->getMap()->getSize() / 2.f;
+    // Don't return a non terrain coordinate
+    if (ndc.x < -mapSize.x || ndc.x > mapSize.x || ndc.z < -mapSize.y || ndc.z > mapSize.y)
+        return glm::vec3(HUGE_VAL);
+
+    return glm::vec3(terrain);
+}
+
+glm::vec3 OpenGLRenderer::screenToNDC(const glm::vec2 &screen) const
+{
+    float z;
+    glReadPixels(screen.x, resolution_.y - screen.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
+    return glm::vec3(
+            2.f * (screen.x / resolution_.x) - 1.f,
+            2.f * (1.f - (screen.y / resolution_.y)) - 1.f,
+            z);
+}
+

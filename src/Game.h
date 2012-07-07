@@ -2,12 +2,12 @@
 #include <glm/glm.hpp>
 #include <set>
 #include <vector>
+#include "PlayerAction.h"
 
 class Renderer;
 class Map;
 class Entity;
 class Player;
-class PlayerAction;
 
 // Abstract base Game class
 class Game
