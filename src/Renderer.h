@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #include "Logger.h"
 #include <GL/glew.h>
+#include <map>
 
 class Map;
 class Entity;
@@ -16,8 +17,8 @@ public:
 
     void setGame(const Game *game) { game_ = game; }
 
-    virtual void render(Entity *entity) = 0;
-    virtual void renderMap(Map *map) = 0;
+    virtual void render(const Entity *entity) = 0;
+    virtual void renderMap(const Map *map) = 0;
 
     virtual void startRender() = 0;
     virtual void endRender() = 0;
@@ -32,8 +33,8 @@ public:
     OpenGLRenderer(const glm::vec2 &resolution);
     ~OpenGLRenderer();
 
-    virtual void render(Entity *entity);
-    virtual void renderMap(Map *map);
+    virtual void render(const Entity *entity);
+    virtual void renderMap(const Map *map);
 
     virtual void startRender();
     virtual void endRender();
@@ -47,6 +48,8 @@ private:
     glm::vec2 resolution_;
 
 	GLuint mapProgram_;
+
+    std::map<const Entity *, glm::vec3> ndcCoords_;
 
     static LoggerPtr logger_;
 };

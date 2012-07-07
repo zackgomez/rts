@@ -12,7 +12,7 @@
 LoggerPtr OpenGLRenderer::logger_;
 
 OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution) :
-    cameraPos_(0.f, 5.f, 0.f)
+    cameraPos_(0.f, 4.f, 0.f)
 ,   resolution_(resolution)
 {
     if (!logger_.get())
@@ -32,19 +32,35 @@ OpenGLRenderer::~OpenGLRenderer()
 {
 }
 
-void OpenGLRenderer::render(Entity *entity)
+void OpenGLRenderer::render(const Entity *entity)
 {
-    std::cout << "Renderering entity ID " << entity->getID() << " and type " <<
-        entity->getType() << '\n';
+    const glm::vec3 &pos = entity->getPosition();
+    float rotAngle = 180.f / M_PI * acosf(glm::dot(glm::vec2(0, 1), entity->getDirection()));
+
+    glm::mat4 transform = glm::scale(
+            glm::rotate(
+                glm::translate(glm::mat4(1.f), pos),
+                rotAngle, glm::vec3(0, 1, 0)),
+            glm::vec3(entity->getRadius() / 0.5f));
+
+    transform = glm::rotate(transform, 90.f, glm::vec3(1, 0, 0));
+
+    renderRectangleColor(
+            transform,
+            glm::vec4(0, 1, 0, 1));
+
+    glm::vec4 ndc = getProjectionStack().current() * getViewStack().current() *
+        transform * glm::vec4(0, 0, 0, 1);
+    ndc /= ndc.w;
+
+    ndcCoords_[entity] = glm::vec3(ndc);
 }
 
-void OpenGLRenderer::renderMap(Map *map)
+void OpenGLRenderer::renderMap(const Map *map)
 {
     const glm::vec2 &mapSize = map->getSize();
 
 	const glm::vec4 mapColor(0.25, 0.2, 0.15, 1.0);
-
-	std::cout << "map size: " << mapSize.x << ' ' << mapSize.y << '\n';
 
 	glUseProgram(mapProgram_);
     GLuint colorUniform = glGetUniformLocation(mapProgram_, "color");
@@ -62,6 +78,7 @@ void OpenGLRenderer::startRender()
 {
     glClearColor(0.f, 0.f, 0.f, 0.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
 
     // Set up matrices
     float aspectRatio = resolution_.x / resolution_.y;
@@ -72,8 +89,11 @@ void OpenGLRenderer::startRender()
     getViewStack().clear();
     getViewStack().current() =
         glm::lookAt(cameraPos_,
-                    glm::vec3(cameraPos_.x, 0, cameraPos_.z),
-                    glm::vec3(0, 0, -1));
+                    glm::vec3(cameraPos_.x, 0, cameraPos_.z + 0.5f),
+                    glm::vec3(0, 0, 1));
+
+    // Clear coordinates
+    ndcCoords_.clear();
 }
 
 void OpenGLRenderer::endRender()
@@ -83,7 +103,8 @@ void OpenGLRenderer::endRender()
 
 void OpenGLRenderer::updateCamera(const glm::vec3 &delta)
 {
-    cameraPos_ += delta;
+    // TODO why does this need to be negative?
+    cameraPos_ += -delta;
 
     glm::vec2 mapSize = game_->getMap()->getSize() / 2.f;
     cameraPos_ = glm::clamp(

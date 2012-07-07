@@ -9,14 +9,12 @@ public:
     Unit(int64_t playerID);
     virtual ~Unit() { }
 
-    const glm::vec3 getPosition() const { return pos_; }
-    const glm::vec2 getDirection() const { return dir_; }
+    virtual std::string getType() const { return "Unit"; }
 
-    void render();
-    void update(float dt);
+    virtual void update(float dt);
+    virtual bool needsRemoval() const;
 
-private:
-    glm::vec3 pos_;
-    glm::vec2 dir_;
+protected:
+    virtual void serialize(Json::Value &obj) const;
 };
 

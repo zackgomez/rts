@@ -2,6 +2,8 @@
 #include "Renderer.h"
 #include "Map.h"
 #include "Player.h"
+#include "Entity.h"
+#include "Unit.h"
 
 Game::~Game()
 {
@@ -19,6 +21,7 @@ HostGame::HostGame(Map *map, const std::vector<Player *> &players) :
 	Game(map)
 ,   players_(players)
 {
+    entities_.push_back(new Unit(1));
 }
 
 HostGame::~HostGame()
@@ -33,42 +36,27 @@ void HostGame::update(float dt)
 	// TODO read input
 
     // Update entities
+    std::vector<Entity *> deadEnts;
+    for (auto &entity : entities_)
+    {
+        entity->update(dt);
+        // Check for removal
+        if (entity->needsRemoval())
+            deadEnts.push_back(entity);
+    }
+    // TODO remove entities to remove
 
     // Render
-    for (auto renderer : renderers_)
+    for (auto &renderer : renderers_)
     {
         renderer->startRender();
+
         renderer->renderMap(map_);
+
+        for (auto &entity : entities_)
+            renderer->render(entity);
+
         renderer->endRender();
     }
 }
-
-
-/*
-LocalGame::LocalGame(Map *map, Player *player) :
-    Game(map)
-,   localPlayer_(player)
-{
-}
-
-LocalGame::~LocalGame()
-{
-}
-
-void LocalGame::update(float dt)
-{
-    // Read input
-    localPlayer_->update(dt);
-
-    // Update entities
-
-    // Render
-    for (auto renderer : renderers_)
-    {
-        renderer->startRender();
-        renderer->renderMap(map_);
-        renderer->endRender();
-    }
-};
-*/
 

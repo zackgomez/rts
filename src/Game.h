@@ -19,6 +19,8 @@ public:
     virtual void addRenderer(Renderer *renderer);
     virtual const Map * getMap() const { return map_; }
 
+    //virtual const Entity * getEntity() const = 0;
+
 protected:
     std::set<Renderer *> renderers_;
     Map *map_;
@@ -37,19 +39,4 @@ protected:
     std::vector<Player *> players_;
     std::vector<Entity *> entities_;
 };
-
-// TODO rename to ProxyGame a game that gets its information from somewhere else
-/*
-class LocalGame : public Game
-{
-public:
-    explicit LocalGame(Map *map, Player *player);
-    virtual ~LocalGame ();
-
-    virtual void update(float dt);
-
-private:
-    Player *localPlayer_;
-};
-*/
 
