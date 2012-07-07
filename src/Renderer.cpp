@@ -14,6 +14,7 @@ LoggerPtr OpenGLRenderer::logger_;
 OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution) :
     cameraPos_(0.f, 4.f, 0.f)
 ,   resolution_(resolution)
+,   selection_(NO_ENTITY)
 {
     if (!logger_.get())
         logger_ = Logger::getLogger("OGLRenderer");
@@ -45,15 +46,15 @@ void OpenGLRenderer::render(const Entity *entity)
 
     transform = glm::rotate(transform, 90.f, glm::vec3(1, 0, 0));
 
-    renderRectangleColor(
-            transform,
-            glm::vec4(0, 1, 0, 1));
+    logger_->debug() << "Selection: " << selection_ << '\n';
+    // if selected draw as green
+    glm::vec4 color = entity->getID() == selection_ ?  glm::vec4(0, 1, 0, 1) : glm::vec4(0, 0, 1, 1);
+    renderRectangleColor(transform, color);
 
     glm::vec4 ndc = getProjectionStack().current() * getViewStack().current() *
         transform * glm::vec4(0, 0, 0, 1);
     ndc /= ndc.w;
 
-    // TODO if selected, draw as selected
 
     ndcCoords_[entity] = glm::vec3(ndc);
 }
@@ -130,4 +131,9 @@ uint64_t OpenGLRenderer::selectEntity (const glm::vec2 &screenCoord) const
     }
 
     return NO_ENTITY;
+}
+
+void OpenGLRenderer::setSelection(eid_t eid)
+{
+    selection_ = eid;
 }

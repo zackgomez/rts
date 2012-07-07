@@ -18,8 +18,8 @@ void Game::addRenderer(Renderer *renderer)
 
 
 HostGame::HostGame(Map *map, const std::vector<Player *> &players) :
-	Game(map)
-,   players_(players)
+    Game(map)
+    ,   players_(players)
 {
     entities_.push_back(new Unit(1));
 }
@@ -31,9 +31,11 @@ HostGame::~HostGame()
 void HostGame::update(float dt)
 {
     // Update players
-	for (auto &player : players_)
-		player->update(dt);
-	// TODO read input
+    for (auto &player : players_)
+    {
+        player->update(dt);
+        // TODO get actions
+    }
 
     // Update entities
     std::vector<Entity *> deadEnts;
@@ -60,3 +62,6 @@ void HostGame::update(float dt)
     }
 }
 
+void HostGame::handleAction(int64_t playerID, const PlayerAction &action)
+{
+}

@@ -1,6 +1,8 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <SDL/SDL.h>
+#include "Entity.h"
+#include <queue>
 
 struct PlayerAction;
 class OpenGLRenderer;
@@ -24,12 +26,9 @@ struct PlayerAction
 {
     enum ActionType {
         NONE = 0,
-        CLEAR_SELECTION,
-        SELECT,
     };
 
     ActionType type;
-    // TODO add union of action arguments
 };
 
 class LocalPlayer : public Player
@@ -45,4 +44,9 @@ public:
 
 private:
     OpenGLRenderer *renderer_;
+
+    void setSelection(eid_t eid);
+
+    eid_t selection_;
+    std::queue<PlayerAction> actions_;
 };

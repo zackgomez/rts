@@ -1,11 +1,11 @@
 #pragma once
 #include <glm/glm.hpp>
-#include "Logger.h"
 #include <GL/glew.h>
 #include <map>
+#include "Logger.h"
+#include "Entity.h"
 
 class Map;
-class Entity;
 class LocalPlayer;
 class Game;
 
@@ -45,14 +45,16 @@ public:
 
     // returns 0 if no acceptable entity near click
     uint64_t selectEntity (const glm::vec2 &screenCoord) const;
+    void setSelection(eid_t eid);
 
 private:
     glm::vec3 cameraPos_;
     glm::vec2 resolution_;
 
-	GLuint mapProgram_;
+    GLuint mapProgram_;
 
     std::map<const Entity *, glm::vec3> ndcCoords_;
+    eid_t selection_;
 
     static LoggerPtr logger_;
 };

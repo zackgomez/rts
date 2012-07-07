@@ -7,6 +7,7 @@
 LocalPlayer::LocalPlayer(int64_t playerID, OpenGLRenderer *renderer) :
     Player(playerID)
 ,   renderer_(renderer)
+,   selection_(NO_ENTITY)
 {
 }
 
@@ -39,7 +40,14 @@ void LocalPlayer::update(float dt)
 PlayerAction LocalPlayer::getAction()
 {
     PlayerAction ret;
-    ret.type = PlayerAction::NONE;
+
+    if (actions_.empty())
+        ret.type = PlayerAction::NONE;
+    else
+    {
+        ret = actions_.front();
+        actions_.pop();
+    }
 
     return ret;
 }
@@ -60,13 +68,19 @@ void LocalPlayer::handleEvent(const SDL_Event &event)
         glm::vec2 screenCoord(event.button.x / res.x, 1 - (event.button.y / res.y));
         if (event.button.button == SDL_BUTTON_LEFT)
         {
-            eid_t eid = renderer_->selectEntity(screenCoord);
-            std::cout << "EID SELECTED: " << eid << '\n';
+            setSelection(renderer_->selectEntity(screenCoord));
+            std::cout << "EID SELECTED: " << selection_<< '\n';
         }
         if (event.button.button == SDL_BUTTON_RIGHT)
         {
         }
         break;
     }
+}
+
+void LocalPlayer::setSelection(eid_t eid)
+{
+    selection_ = eid;
+    renderer_->setSelection(selection_);
 }
 

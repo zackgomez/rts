@@ -50,6 +50,8 @@ int initEngine(const glm::vec2 &resolution)
         return 0;
     }
 
+    logger->info() << "GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << '\n';
+
     SDL_WM_SetCaption((strParam("window.name") + "  BUILT  " __DATE__ " " __TIME__).c_str(), "rts");
     SDL_WM_GrabInput(SDL_GRAB_ON);
 

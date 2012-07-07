@@ -7,6 +7,7 @@ class Renderer;
 class Map;
 class Entity;
 class Player;
+class PlayerAction;
 
 // Abstract base Game class
 class Game
@@ -36,6 +37,8 @@ public:
     virtual void update(float dt);
 
 protected:
+    virtual void handleAction(int64_t playerID, const PlayerAction &action);
+
     std::vector<Player *> players_;
     std::vector<Entity *> entities_;
 };
