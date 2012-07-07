@@ -47,6 +47,10 @@ public:
     uint64_t selectEntity (const glm::vec2 &screenCoord) const;
     void setSelection(eid_t eid);
 
+    // Returns the terrain location at the given screen coord.  If the coord
+    // is not on the map returns glm::vec3(HUGE_VAL).
+    glm::vec3 screenToTerrain (const glm::vec2 &screenCoord) const;
+
 private:
     glm::vec3 cameraPos_;
     glm::vec2 resolution_;

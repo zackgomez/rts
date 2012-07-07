@@ -3,3 +3,5 @@ resolution.y 600
 window.name  Ragnarok 0.1
 
 camera.panspeed 10.0
+
+unit.maxSpeed 3.0

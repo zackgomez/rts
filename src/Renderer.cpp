@@ -137,3 +137,9 @@ void OpenGLRenderer::setSelection(eid_t eid)
 {
     selection_ = eid;
 }
+
+glm::vec3
+OpenGLRenderer::screenToTerrain (const glm::vec2 &screenCoord) const
+{
+    return glm::vec3(HUGE_VAL);
+}

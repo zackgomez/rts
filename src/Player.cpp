@@ -37,14 +37,13 @@ void LocalPlayer::update(float dt)
     renderer_->updateCamera(glm::vec3(dir.x, 0.f, dir.y) * CAMERA_PAN_SPEED * dt);
 }
 
-PlayerAction LocalPlayer::getAction()
-{
+PlayerAction
+LocalPlayer::getAction() {
     PlayerAction ret;
 
-    if (actions_.empty())
+    if (actions_.empty()) {
         ret.type = PlayerAction::NONE;
-    else
-    {
+    } else {
         ret = actions_.front();
         actions_.pop();
     }
@@ -52,34 +51,42 @@ PlayerAction LocalPlayer::getAction()
     return ret;
 }
 
-void LocalPlayer::handleEvent(const SDL_Event &event)
-{
-    // TODO handle mouse events
-    switch (event.type)
-    {
+void
+LocalPlayer::handleEvent(const SDL_Event &event) {
+    switch (event.type) {
     case SDL_KEYDOWN:
-        if (event.key.keysym.sym == SDLK_UP)
+        if (event.key.keysym.sym == SDLK_UP) {
             renderer_->updateCamera(glm::vec3(0.f, 0.f, 0.1f));
-        if (event.key.keysym.sym == SDLK_DOWN)
+        }
+        if (event.key.keysym.sym == SDLK_DOWN) {
             renderer_->updateCamera(glm::vec3(0.f, 0.f, -0.1f));
+        }
         break;
     case SDL_MOUSEBUTTONUP:
-        const glm::vec2 &res = renderer_->getResolution();
-        glm::vec2 screenCoord(event.button.x / res.x, 1 - (event.button.y / res.y));
-        if (event.button.button == SDL_BUTTON_LEFT)
-        {
-            setSelection(renderer_->selectEntity(screenCoord));
-            std::cout << "EID SELECTED: " << selection_<< '\n';
+        const glm::vec2 &res = renderer_->getResolution ();
+        glm::vec2 screenCoord = glm::vec2 (
+                event.button.x / res.x,
+                1 - (event.button.y / res.y));
+
+        if (event.button.button == SDL_BUTTON_LEFT) {
+            setSelection (renderer_->selectEntity (screenCoord));
         }
-        if (event.button.button == SDL_BUTTON_RIGHT)
-        {
+        else if (event.button.button == SDL_BUTTON_RIGHT) {
+            if (selection_ != NO_ENTITY) {
+                glm::vec3 target = renderer_->screenToTerrain (screenCoord);
+                if (target != glm::vec3 (HUGE_VAL)) {
+                    std::cout << "Ordering " << selection_ << " to " <<
+                        target.x << ' ' << target.y << ' ' << target.z << '\n';
+                }
+            }
+                
         }
         break;
     }
 }
 
-void LocalPlayer::setSelection(eid_t eid)
-{
+void
+LocalPlayer::setSelection(eid_t eid) {
     selection_ = eid;
     renderer_->setSelection(selection_);
 }
