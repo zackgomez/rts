@@ -6,6 +6,9 @@
 #include <json/json.h>
 #include <glm/glm.hpp>
 
+typedef uint64_t eid_t;
+
+const eid_t NO_ENTITY = 0;
 const int64_t NO_PLAYER = -1;
 
 class EntityListener;
@@ -18,7 +21,7 @@ public:
     virtual ~Entity();
 
     virtual std::string getType() const = 0;
-    uint64_t getID() const { return id_; }
+    eid_t getID() const { return id_; }
     int64_t getPlayerID() const { return playerID_; }
 
     const glm::vec3 getPosition() const { return pos_; }
@@ -44,7 +47,7 @@ protected:
     float radius_;
 
 private:
-    uint64_t id_;
+    eid_t id_;
     int64_t playerID_;
     std::set<EntityListener *> listeners_;
 

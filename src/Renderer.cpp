@@ -53,6 +53,8 @@ void OpenGLRenderer::render(const Entity *entity)
         transform * glm::vec4(0, 0, 0, 1);
     ndc /= ndc.w;
 
+    // TODO if selected, draw as selected
+
     ndcCoords_[entity] = glm::vec3(ndc);
 }
 
@@ -113,3 +115,19 @@ void OpenGLRenderer::updateCamera(const glm::vec3 &delta)
             glm::vec3(mapSize.x, 100.f, mapSize.y));
 }
 
+uint64_t OpenGLRenderer::selectEntity (const glm::vec2 &screenCoord) const
+{
+    glm::vec2 pos = screenCoord * 2.f - glm::vec2(1.f);
+
+    // TODO Make this find the BEST instead of the first
+    for (auto& pair : ndcCoords_)
+    {
+        glm::vec2 diff = pos - glm::vec2(pair.second);
+        // TODO compute this based on size of object
+        float thresh = 0.02f;
+        if (glm::dot(diff, diff) < thresh)
+            return pair.first->getID();
+    }
+
+    return NO_ENTITY;
+}

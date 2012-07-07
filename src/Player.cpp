@@ -2,6 +2,7 @@
 #include <SDL/SDL.h>
 #include "Renderer.h"
 #include "ParamReader.h"
+#include "Entity.h"
 
 LocalPlayer::LocalPlayer(int64_t playerID, OpenGLRenderer *renderer) :
     Player(playerID)
@@ -53,6 +54,19 @@ void LocalPlayer::handleEvent(const SDL_Event &event)
             renderer_->updateCamera(glm::vec3(0.f, 0.f, 0.1f));
         if (event.key.keysym.sym == SDLK_DOWN)
             renderer_->updateCamera(glm::vec3(0.f, 0.f, -0.1f));
+        break;
+    case SDL_MOUSEBUTTONUP:
+        const glm::vec2 &res = renderer_->getResolution();
+        glm::vec2 screenCoord(event.button.x / res.x, 1 - (event.button.y / res.y));
+        if (event.button.button == SDL_BUTTON_LEFT)
+        {
+            eid_t eid = renderer_->selectEntity(screenCoord);
+            std::cout << "EID SELECTED: " << eid << '\n';
+        }
+        if (event.button.button == SDL_BUTTON_RIGHT)
+        {
+        }
+        break;
     }
 }
 

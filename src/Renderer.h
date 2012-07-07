@@ -43,6 +43,9 @@ public:
     const glm::vec3& getCameraPos() const { return cameraPos_; }
     void updateCamera(const glm::vec3 &delta);
 
+    // returns 0 if no acceptable entity near click
+    uint64_t selectEntity (const glm::vec2 &screenCoord) const;
+
 private:
     glm::vec3 cameraPos_;
     glm::vec2 resolution_;
