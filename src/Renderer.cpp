@@ -38,6 +38,8 @@ void OpenGLRenderer::render(const Entity *entity)
     const glm::vec3 &pos = entity->getPosition();
     float rotAngle = -entity->getAngle();
 
+    logger_->info() << "rendering entity with angle " << rotAngle << '\n';
+
     glm::mat4 transform = glm::scale(
             glm::rotate(
                 glm::translate(glm::mat4(1.f), pos),
@@ -54,6 +56,17 @@ void OpenGLRenderer::render(const Entity *entity)
         transform * glm::vec4(0, 0, 0, 1);
     ndc /= ndc.w;
     ndcCoords_[entity] = glm::vec3(ndc);
+
+    // Now draw orientation line
+    glm::mat4 oriMat = glm::rotate(
+            glm::translate(glm::mat4(1.f), entity->getPosition()),
+            rotAngle, glm::vec3(0, 1, 0));
+    glMatrixMode(GL_MODELVIEW_MATRIX);
+    glLoadMatrixf(glm::value_ptr(getProjectionStack().current() * getViewStack().current() * oriMat));
+    glBegin(GL_LINES);
+    glVertex3f(0.f, 0.f, 0.f);
+    glVertex3f(1.f, 0.f, 0.f);
+    glEnd();
 }
 
 void OpenGLRenderer::renderMap(const Map *map)
