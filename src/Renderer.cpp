@@ -170,7 +170,6 @@ void OpenGLRenderer::highlight(const glm::vec2 &mapCoord)
     highlights_.push_back(hl);
 }
 
-// TODO this only works alright 
 glm::vec3 OpenGLRenderer::screenToTerrain(const glm::vec2 &screenCoord) const
 {
     glm::vec4 ndc = glm::vec4(screenToNDC(screenCoord), 1.f);
@@ -182,11 +181,10 @@ glm::vec3 OpenGLRenderer::screenToTerrain(const glm::vec2 &screenCoord) const
 
     glm::vec3 terrain = glm::vec3(ndc) - dir * ndc.y / dir.y;
 
-    logger_->info() << "terrain: " << ndc.x << ' ' << ndc.y << ' ' << ndc.z << '\n';
-
     const glm::vec2 mapSize = game_->getMap()->getSize() / 2.f;
     // Don't return a non terrain coordinate
-    if (ndc.x < -mapSize.x || ndc.x > mapSize.x || ndc.z < -mapSize.y || ndc.z > mapSize.y)
+    if (terrain.x < -mapSize.x || terrain.x > mapSize.x
+            || terrain.z < -mapSize.y || terrain.z > mapSize.y)
         return glm::vec3(HUGE_VAL);
 
     return glm::vec3(terrain);

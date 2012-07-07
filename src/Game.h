@@ -1,5 +1,5 @@
 #pragma once
-#include <glm/glm.hpp>
+#include "glm.h"
 #include <set>
 #include <vector>
 #include "PlayerAction.h"

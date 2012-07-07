@@ -34,7 +34,17 @@ void HostGame::update(float dt)
     for (auto &player : players_)
     {
         player->update(dt);
-        // TODO get actions
+
+        PlayerAction action;
+        for (;;)
+        {
+            action = player->getAction();
+            if (action["type"] == ActionTypes::NONE)
+                break;
+
+            std::cout << "[" << player->getPlayerID()
+                << "] Read action " << action.toStyledString() << '\n';
+        }
     }
 
     // Update entities
