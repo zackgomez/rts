@@ -25,7 +25,7 @@ protected:
     float maxSpeed_;
     glm::vec3 vel_;
 
-    friend MoveState;
+    friend class MoveState;
 };
 
 class UnitState
@@ -45,7 +45,7 @@ public:
 protected:
     Unit *unit_;
 
-    friend MoveState;
+    friend class MoveState;
 };
 
 class NullState : public UnitState
