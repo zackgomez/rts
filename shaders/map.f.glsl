@@ -1,7 +1,6 @@
-#version 330
+#version 120
 
-in vec4 fragPos;
-out vec4 outputColor;
+varying vec4 fragPos;
 
 uniform vec4 color;
 
@@ -11,8 +10,6 @@ void main()
 {
     float u = min(abs(sin(fragPos.x * PI)), abs(sin(fragPos.y * PI)));
     u = smoothstep(0, 0.1, u);
-    outputColor = u * color; //smoothstep(0.f, 0.1f, ) * color;
-
-    //float u = smoothstep(0.f, 0.1f, fragPos.x - floor(fragPos.x));
-    //u *= smoothstep(0.f, 0.1f, fragPos.y - floor(fragPos.y));
+    gl_FragColor = u * color; //smoothstep(0.f, 0.1f, ) * color;
 }
+

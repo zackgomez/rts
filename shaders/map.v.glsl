@@ -1,16 +1,15 @@
-#version 330
+#version 120
 
-layout (location = 0) in vec4 position;
-//layout (location = 1) in vec4 color;
+attribute vec4 position;
 
 uniform mat4 projectionMatrix;
 uniform mat4 modelViewMatrix;
 uniform vec2 mapSize;
 
-smooth out vec4 fragPos;
+varying vec4 fragPos;
 
 void main()
 {
-    fragPos = glm::vec4(mapSize, 1.f, 1.f) * position;
+    fragPos = vec4(mapSize, 1.f, 1.f) * position;
     gl_Position = projectionMatrix * modelViewMatrix * position;
 }
