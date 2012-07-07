@@ -3,10 +3,11 @@
 #include <set>
 #include <vector>
 #include "PlayerAction.h"
+#include "Logger.h"
+#include "Entity.h"
 
 class Renderer;
 class Map;
-class Entity;
 class Player;
 
 // Abstract base Game class
@@ -19,6 +20,8 @@ public:
     virtual void update(float dt) = 0;
     virtual void addRenderer(Renderer *renderer);
     virtual const Map * getMap() const { return map_; }
+
+    virtual void sendMessage(eid_t to, const Message &msg) = 0;
 
     //virtual const Entity * getEntity() const = 0;
 
@@ -35,11 +38,14 @@ public:
     virtual ~HostGame();
 
     virtual void update(float dt);
+    virtual void sendMessage(eid_t to, const Message &msg);
 
 protected:
     virtual void handleAction(int64_t playerID, const PlayerAction &action);
 
+    LoggerPtr logger_;
+
     std::vector<Player *> players_;
-    std::vector<Entity *> entities_;
+    std::map<eid_t, Entity *> entities_;
 };
 

@@ -14,6 +14,7 @@ public:
 
     virtual std::string getType() const { return "Unit"; }
 
+    virtual void handleMessage(const Message &msg);
     virtual void update(float dt);
     virtual bool needsRemoval() const;
 
@@ -27,6 +28,17 @@ protected:
 
     friend class MoveState;
 };
+
+
+
+namespace OrderTypes
+{
+    const std::string MOVE = "MOVE";
+    const std::string STOP = "STOP";
+};
+
+
+
 
 class UnitState
 {

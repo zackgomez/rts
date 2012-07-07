@@ -20,6 +20,18 @@ Unit::Unit(int64_t playerID) :
     maxSpeed_ = getParam("unit.maxSpeed");
 }
 
+void Unit::handleMessage(const Message &msg)
+{
+    if (msg["type"] == MessageTypes::ORDER &&
+        msg["order_type"] == OrderTypes::MOVE)
+    {
+        unitLogger->info() << "Got a move order\n";
+        state_->stop();
+        delete state_;
+        state_ = new MoveState(toVec3(msg["target"]), this);
+    }
+}
+
 void Unit::update(float dt)
 {
     state_->update(dt);
