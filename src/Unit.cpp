@@ -69,7 +69,10 @@ void MoveState::update(float dt)
 		unit_->vel_ = glm::vec3(0.f);
 	}
 	else {
-		unit_->angle_ = 180 * atan(abs(diff.z) / abs(diff.x)) / M_PI;
+		if (abs(diff.x) < 0.001)
+			unit_->angle_ = 90;
+		else
+			unit_->angle_ = 180 * atan(abs(diff.z) / abs(diff.x)) / M_PI;
 		if (diff.x < 0 && diff.z < 0)
 			unit_->angle_ += 180;
 		else if (diff.x < 0)
@@ -81,7 +84,7 @@ void MoveState::update(float dt)
 		unit_->vel_ = glm::vec3(0.05f);
 	}
 
-	unitLogger->info() << unit_->angle_ << ": " << diff.x <<"\n";
+	//unitLogger->info() << unit_->angle_ << ": " << diff.x <<"\n";
 
 
 }
