@@ -51,7 +51,7 @@ void HostGame::update(float dt)
     // Render
     for (auto &renderer : renderers_)
     {
-        renderer->startRender();
+        renderer->startRender(dt);
 
         renderer->renderMap(map_);
 
