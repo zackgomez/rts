@@ -42,6 +42,8 @@ int main (int argc, char **argv)
 void mainloop()
 {
     glm::vec2 res(getParam("resolution.x"), getParam("resolution.y"));
+    const float framerate = getParam("framerate");
+    float fps = 1.f / framerate;
     renderer = new OpenGLRenderer(res);
     player = new LocalPlayer(1, renderer);
 	std::vector<Player *> players; players.push_back(player);
@@ -54,9 +56,9 @@ void mainloop()
     {
         handleInput();
 
-        game->update(1.f / 60.f); // 30 fps
+        game->update(fps); // 30 fps
         // Regulate frame rate
-        SDL_Delay(16);
+        SDL_Delay(int(1000*fps));
     }
 }
 

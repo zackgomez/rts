@@ -53,14 +53,23 @@ LocalPlayer::getAction() {
 
 void
 LocalPlayer::handleEvent(const SDL_Event &event) {
+	const float CAMERA_PAN_SPEED = getParam("camera.panspeed.key");
     switch (event.type) {
     case SDL_KEYDOWN:
         if (event.key.keysym.sym == SDLK_UP) {
-            renderer_->updateCamera(glm::vec3(0.f, 0.f, 0.1f));
+            renderer_->updateCamera(glm::vec3(0.f, 0.f, CAMERA_PAN_SPEED));
         }
         if (event.key.keysym.sym == SDLK_DOWN) {
-            renderer_->updateCamera(glm::vec3(0.f, 0.f, -0.1f));
+            renderer_->updateCamera(glm::vec3(0.f, 0.f, -CAMERA_PAN_SPEED));
         }
+        if (event.key.keysym.sym == SDLK_RIGHT) {
+            renderer_->updateCamera(glm::vec3(-CAMERA_PAN_SPEED, 0.f, 0.f));
+        }
+        if (event.key.keysym.sym == SDLK_LEFT) {
+            renderer_->updateCamera(glm::vec3(CAMERA_PAN_SPEED, 0.f, 0.f));
+        }
+
+
         break;
     case SDL_MOUSEBUTTONUP:
         const glm::vec2 &res = renderer_->getResolution ();
