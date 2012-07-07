@@ -2,7 +2,7 @@ CXX=g++
 GLM=lib/glm-0.9.2.7
 JSON=lib/jsoncpp
 CXXFLAGS=-g -O0 -Wall -I$(GLM) -std=c++0x -I$(JSON)
-LDFLAGS=-lSDL -lGL -lGLEW -lglut
+LDFLAGS=-lSDL -lGL -lGLEW
 OBJDIR=obj
 SRCDIR=src
 
