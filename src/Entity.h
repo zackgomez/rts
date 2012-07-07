@@ -45,6 +45,7 @@ protected:
     glm::vec3 pos_;
     glm::vec2 dir_;
     float angle_;
+    float desired_angle_;
     float radius_;
     int64_t playerID_;
 

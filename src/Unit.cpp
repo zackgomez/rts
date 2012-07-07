@@ -3,16 +3,18 @@
 #include "math.h"
 
 LoggerPtr unitLogger;
+bool reached_;
 
 Unit::Unit(int64_t playerID) :
     Entity(playerID),
-    state_(new MoveState(glm::vec3(0.f), this))
+    state_(new NullState(this))
 {
     pos_ = glm::vec3(0, 0.5f, 0);
     radius_ = 0.5f;
     angle_ = 0;
-    dir_ = glm::vec2(sin(angle_*M_PI/180),
-					 cos(angle_*M_PI/180));
+    desired_angle_ = 0;
+    dir_ = glm::vec2(cos(angle_*M_PI/180),
+					 sin(angle_*M_PI/180));
 
     unitLogger = Logger::getLogger("Unit");
 
@@ -36,6 +38,13 @@ void Unit::update(float dt)
 {
     state_->update(dt);
 
+    if (fabs(angle_ - desired_angle_) > 5) {
+    	angle_ += (desired_angle_ - angle_)/30;
+    	return;
+    }
+
+    dir_ = glm::vec2(cos(desired_angle_*M_PI/180),
+    				 sin(desired_angle_*M_PI/180));
     pos_ += glm::vec3(vel_.x * dir_.x, 0.f, vel_.z * dir_.y);
 
 }
@@ -56,36 +65,49 @@ MoveState::MoveState(const glm::vec3 &target, Unit *unit) :
 {
     // Make sure the unit stands on the terrain
     target_.y += unit_->getRadius(); 
+    reached_ = false;
     unit_->vel_ = unit_->maxSpeed_ * (target_ - unit_->getPosition());
 }
 
 void MoveState::update(float dt)
 {
-	glm::vec3 diff = (target_ - unit_->pos_);
-	if (abs(diff.x) < 0.05 &&
-		abs(diff.y) < 0.05 &&
-		abs(diff.z) < 0.05)
+	if (reached_)
+		return;
+
+	glm::vec3 diff = target_ - unit_->pos_;
+	if (fabs(diff.x) < 0.5 &&
+		fabs(diff.y) < 0.5 &&
+		fabs(diff.z) < 0.5)
 	{
 		unit_->vel_ = glm::vec3(0.f);
+		reached_ = true;
 	}
+
+	else if (target_ == prev_target_)
+	{
+		return;
+	}
+
 	else {
+		float angle = 0;
+
 		if (abs(diff.x) < 0.001)
-			unit_->angle_ = 90;
+			angle = 90.0f;
 		else
-			unit_->angle_ = 180 * atan(abs(diff.z) / abs(diff.x)) / M_PI;
+			angle = 180.0f * atan(fabs(diff.z) / fabs(diff.x)) / M_PI;
+
 		if (diff.x < 0 && diff.z < 0)
-			unit_->angle_ += 180;
+			angle += 180.0f;
 		else if (diff.x < 0)
-			unit_->angle_ += 90;
+			angle = 180.0f - angle;
 		else if (diff.z < 0)
-			unit_->angle_ += 270;
-		unit_->dir_ = glm::vec2(cos(unit_->angle_*M_PI/180),
-							sin(unit_->angle_*M_PI/180));
+			angle = 360.0f - angle;
+
+		unit_->desired_angle_ = angle;
 		unit_->vel_ = glm::vec3(0.05f);
+
+		prev_target_ = target_;
 	}
-
-	//unitLogger->info() << unit_->angle_ << ": " << diff.x <<"\n";
-
 
 }
 

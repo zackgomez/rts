@@ -83,5 +83,6 @@ public:
 
 protected:
     glm::vec3 target_;
+    glm::vec3 prev_target_;
 };
 
