@@ -94,7 +94,28 @@ LocalPlayer::handleEvent(const SDL_Event &event) {
         }
         else if (event.button.button == SDL_BUTTON_RIGHT)
         {
-            if (selection_ != NO_ENTITY)
+        	eid_t enemy;
+        	if (enemy = renderer_->selectEntity (screenCoord) && selection_ != NO_ENTITY)
+        	{
+        		glm::vec3 target = renderer_->screenToTerrain (screenCoord);
+        		if (target != glm::vec3 (HUGE_VAL))
+        		{
+        			// Visual feedback
+        		    renderer_->highlight(glm::vec2(target.x, target.z));
+
+        		    // Queue up action
+        			PlayerAction action;
+        		    action["type"] = ActionTypes::ATTACK;
+        		    action["entity"] = (Json::Value::UInt64) selection_;
+        		    action["target"] = toJson(target);
+        		    // TODO enemy id is incorrect.
+        		    action["enemy_id"] = (Json::Value::UInt64) enemy;
+        		    actions_.push(action);
+        		}
+
+        	}
+
+        	else if (selection_ != NO_ENTITY)
             {
                 glm::vec3 target = renderer_->screenToTerrain (screenCoord);
                 if (target != glm::vec3 (HUGE_VAL))

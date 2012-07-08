@@ -28,6 +28,13 @@ void Unit::handleMessage(const Message &msg)
         delete state_;
         state_ = new MoveState(toVec3(msg["target"]), this);
     }
+
+    else if (msg["type"] == MessageTypes::ORDER &&
+            msg["order_type"] == OrderTypes::ATTACK)
+    {
+    	unitLogger->info() << "Got an attack order\n";
+    	unitLogger->info() << "Imma go nuts on you id: " << msg["enemy_id"] << "\n";
+    }
 }
 
 void Unit::update(float dt)
@@ -43,7 +50,6 @@ void Unit::update(float dt)
     }
 
     pos_ += vel_ * dt;
-
 }
 
 bool Unit::needsRemoval() const

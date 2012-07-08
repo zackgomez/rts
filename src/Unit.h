@@ -35,6 +35,7 @@ protected:
 namespace OrderTypes
 {
     const std::string MOVE = "MOVE";
+    const std::string ATTACK = "ATTACK";
     const std::string STOP = "STOP";
 };
 

@@ -8,4 +8,5 @@ namespace ActionTypes
 {
 const std::string NONE = "NONE";
 const std::string MOVE = "MOVE";
+const std::string ATTACK = "ATTACK";
 };
