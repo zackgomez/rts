@@ -73,11 +73,27 @@ MoveState::MoveState(const glm::vec3 &target, Unit *unit) :
 
 void MoveState::update(float dt)
 {
-	if (abs(desired_angle_ - unit_->angle_) > 2)
+    // Turning
+	if (unit_->angle_ != desired_angle_)
     {
-		unit_->angle_ += (desired_angle_ - unit_->angle_)/30;
-        unit_->vel_ = glm::vec3(0.f);
+        // Get delta in [-180, 180]
+        float delAngle = desired_angle_ - unit_->angle_;
+        while (delAngle > 180.f) delAngle -= 360.f;
+        while (delAngle < -180.f) delAngle += 360.f;
+        float turnRate = getParam("unit.turnRate");
+        // Would overshoot, just set angle
+        if (glm::sign(delAngle) != glm::sign(delAngle + turnRate * dt))
+            unit_->angle_ = desired_angle_;
+        else
+        {
+            unit_->angle_ += glm::sign(delAngle) * turnRate * dt;
+            while (unit_->angle_ > 360.f) unit_->angle_ -= 360.f;
+            while (unit_->angle_ < 0.f) unit_->angle_ += 360.f;
+
+            unit_->vel_ = glm::vec3(0.f);
+        }
     }
+    // Moving
 	else
     {
         float rad = M_PI / 180.f * unit_->angle_;
@@ -89,9 +105,6 @@ UnitState * MoveState::next()
 {
     glm::vec3 diff = target_ - unit_->pos_;
     float dist = glm::length(diff);
-    unitLogger->debug() << "target: " << target_ << " pos: " << unit_->pos_ << '\n';
-    unitLogger->debug() << "diff: " << diff << " dist : " << dist << '\n';
-    unitLogger->debug() << '\n';
 
     if (dist < unit_->getRadius())
         return new NullState(unit_);
