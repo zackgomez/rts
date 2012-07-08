@@ -43,6 +43,7 @@ HostGame::~HostGame()
 
 void HostGame::update(float dt)
 {
+    // TODO lock
     // Update players
     for (auto &player : players_)
     {
@@ -69,19 +70,26 @@ void HostGame::update(float dt)
             deadEnts.push_back(entity->getID());
     }
     // TODO remove deadEnts
+    // TODO unlock
+}
 
+void HostGame::render(float dt)
+{
     // Render
     for (auto &renderer : renderers_)
-    {
         renderer->startRender(dt);
 
-        renderer->renderMap(map_);
+    // TODO lock
+    for (auto &renderer : renderers_)
+    renderer->renderMap(map_);
 
-        for (auto &it : entities_)
+    for (auto &it : entities_)
+        for (auto &renderer : renderers_)
             renderer->renderEntity(it.second);
+    // TODO unlock
 
+    for (auto &renderer : renderers_)
         renderer->endRender();
-    }
 }
 
 void HostGame::sendMessage(eid_t to, const Message &msg)
