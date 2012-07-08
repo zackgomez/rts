@@ -64,14 +64,17 @@ LocalPlayer::handleEvent(const SDL_Event &event) {
         if (event.key.keysym.sym == SDLK_UP) {
             renderer_->updateCamera(glm::vec3(0.f, 0.f, CAMERA_PAN_SPEED));
         }
-        if (event.key.keysym.sym == SDLK_DOWN) {
+        else if (event.key.keysym.sym == SDLK_DOWN) {
             renderer_->updateCamera(glm::vec3(0.f, 0.f, -CAMERA_PAN_SPEED));
         }
-        if (event.key.keysym.sym == SDLK_RIGHT) {
+        else if (event.key.keysym.sym == SDLK_RIGHT) {
             renderer_->updateCamera(glm::vec3(CAMERA_PAN_SPEED, 0.f, 0.f));
         }
-        if (event.key.keysym.sym == SDLK_LEFT) {
+        else if (event.key.keysym.sym == SDLK_LEFT) {
             renderer_->updateCamera(glm::vec3(-CAMERA_PAN_SPEED, 0.f, 0.f));
+        }
+        else if (event.key.keysym.sym == SDLK_g) {
+            SDL_WM_GrabInput(SDL_GRAB_ON);
         }
         if (selection_) {
         	log->info() << event.key.keysym.sym << "\n";
@@ -95,7 +98,7 @@ LocalPlayer::handleEvent(const SDL_Event &event) {
         else if (event.button.button == SDL_BUTTON_RIGHT)
         {
         	eid_t enemy;
-        	if (enemy = renderer_->selectEntity (screenCoord) && selection_ != NO_ENTITY)
+        	if ((enemy = renderer_->selectEntity (screenCoord)) && selection_ != NO_ENTITY)
         	{
         		glm::vec3 target = renderer_->screenToTerrain (screenCoord);
         		if (target != glm::vec3 (HUGE_VAL))

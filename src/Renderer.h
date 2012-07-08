@@ -4,6 +4,7 @@
 #include <map>
 #include "Logger.h"
 #include "Entity.h"
+#include "Engine.h"
 
 class Map;
 class LocalPlayer;
@@ -18,7 +19,7 @@ public:
 
     void setGame(const Game *game) { game_ = game; }
 
-    virtual void render(const Entity *entity) = 0;
+    virtual void renderEntity(const Entity *entity) = 0;
     virtual void renderMap(const Map *map) = 0;
 
     virtual void startRender(float dt) = 0;
@@ -34,7 +35,7 @@ public:
     OpenGLRenderer(const glm::vec2 &resolution);
     ~OpenGLRenderer();
 
-    virtual void render(const Entity *entity);
+    virtual void renderEntity(const Entity *entity);
     virtual void renderMap(const Map *map);
 
     virtual void startRender(float dt);
@@ -58,10 +59,13 @@ private:
     glm::vec3 screenToNDC(const glm::vec2 &screenCoord) const;
 
     glm::vec3 cameraPos_;
+    glm::vec3 lightPos_;
     glm::vec2 resolution_;
     float dt_;
 
     GLuint mapProgram_;
+    GLuint unitProgram_;
+    Mesh * unitMesh_;
 
     std::map<const Entity *, glm::vec3> ndcCoords_;
     eid_t selection_;

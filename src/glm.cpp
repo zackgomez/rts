@@ -58,3 +58,9 @@ glm::vec4 toVec4(const Json::Value &v)
     return glm::vec4(v[0].asFloat(), v[1].asFloat(), v[2].asFloat(), v[3].asFloat());
 }
 
+glm::vec3 applyMatrix(const glm::mat4 &mat, const glm::vec3 &pt)
+{
+    glm::vec4 p = mat * glm::vec4(pt, 1.f);
+    p /= p.w;
+    return glm::vec3(p);
+}

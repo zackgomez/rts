@@ -17,3 +17,5 @@ Json::Value toJson(const glm::vec4 &v);
 glm::vec2 toVec2(const Json::Value &v);
 glm::vec3 toVec3(const Json::Value &v);
 glm::vec4 toVec4(const Json::Value &v);
+
+glm::vec3 applyMatrix(const glm::mat4 &mat, const glm::vec3 &pt);

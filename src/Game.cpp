@@ -26,7 +26,7 @@ HostGame::HostGame(Map *map, const std::vector<Player *> &players) :
     MessageHub::get()->setGame(this);
 
     // TODO generalize this
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 1; i++) {
     	Unit *u = new Unit(1);
     	entities_[u->getID()] = u;
     }
@@ -74,7 +74,7 @@ void HostGame::update(float dt)
         renderer->renderMap(map_);
 
         for (auto &it : entities_)
-            renderer->render(it.second);
+            renderer->renderEntity(it.second);
 
         renderer->endRender();
     }

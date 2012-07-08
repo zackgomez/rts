@@ -11,8 +11,8 @@
 
 LoggerPtr OpenGLRenderer::logger_;
 
-OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution) :
-    cameraPos_(0.f, 4.f, 0.f)
+OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution)
+:   cameraPos_(0.f, 4.f, 0.f)
 ,   resolution_(resolution)
 ,   selection_(NO_ENTITY)
 {
@@ -27,13 +27,21 @@ OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution) :
 
 	// Load resources
 	mapProgram_ = loadProgram("shaders/map.v.glsl", "shaders/map.f.glsl");
+    unitProgram_ = loadProgram("shaders/unit.v.glsl", "shaders/unit.f.glsl"); 
+    unitMesh_ = loadMesh("models/unit.obj");
+    // unit model is based at 0, height 1, translate to center of model
+    glm::mat4 unitMeshTrans =
+        glm::scale(
+            glm::translate(glm::mat4(1.f), glm::vec3(0, -0.5f, 0)),
+            glm::vec3(1, 0.5f, 1));
+    setMeshTransform(unitMesh_, unitMeshTrans);
 }
 
 OpenGLRenderer::~OpenGLRenderer()
 {
 }
 
-void OpenGLRenderer::render(const Entity *entity)
+void OpenGLRenderer::renderEntity(const Entity *entity)
 {
     const glm::vec3 &pos = entity->getPosition();
     float rotAngle = -entity->getAngle();
@@ -44,27 +52,26 @@ void OpenGLRenderer::render(const Entity *entity)
                 rotAngle, glm::vec3(0, 1, 0)),
             glm::vec3(entity->getRadius() / 0.5f));
 
-    transform = glm::rotate(transform, 90.f, glm::vec3(1, 0, 0));
-
     // if selected draw as green
     glm::vec4 color = entity->getID() == selection_ ?  glm::vec4(0, 1, 0, 1) : glm::vec4(0, 0, 1, 1);
-    renderRectangleColor(transform, color);
+
+    glUseProgram(unitProgram_);
+    GLuint colorUniform = glGetUniformLocation(mapProgram_, "color");
+    GLuint lightPosUniform = glGetUniformLocation(mapProgram_, "lightPos");
+    glUniform4fv(colorUniform, 1, glm::value_ptr(color));
+    glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
+    renderMesh(transform, unitMesh_);
 
     glm::vec4 ndc = getProjectionStack().current() * getViewStack().current() *
         transform * glm::vec4(0, 0, 0, 1);
     ndc /= ndc.w;
     ndcCoords_[entity] = glm::vec3(ndc);
 
-    // Now draw orientation line
-    glm::mat4 oriMat = glm::rotate(
-            glm::translate(glm::mat4(1.f), entity->getPosition()),
-            rotAngle, glm::vec3(0, 1, 0));
-    glMatrixMode(GL_MODELVIEW_MATRIX);
-    glLoadMatrixf(glm::value_ptr(getProjectionStack().current() * getViewStack().current() * oriMat));
-    glBegin(GL_LINES);
-    glVertex3f(0.f, 0.f, 0.f);
-    glVertex3f(1.f, 0.f, 0.f);
-    glEnd();
+    glm::vec3 modelPos = applyMatrix(
+        getViewStack().current(),// * transform,
+        entity->getPosition());
+    //logger_->info() << "modelpos: " << modelPos << " lightpos: " << lightPos_ << '\n';
+    logger_->info() << "delta: " << lightPos_ - modelPos << '\n';
 }
 
 void OpenGLRenderer::renderMap(const Map *map)
@@ -130,6 +137,10 @@ void OpenGLRenderer::startRender(float dt)
         glm::lookAt(cameraPos_,
                     glm::vec3(cameraPos_.x, 0, cameraPos_.z - 0.5f),
                     glm::vec3(0, 0, -1));
+
+    // Set up lights
+    lightPos_ = applyMatrix(getViewStack().current(), glm::vec3(-5, 10, -5));
+    logger_->info() << "Light pos: " << lightPos_ << '\n';
 
     // Clear coordinates
     ndcCoords_.clear();

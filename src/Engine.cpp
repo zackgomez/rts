@@ -11,13 +11,31 @@ static LoggerPtr logger;
 static MatrixStack viewStack;
 static MatrixStack projStack;
 
-static int loadResources();
-
 static struct
 {
     GLuint colorProgram;
     GLuint rectBuffer;
 } resources;
+
+struct vert_p4n4t2
+{
+    glm::vec4 pos;
+    glm::vec4 norm;
+    glm::vec2 coord;
+};
+
+struct Mesh
+{
+    glm::mat4    transform;
+    GLuint       buffer;
+    vert_p4n4t2 *verts;
+    size_t       nverts;
+};
+
+// Static helper functions
+static int loadResources();
+static int loadVerts(const std::string &filename,
+        vert_p4n4t2 **verts, size_t *nverts);
 
 int initEngine(const glm::vec2 &resolution)
 {
@@ -53,7 +71,7 @@ int initEngine(const glm::vec2 &resolution)
     logger->info() << "GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << '\n';
 
     SDL_WM_SetCaption((strParam("window.name") + "  BUILT  " __DATE__ " " __TIME__).c_str(), "rts");
-    SDL_WM_GrabInput(SDL_GRAB_ON);
+    //SDL_WM_GrabInput(SDL_GRAB_ON);
 
     initialized = true;
 
@@ -129,6 +147,52 @@ void renderRectangleProgram(const glm::mat4 &modelMatrix)
 
     // Clean up
     glDisableVertexAttribArray(0);
+    glUseProgram(0);
+}
+
+void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m)
+{
+	GLuint program;
+	glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*) &program);
+	if (!program)
+	{
+		logger->warning() << "No active program on call to " << __PRETTY_FUNCTION__ << "\n";
+		return;
+	}
+    const glm::mat4 projMatrix = projStack.current();
+    const glm::mat4 modelViewMatrix = viewStack.current() * modelMatrix;// * m->transform;
+    const glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelViewMatrix));
+
+    // Uniform locations
+    GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
+    GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
+    GLuint normalUniform = glGetUniformLocation(program, "normalMatrix");
+    // Attributes
+    GLuint positionAttrib = glGetAttribLocation(program, "position");
+    GLuint normalAttrib   = glGetAttribLocation(program, "normal");
+    GLuint texcoordAttrib = glGetAttribLocation(program, "texcoord");
+    // Enable program and set up values
+    glUseProgram(program);
+    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
+    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projMatrix));
+    glUniformMatrix4fv(normalUniform, 1, GL_FALSE, glm::value_ptr(normalMatrix));
+
+    // Bind data
+    glBindBuffer(GL_ARRAY_BUFFER, m->buffer);
+    glEnableVertexAttribArray(positionAttrib);
+    glEnableVertexAttribArray(normalAttrib);
+    glEnableVertexAttribArray(texcoordAttrib);
+    glVertexAttribPointer(positionAttrib, 4, GL_FLOAT, GL_FALSE, sizeof(struct vert_p4n4t2), (void*) (0));
+    glVertexAttribPointer(normalAttrib,   4, GL_FLOAT, GL_FALSE, sizeof(struct vert_p4n4t2), (void*) (4 * sizeof(float)));
+    glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(struct vert_p4n4t2), (void*) (8 * sizeof(float)));
+
+    // Draw
+    glDrawArrays(GL_TRIANGLES, 0, m->nverts);
+
+    // Clean up
+    glDisableVertexAttribArray(positionAttrib);
+    glDisableVertexAttribArray(normalAttrib);
+    glDisableVertexAttribArray(texcoordAttrib);
     glUseProgram(0);
 }
 
@@ -227,6 +291,48 @@ GLuint linkProgram(GLuint vert, GLuint frag)
     return program;
 }
 
+GLuint makeBuffer(GLenum type, const void *data, GLsizei size)
+{
+    GLuint buf;
+    glGenBuffers(1, &buf);
+    glBindBuffer(GL_ARRAY_BUFFER, buf);
+    glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    return buf;
+}
+
+Mesh * loadMesh(const std::string &objFile)
+{
+    Mesh *ret = (Mesh *) malloc(sizeof(Mesh));
+    ret->transform = glm::mat4(1.f);
+
+    loadVerts(objFile, &ret->verts, &ret->nverts);
+
+    ret->buffer = makeBuffer(
+            GL_ARRAY_BUFFER,
+            ret->verts,
+            ret->nverts * sizeof(vert_p4n4t2));
+
+    free(ret->verts);
+    ret->verts = 0;
+
+    return ret;
+}
+
+void freeMesh(Mesh *mesh)
+{
+    if (!mesh) return;
+
+    glDeleteBuffers(1, &mesh->buffer);
+    free(mesh->verts);
+    free(mesh);
+}
+
+void setMeshTransform(Mesh *mesh, const glm::mat4 &transform)
+{
+    mesh->transform = transform;
+}
+
 // -------- STATIC FUNCTIONS ---------
 
 static int loadResources()
@@ -238,14 +344,176 @@ static int loadResources()
         -0.5, -0.5, 0.0f, 1.0f,
     };
 
-    glGenBuffers(1, &resources.rectBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, resources.rectBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(rectPositions), rectPositions, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    resources.rectBuffer = makeBuffer(
+            GL_ARRAY_BUFFER,
+            rectPositions,
+            sizeof(rectPositions));
 
     // Create solid color program for renderRectangleColor
 	resources.colorProgram = loadProgram("shaders/color.v.glsl", "shaders/color.f.glsl");
 
     return 1;
+}
+
+struct facevert { int v, vt, vn; };
+struct fullface
+{
+    facevert fverts[3];
+};
+static facevert parseFaceVert(const char *vdef)
+{
+    facevert fv;
+    assert(vdef);
+
+    if (sscanf(vdef, "%d/%d/%d", &fv.v, &fv.vt, &fv.vn) == 3)
+    {
+        // 1 indexed to 0 indexed
+        fv.v -= 1; fv.vn -= 1; fv.vt -= 1;
+    }
+    else if (sscanf(vdef, "%d//%d", &fv.v, &fv.vn) == 2)
+    {
+        fv.v -= 1; fv.vn -= 1; fv.vt = 0; // dummy vt @ 0 index
+    }
+    else
+        assert(false && "unable to read unfull .obj");
+
+    return fv;
+}
+
+
+static int loadVerts(const std::string &filename,
+        vert_p4n4t2 **out, size_t *size)
+{
+    std::ifstream cs(filename);
+    if (!cs)
+    {
+        logger->error() << "Couldn't open obj file " << filename << '\n';
+        return 1;
+    }
+
+    // First count the number of vertices and faces
+    unsigned nverts = 0, nfaces = 0, nnorms = 0, ncoords = 0;
+    // Are we reading an objfile with geosmash extensions?
+    bool extended = false;
+    // lines should never be longer than 1024 in a .obj...
+    char buf[1024];
+
+    while (cs.getline(buf, sizeof buf))
+    {
+        if (*buf == '\0') continue;
+
+        char *cmd = strtok(buf, " ");
+        char *arg = strtok(NULL, " ");
+        if (strcmp(cmd, "v") == 0)
+            nverts++;
+        if (strcmp(cmd, "f") == 0)
+            nfaces++;
+        if (strcmp(cmd, "vn") == 0)
+            nnorms++;
+        if (strcmp(cmd, "vt") == 0)
+            ncoords++;
+        if (strcmp(cmd, "ext") == 0 && strcmp(arg, "geosmash") == 0)
+            extended = true;
+    }
+
+    // TODO make a logger call
+    printf("verts: %d, faces: %d, norms: %d, coords: %d, extended: %d\n",
+            nverts, nfaces, nnorms, ncoords, extended);
+
+    // Allocate an extra, dummy texcoord in case vert doesn't specify one
+    if (ncoords == 0)
+        ncoords++;
+
+    // Allocate space
+    glm::vec4 *verts   = (glm::vec4*) malloc(sizeof(glm::vec4) * nverts);
+    fullface  *ffaces  = (fullface*)  malloc(sizeof(fullface) * nfaces);
+    glm::vec2 *coords  = (glm::vec2*) malloc(sizeof(glm::vec2) * ncoords);
+    glm::vec3 *norms   = (glm::vec3*) malloc(sizeof(glm::vec3) * nnorms);
+    assert(verts && norms && coords && ffaces);
+    // TODO replace asserts will some real memory checks
+
+    // reset to beginning of file
+    cs.clear();
+    cs.seekg(0, std::ios::beg);
+
+    size_t verti = 0, facei = 0, normi = 0, coordi = 0;
+    // Read each line and act on it as necessary
+    while (cs.getline(buf, sizeof buf))
+    {
+        if (*buf == '\0') continue;
+        char *cmd = strtok(buf, " ");
+
+        if (strcmp(cmd, "v") == 0)
+        {
+            // read the 3 floats, and pad with a fourth 1
+            verts[verti][0] = atof(strtok(NULL, " "));
+            verts[verti][1] = atof(strtok(NULL, " "));
+            verts[verti][2] = atof(strtok(NULL, " "));
+            verts[verti][3] = 1.f; // homogenous coords
+            ++verti;
+        }
+        else if (strcmp(cmd, "f") == 0)
+        {
+            // This assumes the faces are triangles
+            ffaces[facei].fverts[0] = parseFaceVert(strtok(NULL, " "));
+            ffaces[facei].fverts[1] = parseFaceVert(strtok(NULL, " "));
+            ffaces[facei].fverts[2] = parseFaceVert(strtok(NULL, " "));
+            ++facei;
+        }
+        else if (strcmp(cmd, "vn") == 0)
+        {
+            norms[normi][0] = atof(strtok(NULL, " "));
+            norms[normi][1] = atof(strtok(NULL, " "));
+            norms[normi][2] = atof(strtok(NULL, " "));
+            ++normi;
+        }
+        else if (strcmp(cmd, "vt") == 0)
+        {
+            coords[coordi][0] = atof(strtok(NULL, " "));
+            coords[coordi][1] = atof(strtok(NULL, " "));
+            ++coordi;
+        }
+    }
+
+    // Last texcoord could be dummy
+    if (coordi == 0)
+        coords[coordi++] = glm::vec2(0.f);
+
+    assert(verti == nverts);
+    assert(facei == nfaces);
+    assert(normi == nnorms);
+    assert(coordi == ncoords);
+
+    // 3 verts per face
+    *size = nfaces * 3;
+    vert_p4n4t2 *ret = (vert_p4n4t2 *) malloc(sizeof(vert_p4n4t2) * *size);
+    assert(ret);
+
+    size_t vi = 0;
+    for (size_t i = 0; i < nfaces; i++)
+    {
+        const fullface &ff = ffaces[i];
+
+        for (size_t j = 0; j < 3; j++)
+        {
+            size_t v = ff.fverts[j].v;
+            size_t vn = ff.fverts[j].vn;
+            size_t vt = ff.fverts[j].vt;
+            ret[vi].pos   = verts[v];
+            ret[vi].norm  = glm::vec4(norms[vn], 1.f);
+            ret[vi].coord = coords[vt];
+            ++vi;
+        }
+    }
+    assert(vi == *size);
+
+    free(ffaces);
+    free(norms);
+    free(verts);
+    free(coords);
+
+    *out = ret;
+    // size is already set
+    return 0;
 }
 
