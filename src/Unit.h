@@ -26,6 +26,7 @@ protected:
     float maxSpeed_;
     glm::vec3 vel_;
 
+    friend class NullState;
     friend class MoveState;
 };
 
@@ -56,8 +57,6 @@ public:
 
 protected:
     Unit *unit_;
-
-    friend class MoveState;
 };
 
 class NullState : public UnitState
@@ -66,7 +65,7 @@ public:
     explicit NullState(Unit *unit) : UnitState(unit) { }
     virtual ~NullState() { }
 
-    virtual void update(float dt) { }
+    virtual void update(float dt);
     virtual void stop() { }
     virtual UnitState * next() { return NULL; }
 };
@@ -83,5 +82,6 @@ public:
 
 protected:
     glm::vec3 target_;
+    float desired_angle_;
 };
 
