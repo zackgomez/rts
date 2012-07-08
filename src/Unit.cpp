@@ -15,8 +15,6 @@ Unit::Unit(int64_t playerID, const glm::vec3 &pos) :
 
     if (!logger_.get())
         logger_ = Logger::getLogger("Unit");
-
-    maxSpeed_ = getParam("unit.maxSpeed");
 }
 
 void Unit::handleMessage(const Message &msg)
@@ -71,7 +69,9 @@ bool Unit::needsRemoval() const
 
 void Unit::serialize(Json::Value &obj) const
 {
-    // TODO
+    obj["state"] = state_->getName();
+    obj["vel"] = toJson(vel_);
+    state_->serialize(obj);
 }
 
 void NullState::update(float dt)
@@ -85,17 +85,17 @@ MoveState::MoveState(const glm::vec3 &target, Unit *unit) :
 {
     // Make sure the unit stands on the terrain
     target_.y += unit_->getRadius(); 
-    glm::vec3 diff = target_ - unit_->pos_;
-    desired_angle_ = 180.0f * atan2(diff.z , diff.x) / M_PI;
 }
 
 void MoveState::update(float dt)
 {
-    // Turning
-	if (unit_->angle_ != desired_angle_)
+    glm::vec3 delta = target_ - unit_->pos_;
+    float desired_angle_ = 180.0f * atan2(delta.z , delta.x) / M_PI;
+    float delAngle = desired_angle_ - unit_->angle_;
+    // rotate
+	if (fabs(unit_->angle_ - desired_angle_) > 0.1f)
     {
         // Get delta in [-180, 180]
-        float delAngle = desired_angle_ - unit_->angle_;
         while (delAngle > 180.f) delAngle -= 360.f;
         while (delAngle < -180.f) delAngle += 360.f;
         float turnRate = getParam("unit.turnRate");
@@ -111,17 +111,23 @@ void MoveState::update(float dt)
             unit_->vel_ = glm::vec3(0.f);
         }
     }
-    // Moving
-	else
+    // move
+    else
     {
         float rad = M_PI / 180.f * unit_->angle_;
+        // And move, taking care to not overshoot
         glm::vec3 dir = glm::vec3(cosf(rad), 0, sinf(rad)); 
-        float speed = unit_->maxSpeed_;
+        float speed = getParam("unit.maxSpeed");
         float dist = glm::length(target_ - unit_->pos_);
         if (dist < speed * dt)
             speed = dist / dt;
-        unit_->vel_ = unit_->maxSpeed_ * dir;
+        unit_->vel_ = speed * dir;
     }
+}
+
+void MoveState::stop()
+{
+    unit_->vel_ = glm::vec3(0.f);
 }
 
 UnitState * MoveState::next()
@@ -134,3 +140,7 @@ UnitState * MoveState::next()
     return NULL;
 }
 
+void MoveState::serialize(Json::Value &obj)
+{
+    obj["target"] = toJson(target_);
+}

@@ -24,6 +24,7 @@ public:
     virtual void sendMessage(eid_t to, const Message &msg) = 0;
 
     virtual const Entity * getEntity(eid_t eid) const = 0;
+    virtual const Player * getPlayer(int64_t pid) const = 0;
 
 protected:
     std::set<Renderer *> renderers_;
@@ -39,7 +40,9 @@ public:
 
     virtual void update(float dt);
     virtual void sendMessage(eid_t to, const Message &msg);
+
     virtual const Entity * getEntity(eid_t eid) const;
+    virtual const Player * getPlayer(int64_t pid) const;
 
 protected:
     virtual void handleAction(int64_t playerID, const PlayerAction &action);

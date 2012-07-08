@@ -24,7 +24,6 @@ protected:
 
     UnitState *state_;
 
-    float maxSpeed_;
     glm::vec3 vel_;
 
     friend class NullState;
@@ -58,7 +57,8 @@ public:
     // Called each frame, when returns non NULL, sets new state
     virtual UnitState * next() = 0;
 
-    //virtual void serialize(Json::Value &obj) = 0;
+    virtual std::string getName() = 0;
+    virtual void serialize(Json::Value &obj) = 0;
 
 protected:
     Unit *unit_;
@@ -73,6 +73,9 @@ public:
     virtual void update(float dt);
     virtual void stop() { }
     virtual UnitState * next() { return NULL; }
+
+    virtual std::string getName() { return "NullState"; }
+    virtual void serialize(Json::Value &obj) { }
 };
 
 class MoveState : public UnitState
@@ -82,11 +85,13 @@ public:
     virtual ~MoveState() { }
 
     virtual void update(float dt);
-    virtual void stop() { }
+    virtual void stop();
     virtual UnitState * next();
+
+    virtual std::string getName() { return "MoveState"; }
+    virtual void serialize(Json::Value &obj);
 
 protected:
     glm::vec3 target_;
-    float desired_angle_;
 };
 

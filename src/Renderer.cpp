@@ -32,7 +32,7 @@ OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution)
     // unit model is based at 0, height 1, translate to center of model
     glm::mat4 unitMeshTrans =
         glm::scale(
-            glm::translate(glm::mat4(1.f), glm::vec3(0, -0.5f, 0)),
+            tglm::translate(glm::mat4(1.f), glm::vec3(0, -1.0f, 0)),
             glm::vec3(1, 0.5f, 1));
     setMeshTransform(unitMesh_, unitMeshTrans);
 }
@@ -68,8 +68,9 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
     ndcCoords_[entity] = glm::vec3(ndc);
 
     glm::vec3 modelPos = applyMatrix(
-        getViewStack().current(),// * transform,
-        entity->getPosition());
+        getViewStack().current() * transform,
+        glm::vec3(0.f));
+
     // TODO use these to fix unit shader lighting
     //logger_->info() << "modelpos: " << modelPos << " lightpos: " << lightPos_ << '\n';
     //logger_->info() << "delta: " << lightPos_ - modelPos << '\n';

@@ -23,6 +23,10 @@ std::string Entity::serialize() const
 	Json::Value obj;
 	obj["type"] = getType();
 	obj["id"] = (Json::Value::UInt64) id_;
+	obj["pid"] = (Json::Value::Int64) playerID_;
+    obj["pos"] = toJson(pos_);
+    obj["angle"] = angle_;
+    obj["r"] = radius_;
 
 	serialize(obj);
 

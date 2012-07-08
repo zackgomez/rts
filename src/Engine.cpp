@@ -160,7 +160,7 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m)
 		return;
 	}
     const glm::mat4 projMatrix = projStack.current();
-    const glm::mat4 modelViewMatrix = viewStack.current() * modelMatrix;// * m->transform;
+    const glm::mat4 modelViewMatrix = viewStack.current() * modelMatrix * m->transform;
     const glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelViewMatrix));
 
     // Uniform locations

@@ -103,6 +103,15 @@ const Entity * HostGame::getEntity(eid_t eid) const
     return it == entities_.end() ? NULL : it->second;
 }
 
+const Player * HostGame::getPlayer(int64_t pid) const
+{
+    for (auto player : players_)
+        if (player->getPlayerID() == pid)
+            return player;
+
+    return NULL;
+}
+
 void HostGame::handleAction(int64_t playerID, const PlayerAction &action)
 {
     std::cout << "[" << playerID
