@@ -18,6 +18,7 @@ public:
     virtual ~Game();
 
     virtual void update(float dt) = 0;
+    virtual void render(float dt) = 0;
     virtual void addRenderer(Renderer *renderer);
     virtual const Map * getMap() const { return map_; }
 
@@ -38,6 +39,7 @@ public:
     virtual ~HostGame();
 
     virtual void update(float dt);
+    virtual void render(float dt);
     virtual void sendMessage(eid_t to, const Message &msg);
     virtual const Entity * getEntity(eid_t eid) const;
 
