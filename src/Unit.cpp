@@ -3,7 +3,6 @@
 #include "math.h"
 
 LoggerPtr unitLogger;
-bool reached_;
 
 Unit::Unit(int64_t playerID) :
     Entity(playerID),
@@ -11,14 +10,11 @@ Unit::Unit(int64_t playerID) :
 {
     pos_ = glm::vec3(0, 0.5f, 0);
     radius_ = 0.5f;
-    angle_ = 0;
-    desired_angle_ = 0;
-    dir_ = glm::vec2(cos(angle_*M_PI/180),
-					 sin(angle_*M_PI/180));
+    angle_ = 0.f;
+    vel_ = glm::vec3(0.f);
 
     unitLogger = Logger::getLogger("Unit");
 
-    vel_ = glm::vec3(0.f);
     maxSpeed_ = getParam("unit.maxSpeed");
 }
 
@@ -38,9 +34,15 @@ void Unit::update(float dt)
 {
     state_->update(dt);
 
-    dir_ = glm::vec2(cos(angle_*M_PI/180),
-    				 sin(angle_*M_PI/180));
-    pos_ += glm::vec3(vel_.x * dir_.x, 0.f, vel_.z * dir_.y);
+    UnitState *next;
+    if ((next = state_->next()))
+    {
+        unitLogger->debug() << "changin state\n";
+        delete state_;
+        state_ = next;
+    }
+
+    pos_ += vel_ * dt;
 
 }
 
@@ -54,47 +56,44 @@ void Unit::serialize(Json::Value &obj) const
     // TODO
 }
 
+void NullState::update(float dt)
+{
+    unit_->vel_ = glm::vec3(0.f);
+}
+
 MoveState::MoveState(const glm::vec3 &target, Unit *unit) :
     UnitState(unit),
     target_(target)
 {
     // Make sure the unit stands on the terrain
     target_.y += unit_->getRadius(); 
-    reached_ = false;
-    unit_->vel_ = unit_->maxSpeed_ * (target_ - unit_->getPosition());
     glm::vec3 diff = target_ - unit_->pos_;
-    unit_->desired_angle_ = 180.0f * atan2(diff.z , diff.x) / M_PI;
-    unit_->vel_ = glm::vec3(0.05f);
+    desired_angle_ = 180.0f * atan2(diff.z , diff.x) / M_PI;
 }
 
 void MoveState::update(float dt)
 {
-	if (reached_)
-		return;
-
-	float radius = unit_->getRadius();
-	glm::vec3 diff = target_ - unit_->pos_;
-	if (fabs(diff.x) <= radius &&
-		fabs(diff.y) <= radius &&
-		fabs(diff.z) <= radius)
-	{
-		unit_->vel_ = glm::vec3(0.f);
-		reached_ = true;
-	}
-
-	else if (abs(unit_->desired_angle_ - unit_->angle_) > 2)
-	{
-		unit_->angle_ += (unit_->desired_angle_ - unit_->angle_)/30;
-		unit_->vel_ = glm::vec3(0.f);
-	}
-
+	if (abs(desired_angle_ - unit_->angle_) > 2)
+    {
+		unit_->angle_ += (desired_angle_ - unit_->angle_)/30;
+        unit_->vel_ = glm::vec3(0.f);
+    }
 	else
-	{
-		unit_->vel_ = glm::vec3(0.05f);
-	}
+    {
+        float rad = M_PI / 180.f * unit_->angle_;
+        unit_->vel_ = unit_->maxSpeed_ * glm::vec3(cosf(rad), 0, sinf(rad)); 
+    }
 }
 
 UnitState * MoveState::next()
 {
+    glm::vec3 diff = target_ - unit_->pos_;
+    float dist = glm::length(diff);
+    unitLogger->debug() << "target: " << target_ << " pos: " << unit_->pos_ << '\n';
+    unitLogger->debug() << "diff: " << diff << " dist : " << dist << '\n';
+    unitLogger->debug() << '\n';
+
+    if (dist < unit_->getRadius())
+        return new NullState(unit_);
     return NULL;
 }
