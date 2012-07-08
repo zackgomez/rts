@@ -2,18 +2,19 @@
 #include "ParamReader.h"
 #include "math.h"
 
-LoggerPtr unitLogger;
+LoggerPtr Unit::logger_;
 
-Unit::Unit(int64_t playerID) :
+Unit::Unit(int64_t playerID, const glm::vec3 &pos) :
     Entity(playerID),
     state_(new NullState(this))
 {
-    pos_ = glm::vec3(0, 0.5f, 0);
+    pos_ = pos;
     radius_ = 0.5f;
     angle_ = 0.f;
     vel_ = glm::vec3(0.f);
 
-    unitLogger = Logger::getLogger("Unit");
+    if (!logger_.get())
+        logger_ = Logger::getLogger("Unit");
 
     maxSpeed_ = getParam("unit.maxSpeed");
 }
@@ -23,17 +24,29 @@ void Unit::handleMessage(const Message &msg)
     if (msg["type"] == MessageTypes::ORDER &&
         msg["order_type"] == OrderTypes::MOVE)
     {
-        unitLogger->info() << "Got a move order\n";
+        logger_->info() << "Got a move order\n";
         state_->stop();
         delete state_;
         state_ = new MoveState(toVec3(msg["target"]), this);
     }
-
     else if (msg["type"] == MessageTypes::ORDER &&
             msg["order_type"] == OrderTypes::ATTACK)
     {
-    	unitLogger->info() << "Got an attack order\n";
-    	unitLogger->info() << "Imma go nuts on you id: " << msg["enemy_id"] << "\n";
+    	logger_->info() << "Got an attack order\n";
+    	logger_->info() << "Imma go nuts on you id: " << msg["enemy_id"] << "\n";
+    }
+    else if (msg["type"] == MessageTypes::ORDER &&
+            msg["order_type"] == OrderTypes::STOP)
+    {
+        logger_->info() << "Got a move order\n";
+        state_->stop();
+        delete state_;
+        state_ = new NullState(this);
+    }
+    else
+    {
+        logger_->warning() << "Unit got unknown message: "
+            << msg.toStyledString() << '\n';
     }
 }
 

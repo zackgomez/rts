@@ -3,6 +3,7 @@
 #include "Renderer.h"
 #include "ParamReader.h"
 #include "Entity.h"
+#include "Game.h"
 
 LocalPlayer::LocalPlayer(int64_t playerID, OpenGLRenderer *renderer) :
     Player(playerID)
@@ -76,65 +77,72 @@ LocalPlayer::handleEvent(const SDL_Event &event) {
         else if (event.key.keysym.sym == SDLK_g) {
             SDL_WM_GrabInput(SDL_GRAB_ON);
         }
+        else if (event.key.keysym.sym == SDLK_s) {
+            if (selection_)
+            {
+                PlayerAction action;
+                action["type"] = ActionTypes::STOP;
+                action["entity"] = (Json::Value::UInt64) selection_;
+                actions_.push(action);
+            }
+        }
+        /* XXX(zack) I commented this out
         if (selection_) {
         	log->info() << event.key.keysym.sym << "\n";
         }
+        */
 
 
         break;
     case SDL_MOUSEBUTTONUP:
-        const glm::vec2 &res = renderer_->getResolution ();
-        /*
-        glm::vec2 screenCoord = glm::vec2 (
-                event.button.x / res.x,
-                1 - (event.button.y / res.y));
-                */
         glm::vec2 screenCoord = glm::vec2(event.button.x, event.button.y);
+        glm::vec3 loc = renderer_->screenToTerrain (screenCoord);
+        // The entity (maybe) under the cursor
+        eid_t eid = renderer_->selectEntity(screenCoord);
+        const Entity *entity = game_->getEntity(eid);
 
         if (event.button.button == SDL_BUTTON_LEFT)
         {
-            setSelection (renderer_->selectEntity (screenCoord));
+            // If there is an entity and its ours, select
+            if (entity && entity->getPlayerID() == playerID_)
+                setSelection (eid);
+            // Otherwise deselect
+            else 
+                setSelection (0);
         }
         else if (event.button.button == SDL_BUTTON_RIGHT)
         {
-        	eid_t enemy;
-        	if ((enemy = renderer_->selectEntity (screenCoord)) && selection_ != NO_ENTITY)
+            // If right clicked on enemy unit (and we have a selection)
+            // go attack them
+        	if (entity && entity->getPlayerID() != playerID_ && selection_ != NO_ENTITY)
         	{
-        		glm::vec3 target = renderer_->screenToTerrain (screenCoord);
-        		if (target != glm::vec3 (HUGE_VAL))
-        		{
-        			// Visual feedback
-        		    renderer_->highlight(glm::vec2(target.x, target.z));
+                // Visual feedback
+                // TODO make this something related to the unit clicked on
+                renderer_->highlight(glm::vec2(loc.x, loc.z));
 
-        		    // Queue up action
-        			PlayerAction action;
-        		    action["type"] = ActionTypes::ATTACK;
-        		    action["entity"] = (Json::Value::UInt64) selection_;
-        		    action["target"] = toJson(target);
-        		    // TODO enemy id is incorrect.
-        		    action["enemy_id"] = (Json::Value::UInt64) enemy;
-        		    actions_.push(action);
-        		}
-
+                // Queue up action
+                PlayerAction action;
+                action["type"] = ActionTypes::ATTACK;
+                action["entity"] = (Json::Value::UInt64) selection_;
+                action["enemy_id"] = (Json::Value::UInt64) eid;
+                actions_.push(action);
         	}
-
+            // If we have a selection, move them to target
         	else if (selection_ != NO_ENTITY)
             {
-                glm::vec3 target = renderer_->screenToTerrain (screenCoord);
-                if (target != glm::vec3 (HUGE_VAL))
+                if (loc != glm::vec3 (HUGE_VAL))
                 {
                     // Visual feedback
-                    renderer_->highlight(glm::vec2(target.x, target.z));
+                    renderer_->highlight(glm::vec2(loc.x, loc.z));
 
                     // Queue up action
                     PlayerAction action;
                     action["type"] = ActionTypes::MOVE;
                     action["entity"] = (Json::Value::UInt64) selection_;
-                    action["target"] = toJson(target);
+                    action["target"] = toJson(loc);
                     actions_.push(action);
                 }
             }
-                
         }
         break;
     }

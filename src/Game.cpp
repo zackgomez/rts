@@ -19,15 +19,19 @@ void Game::addRenderer(Renderer *renderer)
 
 HostGame::HostGame(Map *map, const std::vector<Player *> &players) :
     Game(map)
-    ,   players_(players)
+,   players_(players)
 {
     logger_ = Logger::getLogger("HostGame");
 
     MessageHub::get()->setGame(this);
 
+    for (auto player : players)
+        player->setGame(this);
+
     // TODO generalize this
-    for (int i = 0; i < 1; i++) {
-    	Unit *u = new Unit(1);
+    for (int i = 0; i < 2; i++) {
+        glm::vec3 pos(-0.5f + i, 0.5f, 0.f);
+    	Unit *u = new Unit(i + 1, pos);
     	entities_[u->getID()] = u;
     }
 }
@@ -93,6 +97,12 @@ void HostGame::sendMessage(eid_t to, const Message &msg)
     it->second->handleMessage(msg);
 }
 
+const Entity * HostGame::getEntity(eid_t eid) const
+{
+    auto it = entities_.find(eid);
+    return it == entities_.end() ? NULL : it->second;
+}
+
 void HostGame::handleAction(int64_t playerID, const PlayerAction &action)
 {
     std::cout << "[" << playerID
@@ -111,13 +121,22 @@ void HostGame::handleAction(int64_t playerID, const PlayerAction &action)
     }
     else if (action["type"] == ActionTypes::ATTACK)
     {
-    	// Generate a message to target entity with move order
+    	// Generate a message to target entity with attack order
     	Message msg;
     	msg["to"] = action["entity"];
     	msg["type"] = MessageTypes::ORDER;
     	msg["order_type"] = OrderTypes::ATTACK;
     	msg["target"] = action["target"];
     	msg["enemy_id"] = action["enemy_id"];
+
+    	MessageHub::get()->sendMessage(msg);
+    }
+    else if (action["type"] == ActionTypes::STOP)
+    {
+        Message msg;
+    	msg["to"] = action["entity"];
+    	msg["type"] = MessageTypes::ORDER;
+    	msg["order_type"] = OrderTypes::STOP;
 
     	MessageHub::get()->sendMessage(msg);
     }

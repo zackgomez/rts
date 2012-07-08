@@ -1,6 +1,7 @@
 #pragma once
 #include "Entity.h"
 #include <glm/glm.hpp>
+#include "Logger.h"
 
 class UnitState;
 class MoveState;
@@ -9,7 +10,7 @@ class Unit :
     public Entity
 {
 public:
-    explicit Unit(int64_t playerID);
+    explicit Unit(int64_t playerID, const glm::vec3 &pos);
     virtual ~Unit() { }
 
     virtual std::string getType() const { return "Unit"; }
@@ -28,6 +29,9 @@ protected:
 
     friend class NullState;
     friend class MoveState;
+
+private:
+    static LoggerPtr logger_;
 };
 
 

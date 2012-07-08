@@ -70,8 +70,9 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
     glm::vec3 modelPos = applyMatrix(
         getViewStack().current(),// * transform,
         entity->getPosition());
+    // TODO use these to fix unit shader lighting
     //logger_->info() << "modelpos: " << modelPos << " lightpos: " << lightPos_ << '\n';
-    logger_->info() << "delta: " << lightPos_ - modelPos << '\n';
+    //logger_->info() << "delta: " << lightPos_ - modelPos << '\n';
 }
 
 void OpenGLRenderer::renderMap(const Map *map)
@@ -140,7 +141,6 @@ void OpenGLRenderer::startRender(float dt)
 
     // Set up lights
     lightPos_ = applyMatrix(getViewStack().current(), glm::vec3(-5, 10, -5));
-    logger_->info() << "Light pos: " << lightPos_ << '\n';
 
     // Clear coordinates
     ndcCoords_.clear();

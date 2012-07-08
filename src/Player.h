@@ -7,20 +7,24 @@
 #include "PlayerAction.h"
 
 class OpenGLRenderer;
+class Game;
 
 class Player
 {
 public:
-    Player(int64_t playerID) : playerID_(playerID) { }
+    Player(int64_t playerID) : playerID_(playerID), game_(NULL) { }
     virtual ~Player() {}
 
     int64_t getPlayerID() const { return playerID_; }
+
+    void setGame(Game *game) { game_ = game; }
 
     virtual void update(float dt) = 0;
     virtual PlayerAction getAction() = 0;
 
 protected:
     int64_t playerID_;
+    Game *game_;
 };
 
 class LocalPlayer : public Player
