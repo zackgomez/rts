@@ -38,7 +38,7 @@ void OpenGLRenderer::render(const Entity *entity)
     const glm::vec3 &pos = entity->getPosition();
     float rotAngle = -entity->getAngle();
 
-    logger_->info() << "rendering entity with angle " << rotAngle << '\n';
+    //logger_->info() << "rendering entity with angle " << rotAngle << '\n';
 
     glm::mat4 transform = glm::scale(
             glm::rotate(

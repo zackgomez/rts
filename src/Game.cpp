@@ -26,8 +26,10 @@ HostGame::HostGame(Map *map, const std::vector<Player *> &players) :
     MessageHub::get()->setGame(this);
 
     // TODO generalize this
-    Unit *u = new Unit(1);
-    entities_[u->getID()] = u;
+    for (int i = 0; i < 10; i++) {
+    	Unit *u = new Unit(1);
+    	entities_[u->getID()] = u;
+    }
 }
 
 HostGame::~HostGame()
@@ -106,6 +108,18 @@ void HostGame::handleAction(int64_t playerID, const PlayerAction &action)
         msg["target"] = action["target"];
 
         MessageHub::get()->sendMessage(msg);
+    }
+    else if (action["type"] == ActionTypes::ATTACK)
+    {
+    	// Generate a message to target entity with move order
+    	Message msg;
+    	msg["to"] = action["entity"];
+    	msg["type"] = MessageTypes::ORDER;
+    	msg["order_type"] = OrderTypes::ATTACK;
+    	msg["target"] = action["target"];
+    	msg["enemy_id"] = action["enemy_id"];
+
+    	MessageHub::get()->sendMessage(msg);
     }
     else
     {
