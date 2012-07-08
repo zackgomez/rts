@@ -108,13 +108,14 @@ LocalPlayer::handleEvent(const SDL_Event &event) {
         		    action["type"] = ActionTypes::ATTACK;
         		    action["entity"] = (Json::Value::UInt64) selection_;
         		    action["target"] = toJson(target);
+        		    // TODO enemy id is incorrect.
         		    action["enemy_id"] = (Json::Value::UInt64) enemy;
         		    actions_.push(action);
         		}
 
         	}
 
-            if (selection_ != NO_ENTITY)
+        	else if (selection_ != NO_ENTITY)
             {
                 glm::vec3 target = renderer_->screenToTerrain (screenCoord);
                 if (target != glm::vec3 (HUGE_VAL))

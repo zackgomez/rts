@@ -28,6 +28,13 @@ void Unit::handleMessage(const Message &msg)
         delete state_;
         state_ = new MoveState(toVec3(msg["target"]), this);
     }
+
+    else if (msg["type"] == MessageTypes::ORDER &&
+            msg["order_type"] == OrderTypes::ATTACK)
+    {
+    	unitLogger->info() << "Got an attack order\n";
+    	unitLogger->info() << "Imma go nuts on you id: " << msg["enemy_id"] << "\n";
+    }
 }
 
 void Unit::update(float dt)
@@ -89,9 +96,9 @@ UnitState * MoveState::next()
 {
     glm::vec3 diff = target_ - unit_->pos_;
     float dist = glm::length(diff);
-    unitLogger->debug() << "target: " << target_ << " pos: " << unit_->pos_ << '\n';
-    unitLogger->debug() << "diff: " << diff << " dist : " << dist << '\n';
-    unitLogger->debug() << '\n';
+    //unitLogger->debug() << "target: " << target_ << " pos: " << unit_->pos_ << '\n';
+    //unitLogger->debug() << "diff: " << diff << " dist : " << dist << '\n';
+    //unitLogger->debug() << '\n';
 
     if (dist < unit_->getRadius())
         return new NullState(unit_);
