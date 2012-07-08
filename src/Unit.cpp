@@ -44,7 +44,6 @@ void Unit::update(float dt)
     UnitState *next;
     if ((next = state_->next()))
     {
-        unitLogger->debug() << "changin state\n";
         delete state_;
         state_ = next;
     }
@@ -103,7 +102,12 @@ void MoveState::update(float dt)
 	else
     {
         float rad = M_PI / 180.f * unit_->angle_;
-        unit_->vel_ = unit_->maxSpeed_ * glm::vec3(cosf(rad), 0, sinf(rad)); 
+        glm::vec3 dir = glm::vec3(cosf(rad), 0, sinf(rad)); 
+        float speed = unit_->maxSpeed_;
+        float dist = glm::length(target_ - unit_->pos_);
+        if (dist < speed * dt)
+            speed = dist / dt;
+        unit_->vel_ = unit_->maxSpeed_ * dir;
     }
 }
 
@@ -112,7 +116,8 @@ UnitState * MoveState::next()
     glm::vec3 diff = target_ - unit_->pos_;
     float dist = glm::length(diff);
 
-    if (dist < unit_->getRadius())
+    if (dist < unit_->getRadius() / 10.f)
         return new NullState(unit_);
     return NULL;
 }
+
