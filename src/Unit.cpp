@@ -89,16 +89,20 @@ MoveState::MoveState(const glm::vec3 &target, Unit *unit) :
 
 void MoveState::update(float dt)
 {
+    // Calculate some useful values
     glm::vec3 delta = target_ - unit_->pos_;
+    float dist = glm::length(target_ - unit_->pos_);
     float desired_angle = 180.0f * atan2(delta.z , delta.x) / M_PI;
     float delAngle = desired_angle - unit_->angle_;
+    float speed = getParam("unit.maxSpeed");
+    float turnRate = getParam("unit.turnRate");
     // rotate
-	if (fabs(delAngle) > 0.1f)
+    // only rotate when not close enough
+	if (dist > speed * dt)
     {
         // Get delta in [-180, 180]
         while (delAngle > 180.f) delAngle -= 360.f;
         while (delAngle < -180.f) delAngle += 360.f;
-        float turnRate = getParam("unit.turnRate");
         // Would overshoot, just set angle
         if (fabs(delAngle) < turnRate * dt)
             unit_->angle_ = desired_angle;
@@ -116,8 +120,6 @@ void MoveState::update(float dt)
     float rad = M_PI / 180.f * unit_->angle_;
     // And move, taking care to not overshoot
     glm::vec3 dir = glm::vec3(cosf(rad), 0, sinf(rad)); 
-    float speed = getParam("unit.maxSpeed");
-    float dist = glm::length(target_ - unit_->pos_);
     if (dist < speed * dt)
         speed = dist / dt;
     unit_->vel_ = speed * dir;
@@ -133,7 +135,7 @@ UnitState * MoveState::next()
     glm::vec3 diff = target_ - unit_->pos_;
     float dist = glm::length(diff);
 
-    if (dist < unit_->getRadius() / 10.f)
+    if (dist < unit_->getRadius() / 2.f)
         return new NullState(unit_);
     return NULL;
 }

@@ -9,4 +9,4 @@ camera.panspeed 10.0
 camera.panspeed.key 0.1
 
 unit.maxSpeed 3.0
-unit.turnRate 180.0
+unit.turnRate 800.0
