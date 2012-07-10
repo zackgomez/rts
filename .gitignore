@@ -1,2 +1,4 @@
 obj
 rts
+*.dll
+rts.exe

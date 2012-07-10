@@ -73,6 +73,7 @@ float ParamReader::getFloat(const std::string &key) const
     {
         logger_->fatal() << "Unable to find [float] key " << key << '\n';
         assert(false && "Key not found in params");
+		return 0.f;
     }
     else
         return it->second;
@@ -85,6 +86,7 @@ const std::string & ParamReader::getString(const std::string &key) const
     {
         logger_->fatal() << "Unable to find [string] key " << key << '\n';
         assert(false && "Key not found in params");
+		return "";
     }
     else
         return it->second;

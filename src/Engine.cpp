@@ -156,7 +156,7 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m)
 	glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*) &program);
 	if (!program)
 	{
-		logger->warning() << "No active program on call to " << __PRETTY_FUNCTION__ << "\n";
+		logger->warning() << "No active program on call to " << __FUNCTION__ << "\n";
 		return;
 	}
     const glm::mat4 projMatrix = projStack.current();
