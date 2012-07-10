@@ -20,6 +20,7 @@ public:
     void setGame(Game *game) { game_ = game; }
 
     virtual void update(float dt) = 0;
+    virtual void renderUpdate(float dt) = 0;
     virtual PlayerAction getAction() = 0;
 
 protected:
@@ -34,6 +35,7 @@ public:
     virtual ~LocalPlayer();
 
     virtual void update(float dt);
+    virtual void renderUpdate(float dt);
     virtual PlayerAction getAction();
 
     virtual void handleEvent(const SDL_Event &event);

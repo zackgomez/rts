@@ -2,6 +2,7 @@
 #include "glm.h"
 #include <set>
 #include <vector>
+#include <mutex>
 #include "PlayerAction.h"
 #include "Logger.h"
 #include "Entity.h"
@@ -50,6 +51,8 @@ protected:
     virtual void handleAction(int64_t playerID, const PlayerAction &action);
 
     LoggerPtr logger_;
+
+    std::mutex mutex_;
 
     std::vector<Player *> players_;
     std::map<eid_t, Entity *> entities_;

@@ -90,20 +90,21 @@ MoveState::MoveState(const glm::vec3 &target, Unit *unit) :
 void MoveState::update(float dt)
 {
     glm::vec3 delta = target_ - unit_->pos_;
-    float desired_angle_ = 180.0f * atan2(delta.z , delta.x) / M_PI;
-    float delAngle = desired_angle_ - unit_->angle_;
+    float desired_angle = 180.0f * atan2(delta.z , delta.x) / M_PI;
+    float delAngle = desired_angle - unit_->angle_;
     // rotate
-	if (fabs(unit_->angle_ - desired_angle_) > 0.1f)
+	if (fabs(delAngle) > 0.1f)
     {
         // Get delta in [-180, 180]
         while (delAngle > 180.f) delAngle -= 360.f;
         while (delAngle < -180.f) delAngle += 360.f;
         float turnRate = getParam("unit.turnRate");
         // Would overshoot, just set angle
-        if (glm::sign(delAngle) != glm::sign(delAngle + turnRate * dt))
-            unit_->angle_ = desired_angle_;
+        if (fabs(delAngle) < turnRate * dt)
+            unit_->angle_ = desired_angle;
         else
         {
+            unit_->logger_->debug() << "delangle: " << delAngle << '\n';
             unit_->angle_ += glm::sign(delAngle) * turnRate * dt;
             while (unit_->angle_ > 360.f) unit_->angle_ -= 360.f;
             while (unit_->angle_ < 0.f) unit_->angle_ += 360.f;
@@ -112,17 +113,14 @@ void MoveState::update(float dt)
         }
     }
     // move
-    else
-    {
-        float rad = M_PI / 180.f * unit_->angle_;
-        // And move, taking care to not overshoot
-        glm::vec3 dir = glm::vec3(cosf(rad), 0, sinf(rad)); 
-        float speed = getParam("unit.maxSpeed");
-        float dist = glm::length(target_ - unit_->pos_);
-        if (dist < speed * dt)
-            speed = dist / dt;
-        unit_->vel_ = speed * dir;
-    }
+    float rad = M_PI / 180.f * unit_->angle_;
+    // And move, taking care to not overshoot
+    glm::vec3 dir = glm::vec3(cosf(rad), 0, sinf(rad)); 
+    float speed = getParam("unit.maxSpeed");
+    float dist = glm::length(target_ - unit_->pos_);
+    if (dist < speed * dt)
+        speed = dist / dt;
+    unit_->vel_ = speed * dir;
 }
 
 void MoveState::stop()
