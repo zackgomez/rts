@@ -12,7 +12,7 @@
 LoggerPtr OpenGLRenderer::logger_;
 
 OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution)
-:   cameraPos_(0.f, 4.f, 0.f)
+:   cameraPos_(0.f, 5.f, 0.f)
 ,   resolution_(resolution)
 ,   selection_(NO_ENTITY)
 {
@@ -32,7 +32,7 @@ OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution)
     // unit model is based at 0, height 1, translate to center of model
     glm::mat4 unitMeshTrans =
         glm::scale(
-            tglm::translate(glm::mat4(1.f), glm::vec3(0, -1.0f, 0)),
+            glm::translate(glm::mat4(1.f), glm::vec3(0, -0.5f, 0)),
             glm::vec3(1, 0.5f, 1));
     setMeshTransform(unitMesh_, unitMeshTrans);
 }
