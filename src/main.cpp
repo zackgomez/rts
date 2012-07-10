@@ -10,6 +10,7 @@
 #include "Player.h"
 #include "Map.h"
 #include "Engine.h"
+#include <thread>
 
 void mainloop();
 void render();
@@ -39,6 +40,21 @@ int main (int argc, char **argv)
     return 0;
 }
 
+void gameThread()
+{
+    const float simrate = getParam("simrate");
+    const float simdt = 1.f / simrate;
+    while (running)
+    {
+        uint32_t start = SDL_GetTicks();
+        game->update(simdt);
+
+        uint32_t end = SDL_GetTicks();
+
+        SDL_Delay(int(1000*simdt));
+    }
+}
+
 void mainloop()
 {
     glm::vec2 res(getParam("resolution.x"), getParam("resolution.y"));
@@ -52,15 +68,18 @@ void mainloop()
 
     running = true;
 
+    std::thread gamet(gameThread);
+    // render loop
     while (running)
     {
+        uint32_t start = SDL_GetTicks();
         handleInput();
-
-        game->update(fps);
         game->render(fps);
         // Regulate frame rate
         SDL_Delay(int(1000*fps));
     }
+
+    gamet.join();
 }
 
 void handleInput()

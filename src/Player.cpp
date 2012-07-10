@@ -18,6 +18,11 @@ LocalPlayer::~LocalPlayer()
 
 void LocalPlayer::update(float dt)
 {
+    // TODO what would go here?
+}
+
+void LocalPlayer::renderUpdate(float dt)
+{
     int x, y, buttons;
     buttons = SDL_GetMouseState(&x, &y);
     const glm::vec2 &res = renderer_->getResolution();

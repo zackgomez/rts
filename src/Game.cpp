@@ -43,7 +43,8 @@ HostGame::~HostGame()
 
 void HostGame::update(float dt)
 {
-    // TODO lock
+    // lock
+    std::unique_lock<std::mutex> lock(mutex_);
     // Update players
     for (auto &player : players_)
     {
@@ -70,7 +71,7 @@ void HostGame::update(float dt)
             deadEnts.push_back(entity->getID());
     }
     // TODO remove deadEnts
-    // TODO unlock
+    // TODO unlock automatically when lock goes out of scope
 }
 
 void HostGame::render(float dt)
@@ -79,14 +80,21 @@ void HostGame::render(float dt)
     for (auto &renderer : renderers_)
         renderer->startRender(dt);
 
-    // TODO lock
+    // lock
+    std::unique_lock<std::mutex> lock(mutex_);
+
+    for (auto &player : players_)
+        player->renderUpdate(dt);
+
     for (auto &renderer : renderers_)
     renderer->renderMap(map_);
 
     for (auto &it : entities_)
         for (auto &renderer : renderers_)
             renderer->renderEntity(it.second);
-    // TODO unlock
+
+    // unlock
+    lock.unlock();
 
     for (auto &renderer : renderers_)
         renderer->endRender();
