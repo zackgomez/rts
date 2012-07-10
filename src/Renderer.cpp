@@ -8,6 +8,7 @@
 #include "Entity.h"
 #include "Map.h"
 #include "Game.h"
+#include "Unit.h"
 
 LoggerPtr OpenGLRenderer::logger_;
 
@@ -43,13 +44,25 @@ OpenGLRenderer::~OpenGLRenderer()
 
 void OpenGLRenderer::renderEntity(const Entity *entity)
 {
-    const glm::vec3 &pos = entity->getPosition();
-    float rotAngle = -entity->getAngle();
+    glm::vec3 pos = entity->getPosition();
+    float rotAngle = entity->getAngle();
+
+    // Interpolate if they move
+    // TODO(zack) perhaps move speeds into entity?
+    if (entity->getType() == Unit::TYPE)
+    {
+        const Unit *unit = (const Unit *) entity;
+        rotAngle += unit->getTurnSpeed() * simdt_;
+        float rad = deg2rad(rotAngle);
+        glm::vec3 vel = unit->getSpeed() * glm::vec3(cosf(rad), 0, sinf(rad)); 
+        pos += vel * simdt_;
+    }
 
     glm::mat4 transform = glm::scale(
             glm::rotate(
                 glm::translate(glm::mat4(1.f), pos),
-                rotAngle, glm::vec3(0, 1, 0)),
+                // TODO(zack) why does rotAngle need to be negative here?
+                -rotAngle, glm::vec3(0, 1, 0)),
             glm::vec3(entity->getRadius() / 0.5f));
 
     // if selected draw as green
@@ -71,7 +84,7 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
         getViewStack().current() * transform,
         glm::vec3(0.f));
 
-    // TODO use these to fix unit shader lighting
+    // TODO(zack) use these to fix unit shader lighting
     //logger_->info() << "modelpos: " << modelPos << " lightpos: " << lightPos_ << '\n';
     //logger_->info() << "delta: " << lightPos_ - modelPos << '\n';
 }
@@ -96,7 +109,7 @@ void OpenGLRenderer::renderMap(const Map *map)
     // Render each of the highlights
     for (auto& hl : highlights_)
     {
-        hl.remaining -= dt_;
+        hl.remaining -= renderdt_;
         glm::mat4 transform =
             glm::scale(
                     glm::rotate(
@@ -122,7 +135,15 @@ void OpenGLRenderer::renderMap(const Map *map)
 
 void OpenGLRenderer::startRender(float dt)
 {
-    dt_ = dt;
+    uint64_t tick = game_->getTick();
+    if (lastTick_ != tick)
+    {
+        lastTick_ = tick;
+        simdt_ = 0.f;
+    }
+    else
+        simdt_ += dt;
+    renderdt_ = dt;
 
     glClearColor(0.f, 0.f, 0.f, 0.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -61,7 +61,11 @@ private:
     glm::vec3 cameraPos_;
     glm::vec3 lightPos_;
     glm::vec2 resolution_;
-    float dt_;
+    // Used to interpolate, last tick seen, and dt since last tick
+    uint64_t lastTick_;
+    float simdt_;
+    // For updating purely render aspects
+    float renderdt_;
 
     GLuint mapProgram_;
     GLuint unitProgram_;

@@ -17,8 +17,8 @@ void Game::addRenderer(Renderer *renderer)
 }
 
 
-HostGame::HostGame(Map *map, const std::vector<Player *> &players) :
-    Game(map)
+HostGame::HostGame(Map *map, const std::vector<Player *> &players)
+:   Game(map)
 ,   players_(players)
 {
     logger_ = Logger::getLogger("HostGame");
@@ -45,6 +45,9 @@ void HostGame::update(float dt)
 {
     // lock
     std::unique_lock<std::mutex> lock(mutex_);
+    // Next tick
+    tick_++;
+
     // Update players
     for (auto &player : players_)
     {

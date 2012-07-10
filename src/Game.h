@@ -15,13 +15,14 @@ class Player;
 class Game
 {
 public:
-    explicit Game(Map *map) : map_(map) { }
+    explicit Game(Map *map) : map_(map), tick_(0) { }
     virtual ~Game();
 
     virtual void update(float dt) = 0;
     virtual void render(float dt) = 0;
     virtual void addRenderer(Renderer *renderer);
     virtual const Map * getMap() const { return map_; }
+    virtual uint64_t getTick() const { return tick_; }
 
     virtual void sendMessage(eid_t to, const Message &msg) = 0;
 
@@ -31,6 +32,7 @@ public:
 protected:
     std::set<Renderer *> renderers_;
     Map *map_;
+    uint64_t tick_;
 };
 
 // Actually runs the game logic

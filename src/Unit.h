@@ -13,7 +13,10 @@ public:
     explicit Unit(int64_t playerID, const glm::vec3 &pos);
     virtual ~Unit() { }
 
-    virtual std::string getType() const { return "Unit"; }
+    static const std::string TYPE;
+    virtual std::string getType() const { return TYPE; }
+    virtual float getSpeed() const { return speed_; }
+    virtual float getTurnSpeed() const { return turnSpeed_; }
 
     virtual void handleMessage(const Message &msg);
     virtual void update(float dt);
