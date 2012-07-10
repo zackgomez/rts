@@ -37,10 +37,7 @@ public:
     // When true, will be destructed by engine
     virtual bool needsRemoval() const = 0;
 
-    std::string serialize() const;
-
 protected:
-    virtual void serialize(Json::Value &obj) const = 0;
 
     glm::vec3 pos_;
     float angle_;

@@ -11,7 +11,8 @@ Unit::Unit(int64_t playerID, const glm::vec3 &pos) :
     pos_ = pos;
     radius_ = 0.5f;
     angle_ = 0.f;
-    vel_ = glm::vec3(0.f);
+    speed_ = 0.f;
+    turnSpeed_ = 0.f;
 
     if (!logger_.get())
         logger_ = Logger::getLogger("Unit");
@@ -36,7 +37,7 @@ void Unit::handleMessage(const Message &msg)
     else if (msg["type"] == MessageTypes::ORDER &&
             msg["order_type"] == OrderTypes::STOP)
     {
-        logger_->info() << "Got a move order\n";
+        logger_->info() << "Got a stop order\n";
         state_->stop();
         delete state_;
         state_ = new NullState(this);
@@ -59,7 +60,16 @@ void Unit::update(float dt)
         state_ = next;
     }
 
-    pos_ += vel_ * dt;
+    // rotate
+    angle_ += turnSpeed_ * dt;
+    // clamp to [0, 360]
+    while (angle_ > 360.f) angle_ -= 360.f;
+    while (angle_ < 0.f) angle_ += 360.f;
+
+    // move
+    float rad = deg2rad(angle_);
+    glm::vec3 vel = speed_ * glm::vec3(cosf(rad), 0, sinf(rad)); 
+    pos_ += vel * dt;
 }
 
 bool Unit::needsRemoval() const
@@ -67,16 +77,10 @@ bool Unit::needsRemoval() const
     return false;
 }
 
-void Unit::serialize(Json::Value &obj) const
-{
-    obj["state"] = state_->getName();
-    obj["vel"] = toJson(vel_);
-    state_->serialize(obj);
-}
-
 void NullState::update(float dt)
 {
-    unit_->vel_ = glm::vec3(0.f);
+    unit_->speed_ = 0.f;
+    unit_->turnSpeed_ = 0.f;
 }
 
 MoveState::MoveState(const glm::vec3 &target, Unit *unit) :
@@ -92,7 +96,7 @@ void MoveState::update(float dt)
     // Calculate some useful values
     glm::vec3 delta = target_ - unit_->pos_;
     float dist = glm::length(target_ - unit_->pos_);
-    float desired_angle = 180.0f * atan2(delta.z , delta.x) / M_PI;
+    float desired_angle = rad2deg(atan2(delta.z , delta.x));
     float delAngle = desired_angle - unit_->angle_;
     float speed = getParam("unit.maxSpeed");
     float turnRate = getParam("unit.turnRate");
@@ -103,31 +107,26 @@ void MoveState::update(float dt)
         // Get delta in [-180, 180]
         while (delAngle > 180.f) delAngle -= 360.f;
         while (delAngle < -180.f) delAngle += 360.f;
-        // Would overshoot, just set angle
+        // Would overshoot, just move directly there
         if (fabs(delAngle) < turnRate * dt)
-            unit_->angle_ = desired_angle;
+            unit_->turnSpeed_ = delAngle / dt;
         else
         {
             unit_->logger_->debug() << "delangle: " << delAngle << '\n';
-            unit_->angle_ += glm::sign(delAngle) * turnRate * dt;
-            while (unit_->angle_ > 360.f) unit_->angle_ -= 360.f;
-            while (unit_->angle_ < 0.f) unit_->angle_ += 360.f;
-
-            unit_->vel_ = glm::vec3(0.f);
+            unit_->turnSpeed_ = glm::sign(delAngle) * turnRate;
         }
     }
     // move
-    float rad = M_PI / 180.f * unit_->angle_;
-    // And move, taking care to not overshoot
-    glm::vec3 dir = glm::vec3(cosf(rad), 0, sinf(rad)); 
+    // Set speed careful not to overshoot
     if (dist < speed * dt)
         speed = dist / dt;
-    unit_->vel_ = speed * dir;
+    unit_->speed_ = speed;
 }
 
 void MoveState::stop()
 {
-    unit_->vel_ = glm::vec3(0.f);
+    unit_->speed_ = 0.f;
+    unit_->turnSpeed_ = 0.f;
 }
 
 UnitState * MoveState::next()
@@ -140,7 +139,3 @@ UnitState * MoveState::next()
     return NULL;
 }
 
-void MoveState::serialize(Json::Value &obj)
-{
-    obj["target"] = toJson(target_);
-}

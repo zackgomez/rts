@@ -132,8 +132,9 @@ LocalPlayer::handleEvent(const SDL_Event &event) {
                 action["enemy_id"] = (Json::Value::UInt64) eid;
                 actions_.push(action);
         	}
-            // If we have a selection, move them to target
-        	else if (selection_ != NO_ENTITY)
+            // If we have a selection, and they didn't click on the current
+            // selection, move them to target
+        	else if (selection_ != NO_ENTITY && (!entity || eid != selection_))
             {
                 if (loc != glm::vec3 (HUGE_VAL))
                 {

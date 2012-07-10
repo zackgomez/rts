@@ -19,3 +19,13 @@ glm::vec3 toVec3(const Json::Value &v);
 glm::vec4 toVec4(const Json::Value &v);
 
 glm::vec3 applyMatrix(const glm::mat4 &mat, const glm::vec3 &pt);
+
+inline float deg2rad(float deg)
+{
+    return M_PI / 180.f * deg;
+}
+
+inline float rad2deg(float rad)
+{
+    return 180.f / M_PI * rad;
+}

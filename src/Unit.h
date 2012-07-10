@@ -20,11 +20,10 @@ public:
     virtual bool needsRemoval() const;
 
 protected:
-    virtual void serialize(Json::Value &obj) const;
-
     UnitState *state_;
 
-    glm::vec3 vel_;
+    float speed_;
+    float turnSpeed_;
 
     friend class NullState;
     friend class MoveState;
@@ -58,7 +57,6 @@ public:
     virtual UnitState * next() = 0;
 
     virtual std::string getName() = 0;
-    virtual void serialize(Json::Value &obj) = 0;
 
 protected:
     Unit *unit_;
@@ -75,7 +73,6 @@ public:
     virtual UnitState * next() { return NULL; }
 
     virtual std::string getName() { return "NullState"; }
-    virtual void serialize(Json::Value &obj) { }
 };
 
 class MoveState : public UnitState
@@ -89,7 +86,6 @@ public:
     virtual UnitState * next();
 
     virtual std::string getName() { return "MoveState"; }
-    virtual void serialize(Json::Value &obj);
 
 protected:
     glm::vec3 target_;
