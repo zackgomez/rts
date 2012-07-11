@@ -29,7 +29,7 @@ OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution)
 	// Load resources
 	mapProgram_ = loadProgram("shaders/map.v.glsl", "shaders/map.f.glsl");
     unitProgram_ = loadProgram("shaders/unit.v.glsl", "shaders/unit.f.glsl"); 
-    unitMesh_ = loadMesh("models/unit.obj");
+    unitMesh_ = loadMesh("models/soldier.obj");
     // unit model is based at 0, height 1, translate to center of model
     glm::mat4 unitMeshTrans =
         glm::scale(
