@@ -26,17 +26,18 @@ void LocalPlayer::renderUpdate(float dt)
     int x, y, buttons;
     buttons = SDL_GetMouseState(&x, &y);
     const glm::vec2 &res = renderer_->getResolution();
+    const int CAMERA_PAN_THRESHOLD = getParam("camera.panthresh");
 
-    glm::vec2 dir;
+    glm::vec2 dir = glm::vec2(0, 0);
 
-    if (x == 0) 
-        dir.x = -1;
-    else if (x == res.x - 1)
-        dir.x = 1;
-    if (y == 0) 
-        dir.y = -1;
-    else if (y == res.y - 1)
-        dir.y = 1;
+    if (x <= CAMERA_PAN_THRESHOLD) 
+        dir.x += 2 * (x - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
+    else if (x > res.x - CAMERA_PAN_THRESHOLD)
+        dir.x += -2 * ((res.x - x) - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
+    if (y <= CAMERA_PAN_THRESHOLD) 
+        dir.y += 2 * (y - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
+    else if (y > res.y - CAMERA_PAN_THRESHOLD)
+        dir.y += -2 * ((res.y - y) - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
 
     const float CAMERA_PAN_SPEED = getParam("camera.panspeed");
 
@@ -68,16 +69,16 @@ LocalPlayer::handleEvent(const SDL_Event &event) {
     switch (event.type) {
     case SDL_KEYDOWN:
         if (event.key.keysym.sym == SDLK_UP) {
-            renderer_->updateCamera(glm::vec3(0.f, 0.f, CAMERA_PAN_SPEED));
+            renderer_->updateCameraVel(glm::vec3(0.f, 0.f, -CAMERA_PAN_SPEED));
         }
         else if (event.key.keysym.sym == SDLK_DOWN) {
-            renderer_->updateCamera(glm::vec3(0.f, 0.f, -CAMERA_PAN_SPEED));
+            renderer_->updateCameraVel(glm::vec3(0.f, 0.f, CAMERA_PAN_SPEED));
         }
         else if (event.key.keysym.sym == SDLK_RIGHT) {
-            renderer_->updateCamera(glm::vec3(CAMERA_PAN_SPEED, 0.f, 0.f));
+            renderer_->updateCameraVel(glm::vec3(CAMERA_PAN_SPEED, 0.f, 0.f));
         }
         else if (event.key.keysym.sym == SDLK_LEFT) {
-            renderer_->updateCamera(glm::vec3(-CAMERA_PAN_SPEED, 0.f, 0.f));
+            renderer_->updateCameraVel(glm::vec3(-CAMERA_PAN_SPEED, 0.f, 0.f));
         }
         else if (event.key.keysym.sym == SDLK_g) {
             SDL_WM_GrabInput(SDL_GRAB_ON);
@@ -98,6 +99,20 @@ LocalPlayer::handleEvent(const SDL_Event &event) {
         */
 
 
+        break;
+    case SDL_KEYUP:
+        if (event.key.keysym.sym == SDLK_UP) {
+            renderer_->updateCameraVel(glm::vec3(0.f, 0.f, CAMERA_PAN_SPEED));
+        }
+        else if (event.key.keysym.sym == SDLK_DOWN) {
+            renderer_->updateCameraVel(glm::vec3(0.f, 0.f, -CAMERA_PAN_SPEED));
+        }
+        else if (event.key.keysym.sym == SDLK_RIGHT) {
+            renderer_->updateCameraVel(glm::vec3(-CAMERA_PAN_SPEED, 0.f, 0.f));
+        }
+        else if (event.key.keysym.sym == SDLK_LEFT) {
+            renderer_->updateCameraVel(glm::vec3(CAMERA_PAN_SPEED, 0.f, 0.f));
+        }
         break;
     case SDL_MOUSEBUTTONUP:
         glm::vec2 screenCoord = glm::vec2(event.button.x, event.button.y);

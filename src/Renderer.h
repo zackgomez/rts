@@ -44,6 +44,7 @@ public:
     const glm::vec2& getResolution() const { return resolution_; }
     const glm::vec3& getCameraPos() const { return cameraPos_; }
     void updateCamera(const glm::vec3 &delta);
+    void updateCameraVel(const glm::vec3 &vel);
 
     // returns 0 if no acceptable entity near click
     uint64_t selectEntity (const glm::vec2 &screenCoord) const;
@@ -59,6 +60,7 @@ private:
     glm::vec3 screenToNDC(const glm::vec2 &screenCoord) const;
 
     glm::vec3 cameraPos_;
+    glm::vec3 cameraVel_;
     glm::vec3 lightPos_;
     glm::vec2 resolution_;
     // Used to interpolate, last tick seen, and dt since last tick
@@ -66,6 +68,7 @@ private:
     float simdt_;
     // For updating purely render aspects
     float renderdt_;
+
 
     GLuint mapProgram_;
     GLuint unitProgram_;

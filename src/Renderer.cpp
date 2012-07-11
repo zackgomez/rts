@@ -14,6 +14,7 @@ LoggerPtr OpenGLRenderer::logger_;
 
 OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution)
 :   cameraPos_(0.f, 5.f, 0.f)
+,   cameraVel_(0.f, 0.f, 0.f)
 ,   resolution_(resolution)
 ,   selection_(NO_ENTITY)
 {
@@ -101,6 +102,8 @@ void OpenGLRenderer::renderMap(const Map *map)
     glUniform4fv(colorUniform, 1, glm::value_ptr(mapColor));
     glUniform2fv(mapSizeUniform, 1, glm::value_ptr(mapSize));
 
+    updateCamera(cameraVel_);
+
 	glm::mat4 transform = glm::rotate(
                 glm::scale(glm::mat4(1.f), glm::vec3(mapSize.x, 1.f, mapSize.y)),
                 90.f, glm::vec3(1, 0, 0));
@@ -183,6 +186,13 @@ void OpenGLRenderer::updateCamera(const glm::vec3 &delta)
             glm::vec3(-mapSize.x, 0.f, -mapSize.y),
             glm::vec3(mapSize.x, 20.f, mapSize.y));
 }
+
+
+void OpenGLRenderer::updateCameraVel(const glm::vec3 &vel)
+{
+    cameraVel_ += vel;
+}
+
 
 uint64_t OpenGLRenderer::selectEntity (const glm::vec2 &screenCoord) const
 {
