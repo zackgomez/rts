@@ -19,12 +19,18 @@ public:
     explicit Game(Map *map, const std::vector<Player *> &players);
     ~Game();
 
+    // Synchronizes game between players and does any other initialization
+    // required
+    // @arg period the time to wait between each check
+    void start(float period);
+
     void update(float dt);
     void render(float dt);
     void addRenderer(Renderer *renderer);
     const Map * getMap() const { return map_; }
-    uint64_t getTick() const { return tick_; }
-    uint64_t getTickOffset() const { return tickOffset_; }
+    int64_t getTick() const { return tick_; }
+    int64_t getTickOffset() const { return tickOffset_; }
+    bool isPaused() const { return paused_; }
 
     // Does not block, should only be called from Game thread
     void sendMessage(eid_t to, const Message &msg);
@@ -37,6 +43,8 @@ public:
 
 protected:
     virtual void handleAction(int64_t playerID, const PlayerAction &action);
+    // Returns true if all the players have submitted input for the current tick_
+    bool updatePlayers();
 
     LoggerPtr logger_;
 
@@ -48,7 +56,9 @@ protected:
     std::map<eid_t, Entity *> entities_;
     std::set<Renderer *> renderers_;
     std::map<int64_t, std::queue<PlayerAction>> actions_;
-    uint64_t tick_;
-    uint64_t tickOffset_;
+    int64_t tick_;
+    int64_t tickOffset_;
+
+    bool paused_;
 };
 

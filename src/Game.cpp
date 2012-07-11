@@ -9,7 +9,8 @@ Game::Game(Map *map, const std::vector<Player *> &players) :
     map_(map),
     players_(players),
     tick_(0),
-    tickOffset_(1)
+    tickOffset_(2),
+    paused_(true)
 {
     logger_ = Logger::getLogger("Game");
 
@@ -38,23 +39,63 @@ void Game::addRenderer(Renderer *renderer)
     renderer->setGame(this);
 }
 
+bool Game::updatePlayers()
+{
+    bool allInput = true;
+    for (auto &player : players_)
+    {
+        allInput &= player->update(tick_);
+    }
+    return allInput;
+}
+
+void Game::start(float period)
+{
+    paused_ = true;
+    // Synch up at start of game
+    // Initially all players are targetting tick 0, we need to get them targetting
+    // tickOffset_, so when we run frame 0, they're generating input for frame
+    // tickOffset_
+    for (tick_ = -tickOffset_+1; tick_ < 0; )
+    {
+        logger_->info() << "Running synch frame " << tick_ << '\n';
+
+        // Lock the player update
+        std::unique_lock<std::mutex> lock(mutex_);
+        // See if everyone is ready to go
+        if (updatePlayers())
+            tick_++;
+
+        SDL_Delay(int(1000*period));
+    }
+
+    // Game is ready to go!
+    paused_ = false;
+}
+
 void Game::update(float dt)
 {
     // lock
     std::unique_lock<std::mutex> lock(mutex_);
+    //logger_->info() << "Simulating tick " << tick_ << '\n';
+
     // First update players
-    for (auto &player : players_)
-        player->update(tick_);
+    bool playersReady = updatePlayers();
+    // If all the players aren't ready, we can't continue
+    if (!playersReady)
+    {
+        logger_->warning() << "Not all players ready for tick " << tick_ << '\n';
+        paused_ = true;
+        return;
+    }
+    paused_ = false;
 
-    // TODO verify that all players are ready to go
-    // It MUST be true that all players have added exactly one action of type
-    // none targetting this frame
-
-    // Lock actions, after this point, all actions will go to next tick
+    // Don't allow new actions during this time
     std::unique_lock<std::mutex> actionLock(actionMutex_);
-    // Next tick
 
     // Do actions
+    // It MUST be true that all players have added exactly one action of type
+    // none targetting this frame
     for (auto &player : players_)
     {
         int64_t pid = player->getPlayerID();
@@ -65,7 +106,12 @@ void Game::update(float dt)
         {
             assert(!pacts.empty());
             act = pacts.front(); pacts.pop();
-            assert(act["tick"] == (Json::Value::UInt64) tick_);
+            if (act["tick"] != (Json::Value::UInt64) tick_)
+            {
+                logger_->fatal() << "Got bad action @ tick " << tick_
+                    << " action: " << act << '\n';
+                assert (false);
+            }
 
             if (act["type"] == ActionTypes::NONE)
                 break;
@@ -134,6 +180,9 @@ void Game::addAction(int64_t pid, const PlayerAction &act)
     assert(act.isMember("tick"));
     assert(act.isMember("type"));
     assert(getPlayer(pid));
+
+    //logger_->info() << "Adding action for player " << pid
+        //<< ": " << act << '\n';
 
     std::unique_lock<std::mutex> lock(actionMutex_);
     actions_[pid].push(act);

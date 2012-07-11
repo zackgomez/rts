@@ -17,10 +17,17 @@ public:
 
     int64_t getPlayerID() const { return playerID_; }
 
-    void setGame(Game *game) { game_ = game; }
+    virtual void setGame(Game *game) { game_ = game; }
 
-    // Argument is the tick being simulated
-    virtual void update(uint64_t tick) = 0;
+    /* Called at the start of each tick, should finalize the previous frame
+     * and begin preparing input for the next frame.
+     * NOTE: this may be called multiple times per tick, if some players aren't
+     * ready.
+     *
+     * @arg tick is the tick being simulated
+     * @return true, if this player has submitted all input for the given frame
+     */
+    virtual bool update(int64_t tick) = 0;
 
 protected:
     int64_t playerID_;
@@ -33,9 +40,9 @@ public:
     LocalPlayer(int64_t playerID, OpenGLRenderer *renderer);
     virtual ~LocalPlayer();
 
-    // Called at the start of a tick with the new tick
-    virtual void update(uint64_t tick);
+    virtual bool update(int64_t tick);
     virtual void renderUpdate(float dt);
+    virtual void setGame(Game *game);
 
     // TODO abstract SDL_Even away here
     void handleEvent(const SDL_Event &event);
@@ -45,8 +52,11 @@ private:
 
     OpenGLRenderer *renderer_;
     // The tick the current actions will be executed on
-    uint64_t targetTick_; 
+    int64_t targetTick_; 
+    int64_t doneTick_;
     // TODO make an array
     eid_t selection_;
+
+    LoggerPtr logger_;
 };
 

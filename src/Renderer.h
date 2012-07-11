@@ -46,7 +46,7 @@ public:
     void updateCamera(const glm::vec3 &delta);
 
     // returns 0 if no acceptable entity near click
-    uint64_t selectEntity (const glm::vec2 &screenCoord) const;
+    eid_t selectEntity (const glm::vec2 &screenCoord) const;
     void setSelection(eid_t eid);
 
     // Returns the terrain location at the given screen coord.  If the coord
@@ -62,7 +62,7 @@ private:
     glm::vec3 lightPos_;
     glm::vec2 resolution_;
     // Used to interpolate, last tick seen, and dt since last tick
-    uint64_t lastTick_;
+    int64_t lastTick_;
     float simdt_;
     // For updating purely render aspects
     float renderdt_;

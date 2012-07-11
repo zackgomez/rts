@@ -86,6 +86,9 @@ void gameThread()
 {
     const float simrate = getParam("simrate");
     const float simdt = 1.f / simrate;
+
+    game->start(simdt);
+
     while (running)
     {
         // TODO tighten this so that EVERY 10 ms this will go

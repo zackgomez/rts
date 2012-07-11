@@ -10,29 +10,46 @@ const int tickOffset = 1;
 LocalPlayer::LocalPlayer(int64_t playerID, OpenGLRenderer *renderer) :
     Player(playerID)
 ,   renderer_(renderer)
-,   selection_(NO_ENTITY)
 ,   targetTick_(0)
+,   doneTick_(-1e6) // no done ticks
+,   selection_(NO_ENTITY)
 {
+    logger_ = Logger::getLogger("LocalPlayer");
 }
 
 LocalPlayer::~LocalPlayer()
 {
 }
 
-void LocalPlayer::update(uint64_t tick)
+bool LocalPlayer::update(int64_t tick)
 {
+    // Don't do anything if we're already done
+    //if (tick <= doneTick_)
+        //return true;
+
     // Finish the last frame by sending the NONE action
     PlayerAction a;
     a["type"] = ActionTypes::NONE;
     a["tick"] = (Json::Value::UInt64) targetTick_;
     game_->addAction(playerID_, a);
 
-    // Now update target tick
-    targetTick_++;
+    int64_t ret = targetTick_;
+
+    // We've generated for this tick
+    doneTick_ = tick;
+    // Now generate input for the next + offset
+    targetTick_ = tick + game_->getTickOffset();
+
+    // We've completed input for the previous target frame
+    return true;
 }
 
 void LocalPlayer::renderUpdate(float dt)
 {
+    // No input while game is paused, not even panning
+    if (game_->isPaused())
+        return;
+
     int x, y;
     SDL_GetMouseState(&x, &y);
     const glm::vec2 &res = renderer_->getResolution();
@@ -53,8 +70,17 @@ void LocalPlayer::renderUpdate(float dt)
     renderer_->updateCamera(glm::vec3(dir.x, 0.f, dir.y) * CAMERA_PAN_SPEED * dt);
 }
 
+void LocalPlayer::setGame(Game *game)
+{
+    Player::setGame(game);
+}
+
 void LocalPlayer::handleEvent(const SDL_Event &event)
 {
+    // No input while game is paused, not even panning
+    if (game_->isPaused())
+        return;
+
 	const float CAMERA_PAN_SPEED = getParam("camera.panspeed.key");
 	LoggerPtr log = Logger::getLogger("Player");
     switch (event.type) {

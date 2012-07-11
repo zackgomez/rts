@@ -12,11 +12,12 @@ public:
     NetPlayer(int64_t playerID, kissnet::tcp_socket_ptr sock);
     virtual ~NetPlayer();
 
-    virtual void update(uint64_t tick);
+    virtual bool update(int64_t tick);
 
 private:
     kissnet::tcp_socket_ptr sock_;
     std::thread netThread_;
-    std::mutex mutex_;
+    // last tick that is fully received
+    int64_t doneTick_;
 };
 
