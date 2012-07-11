@@ -5,10 +5,13 @@
 #include "Entity.h"
 #include "Game.h"
 
+const int tickOffset = 1;
+
 LocalPlayer::LocalPlayer(int64_t playerID, OpenGLRenderer *renderer) :
     Player(playerID)
 ,   renderer_(renderer)
 ,   selection_(NO_ENTITY)
+,   targetTick_(0)
 {
 }
 
@@ -16,15 +19,22 @@ LocalPlayer::~LocalPlayer()
 {
 }
 
-void LocalPlayer::update(float dt)
+void LocalPlayer::update(uint64_t tick)
 {
-    // TODO what would go here?
+    // Finish the last frame by sending the NONE action
+    PlayerAction a;
+    a["type"] = ActionTypes::NONE;
+    a["tick"] = (Json::Value::UInt64) targetTick_;
+    game_->addAction(playerID_, a);
+
+    // Now update target tick
+    targetTick_++;
 }
 
 void LocalPlayer::renderUpdate(float dt)
 {
-    int x, y, buttons;
-    buttons = SDL_GetMouseState(&x, &y);
+    int x, y;
+    SDL_GetMouseState(&x, &y);
     const glm::vec2 &res = renderer_->getResolution();
 
     glm::vec2 dir;
@@ -43,26 +53,8 @@ void LocalPlayer::renderUpdate(float dt)
     renderer_->updateCamera(glm::vec3(dir.x, 0.f, dir.y) * CAMERA_PAN_SPEED * dt);
 }
 
-PlayerAction
-LocalPlayer::getAction()
+void LocalPlayer::handleEvent(const SDL_Event &event)
 {
-    PlayerAction ret;
-
-    if (actions_.empty())
-    {
-        ret["type"] = ActionTypes::NONE;
-    }
-    else
-    {
-        ret = actions_.front();
-        actions_.pop();
-    }
-
-    return ret;
-}
-
-void
-LocalPlayer::handleEvent(const SDL_Event &event) {
 	const float CAMERA_PAN_SPEED = getParam("camera.panspeed.key");
 	LoggerPtr log = Logger::getLogger("Player");
     switch (event.type) {
@@ -88,14 +80,10 @@ LocalPlayer::handleEvent(const SDL_Event &event) {
                 PlayerAction action;
                 action["type"] = ActionTypes::STOP;
                 action["entity"] = (Json::Value::UInt64) selection_;
-                actions_.push(action);
+                action["tick"] = (Json::Value::UInt64) targetTick_;
+                game_->addAction(playerID_, action);
             }
         }
-        /* XXX(zack) I commented this out
-        if (selection_) {
-        	log->info() << event.key.keysym.sym << "\n";
-        }
-        */
 
 
         break;
@@ -130,7 +118,8 @@ LocalPlayer::handleEvent(const SDL_Event &event) {
                 action["type"] = ActionTypes::ATTACK;
                 action["entity"] = (Json::Value::UInt64) selection_;
                 action["enemy_id"] = (Json::Value::UInt64) eid;
-                actions_.push(action);
+                action["tick"] = (Json::Value::UInt64) targetTick_;
+                game_->addAction(playerID_, action);
         	}
             // If we have a selection, and they didn't click on the current
             // selection, move them to target
@@ -146,7 +135,8 @@ LocalPlayer::handleEvent(const SDL_Event &event) {
                     action["type"] = ActionTypes::MOVE;
                     action["entity"] = (Json::Value::UInt64) selection_;
                     action["target"] = toJson(loc);
-                    actions_.push(action);
+                    action["tick"] = (Json::Value::UInt64) targetTick_;
+                    game_->addAction(playerID_, action);
                 }
             }
         }

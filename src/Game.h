@@ -3,6 +3,7 @@
 #include <set>
 #include <vector>
 #include <mutex>
+#include <queue>
 #include "PlayerAction.h"
 #include "Logger.h"
 #include "Entity.h"
@@ -11,43 +12,28 @@ class Renderer;
 class Map;
 class Player;
 
-// Abstract base Game class
+// Handles the game logic and player actions, is very multithread aware.
 class Game
 {
 public:
-    explicit Game(Map *map) : map_(map), tick_(0) { }
-    virtual ~Game();
+    explicit Game(Map *map, const std::vector<Player *> &players);
+    ~Game();
 
-    virtual void update(float dt) = 0;
-    virtual void render(float dt) = 0;
-    virtual void addRenderer(Renderer *renderer);
-    virtual const Map * getMap() const { return map_; }
-    virtual uint64_t getTick() const { return tick_; }
+    void update(float dt);
+    void render(float dt);
+    void addRenderer(Renderer *renderer);
+    const Map * getMap() const { return map_; }
+    uint64_t getTick() const { return tick_; }
+    uint64_t getTickOffset() const { return tickOffset_; }
 
-    virtual void sendMessage(eid_t to, const Message &msg) = 0;
+    // Does not block, should only be called from Game thread
+    void sendMessage(eid_t to, const Message &msg);
+    // Can possibly block, but should never block long
+    void addAction(int64_t pid, const PlayerAction &act);
 
-    virtual const Entity * getEntity(eid_t eid) const = 0;
-    virtual const Player * getPlayer(int64_t pid) const = 0;
+    const Entity * getEntity(eid_t eid) const;
+    const Player * getPlayer(int64_t pid) const;
 
-protected:
-    std::set<Renderer *> renderers_;
-    Map *map_;
-    uint64_t tick_;
-};
-
-// Actually runs the game logic
-class HostGame : public Game
-{
-public:
-    explicit HostGame(Map *map, const std::vector<Player *> &players);
-    virtual ~HostGame();
-
-    virtual void update(float dt);
-    virtual void render(float dt);
-    virtual void sendMessage(eid_t to, const Message &msg);
-
-    virtual const Entity * getEntity(eid_t eid) const;
-    virtual const Player * getPlayer(int64_t pid) const;
 
 protected:
     virtual void handleAction(int64_t playerID, const PlayerAction &action);
@@ -55,8 +41,14 @@ protected:
     LoggerPtr logger_;
 
     std::mutex mutex_;
+    std::mutex actionMutex_;
 
+    Map *map_;
     std::vector<Player *> players_;
     std::map<eid_t, Entity *> entities_;
+    std::set<Renderer *> renderers_;
+    std::map<int64_t, std::queue<PlayerAction>> actions_;
+    uint64_t tick_;
+    uint64_t tickOffset_;
 };
 

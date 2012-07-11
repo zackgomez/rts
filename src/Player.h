@@ -1,9 +1,9 @@
 #pragma once
-#include "glm.h"
 #include <SDL/SDL.h>
 #include "Entity.h"
 #include <queue>
 #include <json/json.h>
+#include "glm.h"
 #include "PlayerAction.h"
 
 class OpenGLRenderer;
@@ -19,9 +19,8 @@ public:
 
     void setGame(Game *game) { game_ = game; }
 
-    virtual void update(float dt) = 0;
-    virtual void renderUpdate(float dt) = 0;
-    virtual PlayerAction getAction() = 0;
+    // Argument is the tick being simulated
+    virtual void update(uint64_t tick) = 0;
 
 protected:
     int64_t playerID_;
@@ -34,17 +33,20 @@ public:
     LocalPlayer(int64_t playerID, OpenGLRenderer *renderer);
     virtual ~LocalPlayer();
 
-    virtual void update(float dt);
+    // Called at the start of a tick with the new tick
+    virtual void update(uint64_t tick);
     virtual void renderUpdate(float dt);
-    virtual PlayerAction getAction();
 
-    virtual void handleEvent(const SDL_Event &event);
+    // TODO abstract SDL_Even away here
+    void handleEvent(const SDL_Event &event);
 
 private:
-    OpenGLRenderer *renderer_;
-
     void setSelection(eid_t eid);
 
+    OpenGLRenderer *renderer_;
+    // The tick the current actions will be executed on
+    uint64_t targetTick_; 
+    // TODO make an array
     eid_t selection_;
-    std::queue<PlayerAction> actions_;
 };
+
