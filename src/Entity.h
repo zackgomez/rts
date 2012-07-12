@@ -19,7 +19,7 @@ class Entity
 {
 public:
     explicit Entity();
-    explicit Entity(int64_t playerID);
+    explicit Entity(int64_t playerID, glm::vec3 pos);
     virtual ~Entity();
 
     virtual std::string getType() const = 0;

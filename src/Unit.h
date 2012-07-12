@@ -1,5 +1,6 @@
 #pragma once
-#include "Entity.h"
+#include "Actor.h"
+#include "Mobile.h"
 #include <glm/glm.hpp>
 #include "Logger.h"
 
@@ -7,7 +8,7 @@ class UnitState;
 class MoveState;
 
 class Unit :
-    public Entity
+    public Mobile, public Actor
 {
 public:
     explicit Unit(int64_t playerID, const glm::vec3 &pos);

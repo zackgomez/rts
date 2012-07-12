@@ -8,9 +8,10 @@ Entity::Entity()
 {
 }
 
-Entity::Entity(int64_t playerID)
+Entity::Entity(int64_t playerID, glm::vec3 pos)
 : playerID_(playerID)
 , id_(lastID_++)
+, pos_(pos)
 {
 }
 

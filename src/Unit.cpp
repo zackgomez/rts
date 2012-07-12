@@ -6,7 +6,8 @@ const std::string Unit::TYPE = "Unit";
 LoggerPtr Unit::logger_;
 
 Unit::Unit(int64_t playerID, const glm::vec3 &pos) :
-    Entity(playerID),
+    Mobile(playerID, pos, 0.f, 0.f),
+    Actor(1.f, 0.f, 0.f, ATTACK_TYPE_NORMAL, 0.f),
     state_(new NullState(this))
 {
     pos_ = pos;
