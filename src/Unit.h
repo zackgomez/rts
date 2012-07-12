@@ -26,27 +26,12 @@ public:
 protected:
     UnitState *state_;
 
-    float speed_;
-    float turnSpeed_;
-
     friend class NullState;
     friend class MoveState;
 
 private:
     static LoggerPtr logger_;
 };
-
-
-
-namespace OrderTypes
-{
-    const std::string MOVE = "MOVE";
-    const std::string ATTACK = "ATTACK";
-    const std::string STOP = "STOP";
-};
-
-
-
 
 class UnitState
 {

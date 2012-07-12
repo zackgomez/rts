@@ -1,8 +1,16 @@
 #pragma once
 #include "Targetable.h"
+#include <string>
 #include <vector>
 
 const static int ATTACK_TYPE_NORMAL = 0;
+
+namespace OrderTypes
+{
+    const std::string MOVE = "MOVE";
+    const std::string ATTACK = "ATTACK";
+    const std::string STOP = "STOP";
+};
 
 class Actor :
     public Targetable
