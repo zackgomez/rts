@@ -29,12 +29,10 @@ bool LocalPlayer::update(int64_t tick)
 
     // Finish the last frame by sending the NONE action
     PlayerAction a;
-    a["type"] = ActionTypes::NONE;
+    a["type"] = ActionTypes::DONE;
     a["pid"] = (Json::Value::Int64) playerID_;
     a["tick"] = (Json::Value::Int64) targetTick_;
     game_->addAction(playerID_, a);
-
-    int64_t ret = targetTick_;
 
     // We've generated for this tick
     doneTick_ = tick;
@@ -216,7 +214,7 @@ SlowPlayer::update(int64_t tick)
     }
 
     PlayerAction a;
-    a["type"] = ActionTypes::NONE;
+    a["type"] = ActionTypes::DONE;
     a["tick"] = (Json::Value::Int64) tick;
     a["pid"] = (Json::Value::Int64) playerID_;
     game_->addAction(playerID_, a);

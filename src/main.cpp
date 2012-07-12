@@ -61,6 +61,8 @@ NetPlayer * getOpponent(const std::string &ip)
 
 std::vector<Player *> getPlayers(const std::vector<std::string> &args)
 {
+    // TODO streamline this, add some handshake in network setup that assigns 
+    // IDs correctly
     int64_t playerID = 1;
     std::vector<Player *> players;
     // First get opponent if exists

@@ -113,7 +113,7 @@ void Game::update(float dt)
                 assert (false);
             }
 
-            if (act["type"] == ActionTypes::NONE)
+            if (act["type"] == ActionTypes::DONE)
                 break;
 
             handleAction(pid, act);
@@ -133,7 +133,7 @@ void Game::update(float dt)
             deadEnts.push_back(entity->getID());
     }
     // TODO remove deadEnts
-    // TODO unlock automatically when lock goes out of scope
+    // unlock entities automatically when lock goes out of scope
     
     // Next tick
     tick_++;
@@ -181,8 +181,7 @@ void Game::addAction(int64_t pid, const PlayerAction &act)
     assert(act.isMember("type"));
     assert(getPlayer(pid));
 
-    //logger_->info() << "Adding action for player " << pid
-        //<< ": " << act << '\n';
+    // TODO handle leave game message here by quitting game
 
     std::unique_lock<std::mutex> lock(actionMutex_);
     actions_[pid].push(act);

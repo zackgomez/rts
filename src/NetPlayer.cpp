@@ -28,12 +28,13 @@ void netThreadFunc(kissnet::tcp_socket_ptr sock, std::queue<PlayerAction> &queue
         if (sock->recv(&str[0], sz) < sz)
             assert(false && "Didn't read a full message");
 
-        // TODO queue message, update doneTick if required
+        // Parse
         Json::Value act;
         reader.parse(str, act);
 
-        logger->info() << "Received action: " << act << '\n';
+        //logger->info() << "Received action: " << act << '\n';
 
+        // Lock and queue
         std::unique_lock<std::mutex> lock(queueMutex);
         queue.push(act);
         // automatically unlocks when lock goes out of scope
@@ -60,6 +61,7 @@ NetPlayer::~NetPlayer()
 bool NetPlayer::update(int64_t tick)
 {
     std::unique_lock<std::mutex> lock(mutex_);
+    // Read as many actions as were queued
     while (!actions_.empty())
     {
         PlayerAction a = actions_.front();
@@ -68,13 +70,15 @@ bool NetPlayer::update(int64_t tick)
         assert(a["pid"].asInt64() == playerID_);
         game_->addAction(playerID_, a);
 
-        if (a["type"] == ActionTypes::NONE)
+        // if we get a none, then we're done with another frame... make it so
+        if (a["type"] == ActionTypes::DONE)
         {
             assert(a["tick"].asInt64() > doneTick_);
             doneTick_ = (int64_t) a["tick"].asInt64();
         }
     }
 
+    // Have we received all the messages for this tick?
     return doneTick_ >= tick;
 }
 
@@ -85,15 +89,11 @@ void NetPlayer::playerAction(int64_t playerID, const PlayerAction &action)
     {
         std::string body = writer_.write(action);
         uint32_t len = body.size();
+        // TODO endianness issue here?
         std::string msg((char *) &len, 4);
         msg.append(body);
 
-        //logger_->info() << "Sending " << msg << " across network to player "
-            //<< playerID_ << '\n';
-        //logger_->info() << "Body size " << len << " msg size " << msg.size() << '\n';
-
-
-        // TODO queue up the action to be sent, or maybe just send it
+        // Just send out the message
         sock_->send(msg);
     }
 }

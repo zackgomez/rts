@@ -38,10 +38,10 @@ public:
     void addAction(int64_t pid, const PlayerAction &act);
 
     const Entity * getEntity(eid_t eid) const;
-    const Player * getPlayer(int64_t pid) const;
 
 
 protected:
+    const Player * getPlayer(int64_t pid) const;
     virtual void handleAction(int64_t playerID, const PlayerAction &action);
     // Returns true if all the players have submitted input for the current tick_
     bool updatePlayers();
