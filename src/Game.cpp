@@ -187,7 +187,10 @@ void Game::addAction(int64_t pid, const PlayerAction &act)
     std::unique_lock<std::mutex> lock(actionMutex_);
     actions_[pid].push(act);
     lock.unlock();
-    // TODO share action with other players
+
+    // Broadcast action to all players
+    for (auto& player : players_)
+        player->playerAction(pid, act);
 }
 
 const Entity * Game::getEntity(eid_t eid) const
@@ -207,8 +210,8 @@ const Player * Game::getPlayer(int64_t pid) const
 
 void Game::handleAction(int64_t playerID, const PlayerAction &action)
 {
-    std::cout << "[" << playerID
-        << "] Read action " << action.toStyledString() << '\n';
+    //std::cout << "[" << playerID
+        //<< "] Read action " << action.toStyledString() << '\n';
 
     // TODO include player ID in messages
     if (action["type"] == ActionTypes::MOVE)

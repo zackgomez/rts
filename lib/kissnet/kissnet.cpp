@@ -148,9 +148,9 @@ tcp_socket_ptr tcp_socket::accept()
     return ret;
 }
 
-int tcp_socket::send(const std::string& data)
+ssize_t tcp_socket::send(const std::string& data)
 {
-    int bytes_sent = 0;
+    ssize_t bytes_sent = 0;
     
     if ((bytes_sent = ::send(sock, data.c_str(), data.size(), 0)) < 0)
         throw socket_exception("Unable to send", true);
@@ -158,9 +158,9 @@ int tcp_socket::send(const std::string& data)
     return bytes_sent;
 }
 
-int tcp_socket::recv(char *buffer, int buffer_len)
+ssize_t tcp_socket::recv(char *buffer, int buffer_len)
 {
-    int bytes_received;
+    ssize_t bytes_received;
 
     if ((bytes_received = ::recv(sock, buffer, buffer_len, 0)) < 0)
         throw socket_exception("Unable to recv", true);

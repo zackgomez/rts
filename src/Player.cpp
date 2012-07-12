@@ -45,6 +45,11 @@ bool LocalPlayer::update(int64_t tick)
     return true;
 }
 
+void LocalPlayer::playerAction(int64_t playerID, const PlayerAction &action)
+{
+    // TODO hmm, not much to do here
+}
+
 void LocalPlayer::renderUpdate(float dt)
 {
     // No input while game is paused, not even panning

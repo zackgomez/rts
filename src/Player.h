@@ -29,6 +29,14 @@ public:
      */
     virtual bool update(int64_t tick) = 0;
 
+    /* Called each time any player performs an action (including this player).
+     * This function should execute quickly (i.e. not perform blocking
+     * operations).
+     * @arg playerID The player who performed the action.
+     * @arg arction The action itself.
+     */
+    virtual void playerAction(int64_t playerID, const PlayerAction &action) = 0;
+
 protected:
     int64_t playerID_;
     Game *game_;
@@ -41,11 +49,14 @@ public:
     virtual ~LocalPlayer();
 
     virtual bool update(int64_t tick);
-    virtual void renderUpdate(float dt);
     virtual void setGame(Game *game);
+
+    virtual void playerAction(int64_t playerID, const PlayerAction &action);
 
     // TODO abstract SDL_Even away here
     void handleEvent(const SDL_Event &event);
+    // Called once per frame with render dt
+    virtual void renderUpdate(float dt);
 
 private:
     void setSelection(eid_t eid);
@@ -68,6 +79,7 @@ public:
     SlowPlayer(int64_t playerID) : Player(playerID) { }
 
     virtual bool update(int64_t tick);
+    virtual void playerAction(int64_t playerID, const PlayerAction &action) { }
 
 private:
 };

@@ -30,7 +30,7 @@ OpenGLRenderer *renderer;
 
 const std::string port = "27465";
 
-Player * getOpponent(const std::string &ip)
+NetPlayer * getOpponent(const std::string &ip)
 {
     kissnet::tcp_socket_ptr sock;
     // Host
@@ -68,7 +68,8 @@ std::vector<Player *> getPlayers(const std::vector<std::string> &args)
         std::string ip = args.size() > 1 ? args[1] : std::string();
         if (!ip.empty())
             playerID = 2;
-        Player *opp = getOpponent(ip);
+        NetPlayer *opp = getOpponent(ip);
+        opp->setLocalPlayer(playerID);
         players.push_back(opp);
     }
     else if (!args.empty() && args[0] == "--slowp")
