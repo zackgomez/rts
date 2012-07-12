@@ -71,6 +71,10 @@ std::vector<Player *> getPlayers(const std::vector<std::string> &args)
         Player *opp = getOpponent(ip);
         players.push_back(opp);
     }
+    else if (!args.empty() && args[0] == "--slowp")
+    {
+        players.push_back(new SlowPlayer(2));
+    }
     
     // Now set up local player
     glm::vec2 res(getParam("resolution.x"), getParam("resolution.y"));
@@ -147,7 +151,7 @@ void handleInput(float dt)
 
 int initLibs()
 {
-    srand(time(NULL));
+    seedRandom(time(NULL));
 
     atexit(cleanup);
 

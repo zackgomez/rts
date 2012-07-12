@@ -24,13 +24,14 @@ LocalPlayer::~LocalPlayer()
 bool LocalPlayer::update(int64_t tick)
 {
     // Don't do anything if we're already done
-    //if (tick <= doneTick_)
-        //return true;
+    if (tick <= doneTick_)
+        return true;
 
     // Finish the last frame by sending the NONE action
     PlayerAction a;
     a["type"] = ActionTypes::NONE;
-    a["tick"] = (Json::Value::UInt64) targetTick_;
+    a["pid"] = (Json::Value::Int64) playerID_;
+    a["tick"] = (Json::Value::Int64) targetTick_;
     game_->addAction(playerID_, a);
 
     int64_t ret = targetTick_;
@@ -106,7 +107,8 @@ void LocalPlayer::handleEvent(const SDL_Event &event)
                 PlayerAction action;
                 action["type"] = ActionTypes::STOP;
                 action["entity"] = (Json::Value::UInt64) selection_;
-                action["tick"] = (Json::Value::UInt64) targetTick_;
+                action["pid"] = (Json::Value::Int64) playerID_;
+                action["tick"] = (Json::Value::Int64) targetTick_;
                 game_->addAction(playerID_, action);
             }
         }
@@ -144,7 +146,8 @@ void LocalPlayer::handleEvent(const SDL_Event &event)
                 action["type"] = ActionTypes::ATTACK;
                 action["entity"] = (Json::Value::UInt64) selection_;
                 action["enemy_id"] = (Json::Value::UInt64) eid;
-                action["tick"] = (Json::Value::UInt64) targetTick_;
+                action["pid"] = (Json::Value::Int64) playerID_;
+                action["tick"] = (Json::Value::Int64) targetTick_;
                 game_->addAction(playerID_, action);
         	}
             // If we have a selection, and they didn't click on the current
@@ -161,7 +164,8 @@ void LocalPlayer::handleEvent(const SDL_Event &event)
                     action["type"] = ActionTypes::MOVE;
                     action["entity"] = (Json::Value::UInt64) selection_;
                     action["target"] = toJson(loc);
-                    action["tick"] = (Json::Value::UInt64) targetTick_;
+                    action["pid"] = (Json::Value::Int64) playerID_;
+                    action["tick"] = (Json::Value::Int64) targetTick_;
                     game_->addAction(playerID_, action);
                 }
             }
@@ -175,5 +179,27 @@ LocalPlayer::setSelection(eid_t eid)
 {
     selection_ = eid;
     renderer_->setSelection(selection_);
+}
+
+
+bool
+SlowPlayer::update(int64_t tick)
+{
+    // Just blast through the sync frames, for now
+    if (tick < 0)
+        return true;
+
+    if (frand() < getParam("slowPlayer.dropChance"))
+    {
+        Logger::getLogger("SlowPlayer")->info() << "I strike again!\n";
+        return false;
+    }
+
+    PlayerAction a;
+    a["type"] = ActionTypes::NONE;
+    a["tick"] = (Json::Value::Int64) tick;
+    a["pid"] = (Json::Value::Int64) playerID_;
+    game_->addAction(playerID_, a);
+    return true;
 }
 

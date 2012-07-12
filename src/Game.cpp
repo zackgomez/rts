@@ -106,7 +106,7 @@ void Game::update(float dt)
         {
             assert(!pacts.empty());
             act = pacts.front(); pacts.pop();
-            if (act["tick"] != (Json::Value::UInt64) tick_)
+            if (act["tick"] != (Json::Value::Int64) tick_)
             {
                 logger_->fatal() << "Got bad action @ tick " << tick_
                     << " action: " << act << '\n';

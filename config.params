@@ -10,3 +10,5 @@ camera.panspeed.key 0.1
 
 unit.maxSpeed 3.0
 unit.turnRate 800.0
+
+slowPlayer.dropChance 0.05

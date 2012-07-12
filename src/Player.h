@@ -60,3 +60,14 @@ private:
     LoggerPtr logger_;
 };
 
+
+// Player used for testing that occasionally drops frames
+class SlowPlayer : public Player
+{
+public:
+    SlowPlayer(int64_t playerID) : Player(playerID) { }
+
+    virtual bool update(int64_t tick);
+
+private:
+};
