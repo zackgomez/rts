@@ -81,11 +81,10 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
     ndc /= ndc.w;
     ndcCoords_[entity] = glm::vec3(ndc);
 
-    glm::vec3 modelPos = applyMatrix(
-        getViewStack().current() * transform,
-        glm::vec3(0.f));
-
     // TODO(zack) use these to fix unit shader lighting
+    //glm::vec3 modelPos = applyMatrix(
+        //getViewStack().current() * transform,
+        //glm::vec3(0.f));
     //logger_->info() << "modelpos: " << modelPos << " lightpos: " << lightPos_ << '\n';
     //logger_->info() << "delta: " << lightPos_ - modelPos << '\n';
 }
@@ -123,7 +122,7 @@ void OpenGLRenderer::renderMap(const Map *map)
         renderRectangleColor(transform, glm::vec4(1, 0, 0, 1));
     }
     // Remove done highlights
-    for (int i = 0; i < highlights_.size(); )
+    for (size_t i = 0; i < highlights_.size(); )
     {
         if (highlights_[i].remaining <= 0.f)
         {
@@ -138,7 +137,7 @@ void OpenGLRenderer::renderMap(const Map *map)
 
 void OpenGLRenderer::startRender(float dt)
 {
-    uint64_t tick = game_->getTick();
+    int64_t tick = game_->getTick();
     if (lastTick_ != tick)
     {
         lastTick_ = tick;
@@ -147,6 +146,12 @@ void OpenGLRenderer::startRender(float dt)
     else
         simdt_ += dt;
     renderdt_ = dt;
+
+    if (game_->isPaused())
+    {
+        simdt_ = renderdt_ = 0.f;
+        logger_->info() << "Rendering paused frame @ tick " << tick << '\n';
+    }
 
     glClearColor(0.f, 0.f, 0.f, 0.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -187,14 +192,12 @@ void OpenGLRenderer::updateCamera(const glm::vec3 &delta)
             glm::vec3(mapSize.x, 20.f, mapSize.y));
 }
 
-
 void OpenGLRenderer::updateCameraVel(const glm::vec3 &vel)
 {
     cameraVel_ += vel;
 }
 
-
-uint64_t OpenGLRenderer::selectEntity (const glm::vec2 &screenCoord) const
+eid_t OpenGLRenderer::selectEntity (const glm::vec2 &screenCoord) const
 {
     glm::vec2 pos = glm::vec2(screenToNDC(screenCoord));
 

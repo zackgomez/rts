@@ -1,9 +1,9 @@
 #pragma once
-#include "glm.h"
 #include <SDL/SDL.h>
 #include "Entity.h"
 #include <queue>
 #include <json/json.h>
+#include "glm.h"
 #include "PlayerAction.h"
 
 class OpenGLRenderer;
@@ -17,11 +17,25 @@ public:
 
     int64_t getPlayerID() const { return playerID_; }
 
-    void setGame(Game *game) { game_ = game; }
+    virtual void setGame(Game *game) { game_ = game; }
 
-    virtual void update(float dt) = 0;
-    virtual void renderUpdate(float dt) = 0;
-    virtual PlayerAction getAction() = 0;
+    /* Called at the start of each tick, should finalize the previous frame
+     * and begin preparing input for the next frame.
+     * NOTE: this may be called multiple times per tick, if some players aren't
+     * ready.
+     *
+     * @arg tick is the tick being simulated
+     * @return true, if this player has submitted all input for the given frame
+     */
+    virtual bool update(int64_t tick) = 0;
+
+    /* Called each time any player performs an action (including this player).
+     * This function should execute quickly (i.e. not perform blocking
+     * operations).
+     * @arg playerID The player who performed the action.
+     * @arg arction The action itself.
+     */
+    virtual void playerAction(int64_t playerID, const PlayerAction &action) = 0;
 
 protected:
     int64_t playerID_;
@@ -34,17 +48,38 @@ public:
     LocalPlayer(int64_t playerID, OpenGLRenderer *renderer);
     virtual ~LocalPlayer();
 
-    virtual void update(float dt);
-    virtual void renderUpdate(float dt);
-    virtual PlayerAction getAction();
+    virtual bool update(int64_t tick);
+    virtual void setGame(Game *game);
 
-    virtual void handleEvent(const SDL_Event &event);
+    virtual void playerAction(int64_t playerID, const PlayerAction &action);
+
+    // TODO abstract SDL_Even away here
+    void handleEvent(const SDL_Event &event);
+    // Called once per frame with render dt
+    virtual void renderUpdate(float dt);
 
 private:
-    OpenGLRenderer *renderer_;
-
     void setSelection(eid_t eid);
 
+    OpenGLRenderer *renderer_;
+    // The tick the current actions will be executed on
+    int64_t targetTick_; 
+    int64_t doneTick_;
+    // TODO make an array
     eid_t selection_;
-    std::queue<PlayerAction> actions_;
+
+    LoggerPtr logger_;
+};
+
+
+// Player used for testing that occasionally drops frames
+class SlowPlayer : public Player
+{
+public:
+    SlowPlayer(int64_t playerID) : Player(playerID) { }
+
+    virtual bool update(int64_t tick);
+    virtual void playerAction(int64_t playerID, const PlayerAction &action) { }
+
+private:
 };

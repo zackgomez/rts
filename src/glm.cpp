@@ -1,5 +1,5 @@
 #include "glm.h"
-
+#include <cstdlib>
 
 std::ostream& operator<< (std::ostream &os, const glm::vec2 &v)
 {
@@ -63,4 +63,14 @@ glm::vec3 applyMatrix(const glm::mat4 &mat, const glm::vec3 &pt)
     glm::vec4 p = mat * glm::vec4(pt, 1.f);
     p /= p.w;
     return glm::vec3(p);
+}
+
+void seedRandom(unsigned int seed)
+{
+    srand(seed);
+}
+
+float frand()
+{
+    return rand() / static_cast<float>(RAND_MAX);
 }

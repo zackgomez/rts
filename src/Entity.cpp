@@ -1,6 +1,6 @@
 #include "Entity.h"
 
-uint64_t Entity::lastID_ = 1;
+eid_t Entity::lastID_ = 1;
 
 Entity::Entity()
 : playerID_(NO_PLAYER)

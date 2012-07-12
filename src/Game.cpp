@@ -5,23 +5,14 @@
 #include "Entity.h"
 #include "Unit.h"
 
-Game::~Game()
+Game::Game(Map *map, const std::vector<Player *> &players) :
+    map_(map),
+    players_(players),
+    tick_(0),
+    tickOffset_(2),
+    paused_(true)
 {
-    delete map_;
-}
-
-void Game::addRenderer(Renderer *renderer)
-{
-    renderers_.insert(renderer);
-    renderer->setGame(this);
-}
-
-
-HostGame::HostGame(Map *map, const std::vector<Player *> &players)
-:   Game(map)
-,   players_(players)
-{
-    logger_ = Logger::getLogger("HostGame");
+    logger_ = Logger::getLogger("Game");
 
     MessageHub::get()->setGame(this);
 
@@ -36,32 +27,100 @@ HostGame::HostGame(Map *map, const std::vector<Player *> &players)
     }
 }
 
-HostGame::~HostGame()
+Game::~Game()
 {
     MessageHub::get()->setGame(NULL);
+    delete map_;
 }
 
-void HostGame::update(float dt)
+void Game::addRenderer(Renderer *renderer)
+{
+    renderers_.insert(renderer);
+    renderer->setGame(this);
+}
+
+bool Game::updatePlayers()
+{
+    bool allInput = true;
+    for (auto &player : players_)
+    {
+        allInput &= player->update(tick_);
+    }
+    return allInput;
+}
+
+void Game::start(float period)
+{
+    paused_ = true;
+    // Synch up at start of game
+    // Initially all players are targetting tick 0, we need to get them targetting
+    // tickOffset_, so when we run frame 0, they're generating input for frame
+    // tickOffset_
+    for (tick_ = -tickOffset_+1; tick_ < 0; )
+    {
+        logger_->info() << "Running synch frame " << tick_ << '\n';
+
+        // Lock the player update
+        std::unique_lock<std::mutex> lock(mutex_);
+        // See if everyone is ready to go
+        if (updatePlayers())
+            tick_++;
+
+        SDL_Delay(int(1000*period));
+    }
+
+    // Game is ready to go!
+    paused_ = false;
+}
+
+void Game::update(float dt)
 {
     // lock
     std::unique_lock<std::mutex> lock(mutex_);
-    // Next tick
-    tick_++;
+    //logger_->info() << "Simulating tick " << tick_ << '\n';
 
-    // Update players
+    // First update players
+    bool playersReady = updatePlayers();
+    // If all the players aren't ready, we can't continue
+    if (!playersReady)
+    {
+        logger_->warning() << "Not all players ready for tick " << tick_ << '\n';
+        paused_ = true;
+        return;
+    }
+    paused_ = false;
+
+    // Don't allow new actions during this time
+    std::unique_lock<std::mutex> actionLock(actionMutex_);
+
+    // Do actions
+    // It MUST be true that all players have added exactly one action of type
+    // none targetting this frame
     for (auto &player : players_)
     {
-        player->update(dt);
+        int64_t pid = player->getPlayerID();
+        std::queue<PlayerAction> &pacts = actions_[pid];
 
-        PlayerAction action;
+        PlayerAction act;
         for (;;)
         {
-            action = player->getAction();
-            if (action["type"] == ActionTypes::NONE)
+            assert(!pacts.empty());
+            act = pacts.front(); pacts.pop();
+            if (act["tick"] != (Json::Value::Int64) tick_)
+            {
+                logger_->fatal() << "Got bad action @ tick " << tick_
+                    << " action: " << act << '\n';
+                assert (false);
+            }
+
+            if (act["type"] == ActionTypes::DONE)
                 break;
-            handleAction(player->getPlayerID(), action);
+
+            handleAction(pid, act);
         }
     }
+    // Allow more actions
+    actionLock.unlock();
 
     // Update entities
     std::vector<eid_t> deadEnts;
@@ -74,10 +133,13 @@ void HostGame::update(float dt)
             deadEnts.push_back(entity->getID());
     }
     // TODO remove deadEnts
-    // TODO unlock automatically when lock goes out of scope
+    // unlock entities automatically when lock goes out of scope
+    
+    // Next tick
+    tick_++;
 }
 
-void HostGame::render(float dt)
+void Game::render(float dt)
 {
     // Render
     for (auto &renderer : renderers_)
@@ -85,9 +147,6 @@ void HostGame::render(float dt)
 
     // lock
     std::unique_lock<std::mutex> lock(mutex_);
-
-    for (auto &player : players_)
-        player->renderUpdate(dt);
 
     for (auto &renderer : renderers_)
     renderer->renderMap(map_);
@@ -103,7 +162,7 @@ void HostGame::render(float dt)
         renderer->endRender();
 }
 
-void HostGame::sendMessage(eid_t to, const Message &msg)
+void Game::sendMessage(eid_t to, const Message &msg)
 {
     auto it = entities_.find(to);
     if (it == entities_.end())
@@ -116,13 +175,30 @@ void HostGame::sendMessage(eid_t to, const Message &msg)
     it->second->handleMessage(msg);
 }
 
-const Entity * HostGame::getEntity(eid_t eid) const
+void Game::addAction(int64_t pid, const PlayerAction &act)
+{
+    assert(act.isMember("tick"));
+    assert(act.isMember("type"));
+    assert(getPlayer(pid));
+
+    // TODO handle leave game message here by quitting game
+
+    std::unique_lock<std::mutex> lock(actionMutex_);
+    actions_[pid].push(act);
+    lock.unlock();
+
+    // Broadcast action to all players
+    for (auto& player : players_)
+        player->playerAction(pid, act);
+}
+
+const Entity * Game::getEntity(eid_t eid) const
 {
     auto it = entities_.find(eid);
     return it == entities_.end() ? NULL : it->second;
 }
 
-const Player * HostGame::getPlayer(int64_t pid) const
+const Player * Game::getPlayer(int64_t pid) const
 {
     for (auto player : players_)
         if (player->getPlayerID() == pid)
@@ -131,11 +207,12 @@ const Player * HostGame::getPlayer(int64_t pid) const
     return NULL;
 }
 
-void HostGame::handleAction(int64_t playerID, const PlayerAction &action)
+void Game::handleAction(int64_t playerID, const PlayerAction &action)
 {
-    std::cout << "[" << playerID
-        << "] Read action " << action.toStyledString() << '\n';
+    //std::cout << "[" << playerID
+        //<< "] Read action " << action.toStyledString() << '\n';
 
+    // TODO include player ID in messages
     if (action["type"] == ActionTypes::MOVE)
     {
         // Generate a message to target entity with move order
@@ -171,7 +248,7 @@ void HostGame::handleAction(int64_t playerID, const PlayerAction &action)
     else
     {
         logger_->warning()
-            << "Unknown action type " << action["type"].asString() << '\n';
+            << "Unknown action type from player " << playerID << " : " << action["type"].asString() << '\n';
     }
 }
 

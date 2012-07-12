@@ -29,3 +29,7 @@ inline float rad2deg(float rad)
 {
     return 180.f / M_PI * rad;
 }
+
+void seedRandom(unsigned int seed);
+// Returns float in [0,1]
+float frand();

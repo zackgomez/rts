@@ -25,7 +25,7 @@ void Unit::handleMessage(const Message &msg)
     if (msg["type"] == MessageTypes::ORDER &&
         msg["order_type"] == OrderTypes::MOVE)
     {
-        logger_->info() << "Got a move order\n";
+        //logger_->info() << "Got a move order\n";
         state_->stop();
         delete state_;
         state_ = new MoveState(toVec3(msg["target"]), this);
@@ -33,13 +33,13 @@ void Unit::handleMessage(const Message &msg)
     else if (msg["type"] == MessageTypes::ORDER &&
             msg["order_type"] == OrderTypes::ATTACK)
     {
-    	logger_->info() << "Got an attack order\n";
-    	logger_->info() << "Imma go nuts on you id: " << msg["enemy_id"] << "\n";
+    	//logger_->info() << "Got an attack order\n";
+    	//logger_->info() << "Imma go nuts on you id: " << msg["enemy_id"] << "\n";
     }
     else if (msg["type"] == MessageTypes::ORDER &&
             msg["order_type"] == OrderTypes::STOP)
     {
-        logger_->info() << "Got a stop order\n";
+        //logger_->info() << "Got a stop order\n";
         state_->stop();
         delete state_;
         state_ = new NullState(this);
@@ -113,10 +113,7 @@ void MoveState::update(float dt)
         if (fabs(delAngle) < turnRate * dt)
             unit_->turnSpeed_ = delAngle / dt;
         else
-        {
-            unit_->logger_->debug() << "delangle: " << delAngle << '\n';
             unit_->turnSpeed_ = glm::sign(delAngle) * turnRate;
-        }
     }
     // move
     // Set speed careful not to overshoot
