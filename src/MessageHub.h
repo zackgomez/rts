@@ -15,7 +15,7 @@ public:
     void setGame(Game *game);
     // Immediately dispatches message
     void sendMessage(const Message &msg);
-    // TODO dispatchMessage (sends after unit updates unit no more messages)
+    // TODO dispatchMessage (sends after unit updates until no more messages)
 
 private:
     // For singleton

@@ -5,26 +5,59 @@
 #include "Entity.h"
 #include "Game.h"
 
+const int tickOffset = 1;
+
 LocalPlayer::LocalPlayer(int64_t playerID, OpenGLRenderer *renderer) :
     Player(playerID)
 ,   renderer_(renderer)
+,   targetTick_(0)
+,   doneTick_(-1e6) // no done ticks
 ,   selection_(NO_ENTITY)
 {
+    logger_ = Logger::getLogger("LocalPlayer");
 }
 
 LocalPlayer::~LocalPlayer()
 {
 }
 
-void LocalPlayer::update(float dt)
+bool LocalPlayer::update(int64_t tick)
 {
-    // TODO what would go here?
+    // Don't do anything if we're already done
+    if (tick <= doneTick_)
+        return true;
+
+    // Finish the last frame by sending the NONE action
+    PlayerAction a;
+    a["type"] = ActionTypes::NONE;
+    a["pid"] = (Json::Value::Int64) playerID_;
+    a["tick"] = (Json::Value::Int64) targetTick_;
+    game_->addAction(playerID_, a);
+
+    int64_t ret = targetTick_;
+
+    // We've generated for this tick
+    doneTick_ = tick;
+    // Now generate input for the next + offset
+    targetTick_ = tick + game_->getTickOffset();
+
+    // We've completed input for the previous target frame
+    return true;
+}
+
+void LocalPlayer::playerAction(int64_t playerID, const PlayerAction &action)
+{
+    // TODO hmm, not much to do here
 }
 
 void LocalPlayer::renderUpdate(float dt)
 {
-    int x, y, buttons;
-    buttons = SDL_GetMouseState(&x, &y);
+    // No input while game is paused, not even panning
+    if (game_->isPaused())
+        return;
+
+    int x, y;
+    SDL_GetMouseState(&x, &y);
     const glm::vec2 &res = renderer_->getResolution();
     const int CAMERA_PAN_THRESHOLD = getParam("camera.panthresh");
 
@@ -44,26 +77,17 @@ void LocalPlayer::renderUpdate(float dt)
     renderer_->updateCamera(glm::vec3(dir.x, 0.f, dir.y) * CAMERA_PAN_SPEED * dt);
 }
 
-PlayerAction
-LocalPlayer::getAction()
+void LocalPlayer::setGame(Game *game)
 {
-    PlayerAction ret;
-
-    if (actions_.empty())
-    {
-        ret["type"] = ActionTypes::NONE;
-    }
-    else
-    {
-        ret = actions_.front();
-        actions_.pop();
-    }
-
-    return ret;
+    Player::setGame(game);
 }
 
-void
-LocalPlayer::handleEvent(const SDL_Event &event) {
+void LocalPlayer::handleEvent(const SDL_Event &event)
+{
+    // No input while game is paused, not even panning
+    if (game_->isPaused())
+        return;
+
 	const float CAMERA_PAN_SPEED = getParam("camera.panspeed.key");
 	LoggerPtr log = Logger::getLogger("Player");
     switch (event.type) {
@@ -89,14 +113,11 @@ LocalPlayer::handleEvent(const SDL_Event &event) {
                 PlayerAction action;
                 action["type"] = ActionTypes::STOP;
                 action["entity"] = (Json::Value::UInt64) selection_;
-                actions_.push(action);
+                action["pid"] = (Json::Value::Int64) playerID_;
+                action["tick"] = (Json::Value::Int64) targetTick_;
+                game_->addAction(playerID_, action);
             }
         }
-        /* XXX(zack) I commented this out
-        if (selection_) {
-        	log->info() << event.key.keysym.sym << "\n";
-        }
-        */
 
 
         break;
@@ -145,7 +166,9 @@ LocalPlayer::handleEvent(const SDL_Event &event) {
                 action["type"] = ActionTypes::ATTACK;
                 action["entity"] = (Json::Value::UInt64) selection_;
                 action["enemy_id"] = (Json::Value::UInt64) eid;
-                actions_.push(action);
+                action["pid"] = (Json::Value::Int64) playerID_;
+                action["tick"] = (Json::Value::Int64) targetTick_;
+                game_->addAction(playerID_, action);
         	}
             // If we have a selection, and they didn't click on the current
             // selection, move them to target
@@ -161,7 +184,9 @@ LocalPlayer::handleEvent(const SDL_Event &event) {
                     action["type"] = ActionTypes::MOVE;
                     action["entity"] = (Json::Value::UInt64) selection_;
                     action["target"] = toJson(loc);
-                    actions_.push(action);
+                    action["pid"] = (Json::Value::Int64) playerID_;
+                    action["tick"] = (Json::Value::Int64) targetTick_;
+                    game_->addAction(playerID_, action);
                 }
             }
         }
@@ -174,5 +199,27 @@ LocalPlayer::setSelection(eid_t eid)
 {
     selection_ = eid;
     renderer_->setSelection(selection_);
+}
+
+
+bool
+SlowPlayer::update(int64_t tick)
+{
+    // Just blast through the sync frames, for now
+    if (tick < 0)
+        return true;
+
+    if (frand() < getParam("slowPlayer.dropChance"))
+    {
+        Logger::getLogger("SlowPlayer")->info() << "I strike again!\n";
+        return false;
+    }
+
+    PlayerAction a;
+    a["type"] = ActionTypes::NONE;
+    a["tick"] = (Json::Value::Int64) tick;
+    a["pid"] = (Json::Value::Int64) playerID_;
+    game_->addAction(playerID_, a);
+    return true;
 }
 
