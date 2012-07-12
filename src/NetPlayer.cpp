@@ -14,7 +14,7 @@ void netThreadFunc(kissnet::tcp_socket_ptr sock, std::queue<PlayerAction> &queue
         
         // First a 4-byte size header
         uint32_t sz;
-        ssize_t bytes_read;
+        int bytes_read;
         if ((bytes_read = sock->recv((char *)&sz, 4)) < 4)
         {
             if (bytes_read == 0)

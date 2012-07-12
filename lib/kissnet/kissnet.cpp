@@ -25,7 +25,8 @@ namespace kissnet
 void init_networking()
 {
 #ifdef _MSC_VER
-    // Initialize Winsock
+#pragma comment(lib, "Ws2_32.lib")
+	// Initialize Winsock
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
         throw socket_exception("WSAStartup failed\n");
@@ -149,9 +150,9 @@ tcp_socket_ptr tcp_socket::accept()
     return ret;
 }
 
-ssize_t tcp_socket::send(const std::string& data)
+int tcp_socket::send(const std::string& data)
 {
-    ssize_t bytes_sent = 0;
+    int bytes_sent = 0;
     
     if ((bytes_sent = ::send(sock, data.c_str(), data.size(), 0)) < 0)
         throw socket_exception("Unable to send", true);
@@ -159,9 +160,9 @@ ssize_t tcp_socket::send(const std::string& data)
     return bytes_sent;
 }
 
-ssize_t tcp_socket::recv(char *buffer, size_t buffer_len)
+int tcp_socket::recv(char *buffer, size_t buffer_len)
 {
-    ssize_t bytes_received;
+    int bytes_received;
 
     if ((bytes_received = ::recv(sock, buffer, buffer_len, 0)) < 0)
         throw socket_exception("Unable to recv", true);

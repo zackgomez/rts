@@ -44,8 +44,8 @@ public:
     void listen(const std::string& port, int backlog);
     tcp_socket_ptr accept();
 
-    ssize_t send(const std::string& data);
-    ssize_t recv(char* buffer, size_t buffer_len);
+    int send(const std::string& data);
+    int recv(char* buffer, size_t buffer_len);
 
     std::string getHostname() const;
     std::string getPort() const;
