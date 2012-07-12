@@ -102,6 +102,7 @@ void tcp_socket::connect(const std::string &addr, const std::string& port)
 
 void tcp_socket::close()
 {
+    std::cout << "Closing socket!\n";
 #ifdef _MSC_VER
     ::closesocket(sock);
 #else
@@ -158,7 +159,7 @@ ssize_t tcp_socket::send(const std::string& data)
     return bytes_sent;
 }
 
-ssize_t tcp_socket::recv(char *buffer, int buffer_len)
+ssize_t tcp_socket::recv(char *buffer, size_t buffer_len)
 {
     ssize_t bytes_received;
 

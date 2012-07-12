@@ -4,7 +4,6 @@
 #include "kissnet.h"
 #include <thread>
 #include <mutex>
-#include "Semaphore.h"
 
 class NetPlayer : public Player
 {
@@ -21,10 +20,16 @@ private:
     LoggerPtr logger_;
     kissnet::tcp_socket_ptr sock_;
     std::thread netThread_;
+    std::queue<PlayerAction> actions_;
+    std::mutex mutex_;
     // last tick that is fully received
     int64_t doneTick_;
 
     // The id of the local player who's actions we want to send
     int64_t localPlayerID_;
+
+    // JSON reader/writers
+    Json::FastWriter writer_;
+    Json::Reader reader_;
 };
 

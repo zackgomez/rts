@@ -45,7 +45,7 @@ public:
     tcp_socket_ptr accept();
 
     ssize_t send(const std::string& data);
-    ssize_t recv(char* buffer, int buffer_len);
+    ssize_t recv(char* buffer, size_t buffer_len);
 
     std::string getHostname() const;
     std::string getPort() const;
