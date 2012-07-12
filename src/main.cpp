@@ -28,6 +28,7 @@ LocalPlayer *player;
 Game *game;
 OpenGLRenderer *renderer;
 
+// TODO take this in as an argument!
 const std::string port = "27465";
 
 NetPlayer * getOpponent(const std::string &ip)
@@ -46,7 +47,7 @@ NetPlayer * getOpponent(const std::string &ip)
     }
     else
     {
-        logger->info() << "Connected to " << ip << ":" << port << '\n';
+        logger->info() << "Connecting to " << ip << ":" << port << '\n';
         sock = kissnet::tcp_socket::create();
         sock->connect(ip, port);
     }
@@ -179,22 +180,12 @@ int main (int argc, char **argv)
     if (!initLibs())
         exit(1);
 
-    /*
-    std::string ip;
-    if (argc == 2)
-        ip = argv[1];
-
-    Player *opp = getOpponent(ip);
-    return 0;
-    */
-
-
+    // Set up players and game
 	std::vector<Player *> players = getPlayers(args);
     game = new Game(new Map(glm::vec2(20, 20)), players);
     game->addRenderer(renderer);
 
-
-
+    // RUN IT
     mainloop();
 
     return 0;
