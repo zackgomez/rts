@@ -28,8 +28,7 @@ private:
     // The id of the local player who's actions we want to send
     int64_t localPlayerID_;
 
-    // JSON reader/writers
+    // JSON writers
     Json::FastWriter writer_;
-    Json::Reader reader_;
 };
 

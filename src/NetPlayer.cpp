@@ -3,10 +3,10 @@
 #include "PlayerAction.h"
 
 void netThreadFunc(kissnet::tcp_socket_ptr sock, std::queue<PlayerAction> &queue,
-        std::mutex &queueMutex_)
+        std::mutex &queueMutex)
 {
     LoggerPtr logger = Logger::getLogger("NetThread");
-    logger->info() << "HELLO!\n";
+    Json::Reader reader;
     for (;;)
     {
         // TODO deal with exceptions
@@ -23,16 +23,20 @@ void netThreadFunc(kissnet::tcp_socket_ptr sock, std::queue<PlayerAction> &queue
             assert(false && "Didn't read a full 4 byte header");
         }
 
-        logger->info() << "Read header of size: " << sz << '\n';
-
         // Allocate space
         std::string str(sz, '\0');
         if (sock->recv(&str[0], sz) < sz)
             assert(false && "Didn't read a full message");
 
-        std::cout << "Received string: " << str << '\n';
-
         // TODO queue message, update doneTick if required
+        Json::Value act;
+        reader.parse(str, act);
+
+        logger->info() << "Received action: " << act << '\n';
+
+        std::unique_lock<std::mutex> lock(queueMutex);
+        queue.push(act);
+        // automatically unlocks when lock goes out of scope
     }
 }
 
@@ -55,17 +59,21 @@ NetPlayer::~NetPlayer()
 
 bool NetPlayer::update(int64_t tick)
 {
-    // TODO if its the final sync frame, wait for to be read for first tick
-    
-    // TODO remove this!
-    if (tick < 0)
-        return true;
-    PlayerAction a;
-    a["type"] = ActionTypes::NONE;
-    a["tick"] = (Json::Value::Int64) tick;
-    a["pid"] = (Json::Value::Int64) playerID_;
-    game_->addAction(playerID_, a);
-    return true;
+    std::unique_lock<std::mutex> lock(mutex_);
+    while (!actions_.empty())
+    {
+        PlayerAction a = actions_.front();
+        actions_.pop();
+
+        assert(a["pid"].asInt64() == playerID_);
+        game_->addAction(playerID_, a);
+
+        if (a["type"] == ActionTypes::NONE)
+        {
+            assert(a["tick"].asInt64() > doneTick_);
+            doneTick_ = (int64_t) a["tick"].asInt64();
+        }
+    }
 
     return doneTick_ >= tick;
 }
@@ -82,7 +90,7 @@ void NetPlayer::playerAction(int64_t playerID, const PlayerAction &action)
 
         //logger_->info() << "Sending " << msg << " across network to player "
             //<< playerID_ << '\n';
-        logger_->info() << "Body size " << len << " msg size " << msg.size() << '\n';
+        //logger_->info() << "Body size " << len << " msg size " << msg.size() << '\n';
 
 
         // TODO queue up the action to be sent, or maybe just send it
