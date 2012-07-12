@@ -13,7 +13,12 @@ public:
 
     virtual void update(float dt);
 
+    // override interpolation functions
+    virtual glm::vec3 getPosition(float dt) const;
+    virtual float getAngle(float dt) const;
+
 protected:
+    static const glm::vec3 getDirection(float angle);
     float speed_;
     float turnSpeed_;
 };

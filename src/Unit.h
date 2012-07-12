@@ -14,8 +14,6 @@ public:
     explicit Unit(int64_t playerID, const glm::vec3 &pos);
     virtual ~Unit() { }
 
-    static const std::string TYPE;
-    virtual std::string getType() const { return TYPE; }
     virtual float getSpeed() const { return speed_; }
     virtual float getTurnSpeed() const { return turnSpeed_; }
 

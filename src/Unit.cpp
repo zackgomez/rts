@@ -2,7 +2,6 @@
 #include "ParamReader.h"
 #include "math.h"
 
-const std::string Unit::TYPE = "Unit";
 LoggerPtr Unit::logger_;
 
 Unit::Unit(int64_t playerID, const glm::vec3 &pos) :

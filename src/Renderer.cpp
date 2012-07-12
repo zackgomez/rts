@@ -45,24 +45,15 @@ OpenGLRenderer::~OpenGLRenderer()
 
 void OpenGLRenderer::renderEntity(const Entity *entity)
 {
-    glm::vec3 pos = entity->getPosition();
-    float rotAngle = entity->getAngle();
+    glm::vec3 pos = entity->getPosition(simdt_);
+    float rotAngle = entity->getAngle(simdt_);
 
     // Interpolate if they move
-    // TODO(zack) perhaps move speeds into entity?
-    if (entity->getType() == Unit::TYPE)
-    {
-        const Unit *unit = (const Unit *) entity;
-        rotAngle += unit->getTurnSpeed() * simdt_;
-        float rad = deg2rad(rotAngle);
-        glm::vec3 vel = unit->getSpeed() * glm::vec3(cosf(rad), 0, sinf(rad)); 
-        pos += vel * simdt_;
-    }
-
     glm::mat4 transform = glm::scale(
             glm::rotate(
                 glm::translate(glm::mat4(1.f), pos),
                 // TODO(zack) why does rotAngle need to be negative here?
+                // I think openGL may use a "left handed" coordinate system...
                 -rotAngle, glm::vec3(0, 1, 0)),
             glm::vec3(entity->getRadius() / 0.5f));
 

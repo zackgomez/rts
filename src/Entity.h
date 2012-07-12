@@ -22,20 +22,28 @@ public:
     explicit Entity(int64_t playerID, glm::vec3 pos);
     virtual ~Entity();
 
-    virtual std::string getType() const = 0;
+    // This entity's unique id
     eid_t getID() const { return id_; }
+    // The player than owns this entity, or NO_PLAYER
     int64_t getPlayerID() const { return playerID_; }
 
-    const glm::vec3 getPosition() const { return pos_; }
-    const float getAngle() const {return angle_;}
+
+    // This unit's position
+    const glm::vec3& getPosition() const { return pos_; }
+    // This unit's facing angle (relative to +x axis)
+    const float getAngle() const { return angle_;}
     // This unit's rough bounding radius
     const float getRadius() const { return radius_; }
-
-    virtual void handleMessage(const Message& msg) = 0;
-
-    virtual void update(float dt) = 0;
     // When true, will be destructed by engine
     virtual bool needsRemoval() const = 0;
+
+    // Interpolation functions
+    virtual glm::vec3 getPosition(float dt) const { return getPosition(); }
+    virtual float getAngle(float dt) const { return getAngle(); }
+
+
+    virtual void handleMessage(const Message& msg) = 0;
+    virtual void update(float dt) = 0;
 
 protected:
     eid_t id_;

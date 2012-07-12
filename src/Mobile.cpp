@@ -23,8 +23,24 @@ void Mobile::update(float dt)
     while (angle_ < 0.f) angle_ += 360.f;
 
     // move
-    float rad = deg2rad(angle_);
-    glm::vec3 vel = speed_ * glm::vec3(cosf(rad), 0, sinf(rad)); 
+    glm::vec3 vel = speed_ * getDirection(angle_);
     pos_ += vel * dt;
+}
+
+glm::vec3 Mobile::getPosition(float dt) const
+{
+    glm::vec3 vel = speed_ * getDirection(getAngle(dt));
+    return pos_ + vel * dt;
+}
+
+float Mobile::getAngle(float dt) const
+{
+    return angle_ + turnSpeed_ * dt;
+}
+
+const glm::vec3 Mobile::getDirection(float angle)
+{
+    float rad = deg2rad(angle);
+    return glm::vec3(cosf(rad), 0, sinf(rad)); 
 }
 
