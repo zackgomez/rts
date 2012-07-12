@@ -3,14 +3,15 @@
 eid_t Entity::lastID_ = 1;
 
 Entity::Entity()
-: playerID_(NO_PLAYER)
-, id_(lastID_++)
+: id_(lastID_++)
+, playerID_(NO_PLAYER)
+, pos_(0.f)
 {
 }
 
 Entity::Entity(int64_t playerID, glm::vec3 pos)
-: playerID_(playerID)
-, id_(lastID_++)
+: id_(lastID_++)
+, playerID_(playerID)
 , pos_(pos)
 {
 }

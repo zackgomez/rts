@@ -6,7 +6,7 @@ const std::string Unit::TYPE = "Unit";
 LoggerPtr Unit::logger_;
 
 Unit::Unit(int64_t playerID, const glm::vec3 &pos) :
-    Mobile(playerID, pos, 0.f, 0.f),
+    Mobile(playerID, pos),
     Actor(1.f, 0.f, 0.f, ATTACK_TYPE_NORMAL, 0.f),
     state_(new NullState(this))
 {
@@ -62,16 +62,7 @@ void Unit::update(float dt)
         state_ = next;
     }
 
-    // rotate
-    angle_ += turnSpeed_ * dt;
-    // clamp to [0, 360]
-    while (angle_ > 360.f) angle_ -= 360.f;
-    while (angle_ < 0.f) angle_ += 360.f;
-
-    // move
-    float rad = deg2rad(angle_);
-    glm::vec3 vel = speed_ * glm::vec3(cosf(rad), 0, sinf(rad)); 
-    pos_ += vel * dt;
+    Mobile::update(dt);
 }
 
 bool Unit::needsRemoval() const

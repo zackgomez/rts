@@ -38,15 +38,14 @@ public:
     virtual bool needsRemoval() const = 0;
 
 protected:
+    eid_t id_;
+    int64_t playerID_;
 
     glm::vec3 pos_;
     float angle_;
     float radius_;
-    int64_t playerID_;
 
 private:
-    eid_t id_;
-
     static uint64_t lastID_;
 };
 

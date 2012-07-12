@@ -1,15 +1,17 @@
 #include "Mobile.h"
-#include "Targetable.h"
-#include "glm.h"
 
 class Projectile :
     public Mobile
 {
 public:
-    explicit Projectile();
-    explicit Projectile(glm::vec2 pos, float speed, Targetable *target);
+    Projectile();
+    Projectile(int64_t playerID, const glm::vec3 &pos, 
+            const std::string &type, eid_t targetID);
     virtual ~Projectile() {}
+
     virtual void update(float dt);
 protected:
-    Targetable *target_;
+    eid_t targetID_;
+    std::string projType_;
 };
+
