@@ -11,5 +11,7 @@ camera.panthresh 100
 
 unit.maxSpeed 3.0
 unit.turnRate 800.0
+unit.attackRange 6.0
+unit.attackCooldown 1.0
 
 slowPlayer.dropChance 0.05

@@ -26,6 +26,7 @@ protected:
 
     friend class NullState;
     friend class MoveState;
+    //friend class AttackState;
 
 private:
     static LoggerPtr logger_;
@@ -77,4 +78,19 @@ public:
 protected:
     glm::vec3 target_;
 };
+/*
+class AttackState: public UnitState
+{
+public:
+    explicit AttackState(Entity *target, Unit *unit);
+    virtual ~AttackState() { }
 
+    virtual void update(float dt);
+    virtual void stop();
+    virtual UnitState * next();
+
+    virtual std::string getName() { return "AttackState"; }
+protected:
+    Entity *target_;
+};
+*/

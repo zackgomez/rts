@@ -27,5 +27,5 @@ protected:
     int attack_type_;
     float attack_range_;
 private:
-    float attack_timer;
+    float attack_timer_;
 };

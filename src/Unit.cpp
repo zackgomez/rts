@@ -128,3 +128,23 @@ UnitState * MoveState::next()
     return NULL;
 }
 
+/*
+AttackState::AttackState(Entity *target, Unit *unit) :
+    UnitState(unit),
+    target_(target)
+{
+}
+
+void AttackState::update(float dt)
+{
+    if (unit_->attack_timer_ <= 0)
+    {
+        if (glm::distance(target_->getPosition(), unit_->pos_ <= getParam("unit.attackRange")))
+        {
+            unit_->attack_timer_ = getParam("unit.attackCooldown");
+            printf("Attacking target %d\n", target_->getID());
+            //TODO: Spawn projectile, fire it at target_
+        }
+    }
+}
+*/
