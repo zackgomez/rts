@@ -34,6 +34,7 @@ public:
 
     // Does not block, should only be called from Game thread
     void sendMessage(eid_t to, const Message &msg);
+    void handleMessage(const Message &msg);
     // Can possibly block, but should never block long
     void addAction(int64_t pid, const PlayerAction &act);
 

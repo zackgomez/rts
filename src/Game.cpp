@@ -4,6 +4,8 @@
 #include "Player.h"
 #include "Entity.h"
 #include "Unit.h"
+#include "MessageHub.h"
+#include "Projectile.h"
 
 Game::Game(Map *map, const std::vector<Player *> &players) :
     map_(map),
@@ -173,6 +175,38 @@ void Game::sendMessage(eid_t to, const Message &msg)
     }
 
     it->second->handleMessage(msg);
+}
+
+void Game::handleMessage(const Message &msg)
+{
+    if (msg["type"] == MessageTypes::SPAWN_ENTITY)
+    {
+        assert(msg.isMember("entity_type"));
+        assert(msg.isMember("entity_pid"));
+        assert(msg.isMember("entity_pos"));
+
+        if (msg["entity_type"] == "PROJECTILE")
+        {
+            assert(msg.isMember("projectile_target"));
+            assert(msg.isMember("projectile_name"));
+
+            Projectile *proj =
+                new Projectile(msg["entity_pid"].asUInt64(),
+                        toVec3(msg["entity_pos"]),
+                        msg["projectile_name"].asString(),
+                        msg["projectile_target"].asUInt64());
+            entities_[proj->getID()] = proj;
+        }
+        else
+        {
+            logger_->warning() << "Asked to spawn unknown entity: " << msg;
+        }
+
+    }
+    else
+    {
+        logger_->warning() << "Game received unknown message type: " << msg;
+    }
 }
 
 void Game::addAction(int64_t pid, const PlayerAction &act)

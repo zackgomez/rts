@@ -6,14 +6,12 @@
 #include <math.h>
 #include <json/json.h>
 #include "glm.h"
-#include "MessageHub.h"
+#include "Message.h"
 
 typedef uint64_t eid_t;
 
 const eid_t NO_ENTITY = 0;
 const int64_t NO_PLAYER = -1;
-
-class EntityListener;
 
 class Entity
 {
@@ -40,7 +38,6 @@ public:
     // Interpolation functions
     virtual glm::vec3 getPosition(float dt) const { return getPosition(); }
     virtual float getAngle(float dt) const { return getAngle(); }
-
 
     virtual void handleMessage(const Message& msg) = 0;
     virtual void update(float dt) = 0;

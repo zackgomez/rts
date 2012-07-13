@@ -1,10 +1,10 @@
 #pragma once
 #include <json/json.h>
 #include "Logger.h"
+#include "Entity.h"
+#include "Message.h"
 
 class Game;
-
-typedef Json::Value Message;
 
 class MessageHub
 {
@@ -13,6 +13,8 @@ public:
     ~MessageHub();
 
     void setGame(Game *game);
+
+    const Entity *getEntity(eid_t eid) const;
     // Immediately dispatches message
     void sendMessage(const Message &msg);
     // TODO dispatchMessage (sends after unit updates until no more messages)
@@ -24,9 +26,3 @@ private:
     Game *game_;
     LoggerPtr logger_;
 };
-
-namespace MessageTypes
-{
-    const std::string ORDER = "ORDER";
-};
-

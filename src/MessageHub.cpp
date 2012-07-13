@@ -1,6 +1,5 @@
 #include "MessageHub.h"
 #include <cassert>
-#include "Entity.h"
 #include "Game.h"
 
 MessageHub * MessageHub::instance = NULL;
@@ -27,10 +26,19 @@ void MessageHub::setGame(Game *game)
     game_ = game;
 }
 
+const Entity * MessageHub::getEntity(eid_t eid) const
+{
+    return game_->getEntity(eid);
+}
+
 void MessageHub::sendMessage(const Message &msg)
 {
     assert (game_);
     eid_t eid = msg["to"].asUInt64();
 
-    game_->sendMessage(eid, msg);
+    if (eid == NO_ENTITY)
+        game_->handleMessage(msg);
+    else
+        game_->sendMessage(eid, msg);
 }
+
