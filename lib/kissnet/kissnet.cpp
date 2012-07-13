@@ -164,8 +164,15 @@ int tcp_socket::recv(char *buffer, size_t buffer_len)
 {
     int bytes_received;
 
-    if ((bytes_received = ::recv(sock, buffer, buffer_len, 0)) < 0)
-        throw socket_exception("Unable to recv", true);
+    // TODO(zack): this is a SERIOUS HACK, should fix this...
+    // Deal with being interrupted properly
+    // TODO Also think about what to do when these return 0?  Should we close
+    // the socket?
+    while ((bytes_received = ::recv(sock, buffer, buffer_len, 0)) < 0)
+    {
+        if (errno != EINTR)
+            throw socket_exception("Unable to recv", true);
+    }
 
     return bytes_received;
 }
