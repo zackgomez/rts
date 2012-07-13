@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "Entity.h"
 #include "Unit.h"
+#include "MessageHub.h"
 
 Game::Game(Map *map, const std::vector<Player *> &players) :
     map_(map),
@@ -173,6 +174,18 @@ void Game::sendMessage(eid_t to, const Message &msg)
     }
 
     it->second->handleMessage(msg);
+}
+
+void Game::handleMessage(const Message &msg)
+{
+    if (msg["type"] == MessageTypes::SPAWN_ENTITY)
+    {
+        // TODO spawn entity
+    }
+    else
+    {
+        logger_->warning() << "Game received unknown message type: " << msg;
+    }
 }
 
 void Game::addAction(int64_t pid, const PlayerAction &act)

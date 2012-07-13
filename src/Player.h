@@ -5,6 +5,7 @@
 #include <json/json.h>
 #include "glm.h"
 #include "PlayerAction.h"
+#include "Logger.h"
 
 class OpenGLRenderer;
 class Game;

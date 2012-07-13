@@ -22,3 +22,4 @@ protected:
     float speed_;
     float turnSpeed_;
 };
+
