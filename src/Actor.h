@@ -16,16 +16,17 @@ class Actor :
     public Targetable
 {
 public:
-    explicit Actor();
-    explicit Actor(float health, float attack_damage, float attack_cooldown, int attack_type, float attack_range);
-    virtual ~Actor() {}
+    explicit Actor(const std::string &name);
+    virtual ~Actor();
     virtual void update(float dt);
-protected:
-    float attack_damage_;
-    float attack_cooldown_;
-    Targetable target_;
-    int attack_type_;
-    float attack_range_;
+
 private:
+    std::string actorName_;
     float attack_timer_;
+
+protected:
+    float attack_cooldown_;
+    float attack_range_;
+    float attack_arc_;
 };
+

@@ -54,7 +54,7 @@ public:
 
     virtual void playerAction(int64_t playerID, const PlayerAction &action);
 
-    // TODO abstract SDL_Even away here
+    // TODO(zack) abstract SDL_Event away here
     void handleEvent(const SDL_Event &event);
     // Called once per frame with render dt
     virtual void renderUpdate(float dt);
@@ -66,7 +66,7 @@ private:
     // The tick the current actions will be executed on
     int64_t targetTick_; 
     int64_t doneTick_;
-    // TODO make an array
+    // TODO(zack) make an array, so you can have multiple units selected
     eid_t selection_;
 
     LoggerPtr logger_;

@@ -21,10 +21,10 @@ Game::Game(Map *map, const std::vector<Player *> &players) :
     for (auto player : players)
         player->setGame(this);
 
-    // TODO generalize this
+    // TODO(zack) generalize this
     for (int i = 0; i < 2; i++) {
         glm::vec3 pos(-0.5f + i, 0.5f, 0.f);
-    	Unit *u = new Unit(i + 1, pos);
+    	Unit *u = new Unit(i + 1, pos, "unit");
     	entities_[u->getID()] = u;
     }
 }
@@ -221,7 +221,7 @@ void Game::addAction(int64_t pid, const PlayerAction &act)
     assert(act.isMember("type"));
     assert(getPlayer(pid));
 
-    // TODO handle leave game message here by quitting game
+    // TODO(zack) handle leave game message here by quitting game
 
     std::unique_lock<std::mutex> lock(actionMutex_);
     actions_[pid].push(act);
@@ -252,7 +252,7 @@ void Game::handleAction(int64_t playerID, const PlayerAction &action)
     //std::cout << "[" << playerID
         //<< "] Read action " << action.toStyledString() << '\n';
 
-    // TODO include player ID in messages
+    // TODO(zack) include player ID in messages
     if (action["type"] == ActionTypes::MOVE)
     {
         // Generate a message to target entity with move order

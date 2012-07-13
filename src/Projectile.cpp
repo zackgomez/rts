@@ -42,8 +42,12 @@ void Projectile::update(float dt)
     if (dist < speed_ * dt)
     {
         speed_ = dist / dt;
-        // TODO send message
-        logger_->info() << "Would send damage message\n";
+        Message msg;
+        msg["to"] = toJson(targetID_);
+        msg["type"] = MessageTypes::ATTACK;
+        msg["pid"] = toJson(playerID_);
+        msg["damage"] = getParam(name_ + ".damage");
+        MessageHub::get()->sendMessage(msg);
         done_ = true;
     }
 

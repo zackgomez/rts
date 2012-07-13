@@ -11,7 +11,8 @@ class Unit :
     public Mobile, public Actor
 {
 public:
-    explicit Unit(int64_t playerID, const glm::vec3 &pos);
+    explicit Unit(int64_t playerID, const glm::vec3 &pos,
+            const std::string &name);
     virtual ~Unit() { }
 
     virtual float getSpeed() const { return speed_; }
@@ -23,13 +24,14 @@ public:
 
 protected:
     UnitState *state_;
+    void handleOrder(const Message &order);
+
+private:
+    static LoggerPtr logger_;
 
     friend class NullState;
     friend class MoveState;
     //friend class AttackState;
-
-private:
-    static LoggerPtr logger_;
 };
 
 class UnitState

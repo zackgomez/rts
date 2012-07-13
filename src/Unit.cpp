@@ -5,9 +5,9 @@
 
 LoggerPtr Unit::logger_;
 
-Unit::Unit(int64_t playerID, const glm::vec3 &pos) :
+Unit::Unit(int64_t playerID, const glm::vec3 &pos, const std::string &name) :
     Mobile(playerID, pos),
-    Actor(1.f, 0.f, 0.f, ATTACK_TYPE_NORMAL, 0.f),
+    Actor(name),
     state_(new NullState(this))
 {
     pos_ = pos;
@@ -19,49 +19,68 @@ Unit::Unit(int64_t playerID, const glm::vec3 &pos) :
     if (!logger_.get())
         logger_ = Logger::getLogger("Unit");
 
-    // TODO take this as a param
-    name_ = "unit";
+    name_ = name;
 }
 
 void Unit::handleMessage(const Message &msg)
 {
-    if (msg["type"] == MessageTypes::ORDER &&
-        msg["order_type"] == OrderTypes::MOVE)
+    if (msg["type"] == MessageTypes::ORDER)
     {
-        //logger_->info() << "Got a move order\n";
+        handleOrder(msg);
+    }
+    else if (msg["type"] == MessageTypes::ATTACK)
+    {
+        assert(msg.isMember("pid"));
+        assert(msg.isMember("damage"));
+
+        // TODO(zack) figure out how to deal with this case
+        assert(msg["pid"].asInt64() != playerID_);
+
+        // Just take damage for now
+        health_ -= msg["damage"].asFloat();
+    }
+    else
+    {
+        logger_->warning() << "Unit got unknown message: "
+            << msg.toStyledString() << '\n';
+    }
+}
+
+void Unit::handleOrder(const Message &order)
+{
+    assert(order["type"] == MessageTypes::ORDER);
+    assert(order.isMember("order_type"));
+    if (order["order_type"] == OrderTypes::MOVE)
+    {
         state_->stop();
         delete state_;
-        state_ = new MoveState(toVec3(msg["target"]), this);
+        state_ = new MoveState(toVec3(order["target"]), this);
     }
-    else if (msg["type"] == MessageTypes::ORDER &&
-            msg["order_type"] == OrderTypes::ATTACK)
+    else if (order["type"] == MessageTypes::ORDER &&
+            order["order_type"] == OrderTypes::ATTACK)
     {
-    	//logger_->info() << "Got an attack order\n";
-    	//logger_->info() << "Imma go nuts on you id: " << msg["enemy_id"] << "\n";
-
+        // TODO(zack) change state, don't just shoot...
         Message spawnMsg;
         spawnMsg["type"] = MessageTypes::SPAWN_ENTITY;
         spawnMsg["to"] = (Json::Value::UInt64) NO_ENTITY; // Send to game object
-        spawnMsg["entity_type"] = "PROJECTILE"; // TODO make constant (also in Game.cpp)
+        spawnMsg["entity_type"] = "PROJECTILE"; // TODO(zack) make constant (also in Game.cpp)
         spawnMsg["entity_pid"] = (Json::Value::Int64) playerID_;
         spawnMsg["entity_pos"] = toJson(pos_);
-        spawnMsg["projectile_target"] = msg["enemy_id"];
-        spawnMsg["projectile_name"] = "projectile"; // TODO make a param
+        spawnMsg["projectile_target"] = order["enemy_id"];
+        spawnMsg["projectile_name"] = "projectile"; // TODO(zack) make a param
 
         MessageHub::get()->sendMessage(spawnMsg);
     }
-    else if (msg["type"] == MessageTypes::ORDER &&
-            msg["order_type"] == OrderTypes::STOP)
+    else if (order["type"] == MessageTypes::ORDER &&
+            order["order_type"] == OrderTypes::STOP)
     {
-        //logger_->info() << "Got a stop order\n";
         state_->stop();
         delete state_;
         state_ = new NullState(this);
     }
     else
     {
-        logger_->warning() << "Unit got unknown message: "
-            << msg.toStyledString() << '\n';
+        logger_->warning() << "Unit got unknown order: " << order << '\n';
     }
 }
 
@@ -81,7 +100,7 @@ void Unit::update(float dt)
 
 bool Unit::needsRemoval() const
 {
-    return false;
+    return health_ <= 0.f;
 }
 
 void NullState::update(float dt)
@@ -157,7 +176,7 @@ void AttackState::update(float dt)
         {
             unit_->attack_timer_ = getParam("unit.attackCooldown");
             printf("Attacking target %d\n", target_->getID());
-            //TODO: Spawn projectile, fire it at target_
+            //TODO(connor): Spawn projectile, fire it at target_
         }
     }
 }

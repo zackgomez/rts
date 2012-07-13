@@ -43,6 +43,20 @@ Json::Value toJson(const glm::vec4 &v)
     return jv;
 }
 
+Json::Value toJson(uint64_t n)
+{
+    Json::Value v;
+    v = (Json::Value::UInt64) n;
+    return v;
+}
+
+Json::Value toJson(int64_t n)
+{
+    Json::Value v;
+    v = (Json::Value::Int64) n;
+    return v;
+}
+
 glm::vec2 toVec2(const Json::Value &v)
 {
     return glm::vec2(v[0].asFloat(), v[1].asFloat());

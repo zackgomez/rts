@@ -45,7 +45,7 @@ bool LocalPlayer::update(int64_t tick)
 
 void LocalPlayer::playerAction(int64_t playerID, const PlayerAction &action)
 {
-    // TODO hmm, not much to do here
+    // nop, mostly used by network players
 }
 
 void LocalPlayer::renderUpdate(float dt)

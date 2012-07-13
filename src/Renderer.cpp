@@ -206,11 +206,11 @@ eid_t OpenGLRenderer::selectEntity (const glm::vec2 &screenCoord) const
 {
     glm::vec2 pos = glm::vec2(screenToNDC(screenCoord));
 
-    // TODO Make this find the BEST instead of the first
+    // TODO(zack) Make this find the BEST instead of the first
     for (auto& pair : ndcCoords_)
     {
         glm::vec2 diff = pos - glm::vec2(pair.second);
-        // TODO compute this based on size of object
+        // TODO(zack) compute this based on size of object
         float thresh = 0.02f;
         if (glm::dot(diff, diff) < thresh)
             return pair.first->getID();

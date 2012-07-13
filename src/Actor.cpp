@@ -1,19 +1,23 @@
 #include "Actor.h"
+#include "ParamReader.h"
+#include "glm.h"
 
-Actor::Actor() :
-    Targetable()
+Actor::Actor(const std::string &name) :
+    Targetable(getParam(name + ".health")),
+    actorName_(name),
+    attack_timer_(0.f),
+    attack_cooldown_(getParam(name + ".cooldown")),
+    attack_range_(getParam(name + ".range")),
+    attack_arc_(getParam(name + ".firingArc"))
 {
 }
 
-Actor::Actor(float health, float attack_damage, float attack_cooldown, int attack_type, float attack_range) :
-    Targetable(health),
-    attack_damage_(attack_damage),
-    attack_cooldown_(attack_cooldown),
-    attack_type_(attack_type),
-    attack_range_(attack_range)
+Actor::~Actor()
 {
 }
 
 void Actor::update(float dt)
 {
+    attack_timer_ = glm::max(0.f, attack_timer_ - dt);
 }
+

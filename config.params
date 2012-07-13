@@ -11,10 +11,13 @@ camera.panthresh 100
 
 unit.speed 3.0
 unit.turnRate 800.0
-unit.attackRange 6.0
-unit.attackCooldown 1.0
+unit.health 100.0
+unit.range 6.0
+unit.cooldown 1.0
+unit.firingArc 1.0
 
 projectile.speed 10.0
 projectile.radius 0.3
+projectile.damage 10.0
 
 slowPlayer.dropChance 0.05
