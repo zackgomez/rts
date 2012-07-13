@@ -19,6 +19,7 @@ public:
 
 protected:
     static const glm::vec3 getDirection(float angle);
+    float angleToTarget(const glm::vec3 &pos) const;
     float speed_;
     float turnSpeed_;
 };

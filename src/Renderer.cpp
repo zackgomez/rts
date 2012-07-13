@@ -47,6 +47,7 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
 {
     glm::vec3 pos = entity->getPosition(simdt_);
     float rotAngle = entity->getAngle(simdt_);
+    const std::string &name = entity->getName();
 
     // Interpolate if they move
     glm::mat4 transform = glm::scale(
@@ -58,19 +59,32 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
             glm::vec3(entity->getRadius() / 0.5f));
 
     // if selected draw as green
-    glm::vec4 color = entity->getID() == selection_ ?  glm::vec4(0, 1, 0, 1) : glm::vec4(0, 0, 1, 1);
+    if (name == "unit")
+    {
+        glm::vec4 color = entity->getID() == selection_ ?  glm::vec4(0, 1, 0, 1) : glm::vec4(0, 0, 1, 1);
 
-    glUseProgram(unitProgram_);
-    GLuint colorUniform = glGetUniformLocation(mapProgram_, "color");
-    GLuint lightPosUniform = glGetUniformLocation(mapProgram_, "lightPos");
-    glUniform4fv(colorUniform, 1, glm::value_ptr(color));
-    glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
-    renderMesh(transform, unitMesh_);
+        glUseProgram(unitProgram_);
+        GLuint colorUniform = glGetUniformLocation(mapProgram_, "color");
+        GLuint lightPosUniform = glGetUniformLocation(mapProgram_, "lightPos");
+        glUniform4fv(colorUniform, 1, glm::value_ptr(color));
+        glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
+        renderMesh(transform, unitMesh_);
 
-    glm::vec4 ndc = getProjectionStack().current() * getViewStack().current() *
-        transform * glm::vec4(0, 0, 0, 1);
-    ndc /= ndc.w;
-    ndcCoords_[entity] = glm::vec3(ndc);
+        glm::vec4 ndc = getProjectionStack().current() * getViewStack().current() *
+            transform * glm::vec4(0, 0, 0, 1);
+        ndc /= ndc.w;
+        ndcCoords_[entity] = glm::vec3(ndc);
+    }
+    else if (name == "projectile")
+    {
+        glm::vec4 color(1.f);
+        transform = glm::rotate(transform, 90.f, glm::vec3(1, 0, 0));
+        renderRectangleColor(transform, color);
+    }
+    else
+    {
+        logger_->warning() << "Unable to render entity " << entity->getName() << '\n';
+    }
 
     // TODO(zack) use these to fix unit shader lighting
     //glm::vec3 modelPos = applyMatrix(

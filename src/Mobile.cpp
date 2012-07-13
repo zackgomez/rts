@@ -44,3 +44,9 @@ const glm::vec3 Mobile::getDirection(float angle)
     return glm::vec3(cosf(rad), 0, sinf(rad)); 
 }
 
+float Mobile::angleToTarget(const glm::vec3 &target) const
+{
+    glm::vec3 delta = target - pos_;
+    return rad2deg(atan2(delta.z , delta.x));
+}
+

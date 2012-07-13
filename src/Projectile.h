@@ -1,4 +1,5 @@
 #include "Mobile.h"
+#include "Logger.h"
 
 class Projectile :
     public Mobile
@@ -10,8 +11,14 @@ public:
     virtual ~Projectile() {}
 
     virtual void update(float dt);
+    virtual bool needsRemoval() const;
+    virtual void handleMessage(const Message &msg);
+
 protected:
     eid_t targetID_;
-    std::string projType_;
+    bool done_;
+
+private:
+    static LoggerPtr logger_;
 };
 

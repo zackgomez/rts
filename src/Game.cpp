@@ -134,7 +134,13 @@ void Game::update(float dt)
         if (entity->needsRemoval())
             deadEnts.push_back(entity->getID());
     }
-    // TODO remove deadEnts
+    // Remove deadEnts
+    for (auto eid : deadEnts)
+    {
+        Entity *e = entities_[eid];
+        entities_.erase(eid);
+        delete e;
+    }
     // unlock entities automatically when lock goes out of scope
     
     // Next tick

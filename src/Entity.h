@@ -24,7 +24,7 @@ public:
     eid_t getID() const { return id_; }
     // The player than owns this entity, or NO_PLAYER
     int64_t getPlayerID() const { return playerID_; }
-
+    const std::string& getName() const { return name_; }
 
     // This unit's position
     const glm::vec3& getPosition() const { return pos_; }
@@ -45,6 +45,7 @@ public:
 protected:
     eid_t id_;
     int64_t playerID_;
+    std::string name_;
 
     glm::vec3 pos_;
     float angle_;

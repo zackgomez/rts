@@ -1,6 +1,7 @@
 #include "Unit.h"
 #include "ParamReader.h"
 #include "math.h"
+#include "MessageHub.h"
 
 LoggerPtr Unit::logger_;
 
@@ -17,6 +18,9 @@ Unit::Unit(int64_t playerID, const glm::vec3 &pos) :
 
     if (!logger_.get())
         logger_ = Logger::getLogger("Unit");
+
+    // TODO take this as a param
+    name_ = "unit";
 }
 
 void Unit::handleMessage(const Message &msg)
@@ -34,6 +38,17 @@ void Unit::handleMessage(const Message &msg)
     {
     	//logger_->info() << "Got an attack order\n";
     	//logger_->info() << "Imma go nuts on you id: " << msg["enemy_id"] << "\n";
+
+        Message spawnMsg;
+        spawnMsg["type"] = MessageTypes::SPAWN_ENTITY;
+        spawnMsg["to"] = (Json::Value::UInt64) NO_ENTITY; // Send to game object
+        spawnMsg["entity_type"] = "PROJECTILE"; // TODO make constant (also in Game.cpp)
+        spawnMsg["entity_pid"] = (Json::Value::Int64) playerID_;
+        spawnMsg["entity_pos"] = toJson(pos_);
+        spawnMsg["projectile_target"] = msg["enemy_id"];
+        spawnMsg["projectile_name"] = "projectile"; // TODO make a param
+
+        MessageHub::get()->sendMessage(spawnMsg);
     }
     else if (msg["type"] == MessageTypes::ORDER &&
             msg["order_type"] == OrderTypes::STOP)
@@ -86,11 +101,10 @@ MoveState::MoveState(const glm::vec3 &target, Unit *unit) :
 void MoveState::update(float dt)
 {
     // Calculate some useful values
-    glm::vec3 delta = target_ - unit_->pos_;
     float dist = glm::length(target_ - unit_->pos_);
-    float desired_angle = rad2deg(atan2(delta.z , delta.x));
+    float desired_angle = unit_->angleToTarget(target_);
     float delAngle = desired_angle - unit_->angle_;
-    float speed = getParam("unit.maxSpeed");
+    float speed = getParam("unit.speed");
     float turnRate = getParam("unit.turnRate");
     // rotate
     // only rotate when not close enough
