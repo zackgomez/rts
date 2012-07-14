@@ -2,7 +2,7 @@ resolution.x 1200
 resolution.y 800
 window.name  Ragnarok 0.1
 
-framerate 100.0
+framerate 60.0
 simrate   10.0
 
 camera.panspeed 10.0

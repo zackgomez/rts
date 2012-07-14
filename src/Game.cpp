@@ -145,13 +145,15 @@ void Game::update(float dt)
     
     // Next tick
     tick_++;
+    sync_tick_ = SDL_GetTicks();
 }
 
 void Game::render(float dt)
 {
-	// lock
+ 	// lock
 	std::unique_lock<std::mutex> lock(mutex_);
 
+	dt = (SDL_GetTicks() - sync_tick_) / 1000.f;
     // Render
     for (auto &renderer : renderers_)
         renderer->startRender(dt);
