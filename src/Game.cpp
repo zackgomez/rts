@@ -149,12 +149,12 @@ void Game::update(float dt)
 
 void Game::render(float dt)
 {
+	// lock
+	std::unique_lock<std::mutex> lock(mutex_);
+
     // Render
     for (auto &renderer : renderers_)
         renderer->startRender(dt);
-
-    // lock
-    std::unique_lock<std::mutex> lock(mutex_);
 
     for (auto &renderer : renderers_)
     renderer->renderMap(map_);
