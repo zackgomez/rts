@@ -31,6 +31,7 @@ OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution)
 	mapProgram_ = loadProgram("shaders/map.v.glsl", "shaders/map.f.glsl");
     unitProgram_ = loadProgram("shaders/unit.v.glsl", "shaders/unit.f.glsl"); 
     unitMesh_ = loadMesh("models/soldier.obj");
+    projectileMesh_ = loadMesh("models/projectile.obj");
     // unit model is based at 0, height 1, translate to center of model
     glm::mat4 unitMeshTrans =
         glm::scale(
@@ -77,9 +78,13 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
     }
     else if (name == "projectile")
     {
-        glm::vec4 color(1.f);
-        transform = glm::rotate(transform, 90.f, glm::vec3(1, 0, 0));
-        renderRectangleColor(transform, color);
+    	glm::vec4 color = glm::vec4(0.5, 0.7, 0.5, 1);
+    	glUseProgram(unitProgram_);
+    	GLuint colorUniform = glGetUniformLocation(mapProgram_, "color");
+    	GLuint lightPosUniform = glGetUniformLocation(mapProgram_, "lightPos");
+    	glUniform4fv(colorUniform, 1, glm::value_ptr(color));
+    	glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
+    	renderMesh(transform, projectileMesh_);
     }
     else
     {

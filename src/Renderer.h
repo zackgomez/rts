@@ -73,12 +73,12 @@ private:
     GLuint mapProgram_;
     GLuint unitProgram_;
     Mesh * unitMesh_;
+    Mesh * projectileMesh_;
 
     std::map<const Entity *, glm::vec3> ndcCoords_;
     eid_t selection_;
 
     std::vector<MapHighlight> highlights_;
-
 
     static LoggerPtr logger_;
 };
