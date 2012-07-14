@@ -142,20 +142,13 @@ void OpenGLRenderer::renderMap(const Map *map)
 
 void OpenGLRenderer::startRender(float dt)
 {
-    int64_t tick = game_->getTick();
-    if (lastTick_ != tick)
-    {
-        lastTick_ = tick;
-        simdt_ = 0.f;
-    }
-    else
-        simdt_ += dt;
-    renderdt_ = dt;
+    simdt_ = dt;
+    renderdt_ = SDL_GetTicks() - lastTick_;
 
     if (game_->isPaused())
     {
         simdt_ = renderdt_ = 0.f;
-        logger_->info() << "Rendering paused frame @ tick " << tick << '\n';
+        //logger_->info() << "Rendering paused frame @ tick " << tick << '\n';
     }
 
     glClearColor(0.f, 0.f, 0.f, 0.f);
@@ -179,6 +172,7 @@ void OpenGLRenderer::startRender(float dt)
 
     // Clear coordinates
     ndcCoords_.clear();
+    lastTick_ = SDL_GetTicks();
 }
 
 void OpenGLRenderer::endRender()

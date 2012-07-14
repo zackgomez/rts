@@ -104,7 +104,7 @@ void gameThread()
 
         game->update(simdt);
 
-        SDL_Delay(int(1000*simdt));
+        SDL_Delay(int(1000*simdt - (SDL_GetTicks() - start)));
     }
 }
 
