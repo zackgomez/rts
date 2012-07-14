@@ -59,10 +59,9 @@ void Unit::handleOrder(const Message &order)
     else if (order["type"] == MessageTypes::ORDER &&
             order["order_type"] == OrderTypes::ATTACK)
     {
-        // TODO(zack) change state, don't just shoot...
         state_->stop();
         delete state_;
-        state_ = new AttackState(order["enemy_id"].asInt64(), this);
+        state_ = new AttackState(order["enemy_id"].asUInt64(), this);
     }
     else if (order["type"] == MessageTypes::ORDER &&
             order["order_type"] == OrderTypes::STOP)
@@ -174,7 +173,7 @@ void AttackState::update(float dt)
         spawnMsg["entity_type"] = "PROJECTILE"; // TODO(zack) make constant (also in Game.cpp)
         spawnMsg["entity_pid"] = (Json::Value::Int64) unit_->getPlayerID();
         spawnMsg["entity_pos"] = toJson(unit_->getPosition(dt));
-        spawnMsg["projectile_target"] = (Json::Value::Int64) target_id_;
+        spawnMsg["projectile_target"] = (Json::Value::UInt64) target_id_;
         spawnMsg["projectile_name"] = "projectile"; // TODO(zack) make a param
 
         MessageHub::get()->sendMessage(spawnMsg);
@@ -183,6 +182,13 @@ void AttackState::update(float dt)
 
 UnitState * AttackState::next()
 {
+    const Entity *target = MessageHub::get()->getEntity(target_id_);
+    if (target == NULL)
+        return new NullState(unit_);
+    glm::vec3 targetPos = target->getPosition();
+    //TODO(connor) if target is out of range, make it pursue
+    if (glm::distance(unit_->getPosition(0.f), targetPos) > unit_->getAttackRange())
+        return new NullState(unit_);
     return NULL;
 }
 
