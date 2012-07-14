@@ -12,7 +12,8 @@ Game::Game(Map *map, const std::vector<Player *> &players) :
     players_(players),
     tick_(0),
     tickOffset_(2),
-    paused_(true)
+    paused_(true),
+    running_(true)
 {
     logger_ = Logger::getLogger("Game");
 
@@ -219,15 +220,25 @@ void Game::handleMessage(const Message &msg)
 
 void Game::addAction(int64_t pid, const PlayerAction &act)
 {
-    assert(act.isMember("tick"));
+    // CAREFUL: this function is called from different threads
     assert(act.isMember("type"));
     assert(getPlayer(pid));
 
-    // TODO(zack) handle leave game message here by quitting game
-
-    std::unique_lock<std::mutex> lock(actionMutex_);
-    actions_[pid].push(act);
-    lock.unlock();
+    // Quit game, no more loops after this, broadcast the message to all other
+    // players too
+    if (act["type"] == ActionTypes::LEAVE_GAME)
+    {
+        running_ = false;
+        logger_->info() << "Player " << pid << " has left the game.\n";
+    }
+    // Handle most events by just queueing them
+    else
+    {
+        assert(act.isMember("tick"));
+        std::unique_lock<std::mutex> lock(actionMutex_);
+        actions_[pid].push(act);
+        lock.unlock();
+    }
 
     // Broadcast action to all players
     for (auto& player : players_)
@@ -251,9 +262,6 @@ const Player * Game::getPlayer(int64_t pid) const
 
 void Game::handleAction(int64_t playerID, const PlayerAction &action)
 {
-    //std::cout << "[" << playerID
-        //<< "] Read action " << action.toStyledString() << '\n';
-
     // TODO(zack) include player ID in messages
     if (action["type"] == ActionTypes::MOVE)
     {

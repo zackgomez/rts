@@ -13,6 +13,7 @@ LocalPlayer::LocalPlayer(int64_t playerID, OpenGLRenderer *renderer) :
 ,   targetTick_(0)
 ,   doneTick_(-1e6) // no done ticks
 ,   selection_(NO_ENTITY)
+,   cameraPanDir_(0.f)
 {
     logger_ = Logger::getLogger("LocalPlayer");
 }
@@ -59,20 +60,21 @@ void LocalPlayer::renderUpdate(float dt)
     const glm::vec2 &res = renderer_->getResolution();
     const int CAMERA_PAN_THRESHOLD = getParam("camera.panthresh");
 
-    glm::vec2 dir = glm::vec2(0, 0);
+    // Mouse overrides keyboard
+    glm::vec2 dir = cameraPanDir_;
 
     if (x <= CAMERA_PAN_THRESHOLD) 
-        dir.x += 2 * (x - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
+        dir.x = 2 * (x - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
     else if (x > res.x - CAMERA_PAN_THRESHOLD)
-        dir.x += -2 * ((res.x - x) - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
+        dir.x = -2 * ((res.x - x) - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
     if (y <= CAMERA_PAN_THRESHOLD) 
-        dir.y += 2 * (y - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
+        dir.y = 2 * (y - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
     else if (y > res.y - CAMERA_PAN_THRESHOLD)
-        dir.y += -2 * ((res.y - y) - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
+        dir.y = -2 * ((res.y - y) - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
 
     const float CAMERA_PAN_SPEED = getParam("camera.panspeed");
-
-    renderer_->updateCamera(glm::vec3(dir.x, 0.f, dir.y) * CAMERA_PAN_SPEED * dt);
+    glm::vec3 delta = CAMERA_PAN_SPEED * dt * glm::vec3(dir.x, 0.f, dir.y);
+    renderer_->updateCamera(delta);
 }
 
 void LocalPlayer::setGame(Game *game)
@@ -82,25 +84,30 @@ void LocalPlayer::setGame(Game *game)
 
 void LocalPlayer::handleEvent(const SDL_Event &event)
 {
-    // No input while game is paused, not even panning
-    if (game_->isPaused())
-        return;
-
-	const float CAMERA_PAN_SPEED = getParam("camera.panspeed.key");
-	LoggerPtr log = Logger::getLogger("Player");
+    PlayerAction action;
     switch (event.type) {
+    case SDL_QUIT:
+        action["type"] = ActionTypes::LEAVE_GAME;
+        action["pid"] = toJson(playerID_);
+        game_->addAction(playerID_, action);
+        break;
     case SDL_KEYDOWN:
+        if (event.key.keysym.sym == SDLK_F10) {
+            action["type"] = ActionTypes::LEAVE_GAME;
+            action["pid"] = toJson(playerID_);
+            game_->addAction(playerID_, action);
+        }
         if (event.key.keysym.sym == SDLK_UP) {
-            renderer_->updateCameraVel(glm::vec3(0.f, 0.f, -CAMERA_PAN_SPEED));
+            cameraPanDir_ += glm::vec2(0, -1);
         }
         else if (event.key.keysym.sym == SDLK_DOWN) {
-            renderer_->updateCameraVel(glm::vec3(0.f, 0.f, CAMERA_PAN_SPEED));
+            cameraPanDir_ += glm::vec2(0, 1);
         }
         else if (event.key.keysym.sym == SDLK_RIGHT) {
-            renderer_->updateCameraVel(glm::vec3(CAMERA_PAN_SPEED, 0.f, 0.f));
+            cameraPanDir_ += glm::vec2(1, 0);
         }
         else if (event.key.keysym.sym == SDLK_LEFT) {
-            renderer_->updateCameraVel(glm::vec3(-CAMERA_PAN_SPEED, 0.f, 0.f));
+            cameraPanDir_ += glm::vec2(-1, 0);
         }
         else if (event.key.keysym.sym == SDLK_g) {
             SDL_WM_GrabInput(SDL_GRAB_ON);
@@ -108,32 +115,32 @@ void LocalPlayer::handleEvent(const SDL_Event &event)
         else if (event.key.keysym.sym == SDLK_s) {
             if (selection_)
             {
-                PlayerAction action;
                 action["type"] = ActionTypes::STOP;
-                action["entity"] = (Json::Value::UInt64) selection_;
-                action["pid"] = (Json::Value::Int64) playerID_;
-                action["tick"] = (Json::Value::Int64) targetTick_;
+                action["entity"] = toJson(selection_);
+                action["pid"] = toJson(playerID_);
+                action["tick"] = toJson(targetTick_);
                 game_->addAction(playerID_, action);
             }
         }
-
-
         break;
     case SDL_KEYUP:
         if (event.key.keysym.sym == SDLK_UP) {
-            renderer_->updateCameraVel(glm::vec3(0.f, 0.f, CAMERA_PAN_SPEED));
+            cameraPanDir_ -= glm::vec2(0, -1);
         }
         else if (event.key.keysym.sym == SDLK_DOWN) {
-            renderer_->updateCameraVel(glm::vec3(0.f, 0.f, -CAMERA_PAN_SPEED));
+            cameraPanDir_ -= glm::vec2(0, 1);
         }
         else if (event.key.keysym.sym == SDLK_RIGHT) {
-            renderer_->updateCameraVel(glm::vec3(-CAMERA_PAN_SPEED, 0.f, 0.f));
+            cameraPanDir_ -= glm::vec2(1, 0);
         }
         else if (event.key.keysym.sym == SDLK_LEFT) {
-            renderer_->updateCameraVel(glm::vec3(CAMERA_PAN_SPEED, 0.f, 0.f));
+            cameraPanDir_ -= glm::vec2(-1, 0);
         }
         break;
     case SDL_MOUSEBUTTONUP:
+        // TODO(zack) come up with a better system for dealing with certain
+        // events while paused and ignore others.
+        // No mouse events while paused
         glm::vec2 screenCoord = glm::vec2(event.button.x, event.button.y);
         glm::vec3 loc = renderer_->screenToTerrain (screenCoord);
         // The entity (maybe) under the cursor
@@ -160,7 +167,6 @@ void LocalPlayer::handleEvent(const SDL_Event &event)
                 renderer_->highlight(glm::vec2(loc.x, loc.z));
 
                 // Queue up action
-                PlayerAction action;
                 action["type"] = ActionTypes::ATTACK;
                 action["entity"] = (Json::Value::UInt64) selection_;
                 action["enemy_id"] = (Json::Value::UInt64) eid;
@@ -178,7 +184,6 @@ void LocalPlayer::handleEvent(const SDL_Event &event)
                     renderer_->highlight(glm::vec2(loc.x, loc.z));
 
                     // Queue up action
-                    PlayerAction action;
                     action["type"] = ActionTypes::MOVE;
                     action["entity"] = (Json::Value::UInt64) selection_;
                     action["target"] = toJson(loc);

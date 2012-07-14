@@ -22,6 +22,7 @@ private:
     std::thread netThread_;
     std::queue<PlayerAction> actions_;
     std::mutex mutex_;
+    bool running_;
     // last tick that is fully received
     int64_t doneTick_;
 

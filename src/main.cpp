@@ -22,7 +22,6 @@ int initLibs();
 void cleanup();
 
 LoggerPtr logger;
-bool running;
 
 LocalPlayer *player;
 Game *game;
@@ -61,7 +60,7 @@ NetPlayer * getOpponent(const std::string &ip)
 
 std::vector<Player *> getPlayers(const std::vector<std::string> &args)
 {
-    // TODO streamline this, add some handshake in network setup that assigns 
+    // TODO(zack) streamline this, add some handshake in network setup that assigns 
     // IDs correctly
     int64_t playerID = 1;
     std::vector<Player *> players;
@@ -97,9 +96,9 @@ void gameThread()
 
     game->start(simdt);
 
-    while (running)
+    while (game->isRunning())
     {
-        // TODO tighten this so that EVERY 10 ms this will go
+        // TODO(zack) tighten this so that EVERY 10 ms this will go
         uint32_t start = SDL_GetTicks();
 
         game->update(simdt);
@@ -113,11 +112,9 @@ void mainloop()
     const float framerate = getParam("framerate");
     float fps = 1.f / framerate;
 
-    running = true;
-
     std::thread gamet(gameThread);
     // render loop
-    while (running)
+    while (game->isRunning())
     {
         handleInput(fps);
         game->render(fps);
@@ -133,22 +130,7 @@ void handleInput(float dt)
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
-        switch (event.type)
-        {
-        case SDL_KEYDOWN:
-            if (event.key.keysym.sym == SDLK_F10)
-            {
-                running = false;
-                break;
-            }
-            player->handleEvent(event);
-            break;
-        case SDL_QUIT:
-            running = false;
-            break;
-        default:
-            player->handleEvent(event);
-        }
+        player->handleEvent(event);
     }
     player->renderUpdate(dt);
 }

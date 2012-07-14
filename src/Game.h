@@ -29,8 +29,10 @@ public:
     void addRenderer(Renderer *renderer);
     const Map * getMap() const { return map_; }
     int64_t getTick() const { return tick_; }
+    // Returns the player action tick delay
     int64_t getTickOffset() const { return tickOffset_; }
     bool isPaused() const { return paused_; }
+    bool isRunning() const { return running_; }
 
     // Does not block, should only be called from Game thread
     void sendMessage(eid_t to, const Message &msg);
@@ -62,5 +64,6 @@ protected:
     int64_t sync_tick_;
 
     bool paused_;
+    bool running_;
 };
 

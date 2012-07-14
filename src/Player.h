@@ -69,6 +69,8 @@ private:
     // TODO(zack) make an array, so you can have multiple units selected
     eid_t selection_;
 
+    glm::vec2 cameraPanDir_;
+
     LoggerPtr logger_;
 };
 
