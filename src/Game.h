@@ -59,6 +59,7 @@ protected:
     std::map<int64_t, std::queue<PlayerAction>> actions_;
     int64_t tick_;
     int64_t tickOffset_;
+    int64_t sync_tick_;
 
     bool paused_;
 };

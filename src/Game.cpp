@@ -145,11 +145,16 @@ void Game::update(float dt)
     
     // Next tick
     tick_++;
+    sync_tick_ = SDL_GetTicks();
 }
 
 void Game::render(float dt)
 {
-	// lock
+
+	logger_->info() << "Actual dt: " << dt;
+	dt = (SDL_GetTicks() - sync_tick_) / 1000.f;
+	logger_->info() << " Sync dt: " << dt << "\n";
+ 	// lock
 	std::unique_lock<std::mutex> lock(mutex_);
 
     // Render
@@ -168,6 +173,7 @@ void Game::render(float dt)
 
     for (auto &renderer : renderers_)
         renderer->endRender();
+    sync_tick_ = SDL_GetTicks();
 }
 
 void Game::sendMessage(eid_t to, const Message &msg)
