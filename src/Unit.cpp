@@ -60,16 +60,9 @@ void Unit::handleOrder(const Message &order)
             order["order_type"] == OrderTypes::ATTACK)
     {
         // TODO(zack) change state, don't just shoot...
-        Message spawnMsg;
-        spawnMsg["type"] = MessageTypes::SPAWN_ENTITY;
-        spawnMsg["to"] = (Json::Value::UInt64) NO_ENTITY; // Send to game object
-        spawnMsg["entity_type"] = "PROJECTILE"; // TODO(zack) make constant (also in Game.cpp)
-        spawnMsg["entity_pid"] = (Json::Value::Int64) playerID_;
-        spawnMsg["entity_pos"] = toJson(pos_);
-        spawnMsg["projectile_target"] = order["enemy_id"];
-        spawnMsg["projectile_name"] = "projectile"; // TODO(zack) make a param
-
-        MessageHub::get()->sendMessage(spawnMsg);
+        state_->stop();
+        delete state_;
+        state_ = new AttackState(order["enemy_id"].asInt64(), this);
     }
     else if (order["type"] == MessageTypes::ORDER &&
             order["order_type"] == OrderTypes::STOP)
@@ -96,6 +89,7 @@ void Unit::update(float dt)
     }
 
     Mobile::update(dt);
+    Actor::update(dt);
 }
 
 bool Unit::needsRemoval() const
@@ -161,23 +155,37 @@ UnitState * MoveState::next()
     return NULL;
 }
 
-/*
-AttackState::AttackState(Entity *target, Unit *unit) :
+
+AttackState::AttackState(eid_t target_id, Unit *unit) :
     UnitState(unit),
-    target_(target)
+    target_id_(target_id)
 {
 }
 
 void AttackState::update(float dt)
 {
-    if (unit_->attack_timer_ <= 0)
+    if (unit_->getAttackTimer() <= 0)
     {
-        if (glm::distance(target_->getPosition(), unit_->pos_ <= getParam("unit.attackRange")))
-        {
-            unit_->attack_timer_ = getParam("unit.attackCooldown");
-            printf("Attacking target %d\n", target_->getID());
-            //TODO(connor): Spawn projectile, fire it at target_
-        }
+        unit_->setAttackTimer(getParam("unit.cooldown"));
+        printf("Attacking target %d\n", target_id_);
+        Message spawnMsg;
+        spawnMsg["type"] = MessageTypes::SPAWN_ENTITY;
+        spawnMsg["to"] = (Json::Value::UInt64) NO_ENTITY; // Send to game object
+        spawnMsg["entity_type"] = "PROJECTILE"; // TODO(zack) make constant (also in Game.cpp)
+        spawnMsg["entity_pid"] = (Json::Value::Int64) unit_->getPlayerID();
+        spawnMsg["entity_pos"] = toJson(unit_->getPosition(dt));
+        spawnMsg["projectile_target"] = (Json::Value::Int64) target_id_;
+        spawnMsg["projectile_name"] = "projectile"; // TODO(zack) make a param
+
+        MessageHub::get()->sendMessage(spawnMsg);
     }
 }
-*/
+
+UnitState * AttackState::next()
+{
+    return NULL;
+}
+
+void AttackState::stop()
+{
+}

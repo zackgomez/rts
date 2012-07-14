@@ -19,6 +19,8 @@ public:
     explicit Actor(const std::string &name);
     virtual ~Actor();
     virtual void update(float dt);
+    virtual float getAttackTimer() const { return attack_timer_; }
+    virtual void setAttackTimer(float t) { attack_timer_ = t; }
 
 private:
     std::string actorName_;

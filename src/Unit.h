@@ -80,11 +80,11 @@ public:
 protected:
     glm::vec3 target_;
 };
-/*
+
 class AttackState: public UnitState
 {
 public:
-    explicit AttackState(Entity *target, Unit *unit);
+    explicit AttackState(eid_t target_id, Unit *unit);
     virtual ~AttackState() { }
 
     virtual void update(float dt);
@@ -93,6 +93,6 @@ public:
 
     virtual std::string getName() { return "AttackState"; }
 protected:
-    Entity *target_;
+    eid_t target_id_;
 };
-*/
+
