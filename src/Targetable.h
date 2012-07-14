@@ -6,8 +6,8 @@ public:
     explicit Targetable();
     explicit Targetable(float health);
     virtual ~Targetable();
-    const float getHealth() const { return health_; }
-    const float getMaxHealth() const { return health_max_; }
+    float getHealth() const { return health_; }
+    float getMaxHealth() const { return health_max_; }
 protected:
     float health_max_;
     float health_;

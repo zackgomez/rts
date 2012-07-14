@@ -59,9 +59,10 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
                 -rotAngle, glm::vec3(0, 1, 0)),
             glm::vec3(entity->getRadius() / 0.5f));
 
-    // if selected draw as green
     if (name == "unit")
     {
+        const Unit *unit = (const Unit *) entity;
+        // if selected draw as green
         glm::vec4 color = entity->getID() == selection_ ?  glm::vec4(0, 1, 0, 1) : glm::vec4(0, 0, 1, 1);
 
         glUseProgram(unitProgram_);
@@ -75,6 +76,32 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
             transform * glm::vec4(0, 0, 0, 1);
         ndc /= ndc.w;
         ndcCoords_[entity] = glm::vec3(ndc);
+        
+        // display health bar
+        float health = unit->getHealth();
+        float maxHealth = unit->getMaxHealth();
+        // Put itentity matrix on the transformation matrix stacks
+        // so health bars will not shift in game coordinates or
+        // in camera coordinates
+        getProjectionStack().push();
+        getProjectionStack().current() = glm::mat4(1.f);
+        getViewStack().push();
+        getViewStack().current() = glm::mat4(1.f);
+        // Red underneath for max health
+        glm::mat4 maxHealthTransform =
+            glm::scale(
+                    glm::translate(glm::mat4(1.f), glm::vec3(ndc.x, ndc.y + 0.12f, -0.9f)),
+                    glm::vec3(0.1f,0.01f,0.01f));
+        renderRectangleColor(maxHealthTransform, glm::vec4(1,0,0,1));
+        // Green on top for current health
+        glm::mat4 healthTransform =
+            glm::scale(
+                    glm::translate(glm::mat4(1.f), glm::vec3(ndc.x, ndc.y + 0.12f, -1.f)),
+                    glm::vec3(health/maxHealth,1.f,1.f) * glm::vec3(0.1f,0.01f,0.01f));
+        renderRectangleColor(healthTransform, glm::vec4(0,1,0,1));
+        // Restore matrices
+        getProjectionStack().pop();
+        getViewStack().pop();
     }
     else if (name == "projectile")
     {
