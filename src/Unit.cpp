@@ -163,16 +163,34 @@ AttackState::AttackState(eid_t target_id, Unit *unit) :
 
 void AttackState::update(float dt)
 {
+    const Entity *target = MessageHub::get()->getEntity(target_id_);
+    if (target == NULL)
+        return;
+    glm::vec3 targetPos = target->getPosition();
+    // Turn to face target
+    float turnRate = getParam("unit.turnRate");
+    float desired_angle = unit_->angleToTarget(targetPos);
+    float delAngle = desired_angle - unit_->angle_;
+    while (delAngle > 180.f) delAngle -= 360.f;
+    while (delAngle < -180.f) delAngle += 360.f;
+
+    if (fabs(delAngle) < turnRate * dt)
+        unit_->turnSpeed_ = delAngle / dt;
+    else
+        unit_->turnSpeed_ = glm::sign(delAngle) * turnRate;
+
+    if (glm::distance(unit_->pos_, targetPos) > unit_->getAttackRange())
+        return;
+
     if (unit_->getAttackTimer() <= 0)
     {
         unit_->setAttackTimer(getParam("unit.cooldown"));
-        printf("Attacking target %d\n", target_id_);
         Message spawnMsg;
         spawnMsg["type"] = MessageTypes::SPAWN_ENTITY;
         spawnMsg["to"] = (Json::Value::UInt64) NO_ENTITY; // Send to game object
         spawnMsg["entity_type"] = "PROJECTILE"; // TODO(zack) make constant (also in Game.cpp)
         spawnMsg["entity_pid"] = (Json::Value::Int64) unit_->getPlayerID();
-        spawnMsg["entity_pos"] = toJson(unit_->getPosition(dt));
+        spawnMsg["entity_pos"] = toJson(unit_->pos_);
         spawnMsg["projectile_target"] = (Json::Value::UInt64) target_id_;
         spawnMsg["projectile_name"] = "projectile"; // TODO(zack) make a param
 
@@ -187,7 +205,7 @@ UnitState * AttackState::next()
         return new NullState(unit_);
     glm::vec3 targetPos = target->getPosition();
     //TODO(connor) if target is out of range, make it pursue
-    if (glm::distance(unit_->getPosition(0.f), targetPos) > unit_->getAttackRange())
+    if (glm::distance(unit_->pos_, targetPos) > unit_->getAttackRange())
         return new NullState(unit_);
     return NULL;
 }
