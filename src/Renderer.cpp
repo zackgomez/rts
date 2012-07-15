@@ -9,6 +9,7 @@
 #include "Map.h"
 #include "Game.h"
 #include "Unit.h"
+#include "ParamReader.h"
 
 LoggerPtr OpenGLRenderer::logger_;
 
@@ -77,30 +78,21 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
         ndcCoords_[entity] = glm::vec3(ndc);
         
         // display health bar
-        float health = unit->getHealth();
-        float maxHealth = unit->getMaxHealth();
-        // Put itentity matrix on the transformation matrix stacks
-        // so health bars will not shift in game coordinates or
-        // in camera coordinates
-        getProjectionStack().push();
-        getProjectionStack().current() = glm::mat4(1.f);
-        getViewStack().push();
-        getViewStack().current() = glm::mat4(1.f);
+        glDisable(GL_DEPTH_TEST);
+        float healthFact = unit->getHealth() / unit->getMaxHealth();
+        glm::vec2 size =
+            glm::vec2(getParam("hud.unit_health.w"), getParam("hud.unit_health.h"));
+        glm::vec2 offset =
+            glm::vec2(getParam("hud.unit_health.x"), getParam("hud.unit_health.y"));
+        glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution_;
+        pos += offset;
         // Red underneath for max health
-        glm::mat4 maxHealthTransform =
-            glm::scale(
-                    glm::translate(glm::mat4(1.f), glm::vec3(ndc.x, ndc.y + 0.12f, -0.9f)),
-                    glm::vec3(0.1f,0.01f,0.01f));
-        renderRectangleColor(maxHealthTransform, glm::vec4(1,0,0,1));
+        drawRect(pos, size, glm::vec4(1, 0, 0, 1));
         // Green on top for current health
-        glm::mat4 healthTransform =
-            glm::scale(
-                    glm::translate(glm::mat4(1.f), glm::vec3(ndc.x, ndc.y + 0.12f, -1.f)),
-                    glm::vec3(health/maxHealth,1.f,1.f) * glm::vec3(0.1f,0.01f,0.01f));
-        renderRectangleColor(healthTransform, glm::vec4(0,1,0,1));
-        // Restore matrices
-        getProjectionStack().pop();
-        getViewStack().pop();
+        pos.x -= size.x * (1.f - healthFact) / 2.f;
+        size.x *= healthFact;
+        drawRect(pos, size, glm::vec4(0, 1, 0, 1));
+        glEnable(GL_DEPTH_TEST);
     }
     else if (name == "projectile")
     {

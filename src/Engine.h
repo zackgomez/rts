@@ -41,3 +41,11 @@ void renderMesh(
         const glm::mat4 &modelMatrix,
         const Mesh *mesh);
 
+
+/* Draws a rectangle at the given pixels.
+ * NOTE: the depth test should be disabled.
+ */
+void drawRect(
+        const glm::vec2 &pos, // center
+        const glm::vec2 &size, // width/height
+        const glm::vec4 &color);

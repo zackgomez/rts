@@ -10,6 +10,7 @@ static LoggerPtr logger;
 
 static MatrixStack viewStack;
 static MatrixStack projStack;
+static glm::vec2 screenRes;
 
 static struct
 {
@@ -39,8 +40,11 @@ static int loadVerts(const std::string &filename,
 
 int initEngine(const glm::vec2 &resolution)
 {
+    // TODO(zack) check to see if we're changing resolution
     if (initialized)
         return 1;
+
+    screenRes = resolution;
 
     if (!logger.get())
         logger = Logger::getLogger("Engine");
@@ -194,6 +198,28 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m)
     glDisableVertexAttribArray(normalAttrib);
     glDisableVertexAttribArray(texcoordAttrib);
     glUseProgram(0);
+}
+
+void drawRect(
+        const glm::vec2 &pos,
+        const glm::vec2 &size,
+        const glm::vec4 &color)
+{
+    glm::mat4 transform =
+        glm::scale(
+            glm::translate(glm::mat4(1.f), glm::vec3(pos, 0.f)),
+            glm::vec3(size, 1.f));
+
+    viewStack.push();
+    viewStack.current() = glm::mat4(1.f);
+    projStack.push();
+    projStack.current() = 
+        glm::ortho(0.f, screenRes.x, screenRes.y, 0.f);
+
+    renderRectangleColor(transform, color);
+
+    viewStack.pop();
+    projStack.pop();
 }
 
 MatrixStack& getViewStack()
