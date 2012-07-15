@@ -31,7 +31,7 @@ private:
 
     friend class NullState;
     friend class MoveState;
-    friend class AttackState;
+    //friend class AttackState;
 };
 
 class UnitState
