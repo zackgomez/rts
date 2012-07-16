@@ -31,7 +31,7 @@ private:
 
     friend class NullState;
     friend class MoveState;
-    //friend class AttackState;
+    friend class AttackState;
 };
 
 class UnitState
@@ -69,6 +69,7 @@ class MoveState : public UnitState
 {
 public:
     explicit MoveState(const glm::vec3 &target, Unit *unit);
+    explicit MoveState(eid_t targetID, Unit *unit);
     virtual ~MoveState() { }
 
     virtual void update(float dt);
@@ -78,14 +79,17 @@ public:
     virtual std::string getName() { return "MoveState"; }
 
 protected:
+    void updateTarget();
+
+    eid_t targetID_;
     glm::vec3 target_;
 };
 
-class AttackState: public UnitState
+class AttackState : public UnitState
 {
 public:
     explicit AttackState(eid_t target_id, Unit *unit);
-    virtual ~AttackState() { }
+    virtual ~AttackState();
 
     virtual void update(float dt);
     virtual void stop();
@@ -94,5 +98,7 @@ public:
     virtual std::string getName() { return "AttackState"; }
 protected:
     eid_t target_id_;
+
+    MoveState *moveState_;
 };
 

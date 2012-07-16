@@ -88,3 +88,12 @@ float frand()
 {
     return rand() / static_cast<float>(RAND_MAX);
 }
+
+float addAngles(float a, float b)
+{
+    float ret = a + b;
+    while (ret > 180.f) ret -= 360.f;
+    while (ret < -180.f) ret += 360.f;
+
+    return ret;
+}

@@ -35,3 +35,5 @@ inline float rad2deg(float rad)
 void seedRandom(unsigned int seed);
 // Returns float in [0,1]
 float frand();
+
+float addAngles(float a, float b);

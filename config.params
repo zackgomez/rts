@@ -6,7 +6,7 @@ unit.turnRate 800.0
 unit.health 100.0
 unit.range 6.0
 unit.cooldown 1.0
-unit.firingArc 1.0
+unit.firingArc 30.0
 
 projectile.speed 10.0
 projectile.radius 0.3
