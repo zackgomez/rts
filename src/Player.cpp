@@ -84,6 +84,8 @@ void LocalPlayer::setGame(Game *game)
 
 void LocalPlayer::handleEvent(const SDL_Event &event)
 {
+    float camera_pan_x = cameraPanDir_.x;
+    float camera_pan_y = cameraPanDir_.y;
     PlayerAction action;
     switch (event.type) {
     case SDL_QUIT:
@@ -98,16 +100,16 @@ void LocalPlayer::handleEvent(const SDL_Event &event)
             game_->addAction(playerID_, action);
         }
         if (event.key.keysym.sym == SDLK_UP) {
-            cameraPanDir_ += glm::vec2(0, -1);
+            camera_pan_y = -1.f;
         }
         else if (event.key.keysym.sym == SDLK_DOWN) {
-            cameraPanDir_ += glm::vec2(0, 1);
+            camera_pan_y = 1.f;
         }
         else if (event.key.keysym.sym == SDLK_RIGHT) {
-            cameraPanDir_ += glm::vec2(1, 0);
+            camera_pan_x = 1.f;
         }
         else if (event.key.keysym.sym == SDLK_LEFT) {
-            cameraPanDir_ += glm::vec2(-1, 0);
+            camera_pan_x = -1.f;
         }
         else if (event.key.keysym.sym == SDLK_g) {
             SDL_WM_GrabInput(SDL_GRAB_ON);
@@ -124,17 +126,11 @@ void LocalPlayer::handleEvent(const SDL_Event &event)
         }
         break;
     case SDL_KEYUP:
-        if (event.key.keysym.sym == SDLK_UP) {
-            cameraPanDir_ -= glm::vec2(0, -1);
+        if (event.key.keysym.sym == SDLK_UP || event.key.keysym.sym == SDLK_DOWN) {
+            camera_pan_y = 0.f;
         }
-        else if (event.key.keysym.sym == SDLK_DOWN) {
-            cameraPanDir_ -= glm::vec2(0, 1);
-        }
-        else if (event.key.keysym.sym == SDLK_RIGHT) {
-            cameraPanDir_ -= glm::vec2(1, 0);
-        }
-        else if (event.key.keysym.sym == SDLK_LEFT) {
-            cameraPanDir_ -= glm::vec2(-1, 0);
+        else if (event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_LEFT) {
+            camera_pan_x = 0.f;
         }
         break;
     case SDL_MOUSEBUTTONUP:
@@ -195,6 +191,7 @@ void LocalPlayer::handleEvent(const SDL_Event &event)
         }
         break;
     }
+    cameraPanDir_ = glm::vec2(camera_pan_x, camera_pan_y);
 }
 
 void
