@@ -38,6 +38,10 @@ OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution)
             glm::translate(glm::mat4(1.f), glm::vec3(0, -0.5f, 0)),
             glm::vec3(1, 0.5f, 1));
     setMeshTransform(unitMesh_, unitMeshTrans);
+
+    glm::mat4 projMeshTrans =
+        glm::rotate(glm::mat4(1.f), 90.f, glm::vec3(1, 0, 0));
+    setMeshTransform(projectileMesh_, projMeshTrans);
 }
 
 OpenGLRenderer::~OpenGLRenderer()
@@ -66,8 +70,8 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
         glm::vec4 color = entity->getID() == selection_ ?  glm::vec4(0, 1, 0, 1) : glm::vec4(0, 0, 1, 1);
 
         glUseProgram(unitProgram_);
-        GLuint colorUniform = glGetUniformLocation(mapProgram_, "color");
-        GLuint lightPosUniform = glGetUniformLocation(mapProgram_, "lightPos");
+        GLuint colorUniform = glGetUniformLocation(unitProgram_, "color");
+        GLuint lightPosUniform = glGetUniformLocation(unitProgram_, "lightPos");
         glUniform4fv(colorUniform, 1, glm::value_ptr(color));
         glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
         renderMesh(transform, unitMesh_);
@@ -98,8 +102,8 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
     {
     	glm::vec4 color = glm::vec4(0.5, 0.7, 0.5, 1);
     	glUseProgram(unitProgram_);
-    	GLuint colorUniform = glGetUniformLocation(mapProgram_, "color");
-    	GLuint lightPosUniform = glGetUniformLocation(mapProgram_, "lightPos");
+    	GLuint colorUniform = glGetUniformLocation(unitProgram_, "color");
+    	GLuint lightPosUniform = glGetUniformLocation(unitProgram_, "lightPos");
     	glUniform4fv(colorUniform, 1, glm::value_ptr(color));
     	glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
     	renderMesh(transform, projectileMesh_);
@@ -108,13 +112,6 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
     {
         logger_->warning() << "Unable to render entity " << entity->getName() << '\n';
     }
-
-    // TODO(zack) use these to fix unit shader lighting
-    //glm::vec3 modelPos = applyMatrix(
-        //getViewStack().current() * transform,
-        //glm::vec3(0.f));
-    //logger_->info() << "modelpos: " << modelPos << " lightpos: " << lightPos_ << '\n';
-    //logger_->info() << "delta: " << lightPos_ - modelPos << '\n';
 }
 
 void OpenGLRenderer::renderMap(const Map *map)

@@ -20,6 +20,5 @@ void main()
     float pow = clamp(ndotl, 0, 1);
 
     gl_FragColor = pow * color;
-    //gl_FragColor = vec4(lightdir, 1);// pow * color;
-    //gl_FragColor = vec4(normal, 1);
 }
+
