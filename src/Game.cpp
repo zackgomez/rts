@@ -21,13 +21,6 @@ Game::Game(Map *map, const std::vector<Player *> &players) :
 
     for (auto player : players)
         player->setGame(this);
-
-    // TODO(zack) generalize this
-    for (int i = 0; i < 2; i++) {
-        glm::vec3 pos(-0.5f + i, 0.5f, 0.f);
-    	Unit *u = new Unit(i + 1, pos, "unit");
-    	entities_[u->getID()] = u;
-    }
 }
 
 Game::~Game()
@@ -71,6 +64,9 @@ void Game::start(float period)
 
         SDL_Delay(int(1000*period));
     }
+
+    // Initialize map
+    map_->init();
 
     // Game is ready to go!
     paused_ = false;
@@ -190,6 +186,8 @@ void Game::handleMessage(const Message &msg)
 {
     if (msg["type"] == MessageTypes::SPAWN_ENTITY)
     {
+        // TODO(zack) need some kind of factory here that takes these messages
+        // and returns the constructed entity
         assert(msg.isMember("entity_type"));
         assert(msg.isMember("entity_pid"));
         assert(msg.isMember("entity_pos"));
@@ -205,6 +203,16 @@ void Game::handleMessage(const Message &msg)
                         msg["projectile_name"].asString(),
                         msg["projectile_target"].asUInt64());
             entities_[proj->getID()] = proj;
+        }
+        else if (msg["entity_type"] == "UNIT")
+        {
+            assert(msg.isMember("unit_name"));
+
+            Unit *unit =
+                new Unit(msg["entity_pid"].asUInt64(),
+                        toVec3(msg["entity_pos"]),
+                        msg["unit_name"].asString());
+            entities_[unit->getID()] = unit;
         }
         else
         {
