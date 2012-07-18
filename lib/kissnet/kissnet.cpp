@@ -115,7 +115,7 @@ void tcp_socket::listen(const std::string &port, int backlog)
 {
     // set reuseaddr
     char yes = 1;
-    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) < 0)
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(char)) < 0)
     {
         throw socket_exception("Unable to set reuseaddr", true);
     }
