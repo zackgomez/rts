@@ -4,6 +4,7 @@
 #include "ParamReader.h"
 #include "Entity.h"
 #include "Game.h"
+#include "MessageHub.h"
 
 const int tickOffset = 1;
 
@@ -76,6 +77,10 @@ void LocalPlayer::renderUpdate(float dt)
     const float CAMERA_PAN_SPEED = getParam("camera.panspeed");
     glm::vec3 delta = CAMERA_PAN_SPEED * dt * glm::vec3(dir.x, 0.f, dir.y);
     renderer_->updateCamera(delta);
+
+    // Deselect Dead Entity
+    if (!MessageHub::get()->getEntity(selection_))
+        setSelection(NO_ENTITY);
 }
 
 void LocalPlayer::setGame(Game *game)
