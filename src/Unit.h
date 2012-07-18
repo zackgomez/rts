@@ -1,7 +1,7 @@
 #pragma once
 #include "Actor.h"
 #include "Mobile.h"
-#include <glm/glm.hpp>
+#include "glm.h"
 #include "Logger.h"
 
 class UnitState;
