@@ -14,6 +14,7 @@ LocalPlayer::LocalPlayer(int64_t playerID, OpenGLRenderer *renderer) :
 ,   doneTick_(-1e6) // no done ticks
 ,   selection_(NO_ENTITY)
 ,   cameraPanDir_(0.f)
+,   order_()
 {
     logger_ = Logger::getLogger("LocalPlayer");
 }
@@ -82,82 +83,62 @@ void LocalPlayer::setGame(Game *game)
     Player::setGame(game);
 }
 
-void LocalPlayer::handleEvent(const SDL_Event &event)
+void LocalPlayer::quitEvent()
 {
-    float camera_pan_x = cameraPanDir_.x;
-    float camera_pan_y = cameraPanDir_.y;
+    // Send the quit game event
     PlayerAction action;
-    switch (event.type) {
-    case SDL_QUIT:
-        action["type"] = ActionTypes::LEAVE_GAME;
-        action["pid"] = toJson(playerID_);
-        game_->addAction(playerID_, action);
-        break;
-    case SDL_KEYDOWN:
-        if (event.key.keysym.sym == SDLK_F10) {
-            action["type"] = ActionTypes::LEAVE_GAME;
-            action["pid"] = toJson(playerID_);
-            game_->addAction(playerID_, action);
-        }
-        if (event.key.keysym.sym == SDLK_UP) {
-            camera_pan_y = -1.f;
-        }
-        else if (event.key.keysym.sym == SDLK_DOWN) {
-            camera_pan_y = 1.f;
-        }
-        else if (event.key.keysym.sym == SDLK_RIGHT) {
-            camera_pan_x = 1.f;
-        }
-        else if (event.key.keysym.sym == SDLK_LEFT) {
-            camera_pan_x = -1.f;
-        }
-        else if (event.key.keysym.sym == SDLK_g) {
-            SDL_WM_GrabInput(SDL_GRAB_ON);
-        }
-        else if (event.key.keysym.sym == SDLK_s) {
-            if (selection_)
-            {
-                action["type"] = ActionTypes::STOP;
-                action["entity"] = toJson(selection_);
-                action["pid"] = toJson(playerID_);
-                action["tick"] = toJson(targetTick_);
-                game_->addAction(playerID_, action);
-            }
-        }
-        break;
-    case SDL_KEYUP:
-        if (event.key.keysym.sym == SDLK_UP || event.key.keysym.sym == SDLK_DOWN) {
-            camera_pan_y = 0.f;
-        }
-        else if (event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_LEFT) {
-            camera_pan_x = 0.f;
-        }
-        break;
-    case SDL_MOUSEBUTTONUP:
-        // TODO(zack) come up with a better system for dealing with certain
-        // events while paused and ignore others.
-        // No mouse events while paused
-        glm::vec2 screenCoord = glm::vec2(event.button.x, event.button.y);
-        glm::vec3 loc = renderer_->screenToTerrain (screenCoord);
-        // The entity (maybe) under the cursor
-        eid_t eid = renderer_->selectEntity(screenCoord);
-        const Entity *entity = game_->getEntity(eid);
+    action["type"] = ActionTypes::LEAVE_GAME;
+    action["pid"] = toJson(playerID_);
+    game_->addAction(playerID_, action);
+}
 
-        if (event.button.button == SDL_BUTTON_LEFT)
+void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button)
+{
+    PlayerAction action;
+    eid_t newSelect = selection_;
+
+    glm::vec3 loc = renderer_->screenToTerrain(screenCoord);
+    // The entity (maybe) under the cursor
+    eid_t eid = renderer_->selectEntity(screenCoord);
+    const Entity *entity = game_->getEntity(eid);
+
+    if (button == SDL_BUTTON_LEFT)
+    {
+        // If no order, then adjust selection
+        if (order_.empty())
         {
             // If there is an entity and its ours, select
             if (entity && entity->getPlayerID() == playerID_)
-                setSelection (eid);
+                newSelect = eid;
             // Otherwise deselect
             else 
-                setSelection (0);
+                newSelect = 0;
         }
-        else if (event.button.button == SDL_BUTTON_RIGHT)
+        // If order, then execute it
+        else
+        {
+            // TODO execute order_
+            logger_->info() << "Would execute order " << order_
+                << " on selection " << selection_ << " args... eid: "
+                << eid << " loc " << loc << '\n';
+
+            // Clear order
+            order_.clear();
+        }
+    }
+    else if (button == SDL_BUTTON_RIGHT)
+    {
+        // If there is an order, it is canceled by right click
+        if (!order_.empty())
+            order_.clear();
+        // Otherwise default to some right click actions
+        else
         {
             // If right clicked on enemy unit (and we have a selection)
             // go attack them
-        	if (entity && entity->getPlayerID() != playerID_ && selection_ != NO_ENTITY)
-        	{
+            if (entity && entity->getPlayerID() != playerID_
+                && selection_ != NO_ENTITY)
+            {
                 // Visual feedback
                 // TODO make this something related to the unit clicked on
                 renderer_->highlight(glm::vec2(loc.x, loc.z));
@@ -168,11 +149,10 @@ void LocalPlayer::handleEvent(const SDL_Event &event)
                 action["enemy_id"] = (Json::Value::UInt64) eid;
                 action["pid"] = (Json::Value::Int64) playerID_;
                 action["tick"] = (Json::Value::Int64) targetTick_;
-                game_->addAction(playerID_, action);
-        	}
+            }
             // If we have a selection, and they didn't click on the current
             // selection, move them to target
-        	else if (selection_ != NO_ENTITY && (!entity || eid != selection_))
+            else if (selection_ != NO_ENTITY && (!entity || eid != selection_))
             {
                 if (loc != glm::vec3 (HUGE_VAL))
                 {
@@ -185,13 +165,81 @@ void LocalPlayer::handleEvent(const SDL_Event &event)
                     action["target"] = toJson(loc);
                     action["pid"] = (Json::Value::Int64) playerID_;
                     action["tick"] = (Json::Value::Int64) targetTick_;
-                    game_->addAction(playerID_, action);
                 }
             }
         }
-        break;
     }
-    cameraPanDir_ = glm::vec2(camera_pan_x, camera_pan_y);
+
+    if (game_->isPaused())
+        return;
+
+    // Mutate, if game isn't paused
+    setSelection(newSelect);
+    if (action.isMember("type"))
+        game_->addAction(playerID_, action);
+}
+
+void LocalPlayer::mouseUp(const glm::vec2 &screenCoord, int button)
+{
+    // nop
+}
+
+void LocalPlayer::keyPress(SDLKey key)
+{
+    // TODO(zack) watch out for pausing here
+    PlayerAction action;
+    if (key == SDLK_F10)
+    {
+        action["type"] = ActionTypes::LEAVE_GAME;
+        action["pid"] = toJson(playerID_);
+        game_->addAction(playerID_, action);
+    }
+    // Camera panning
+    else if (key == SDLK_UP)
+        cameraPanDir_.y = -1.f;
+    else if (key == SDLK_DOWN)
+        cameraPanDir_.y = 1.f;
+    else if (key == SDLK_RIGHT)
+        cameraPanDir_.x = 1.f;
+    else if (key == SDLK_LEFT)
+        cameraPanDir_.x = -1.f;
+
+    // Order types
+    else if (key == SDLK_a && selection_ != NO_ENTITY)
+        order_ = ActionTypes::ATTACK;
+    else if (key == SDLK_m && selection_ != NO_ENTITY)
+        order_ = ActionTypes::MOVE;
+    else if (key == SDLK_s && selection_ != NO_ENTITY)
+    {
+        if (selection_)
+        {
+            action["type"] = ActionTypes::STOP;
+            action["entity"] = toJson(selection_);
+            action["pid"] = toJson(playerID_);
+            action["tick"] = toJson(targetTick_);
+            game_->addAction(playerID_, action);
+        }
+    }
+    // ESC clears out current states
+    else if (key == SDLK_ESCAPE)
+    {
+        if (!order_.empty())
+            order_.clear();
+        else
+            setSelection(NO_ENTITY);
+    }
+
+    // Debug commands
+    else if (key == SDLK_g)
+        SDL_WM_GrabInput(SDL_GRAB_ON);
+}
+
+void LocalPlayer::keyRelease(SDLKey key)
+{
+    if (key == SDLK_RIGHT || key == SDLK_LEFT)
+        cameraPanDir_.x = 0.f;
+    else if (key == SDLK_UP || key == SDLK_DOWN)
+        cameraPanDir_.y = 0.f;
 }
 
 void

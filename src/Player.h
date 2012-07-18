@@ -13,7 +13,7 @@ class Game;
 class Player
 {
 public:
-    Player(int64_t playerID) : playerID_(playerID), game_(NULL) { }
+    explicit Player(int64_t playerID) : playerID_(playerID), game_(NULL) { }
     virtual ~Player() {}
 
     int64_t getPlayerID() const { return playerID_; }
@@ -54,10 +54,18 @@ public:
 
     virtual void playerAction(int64_t playerID, const PlayerAction &action);
 
-    // TODO(zack) abstract SDL_Event away here
-    void handleEvent(const SDL_Event &event);
     // Called once per frame with render dt
     virtual void renderUpdate(float dt);
+
+    void quitEvent();
+    // TODO(zack) make these events take our own button description, they 
+    // currently take SDL_BUTTON_*
+    void mouseDown(const glm::vec2 &screenCoord, int button);
+    void mouseUp(const glm::vec2 &screenCoord, int button);
+    // TODO(zack) create our own keycode representation so we don't have to
+    // use SDLs here
+    void keyPress(SDLKey key);
+    void keyRelease(SDLKey key);
 
 private:
     void setSelection(eid_t eid);
@@ -70,6 +78,8 @@ private:
     eid_t selection_;
 
     glm::vec2 cameraPanDir_;
+
+    std::string order_;
 
     LoggerPtr logger_;
 };

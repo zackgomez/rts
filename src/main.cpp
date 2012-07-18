@@ -127,10 +127,30 @@ void mainloop()
 
 void handleInput(float dt)
 {
+    glm::vec2 screenCoord;
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
-        player->handleEvent(event);
+        switch (event.type)
+        {
+        case SDL_KEYDOWN:
+            player->keyPress(event.key.keysym.sym);
+            break;
+        case SDL_KEYUP:
+            player->keyRelease(event.key.keysym.sym);
+            break;
+        case SDL_MOUSEBUTTONDOWN:
+            screenCoord = glm::vec2(event.button.x, event.button.y);
+            player->mouseDown(screenCoord, event.button.button);
+            break;
+        case SDL_MOUSEBUTTONUP:
+            screenCoord = glm::vec2(event.button.x, event.button.y);
+            player->mouseUp(screenCoord, event.button.button);
+            break;
+        case SDL_QUIT:
+            player->quitEvent();
+            break;
+        }
     }
     player->renderUpdate(dt);
 }
