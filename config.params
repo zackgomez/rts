@@ -24,6 +24,8 @@ hud.unit_health.y 50
 resolution.x 1280
 resolution.y 800
 
+ui.minDragDistance 0.3
+
 camera.panspeed 10.0
 camera.panspeed.key 0.1
 camera.panthresh 100

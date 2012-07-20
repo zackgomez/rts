@@ -29,8 +29,7 @@ public:
      * @return true, if this player has submitted all input for the given frame
      */
     virtual bool update(int64_t tick) = 0;
-
-    /* Called each time any player performs an action (including this player).
+/* Called each time any player performs an action (including this player).
      * This function should execute quickly (i.e. not perform blocking
      * operations).
      * @arg playerID The player who performed the action.
@@ -68,17 +67,19 @@ public:
     void keyRelease(SDLKey key);
 
 private:
-    void setSelection(eid_t eid);
+    void setSelection(const std::set<eid_t> &new_selection);
 
     OpenGLRenderer *renderer_;
     // The tick the current actions will be executed on
     int64_t targetTick_; 
     int64_t doneTick_;
-    // TODO(zack) make an array, so you can have multiple units selected
-    eid_t selection_;
+    std::set<eid_t> selection_;
 
     glm::vec2 cameraPanDir_;
 
+    bool shift_;
+    bool leftDrag_;
+    glm::vec3 leftStart_;
     std::string order_;
 
     LoggerPtr logger_;

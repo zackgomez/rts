@@ -34,11 +34,22 @@ const Entity * MessageHub::getEntity(eid_t eid) const
 void MessageHub::sendMessage(const Message &msg)
 {
     assert (game_);
-    eid_t eid = msg["to"].asUInt64();
+    assert(msg.isMember("to"));
 
-    if (eid == NO_ENTITY)
-        game_->handleMessage(msg);
-    else
-        game_->sendMessage(eid, msg);
+    Json::Value to = msg["to"];
+    
+    if (!to.isArray())
+    {
+        eid_t eid = to.asUInt64();
+        if (eid == NO_ENTITY)
+            game_->handleMessage(msg);
+        else
+            game_->sendMessage(eid, msg);
+        return;
+    }
+
+    // If an array, send to each member
+    for (int i = 0; i < to.size(); i++)
+        game_->sendMessage(to[i].asInt64(), msg);
 }
 

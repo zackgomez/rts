@@ -1,3 +1,4 @@
+#define GLM_SWIZZLE_XYZW
 #include "Renderer.h"
 #include <SDL/SDL.h>
 #include <iostream>
@@ -16,7 +17,9 @@ LoggerPtr OpenGLRenderer::logger_;
 OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution)
 :   cameraPos_(0.f, 5.f, 0.f)
 ,   resolution_(resolution)
-,   selection_(NO_ENTITY)
+,   selection_()
+,   dragStart_(HUGE_VAL)
+,   dragEnd_(HUGE_VAL)
 {
     if (!logger_.get())
         logger_ = Logger::getLogger("OGLRenderer");
@@ -67,7 +70,7 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
     {
         const Unit *unit = (const Unit *) entity;
         // if selected draw as green
-        glm::vec4 color = entity->getID() == selection_ ?  glm::vec4(0, 1, 0, 1) : glm::vec4(0, 0, 1, 1);
+        glm::vec4 color = selection_.count(entity->getID()) ?  glm::vec4(0, 1, 0, 1) : glm::vec4(0, 0, 1, 1);
 
         glUseProgram(unitProgram_);
         GLuint colorUniform = glGetUniformLocation(unitProgram_, "color");
@@ -195,6 +198,25 @@ void OpenGLRenderer::startRender(float dt)
 
 void OpenGLRenderer::endRender()
 {
+    glm::mat4 fullmat =
+        getProjectionStack().current() * getViewStack().current();
+    // Render drag selection if it exists
+    if (dragStart_ != glm::vec3(HUGE_VAL))
+    {
+        glm::vec2 start = applyMatrix(fullmat, dragStart_).xy;
+        glm::vec2 end = applyMatrix(fullmat, dragEnd_).xy;
+        start = (glm::vec2(start.x, -start.y) + glm::vec2(1.f)) * 0.5f * resolution_;
+        end = (glm::vec2(end.x, -end.y) + glm::vec2(1.f)) * 0.5f * resolution_;
+
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        drawRect((start + end) / 2.f, end - start, glm::vec4(0.2f, 0.6f, 0.2f, 0.3f));
+        // Reset each frame
+        dragStart_ = glm::vec3(HUGE_VAL);
+    }
+
     SDL_GL_SwapBuffers();
 }
 
@@ -209,26 +231,61 @@ void OpenGLRenderer::updateCamera(const glm::vec3 &delta)
             glm::vec3(mapSize.x, 20.f, mapSize.y));
 }
 
-eid_t OpenGLRenderer::selectEntity (const glm::vec2 &screenCoord) const
+eid_t OpenGLRenderer::selectEntity(const glm::vec2 &screenCoord) const
 {
     glm::vec2 pos = glm::vec2(screenToNDC(screenCoord));
 
-    // TODO(zack) Make this find the BEST instead of the first
+    eid_t eid = NO_ENTITY;
+    float bestDist = HUGE_VAL;
+    // Find the best entity
     for (auto& pair : ndcCoords_)
     {
-        glm::vec2 diff = pos - glm::vec2(pair.second);
-        // TODO(zack) compute this based on size of object
-        float thresh = 0.02f;
-        if (glm::dot(diff, diff) < thresh)
-            return pair.first->getID();
+        float dist = glm::distance(pos, glm::vec2(pair.second));
+        // TODO(zack) transform radius and use it instead of hardcoded number..
+        // Must be inside the entities radius and better than previous
+        const float thresh = sqrtf(0.009f);
+        if (dist < thresh && dist < bestDist)
+        {
+            bestDist = dist;
+            eid = pair.first->getID();
+        }
     }
 
-    return NO_ENTITY;
+    return eid;
 }
 
-void OpenGLRenderer::setSelection(eid_t eid)
+std::set<eid_t> OpenGLRenderer::selectEntities(
+        const glm::vec3 &start, const glm::vec3 &end, int64_t pid) const
 {
-    selection_ = eid;
+    glm::mat4 fullMatrix =
+        getProjectionStack().current() * getViewStack().current();
+    glm::vec2 s = applyMatrix(fullMatrix, start).xy;
+    glm::vec2 e = applyMatrix(fullMatrix, end).xy;
+    // Defines the rectangle
+    glm::vec2 center = (e + s) / 2.f;
+    glm::vec2 size = glm::abs(e - s);
+    std::set<eid_t> ret;
+
+    for (auto &pair : ndcCoords_)
+    {
+        glm::vec2 p = glm::vec2(pair.second);
+        // Inside rect and owned by player
+        // TODO(zack) make this radius aware, right now the center must be in
+        // their.
+        if (fabs(p.x - center.x) < size.x / 2.f
+            && fabs(p.y - center.y) < size.y / 2.f
+            && pair.first->getPlayerID() == pid)
+        {
+            ret.insert(pair.first->getID());
+        }
+    }
+
+    return ret;
+}
+
+void OpenGLRenderer::setSelection(const std::set<eid_t> &select)
+{
+    selection_ = select;
 }
 
 void OpenGLRenderer::highlight(const glm::vec2 &mapCoord)
@@ -237,6 +294,12 @@ void OpenGLRenderer::highlight(const glm::vec2 &mapCoord)
     hl.pos = mapCoord;
     hl.remaining = 0.5f;
     highlights_.push_back(hl);
+}
+
+void OpenGLRenderer::setDragRect(const glm::vec3 &s, const glm::vec3 &e)
+{
+    dragStart_ = s;
+    dragEnd_ = e;
 }
 
 glm::vec3 OpenGLRenderer::screenToTerrain(const glm::vec2 &screenCoord) const

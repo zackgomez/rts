@@ -19,6 +19,6 @@ void main()
     // Some basic diffuse lighting...
     float pow = clamp(ndotl, 0, 1);
 
-    gl_FragColor = pow * color;
+    gl_FragColor = vec4(vec3(pow * color), 1.f);
 }
 

@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <cstdint>
 #include <cmath>
+#include <set>
 
 #include <ostream>
 #include <json/json.h>
@@ -17,6 +18,17 @@ Json::Value toJson(const glm::vec3 &v);
 Json::Value toJson(const glm::vec4 &v);
 Json::Value toJson(uint64_t n);
 Json::Value toJson(int64_t n);
+template <class T>
+Json::Value toJson(const std::set<T> &entities)
+{
+    Json::Value v;
+    for (const T& t : entities)
+    {
+        v.append(toJson(t));
+    }
+
+    return v;
+}
 
 glm::vec2 toVec2(const Json::Value &v);
 glm::vec3 toVec3(const Json::Value &v);

@@ -47,13 +47,16 @@ public:
 
     // returns 0 if no acceptable entity near click
     eid_t selectEntity (const glm::vec2 &screenCoord) const;
-    void setSelection(eid_t eid);
+    std::set<eid_t> selectEntities(const glm::vec3 &start,
+            const glm::vec3 &end, int64_t pid) const;
+    void setSelection(const std::set<eid_t> &selection);
 
     // Returns the terrain location at the given screen coord.  If the coord
     // is not on the map returns glm::vec3(HUGE_VAL).
     glm::vec3 screenToTerrain (const glm::vec2 &screenCoord) const;
 
     void highlight(const glm::vec2 &mapCoord);
+    void setDragRect(const glm::vec3 &start, const glm::vec3 &end);
 
 private:
     glm::vec3 screenToNDC(const glm::vec2 &screenCoord) const;
@@ -74,9 +77,10 @@ private:
     Mesh * projectileMesh_;
 
     std::map<const Entity *, glm::vec3> ndcCoords_;
-    eid_t selection_;
+    std::set<eid_t> selection_;
 
     std::vector<MapHighlight> highlights_;
+    glm::vec3 dragStart_, dragEnd_;
 
     static LoggerPtr logger_;
 };

@@ -13,8 +13,10 @@ LocalPlayer::LocalPlayer(int64_t playerID, OpenGLRenderer *renderer) :
 ,   renderer_(renderer)
 ,   targetTick_(0)
 ,   doneTick_(-1e6) // no done ticks
-,   selection_(NO_ENTITY)
+,   selection_()
 ,   cameraPanDir_(0.f)
+,   shift_(false)
+,   leftDrag_(false)
 ,   order_()
 {
     logger_ = Logger::getLogger("LocalPlayer");
@@ -59,6 +61,7 @@ void LocalPlayer::renderUpdate(float dt)
 
     int x, y;
     SDL_GetMouseState(&x, &y);
+    glm::vec2 screenCoord(x, y);
     const glm::vec2 &res = renderer_->getResolution();
     const int CAMERA_PAN_THRESHOLD = getParam("camera.panthresh");
 
@@ -78,9 +81,22 @@ void LocalPlayer::renderUpdate(float dt)
     glm::vec3 delta = CAMERA_PAN_SPEED * dt * glm::vec3(dir.x, 0.f, dir.y);
     renderer_->updateCamera(delta);
 
-    // Deselect Dead Entity
-    if (!MessageHub::get()->getEntity(selection_))
-        setSelection(NO_ENTITY);
+    // Deselect dead entities
+    std::set<eid_t> newsel;
+    for (auto eid : selection_)
+    {
+        if (MessageHub::get()->getEntity(eid))
+            newsel.insert(eid);
+    }
+    setSelection(newsel);
+
+    // Draw drag rectangle if over threshold size
+    glm::vec3 loc = renderer_->screenToTerrain(screenCoord);
+    if (leftDrag_
+        && glm::distance(loc, leftStart_) > getParam("ui.minDragDistance"))
+    {
+        renderer_->setDragRect(leftStart_, loc);
+    }
 }
 
 void LocalPlayer::setGame(Game *game)
@@ -100,7 +116,7 @@ void LocalPlayer::quitEvent()
 void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button)
 {
     PlayerAction action;
-    eid_t newSelect = selection_;
+    std::set<eid_t> newSelect = selection_;
 
     glm::vec3 loc = renderer_->screenToTerrain(screenCoord);
     // The entity (maybe) under the cursor
@@ -109,21 +125,23 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button)
 
     if (button == SDL_BUTTON_LEFT)
     {
+        leftDrag_ = true;
+        leftStart_ = loc;
         // If no order, then adjust selection
         if (order_.empty())
         {
+            // If no shift held, then deselect (shift just adds)
+            if (!shift_)
+                newSelect.clear();
             // If there is an entity and its ours, select
             if (entity && entity->getPlayerID() == playerID_)
-                newSelect = eid;
-            // Otherwise deselect
-            else 
-                newSelect = 0;
+                newSelect.insert(eid);
         }
         // If order, then execute it
         else
         {
             action["type"] = order_;
-            action["entity"] = (Json::Value::UInt64) selection_;
+            action["entity"] = toJson(selection_);
             action["target"] = toJson(loc);
             if (entity && entity->getPlayerID() != playerID_)
                 action["enemy_id"] = toJson(entity->getID());
@@ -145,7 +163,7 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button)
             // If right clicked on enemy unit (and we have a selection)
             // go attack them
             if (entity && entity->getPlayerID() != playerID_
-                && selection_ != NO_ENTITY)
+                && !selection_.empty())
             {
                 // Visual feedback
                 // TODO make this something related to the unit clicked on
@@ -153,14 +171,14 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button)
 
                 // Queue up action
                 action["type"] = ActionTypes::ATTACK;
-                action["entity"] = (Json::Value::UInt64) selection_;
-                action["enemy_id"] = (Json::Value::UInt64) eid;
-                action["pid"] = (Json::Value::Int64) playerID_;
-                action["tick"] = (Json::Value::Int64) targetTick_;
+                action["entity"] = toJson(selection_);
+                action["enemy_id"] = toJson(eid);
+                action["pid"] = toJson(playerID_);
+                action["tick"] = toJson(targetTick_);
             }
             // If we have a selection, and they didn't click on the current
             // selection, move them to target
-            else if (selection_ != NO_ENTITY && (!entity || eid != selection_))
+            else if (!selection_.empty() && (!entity || !selection_.count(eid)))
             {
                 if (loc != glm::vec3 (HUGE_VAL))
                 {
@@ -169,10 +187,10 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button)
 
                     // Queue up action
                     action["type"] = ActionTypes::MOVE;
-                    action["entity"] = (Json::Value::UInt64) selection_;
+                    action["entity"] = toJson(selection_);
                     action["target"] = toJson(loc);
-                    action["pid"] = (Json::Value::Int64) playerID_;
-                    action["tick"] = (Json::Value::Int64) targetTick_;
+                    action["pid"] = toJson(playerID_);
+                    action["tick"] = toJson(targetTick_);
                 }
             }
         }
@@ -189,6 +207,22 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button)
 
 void LocalPlayer::mouseUp(const glm::vec2 &screenCoord, int button)
 {
+    glm::vec3 loc = renderer_->screenToTerrain(screenCoord);
+    if (button == SDL_BUTTON_LEFT)
+    {
+        std::set<eid_t> newSelect;
+        if (glm::distance(leftStart_, loc) > getParam("ui.minDragDistance"))
+        {
+            newSelect = renderer_->selectEntities(leftStart_, loc, playerID_);
+
+            if (!shift_)
+                selection_.clear();
+            selection_.insert(newSelect.begin(), newSelect.end());
+            setSelection(selection_);
+        }
+
+        leftDrag_ = false;
+    }
     // nop
 }
 
@@ -213,20 +247,17 @@ void LocalPlayer::keyPress(SDLKey key)
         cameraPanDir_.x = -1.f;
 
     // Order types
-    else if (key == SDLK_a && selection_ != NO_ENTITY)
+    else if (key == SDLK_a && !selection_.empty())
         order_ = ActionTypes::ATTACK;
-    else if (key == SDLK_m && selection_ != NO_ENTITY)
+    else if (key == SDLK_m && !selection_.empty())
         order_ = ActionTypes::MOVE;
-    else if (key == SDLK_s && selection_ != NO_ENTITY)
+    else if (key == SDLK_s && !selection_.empty())
     {
-        if (selection_)
-        {
-            action["type"] = ActionTypes::STOP;
-            action["entity"] = toJson(selection_);
-            action["pid"] = toJson(playerID_);
-            action["tick"] = toJson(targetTick_);
-            game_->addAction(playerID_, action);
-        }
+        action["type"] = ActionTypes::STOP;
+        action["entity"] = toJson(selection_);
+        action["pid"] = toJson(playerID_);
+        action["tick"] = toJson(targetTick_);
+        game_->addAction(playerID_, action);
     }
     // ESC clears out current states
     else if (key == SDLK_ESCAPE)
@@ -234,8 +265,10 @@ void LocalPlayer::keyPress(SDLKey key)
         if (!order_.empty())
             order_.clear();
         else
-            setSelection(NO_ENTITY);
+            setSelection(std::set<eid_t>());
     }
+    else if (key == SDLK_LSHIFT || key == SDLK_RSHIFT)
+        shift_ = true;
 
     // Debug commands
     else if (key == SDLK_g)
@@ -248,12 +281,14 @@ void LocalPlayer::keyRelease(SDLKey key)
         cameraPanDir_.x = 0.f;
     else if (key == SDLK_UP || key == SDLK_DOWN)
         cameraPanDir_.y = 0.f;
+    else if (key == SDLK_LSHIFT || key == SDLK_RSHIFT)
+        shift_ = false;
 }
 
 void
-LocalPlayer::setSelection(eid_t eid)
+LocalPlayer::setSelection(const std::set<eid_t> &s)
 {
-    selection_ = eid;
+    selection_ = s;
     renderer_->setSelection(selection_);
 }
 

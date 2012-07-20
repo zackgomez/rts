@@ -39,6 +39,7 @@ void Unit::handleMessage(const Message &msg)
 
         // Just take damage for now
         health_ -= msg["damage"].asFloat();
+        health_ = glm::max(health_, 0.f);
     }
     else
     {
