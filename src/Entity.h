@@ -27,9 +27,9 @@ public:
     const std::string& getName() const { return name_; }
 
     // This unit's position
-    const glm::vec3& getPosition() const { return pos_; }
+    const glm::vec3 getPosition() const { return pos_; }
     // This unit's facing angle (relative to +x axis)
-    const float getAngle() const { return angle_;}
+    const float getAngle() const { return angle_; }
     // This unit's rough bounding radius
     const float getRadius() const { return radius_; }
     // When true, will be destructed by engine

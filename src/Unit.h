@@ -22,6 +22,22 @@ public:
     virtual void update(float dt);
     virtual bool needsRemoval() const;
 
+    // Unit state functions
+    // if the target is in range and within firing arc
+    bool canAttack(const Entity *target) const;
+    // If this the target is within firing range
+    bool withinRange(const Entity *target) const;
+    // Rotates to face position
+    void turnTowards(const glm::vec3 &pos, float dt);
+    // Moves towards position as fast as possible (probably rotates)
+    void moveTowards(const glm::vec3 &pos, float dt);
+    // Don't move or rotate
+    void remainStationary();
+    // Attacks target if possible (within range, arc, cd available)
+    void attackTarget(const Entity *target);
+
+    const Entity *getTarget(eid_t lastTargetID) const;
+
 protected:
     UnitState *state_;
     void handleOrder(const Message &order);
@@ -29,9 +45,6 @@ protected:
 private:
     static LoggerPtr logger_;
 
-    friend class NullState;
-    friend class MoveState;
-    friend class AttackState;
 };
 
 class UnitState
@@ -41,28 +54,28 @@ public:
     virtual ~UnitState() { } 
 
     virtual void update(float dt) = 0;
-    // Called when this state is ended early
-    virtual void stop() = 0;
+    // Called when this state is interrupted, return is same as next
+    virtual UnitState * stop(UnitState *next) = 0;
     // Called each frame, when returns non NULL, sets new state
     virtual UnitState * next() = 0;
-
-    virtual std::string getName() = 0;
 
 protected:
     Unit *unit_;
 };
 
-class NullState : public UnitState
+class IdleState : public UnitState
 {
 public:
-    explicit NullState(Unit *unit) : UnitState(unit) { }
-    virtual ~NullState() { }
+    explicit IdleState(Unit *unit);
+    virtual ~IdleState() { }
 
     virtual void update(float dt);
-    virtual void stop() { }
-    virtual UnitState * next() { return NULL; }
+    virtual UnitState * stop(UnitState *next);
+    virtual UnitState * next();
 
-    virtual std::string getName() { return "NullState"; }
+protected:
+    // The last entity attacked, we prioritize attack them again
+    eid_t targetID_;
 };
 
 class MoveState : public UnitState
@@ -73,10 +86,8 @@ public:
     virtual ~MoveState() { }
 
     virtual void update(float dt);
-    virtual void stop();
+    virtual UnitState * stop(UnitState *next);
     virtual UnitState * next();
-
-    virtual std::string getName() { return "MoveState"; }
 
 protected:
     void updateTarget();
@@ -92,13 +103,25 @@ public:
     virtual ~AttackState();
 
     virtual void update(float dt);
-    virtual void stop();
+    virtual UnitState * stop(UnitState *next);
     virtual UnitState * next();
 
-    virtual std::string getName() { return "AttackState"; }
 protected:
-    eid_t target_id_;
+    eid_t targetID_;
+};
 
-    MoveState *moveState_;
+class AttackMoveState : public UnitState
+{
+public:
+    explicit AttackMoveState(const glm::vec3 &target, Unit *unit);
+    virtual ~AttackMoveState();
+
+    virtual void update(float dt);
+    virtual UnitState * stop(UnitState *next);
+    virtual UnitState * next();
+
+protected:
+    glm::vec3 targetPos_;
+    eid_t targetID_;
 };
 

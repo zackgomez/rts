@@ -1,3 +1,4 @@
+#define GLM_SWIZZLE_XYZW
 #include "Unit.h"
 #include "ParamReader.h"
 #include "math.h"
@@ -8,7 +9,7 @@ LoggerPtr Unit::logger_;
 Unit::Unit(int64_t playerID, const glm::vec3 &pos, const std::string &name) :
     Mobile(playerID, pos),
     Actor(name),
-    state_(new NullState(this))
+    state_(new IdleState(this))
 {
     pos_ = pos;
     radius_ = 0.5f;
@@ -33,7 +34,7 @@ void Unit::handleMessage(const Message &msg)
         assert(msg.isMember("pid"));
         assert(msg.isMember("damage"));
 
-        // TODO(zack) figure out how to deal with this case
+        // TODO(zack) figure out how to deal with this case (friendly fire)
         assert(msg["pid"].asInt64() != playerID_);
 
         // Just take damage for now
@@ -50,29 +51,41 @@ void Unit::handleOrder(const Message &order)
 {
     assert(order["type"] == MessageTypes::ORDER);
     assert(order.isMember("order_type"));
+    UnitState *next = NULL;
     if (order["order_type"] == OrderTypes::MOVE)
     {
-        state_->stop();
-        delete state_;
-        state_ = new MoveState(toVec3(order["target"]), this);
+        // TODO(zack) add following a unit here
+        next = new MoveState(toVec3(order["target"]), this);
     }
-    else if (order["type"] == MessageTypes::ORDER &&
-            order["order_type"] == OrderTypes::ATTACK)
+    else if (order["order_type"] == OrderTypes::ATTACK)
     {
-        state_->stop();
-        delete state_;
-        state_ = new AttackState(order["enemy_id"].asUInt64(), this);
+        if (order.isMember("enemy_id"))
+            next = new AttackState(order["enemy_id"].asUInt64(), this);
+        else if (order.isMember("target"))
+            next = new AttackMoveState(toVec3(order["target"]), this);
+        else
+            logger_->error() << "Unit got malformed attack order: "
+                << order << '\n';
     }
-    else if (order["type"] == MessageTypes::ORDER &&
-            order["order_type"] == OrderTypes::STOP)
+    else if (order["order_type"] == OrderTypes::STOP)
     {
-        state_->stop();
-        delete state_;
-        state_ = new NullState(this);
+        next = new IdleState(this);
     }
     else
     {
         logger_->warning() << "Unit got unknown order: " << order << '\n';
+    }
+
+    // If a state transition, tell the current state we're transitioning
+    if (next)
+    {
+        next = state_->stop(next);
+        // The state might have changed, or rejected the next state
+        if (next)
+        {
+            delete state_;
+            state_ = next;
+        }
     }
 }
 
@@ -96,10 +109,161 @@ bool Unit::needsRemoval() const
     return health_ <= 0.f;
 }
 
-void NullState::update(float dt)
+bool Unit::canAttack(const Entity *e) const
 {
-    unit_->speed_ = 0.f;
-    unit_->turnSpeed_ = 0.f;
+    glm::vec3 targetPos = e->getPosition();
+    float targetAngle = angleToTarget(targetPos); 
+    // difference between facing and target
+    float arc = addAngles(targetAngle, -angle_);
+    float dist = glm::distance(pos_, targetPos);
+
+    // Need to be in range and in arc
+    return (dist < attack_range_ && fabs(arc) < attack_arc_ / 2.f);
+}
+
+bool Unit::withinRange(const Entity *e) const
+{
+    glm::vec3 targetPos = e->getPosition();
+    float dist = glm::distance(pos_, targetPos);
+    return dist < attack_range_;
+}
+
+void Unit::turnTowards(const glm::vec3 &targetPos, float dt)
+{
+    float desired_angle = angleToTarget(targetPos);
+    float delAngle = addAngles(desired_angle, -angle_);
+    float turnRate = getParam(name_ + ".turnRate");
+    // rotate
+    // only rotate when not close enough
+    // Would overshoot, just move directly there
+    if (fabs(delAngle) < turnRate * dt)
+        turnSpeed_ = delAngle / dt;
+    else
+        turnSpeed_ = glm::sign(delAngle) * turnRate;
+    // No movement
+    speed_ = 0.f;
+}
+
+void Unit::moveTowards(const glm::vec3 &targetPos, float dt)
+{
+    float dist = glm::length(targetPos - pos_);
+    float speed = getParam(name_ + ".speed");
+    // rotate
+    turnTowards(targetPos, dt);
+    // move
+    // Set speed careful not to overshoot
+    if (dist < speed * dt)
+        speed = dist / dt;
+    speed_ = speed;
+}
+
+void Unit::remainStationary()
+{
+    speed_ = 0.f;
+    turnSpeed_ = 0.f;
+}
+
+void Unit::attackTarget(const Entity *e)
+{
+    assert(e);
+
+    // If we can't attack, don't!
+    // TODO(zack) I know this is inefficient (the caller probably just called
+    // canAttack(), but it's alright for now)
+    if (!canAttack(e) || attack_timer_ > 0.f)
+        return;
+
+    // Send projectile
+    Message spawnMsg;
+    spawnMsg["type"] = MessageTypes::SPAWN_ENTITY;
+    spawnMsg["to"] = (Json::Value::UInt64) NO_ENTITY; // Send to game object
+    spawnMsg["entity_type"] = "PROJECTILE"; // TODO(zack) make constant (also in Game.cpp)
+    spawnMsg["entity_pid"] = (Json::Value::Int64) playerID_;
+    spawnMsg["entity_pos"] = toJson(pos_);
+    spawnMsg["projectile_target"] = (Json::Value::UInt64) e->getID();
+    spawnMsg["projectile_name"] = "projectile"; // TODO(zack) make a param
+
+    MessageHub::get()->sendMessage(spawnMsg);
+
+    // reload
+    resetAttackTimer();
+}
+
+const Entity * Unit::getTarget(eid_t lastTargetID) const
+{
+    const Entity *target = NULL;
+    // Default to last target
+    if (lastTargetID != NO_ENTITY
+        && (target = MessageHub::get()->getEntity(lastTargetID)))
+    {
+        // Can't attack them if they're too far away
+        if (!withinRange(target))
+            target = NULL;
+    }
+    // Last target doesn't exist or isn't viable, find a new one
+    if (!target)
+    {
+        // Explanation: this creates a lambda function, the [&] is so it captures
+        // this, the arg is a const Entity *, and it returns a float
+        // In vim, these {} are marked as errors, that's just because vim doesn't
+        // know c++11
+        target = MessageHub::get()->findEntity(
+            [&](const Entity *e) -> float
+            {
+                // TODO(zack): the second condition should be that the unit is 
+                // targetable
+                if (e->getPlayerID() != playerID_ &&
+                    e->getName() == "unit")
+                {
+                    float dist = glm::distance(
+                        pos_,
+                        e->getPosition());
+                    // Only take ones that are within attack range, sort
+                    // by distance
+                    return dist < attack_range_ ? dist : HUGE_VAL;
+                }
+                return HUGE_VAL;
+            }
+            );
+    }
+
+    return target;
+}
+
+IdleState::IdleState(Unit *unit) :
+    UnitState(unit),
+    targetID_(NO_ENTITY)
+{
+}
+
+void IdleState::update(float dt)
+{
+    // Default to no movement
+    unit_->remainStationary();
+
+    // If an enemy is within our firing range, then fuck him up
+    const Entity *target = unit_->getTarget(targetID_);
+    if (target)
+    {
+        // If target is in range, attack
+        if (unit_->canAttack(target))
+            unit_->attackTarget(target);
+        // otherwse rotate towards
+        else
+            unit_->turnTowards(target->getPosition(), dt);
+    }
+
+    targetID_ = target ? target->getID() : NO_ENTITY;
+}
+
+UnitState * IdleState::next()
+{
+    return NULL;
+}
+
+UnitState * IdleState::stop(UnitState *next)
+{
+    return next;
 }
 
 MoveState::MoveState(const glm::vec3 &target, Unit *unit) :
@@ -124,7 +288,7 @@ void MoveState::updateTarget()
     {
         const Entity *e = MessageHub::get()->getEntity(targetID_);
         if (!e)
-            targetID_ = 0;
+            targetID_ = NO_ENTITY;
         else
             target_ = e->getPosition();
     }
@@ -134,122 +298,124 @@ void MoveState::update(float dt)
 {
     // Calculate some useful values
     updateTarget();
-    float dist = glm::length(target_ - unit_->pos_);
-    float desired_angle = unit_->angleToTarget(target_);
-    float delAngle = desired_angle - unit_->angle_;
-    float speed = getParam("unit.speed");
-    float turnRate = getParam("unit.turnRate");
-    // rotate
-    // only rotate when not close enough
-	if (dist > speed * dt)
-    {
-        // Get delta in [-180, 180]
-        while (delAngle > 180.f) delAngle -= 360.f;
-        while (delAngle < -180.f) delAngle += 360.f;
-        // Would overshoot, just move directly there
-        if (fabs(delAngle) < turnRate * dt)
-            unit_->turnSpeed_ = delAngle / dt;
-        else
-            unit_->turnSpeed_ = glm::sign(delAngle) * turnRate;
-    }
-    // move
-    // Set speed careful not to overshoot
-    if (dist < speed * dt)
-        speed = dist / dt;
-    unit_->speed_ = speed;
+    unit_->moveTowards(target_, dt);
 }
 
-void MoveState::stop()
+UnitState * MoveState::stop(UnitState *next)
 {
-    unit_->speed_ = 0.f;
-    unit_->turnSpeed_ = 0.f;
+    return next;
 }
 
 UnitState * MoveState::next()
 {
-    glm::vec3 diff = target_ - unit_->pos_;
-    float dist = glm::length(diff);
+    glm::vec2 pos = unit_->Entity::getPosition().xz;
+    glm::vec2 target = target_.xz;
+    float dist = glm::distance(target, pos);
 
     // If we've reached destination point
     if (targetID_ == NO_ENTITY && dist < unit_->getRadius() / 2.f)
-        return new NullState(unit_);
+        return new IdleState(unit_);
 
     // Or target entity has died
     if (targetID_ != NO_ENTITY
             && MessageHub::get()->getEntity(targetID_) == NULL)
-        return new NullState(unit_);
+        return new IdleState(unit_);
 
     // Keep on movin'
     return NULL;
 }
 
 
-AttackState::AttackState(eid_t target_id, Unit *unit) :
+AttackState::AttackState(eid_t targetID, Unit *unit) :
     UnitState(unit),
-    target_id_(target_id),
-    moveState_(new MoveState(target_id, unit))
+    targetID_(targetID)
 {
 }
 
 AttackState::~AttackState()
 {
-    delete moveState_;
 }
 
 void AttackState::update(float dt)
 {
-    const Entity *target = MessageHub::get()->getEntity(target_id_);
+    // Default to no movement
+    unit_->remainStationary();
+    const Entity *target = MessageHub::get()->getEntity(targetID_);
+    // TODO(zack) or target is out of sight
     if (!target)
         return;
 
-    glm::vec3 targetPos = target->getPosition();
-    float targetAngle = unit_->angleToTarget(targetPos); 
-    // difference between facing and target
-    float arc = addAngles(targetAngle, -unit_->angle_);
-    float dist = glm::distance(unit_->pos_, targetPos);
-
-    unit_->logger_->debug() << "arc: " << arc << " dist: " << dist << '\n';
-    // If we're in range, don't move, and shoot if possible
-    if (dist < unit_->attack_range_ && fabs(arc) < unit_->attack_arc_ / 2.f)
-    {
-        if (unit_->getAttackTimer() <= 0)
-        {
-            // TODO(zack): this probably belongs in like actor or at least a
-            // helper function
-            unit_->setAttackTimer(getParam("unit.cooldown"));
-            printf("Attacking target %d\n", target_id_);
-            Message spawnMsg;
-            spawnMsg["type"] = MessageTypes::SPAWN_ENTITY;
-            spawnMsg["to"] = (Json::Value::UInt64) NO_ENTITY; // Send to game object
-            spawnMsg["entity_type"] = "PROJECTILE"; // TODO(zack) make constant (also in Game.cpp)
-            spawnMsg["entity_pid"] = (Json::Value::Int64) unit_->getPlayerID();
-            spawnMsg["entity_pos"] = toJson(unit_->getPosition(dt));
-            spawnMsg["projectile_target"] = (Json::Value::UInt64) target_id_;
-            spawnMsg["projectile_name"] = "projectile"; // TODO(zack) make a param
-
-            MessageHub::get()->sendMessage(spawnMsg);
-        }
-
-        unit_->speed_ = 0.f;
-        unit_->turnSpeed_ = 0.f;
-    }
-    // Otherwise move towards target using move state logic
+    // If we can shoot them, do so
+    if (unit_->canAttack(target))
+        unit_->attackTarget(target);
+    // Otherwise move towards target
     else
-        moveState_->update(dt);
+        unit_->moveTowards(target->getPosition(), dt);
 }
 
 UnitState * AttackState::next()
 {
     // We're done pursuing when the target is DEAD
     // TODO(zack): incorporate a sight radius
-    const Entity *target = MessageHub::get()->getEntity(target_id_);
+    const Entity *target = MessageHub::get()->getEntity(targetID_);
     if (!target)
-        return new NullState(unit_);
+        return new IdleState(unit_);
 
     return NULL;
 }
 
-void AttackState::stop()
+UnitState * AttackState::stop(UnitState *next)
 {
-    moveState_->stop();
+    return next;
+}
+
+AttackMoveState::AttackMoveState(const glm::vec3 &target, Unit *unit) :
+    UnitState(unit),
+    targetPos_(target),
+    targetID_(NO_ENTITY)
+{
+}
+
+AttackMoveState::~AttackMoveState()
+{
+}
+
+void AttackMoveState::update(float dt)
+{
+    const Entity *targetEnt = unit_->getTarget(targetID_);
+    // If no target, move towards location
+    if (!targetEnt)
+        unit_->moveTowards(targetPos_, dt);
+    // otherwise pursue target
+    else
+    {
+        // no movement by default
+        unit_->remainStationary();
+        // If we can shoot them, do so
+        if (unit_->canAttack(targetEnt))
+            unit_->attackTarget(targetEnt);
+        // Otherwise move towards target
+        else
+            unit_->moveTowards(targetEnt->getPosition(), dt);
+    }
+
+    // Store targetEnt
+    targetID_ = targetEnt ? targetEnt->getID() : NO_ENTITY;
+}
+
+UnitState * AttackMoveState::next()
+{
+    glm::vec2 pos = unit_->Entity::getPosition().xz;
+    glm::vec2 target = targetPos_.xz;
+    // If we've reached destination point
+    float dist = glm::distance(target, pos);
+    if (dist < unit_->getRadius() / 2.f)
+        return new IdleState(unit_);
+
+    return NULL;
+}
+
+UnitState * AttackMoveState::stop(UnitState *next)
+{
+    return next;
 }

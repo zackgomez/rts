@@ -41,6 +41,26 @@ public:
     void addAction(int64_t pid, const PlayerAction &act);
 
     const Entity * getEntity(eid_t eid) const;
+    // Has to be inline, that sucks
+    template <class T>
+    const Entity * findEntity(T scorer) const
+    {
+        float bestscore = HUGE_VAL;
+        const Entity *bestentity = NULL;
+
+        for (auto& it : entities_)
+        {
+            const Entity *e = it.second;
+            float score = scorer(e);
+            if (score < bestscore)
+            {
+                bestscore = score;
+                bestentity = e;
+            }
+        }
+
+        return bestentity;
+    }
 
 
 protected:

@@ -122,10 +122,13 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button)
         // If order, then execute it
         else
         {
-            // TODO execute order_
-            logger_->info() << "Would execute order " << order_
-                << " on selection " << selection_ << " args... eid: "
-                << eid << " loc " << loc << '\n';
+            action["type"] = order_;
+            action["entity"] = (Json::Value::UInt64) selection_;
+            action["target"] = toJson(loc);
+            if (entity && entity->getPlayerID() != playerID_)
+                action["enemy_id"] = toJson(entity->getID());
+            action["pid"] = (Json::Value::Int64) playerID_;
+            action["tick"] = (Json::Value::Int64) targetTick_;
 
             // Clear order
             order_.clear();

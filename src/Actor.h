@@ -21,16 +21,15 @@ public:
     virtual ~Actor();
     virtual void update(float dt);
     virtual float getAttackTimer() const { return attack_timer_; }
-    virtual void setAttackTimer(float t) { attack_timer_ = t; }
     virtual float getAttackRange() const { return attack_range_; }
 
-private:
-    std::string actorName_;
-    float attack_timer_;
-
 protected:
-    float attack_cooldown_;
+    void resetAttackTimer();
+
     float attack_range_;
     float attack_arc_;
+    float attack_cooldown_;
+
+    float attack_timer_;
 };
 

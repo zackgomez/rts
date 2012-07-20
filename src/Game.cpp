@@ -289,8 +289,10 @@ void Game::handleAction(int64_t playerID, const PlayerAction &action)
     	msg["to"] = action["entity"];
     	msg["type"] = MessageTypes::ORDER;
     	msg["order_type"] = OrderTypes::ATTACK;
-    	msg["target"] = action["target"];
-    	msg["enemy_id"] = action["enemy_id"];
+        if (action.isMember("target"))
+            msg["target"] = action["target"];
+        if (action.isMember("enemy_id"))
+            msg["enemy_id"] = action["enemy_id"];
 
     	MessageHub::get()->sendMessage(msg);
     }
