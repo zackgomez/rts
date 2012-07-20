@@ -118,7 +118,7 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
     {
         const Building *building = (const Building *) entity;
         // if selected draw as green
-        glm::vec4 color = entity->getID() == selection_ ?  glm::vec4(0, 1, 0, 1) : glm::vec4(0, 0, 1, 1);
+        glm::vec4 color = selection_.count(entity->getID()) ?  glm::vec4(0, 1, 0, 1) : glm::vec4(0, 0, 1, 1);
 
         glUseProgram(unitProgram_);
         GLuint colorUniform = glGetUniformLocation(unitProgram_, "color");

@@ -259,17 +259,18 @@ void LocalPlayer::keyPress(SDLKey key)
         action["tick"] = toJson(targetTick_);
         game_->addAction(playerID_, action);
     }
-    else if (key == SDLK_q && selection_ != NO_ENTITY)
+    else if (key == SDLK_q && !selection_.empty())
     {
-        if(selection_)
+        auto sel = selection_.begin();
+        for (; sel != selection_.end(); sel++)
         {
-            std::string name = MessageHub::get()->getEntity(selection_)->getName();
+            std::string name = MessageHub::get()->getEntity(*sel)->getName();
             if (getParam(name + ".prodCount") >= 1)
             {
                 action["type"] = ActionTypes::ENQUEUE;
-                action["entity"] = toJson(selection_);
+                action["entity"] = toJson(*sel);
                 action["pid"] = toJson(playerID_);
-                action["prod"] = strParam(MessageHub::get()->getEntity(selection_)->getName() + ".prod1");
+                action["prod"] = strParam(MessageHub::get()->getEntity(*sel)->getName() + ".prod1");
                 action["tick"] = toJson(targetTick_);
                 game_->addAction(playerID_, action);
             }
