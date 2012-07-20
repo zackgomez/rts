@@ -15,6 +15,8 @@ public:
             const std::string &name);
     virtual ~Unit() { }
 
+    virtual const std::string getType() const { return "UNIT"; }
+
     virtual float getSpeed() const { return speed_; }
     virtual float getTurnSpeed() const { return turnSpeed_; }
 

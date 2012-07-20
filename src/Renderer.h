@@ -70,10 +70,10 @@ private:
     // For updating purely render aspects
     float renderdt_;
 
-
     GLuint mapProgram_;
     GLuint unitProgram_;
     Mesh * unitMesh_;
+    Mesh * buildingMesh_;
     Mesh * projectileMesh_;
 
     std::map<const Entity *, glm::vec3> ndcCoords_;

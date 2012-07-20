@@ -25,6 +25,7 @@ public:
     // The player than owns this entity, or NO_PLAYER
     int64_t getPlayerID() const { return playerID_; }
     const std::string& getName() const { return name_; }
+    virtual const std::string getType() const = 0;
 
     // This unit's position
     const glm::vec3 getPosition() const { return pos_; }

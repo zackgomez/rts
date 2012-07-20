@@ -14,6 +14,8 @@ public:
             const std::string &type, eid_t targetID);
     virtual ~Projectile() {}
 
+    virtual const std::string getType() const { return "PROJECTILE"; }
+
     virtual void update(float dt);
     virtual bool needsRemoval() const;
     virtual void handleMessage(const Message &msg);

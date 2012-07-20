@@ -10,6 +10,7 @@ const std::string DONE = "DONE";
 const std::string MOVE = "MOVE";
 const std::string ATTACK = "ATTACK";
 const std::string STOP = "STOP";
+const std::string ENQUEUE = "ENQUEUE";
 
 const std::string LEAVE_GAME = "LEAVE_GAME";
 };

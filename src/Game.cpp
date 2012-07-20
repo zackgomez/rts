@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "Entity.h"
 #include "Unit.h"
+#include "Building.h"
 #include "MessageHub.h"
 #include "Projectile.h"
 
@@ -214,6 +215,16 @@ void Game::handleMessage(const Message &msg)
                         msg["unit_name"].asString());
             entities_[unit->getID()] = unit;
         }
+        else if (msg["entity_type"] == "BUILDING")
+        {
+            assert(msg.isMember("building_name"));
+
+            Building *building =
+                new Building(msg["entity_pid"].asUInt64(),
+                        toVec3(msg["entity_pos"]),
+                        msg["building_name"].asString());
+            entities_[building->getID()] = building;
+        }
         else
         {
             logger_->warning() << "Asked to spawn unknown entity: " << msg;
@@ -302,6 +313,15 @@ void Game::handleAction(int64_t playerID, const PlayerAction &action)
     	msg["to"] = action["entity"];
     	msg["type"] = MessageTypes::ORDER;
     	msg["order_type"] = OrderTypes::STOP;
+
+    	MessageHub::get()->sendMessage(msg);
+    }
+    else if (action["type"] == ActionTypes::ENQUEUE)
+    {
+        Message msg;
+        msg["to"] = action["entity"];
+        msg["type"] = MessageTypes::ENQUEUE;
+        msg["prod"] = action["prod"];
 
     	MessageHub::get()->sendMessage(msg);
     }

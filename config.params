@@ -4,9 +4,18 @@ simrate   10.0
 unit.speed 3.0
 unit.turnRate 800.0
 unit.health 100.0
+unit.prodCount 0
 unit.range 6.0
 unit.cooldown 1.0
 unit.firingArc 30.0
+unit.buildTime 10.0
+
+building.health 1000.0
+building.prodCount 1
+building.prod1 unit
+building.cooldown 0.0
+building.range 0.0
+building.firingArc 0.0
 
 projectile.speed 10.0
 projectile.radius 0.3
@@ -21,6 +30,10 @@ hud.unit_health.w 80
 hud.unit_health.h 5
 hud.unit_health.x 0
 hud.unit_health.y 50
+hud.unit_prod.w 80
+hud.unit_prod.h 5
+hud.unit_prod.x 0
+hud.unit_prod.y 60
 resolution.x 1280
 resolution.y 800
 

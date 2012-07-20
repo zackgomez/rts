@@ -10,6 +10,7 @@
 #include "Map.h"
 #include "Game.h"
 #include "Unit.h"
+#include "Building.h"
 #include "ParamReader.h"
 
 LoggerPtr OpenGLRenderer::logger_;
@@ -34,6 +35,7 @@ OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution)
 	mapProgram_ = loadProgram("shaders/map.v.glsl", "shaders/map.f.glsl");
     unitProgram_ = loadProgram("shaders/unit.v.glsl", "shaders/unit.f.glsl"); 
     unitMesh_ = loadMesh("models/soldier.obj");
+    buildingMesh_ = loadMesh("models/building.obj");
     projectileMesh_ = loadMesh("models/projectile.obj");
     // unit model is based at 0, height 1, translate to center of model
     glm::mat4 unitMeshTrans =
@@ -56,6 +58,7 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
     glm::vec3 pos = entity->getPosition(simdt_);
     float rotAngle = entity->getAngle(simdt_);
     const std::string &name = entity->getName();
+    const std::string &type = entity->getType();
 
     // Interpolate if they move
     glm::mat4 transform = glm::scale(
@@ -66,7 +69,7 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
                 -rotAngle, glm::vec3(0, 1, 0)),
             glm::vec3(entity->getRadius() / 0.5f));
 
-    if (name == "unit")
+    if (type == "UNIT")
     {
         const Unit *unit = (const Unit *) entity;
         // if selected draw as green
@@ -101,7 +104,7 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
         drawRect(pos, size, glm::vec4(0, 1, 0, 1));
         glEnable(GL_DEPTH_TEST);
     }
-    else if (name == "projectile")
+    else if (type == "PROJECTILE")
     {
     	glm::vec4 color = glm::vec4(0.5, 0.7, 0.5, 1);
     	glUseProgram(unitProgram_);
@@ -110,6 +113,58 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
     	glUniform4fv(colorUniform, 1, glm::value_ptr(color));
     	glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
     	renderMesh(transform, projectileMesh_);
+    }
+    else if (type == "BUILDING")
+    {
+        const Building *building = (const Building *) entity;
+        // if selected draw as green
+        glm::vec4 color = entity->getID() == selection_ ?  glm::vec4(0, 1, 0, 1) : glm::vec4(0, 0, 1, 1);
+
+        glUseProgram(unitProgram_);
+        GLuint colorUniform = glGetUniformLocation(unitProgram_, "color");
+        GLuint lightPosUniform = glGetUniformLocation(unitProgram_, "lightPos");
+        glUniform4fv(colorUniform, 1, glm::value_ptr(color));
+        glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
+        renderMesh(transform, buildingMesh_);
+
+        glm::vec4 ndc = getProjectionStack().current() * getViewStack().current() *
+            transform * glm::vec4(0, 0, 0, 1);
+        ndc /= ndc.w;
+        ndcCoords_[entity] = glm::vec3(ndc);
+        
+        // display health bar
+        glDisable(GL_DEPTH_TEST);
+        float healthFact = building->getHealth() / building->getMaxHealth();
+        glm::vec2 size =
+            glm::vec2(getParam("hud.unit_health.w"), getParam("hud.unit_health.h"));
+        glm::vec2 offset =
+            glm::vec2(getParam("hud.unit_health.x"), getParam("hud.unit_health.y"));
+        glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution_;
+        pos += offset;
+        // Red underneath for max health
+        drawRect(pos, size, glm::vec4(1, 0, 0, 1));
+        // Green on top for current health
+        pos.x -= size.x * (1.f - healthFact) / 2.f;
+        size.x *= healthFact;
+        drawRect(pos, size, glm::vec4(0, 1, 0, 1));
+
+        std::queue<Actor::Production> queue = building->getProductionQueue();
+        if (!queue.empty())
+        {
+            // display production bar
+            float prodFactor = queue.front().time / queue.front().max_time;
+            size =
+                glm::vec2(getParam("hud.unit_prod.w"), getParam("hud.unit_prod.h"));
+            offset =
+                glm::vec2(getParam("hud.unit_prod.x"), getParam("hud.unit_prod.y"));
+            pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution_;
+            // Purple underneath for max time
+            drawRect(pos, size, glm::vec4(0.5, 0, 1, 1));
+            // Green on top for time elapsed
+            size.x *= prodFactor;
+            drawRect(pos, size, glm::vec4(0, 0, 1, 1));
+            glEnable(GL_DEPTH_TEST);
+        }
     }
     else
     {

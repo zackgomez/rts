@@ -13,19 +13,30 @@ void Map::init()
     msg["entity_type"] = "UNIT";
     msg["unit_name"] = "unit";
 
-    glm::vec3 pos(0.f, 0.5f, 0.f);
-    for (int i = 0; i < 3; i++)
+    Message buildingMsg;
+    buildingMsg["to"] = toJson(NO_ENTITY);
+    buildingMsg["type"] = MessageTypes::SPAWN_ENTITY;
+    buildingMsg["entity_type"] = "BUILDING";
+    buildingMsg["building_name"] = "building";
+
+    for (int64_t pid = 1; pid <= 2; pid++)
     {
-        for (int64_t pid = 1; pid <= 2; pid++)
+        glm::vec3 pos(0.f, 0.5f, 0.f);
+        float z = pid == 1 ? 8.f : -8.f;
+        for (int i = 0; i < 3; i++)
         {
-            float z = pid == 1 ? 8.f : -8.f;
             msg["entity_pid"] = toJson(pid);
             msg["entity_pos"] = toJson(glm::vec3(pos.x, pos.y, z));
 
             MessageHub::get()->sendMessage(msg);
+            pos.x += 2.f;
         }
-
-        pos.x += 2.f;
+        pos.x -= 10.f;
+        buildingMsg["entity_pid"] = toJson(pid);
+        buildingMsg["entity_pos"] = toJson(glm::vec3(pos.x, pos.y, z));
+        MessageHub::get()->sendMessage(buildingMsg);
     }
+
+    
 }
 

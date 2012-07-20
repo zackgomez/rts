@@ -1,7 +1,9 @@
 #pragma once
 #include "Targetable.h"
+#include "Message.h"
 #include <string>
 #include <vector>
+#include <queue>
 
 const static int ATTACK_TYPE_NORMAL = 0;
 
@@ -22,6 +24,14 @@ public:
     virtual void update(float dt);
     virtual float getAttackTimer() const { return attack_timer_; }
     virtual float getAttackRange() const { return attack_range_; }
+    struct Production
+    {
+        std::string name;
+        float time;
+        float max_time;
+        Message msg;
+    };        
+    virtual std::queue<Production> getProductionQueue() const { return production_queue_; }
 
 protected:
     void resetAttackTimer();
@@ -31,5 +41,6 @@ protected:
     float attack_cooldown_;
 
     float attack_timer_;
+    std::queue<Production> production_queue_;
 };
 
