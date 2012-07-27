@@ -2,6 +2,33 @@
 #include "Game.h"
 #include "PlayerAction.h"
 
+net_msg readPacket(kissnet::tcp_socket_ptr sock)
+    throw(kissnet::socket_exception)
+{
+    net_msg ret;
+
+    int bytes_read;
+    // First read header
+    if ((bytes_read = sock->recv((char *)&ret.sz, 4)) < 4)
+    {
+        if (bytes_read == 0)
+            throw kissnet::socket_exception("client disconnected gracefully");
+
+        Logger::getLogger("readPacket")->fatal() << "Read " << bytes_read
+            << " as header.\n";
+        assert(false && "Didn't read a full 4 byte header");
+    }
+
+    // TODO(zack) don't assume byte order is the same
+
+    // Then allocate and read payload
+    ret.msg = std::string(ret.sz, '\0');
+    if (sock->recv(&ret.msg[0], ret.sz) < ret.sz)
+        assert(false && "Didn't read a full message");
+
+    return ret;
+}
+
 void netThreadFunc(kissnet::tcp_socket_ptr sock, std::queue<PlayerAction> &queue,
         std::mutex &queueMutex, bool &running)
 {
@@ -9,49 +36,31 @@ void netThreadFunc(kissnet::tcp_socket_ptr sock, std::queue<PlayerAction> &queue
     Json::Reader reader;
     while (running)
     {
-        // TODO deal with exceptions
-        // TODO don't assume byte order is the same
-
+        // Each loop, push exactly one message onto queue
+        PlayerAction act;
         try
         {
-            // First a 4-byte size header
-            uint32_t sz;
-            int bytes_read;
-            if ((bytes_read = sock->recv((char *)&sz, 4)) < 4)
-            {
-                if (bytes_read == 0)
-                    continue;
-                logger->fatal() << "Read " << bytes_read << " as header.\n";
-                assert(false && "Didn't read a full 4 byte header");
-            }
-
-            //logger->debug() << "Received header of size " << sz << '\n';
-            // Allocate space
-            std::string str(sz, '\0');
-            if (sock->recv(&str[0], sz) < sz)
-                assert(false && "Didn't read a full message");
+            net_msg packet = readPacket(sock);
 
             // Parse
-            PlayerAction act;
-            reader.parse(str, act);
+            reader.parse(packet.msg, act);
 
             //logger->debug() << "Received action: " << act << '\n';
 
-            // Lock and queue
-            std::unique_lock<std::mutex> lock(queueMutex);
-            queue.push(act);
-            // automatically unlocks when lock goes out of scope
         }
         catch (kissnet::socket_exception e)
         {
-            logger->error() << "Caught socket exception " << e.what() 
-                << " terminating thread.\n";
-            PlayerAction act;
-            act["type"] == ActionTypes::LEAVE_GAME;
-            std::unique_lock<std::mutex> lock(queueMutex);
-            queue.push(act);
-            break;
+            logger->error() << "Caught socket exception '" << e.what() 
+                << "'... terminating thread.\n";
+            // On exception, leave game
+            act["type"] = ActionTypes::LEAVE_GAME;
+            running = false;
         }
+
+        // Lock and queue
+        std::unique_lock<std::mutex> lock(queueMutex);
+        queue.push(act);
+        // automatically unlocks when lock goes out of scope
     }
 
     logger->info() << "Thread finished\n";

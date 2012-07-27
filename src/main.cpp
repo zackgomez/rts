@@ -51,10 +51,11 @@ NetPlayer * getOpponent(const std::string &ip)
         sock->connect(ip, port);
     }
 
-    logger->info() << "Connected to " << sock->getHostname() << ":" << sock->getPort() << '\n';
+    logger->info() << "Initiating handshake with "
+        << sock->getHostname() << ":" << sock->getPort() << '\n';
+
     int64_t playerID = ip.empty() ? 2 : 1;
     logger->info() << "Creating NetPlayer with pid: " << playerID << '\n';
-
     return new NetPlayer(playerID, sock);
 }
 

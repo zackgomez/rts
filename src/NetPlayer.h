@@ -5,6 +5,15 @@
 #include <thread>
 #include <mutex>
 
+struct net_msg
+{
+    uint32_t sz;
+    std::string msg;
+};
+
+net_msg readPacket(kissnet::tcp_socket_ptr sock)
+    throw(kissnet::socket_exception);
+
 class NetPlayer : public Player
 {
 public:
