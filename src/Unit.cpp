@@ -3,24 +3,17 @@
 #include "ParamReader.h"
 #include "math.h"
 #include "MessageHub.h"
+#include "Projectile.h"
 
 LoggerPtr Unit::logger_;
+const std::string Unit::TYPE = "UNIT";
 
-Unit::Unit(int64_t playerID, const glm::vec3 &pos, const std::string &name) :
-    Mobile(playerID, pos),
-    Actor(name),
+Unit::Unit(const std::string &name, const Json::Value &params) :
+    Actor(name, params, true),
     state_(new IdleState(this))
 {
-    pos_ = pos;
-    radius_ = 0.5f;
-    angle_ = 0.f;
-    speed_ = 0.f;
-    turnSpeed_ = 0.f;
-
     if (!logger_.get())
         logger_ = Logger::getLogger("Unit");
-
-    name_ = name;
 }
 
 void Unit::handleMessage(const Message &msg)
@@ -29,23 +22,8 @@ void Unit::handleMessage(const Message &msg)
     {
         handleOrder(msg);
     }
-    else if (msg["type"] == MessageTypes::ATTACK)
-    {
-        assert(msg.isMember("pid"));
-        assert(msg.isMember("damage"));
-
-        // TODO(zack) figure out how to deal with this case (friendly fire)
-        assert(msg["pid"].asInt64() != playerID_);
-
-        // Just take damage for now
-        health_ -= msg["damage"].asFloat();
-        health_ = glm::max(health_, 0.f);
-    }
     else
-    {
-        logger_->warning() << "Unit got unknown message: "
-            << msg.toStyledString() << '\n';
-    }
+        Actor::handleMessage(msg);
 }
 
 void Unit::handleOrder(const Message &order)
@@ -74,7 +52,7 @@ void Unit::handleOrder(const Message &order)
     }
     else
     {
-        logger_->warning() << "Unit got unknown order: " << order << '\n';
+        Actor::handleOrder(order);
     }
 
     // If a state transition, tell the current state we're transitioning
@@ -101,7 +79,6 @@ void Unit::update(float dt)
         state_ = next;
     }
 
-    Mobile::update(dt);
     Actor::update(dt);
 }
 
@@ -133,7 +110,7 @@ void Unit::turnTowards(const glm::vec3 &targetPos, float dt)
 {
     float desired_angle = angleToTarget(targetPos);
     float delAngle = addAngles(desired_angle, -angle_);
-    float turnRate = getParam(name_ + ".turnRate");
+    float turnRate = param("turnRate");
     // rotate
     // only rotate when not close enough
     // Would overshoot, just move directly there
@@ -148,7 +125,7 @@ void Unit::turnTowards(const glm::vec3 &targetPos, float dt)
 void Unit::moveTowards(const glm::vec3 &targetPos, float dt)
 {
     float dist = glm::length(targetPos - pos_);
-    float speed = getParam(name_ + ".speed");
+    float speed = param("speed");
     // rotate
     turnTowards(targetPos, dt);
     // move
@@ -176,13 +153,13 @@ void Unit::attackTarget(const Entity *e)
 
     // Send projectile
     Message spawnMsg;
+    spawnMsg["to"] = toJson(NO_ENTITY); // Send to game object
     spawnMsg["type"] = MessageTypes::SPAWN_ENTITY;
-    spawnMsg["to"] = (Json::Value::UInt64) NO_ENTITY; // Send to game object
-    spawnMsg["entity_type"] = "PROJECTILE"; // TODO(zack) make constant (also in Game.cpp)
-    spawnMsg["entity_pid"] = (Json::Value::Int64) playerID_;
+    spawnMsg["entity_class"] = Projectile::TYPE;
+    spawnMsg["entity_name"] = "projectile"; // TODO(zack) make a param
+    spawnMsg["entity_pid"] = toJson(getPlayerID());
     spawnMsg["entity_pos"] = toJson(pos_);
-    spawnMsg["projectile_target"] = (Json::Value::UInt64) e->getID();
-    spawnMsg["projectile_name"] = "projectile"; // TODO(zack) make a param
+    spawnMsg["projectile_target"] = toJson(e->getID());
 
     MessageHub::get()->sendMessage(spawnMsg);
 
@@ -211,10 +188,9 @@ const Entity * Unit::getTarget(eid_t lastTargetID) const
         target = MessageHub::get()->findEntity(
             [&](const Entity *e) -> float
             {
-                // TODO(zack): the second condition should be that the unit is 
-                // targetable
-                if (e->getPlayerID() != playerID_ &&
-                    e->getName() == "unit")
+                if (e->getPlayerID() != NO_PLAYER
+                    && e->getPlayerID() != getPlayerID()
+                    && e->isTargetable())
                 {
                     float dist = glm::distance(
                         pos_,

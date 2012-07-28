@@ -2,3 +2,5 @@ obj
 rts
 *.dll
 rts.exe
+lib/**/*.o
+tags

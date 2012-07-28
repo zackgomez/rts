@@ -9,8 +9,10 @@ unit.range 6.0
 unit.cooldown 1.0
 unit.firingArc 30.0
 unit.buildTime 10.0
+unit.radius 0.5
 
-building.health 1000.0
+building.radius 1.0
+building.health 700.0
 building.prodCount 1
 building.prod1 unit
 building.cooldown 0.0

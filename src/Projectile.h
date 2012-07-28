@@ -1,20 +1,14 @@
-#include "Mobile.h"
+#include "Entity.h"
 #include "Logger.h"
 
-class Projectile :
-    public Mobile
+class Projectile : public Entity
 {
 public:
-    Projectile();
-    // TODO(zack): maybe it's actually better to pass
-    // damage type/damage amount/effects as parameters here, so that the
-    // weapon/actor just sends a dummy projectile.  Seems like we will have
-    // duplicated params with this architecture
-    Projectile(int64_t playerID, const glm::vec3 &pos, 
-            const std::string &type, eid_t targetID);
+    Projectile(const std::string &name, const Json::Value &params);
     virtual ~Projectile() {}
 
-    virtual const std::string getType() const { return "PROJECTILE"; }
+    static const std::string TYPE;
+    virtual const std::string getType() const { return TYPE; }
 
     virtual void update(float dt);
     virtual bool needsRemoval() const;

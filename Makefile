@@ -2,7 +2,7 @@ CXX=g++
 GLM=lib/glm-0.9.2.7
 JSON=lib/jsoncpp
 KISSNET=lib/kissnet
-CXXFLAGS=-g -O0 -Wall -I$(GLM) -std=c++0x -I$(JSON) -I$(KISSNET)
+CXXFLAGS=-g -O0 -Wall -I$(GLM) -std=c++0x -I$(JSON) -I$(KISSNET) -Wno-reorder
 LDFLAGS=-lSDL -lGL -lGLEW
 OBJDIR=obj
 SRCDIR=src
@@ -32,5 +32,8 @@ force_look:
 
 obj:
 	mkdir -p obj
+
+tags:
+	ctags -R src
 
 .PHONY: clean force_look config

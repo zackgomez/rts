@@ -3,23 +3,18 @@
 #include "ParamReader.h"
 
 LoggerPtr Projectile::logger_;
+const std::string Projectile::TYPE = "PROJECTILE";
 
-Projectile::Projectile() :
-    Mobile()
-{
-}
-
-Projectile::Projectile(int64_t playerID, const glm::vec3 &pos,
-        const std::string &type, eid_t targetID)
-: Mobile(playerID, pos)
-, targetID_(targetID)
+Projectile::Projectile(const std::string &name, const Json::Value &params)
+: Entity(name, params, true)
+, targetID_(NO_ENTITY)
 , done_(false)
 {
     if (!logger_.get())
         logger_ = Logger::getLogger("Projectile");
 
-    name_ = type;
-    radius_ = getParam(name_ + ".radius");
+    assert(params.isMember("projectile_target"));
+    targetID_ = params["projectile_target"].asUInt64();
 }
 
 void Projectile::update(float dt)
@@ -36,7 +31,7 @@ void Projectile::update(float dt)
     angle_ = angleToTarget(targetPos);
 
     float dist = glm::length(targetPos - pos_);
-    speed_ = getParam(name_ + ".speed");
+    speed_ = param("speed");
 
     // If we would hit, then don't overshoot and send message (deal damage)
     if (dist < speed_ * dt)
@@ -45,14 +40,14 @@ void Projectile::update(float dt)
         Message msg;
         msg["to"] = toJson(targetID_);
         msg["type"] = MessageTypes::ATTACK;
-        msg["pid"] = toJson(playerID_);
-        msg["damage"] = getParam(name_ + ".damage");
+        msg["pid"] = toJson(getPlayerID());
+        msg["damage"] = param("damage");
         MessageHub::get()->sendMessage(msg);
         done_ = true;
     }
 
     // Move/rotate/etc
-    Mobile::update(dt);
+    Entity::update(dt);
 }
 
 bool Projectile::needsRemoval() const

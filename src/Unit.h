@@ -1,21 +1,18 @@
 #pragma once
 #include "Actor.h"
-#include "Mobile.h"
 #include "glm.h"
 #include "Logger.h"
 
 class UnitState;
-class MoveState;
 
-class Unit :
-    public Mobile, public Actor
+class Unit : public Actor
 {
 public:
-    explicit Unit(int64_t playerID, const glm::vec3 &pos,
-            const std::string &name);
+    explicit Unit(const std::string &name, const Json::Value &params);
     virtual ~Unit() { }
 
-    virtual const std::string getType() const { return "UNIT"; }
+    static const std::string TYPE;
+    virtual const std::string getType() const { return TYPE; }
 
     virtual float getSpeed() const { return speed_; }
     virtual float getTurnSpeed() const { return turnSpeed_; }
@@ -42,7 +39,7 @@ public:
 
 protected:
     UnitState *state_;
-    void handleOrder(const Message &order);
+    virtual void handleOrder(const Message &order);
 
 private:
     static LoggerPtr logger_;

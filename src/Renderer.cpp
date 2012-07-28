@@ -69,7 +69,7 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
                 -rotAngle, glm::vec3(0, 1, 0)),
             glm::vec3(entity->getRadius() / 0.5f));
 
-    if (type == "UNIT")
+    if (type == Unit::TYPE)
     {
         const Unit *unit = (const Unit *) entity;
         // if selected draw as green
@@ -89,7 +89,7 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
         
         // display health bar
         glDisable(GL_DEPTH_TEST);
-        float healthFact = unit->getHealth() / unit->getMaxHealth();
+        float healthFact = glm::max(0.f, unit->getHealth() / unit->getMaxHealth());
         glm::vec2 size =
             glm::vec2(getParam("hud.unit_health.w"), getParam("hud.unit_health.h"));
         glm::vec2 offset =
@@ -134,7 +134,7 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
         
         // display health bar
         glDisable(GL_DEPTH_TEST);
-        float healthFact = building->getHealth() / building->getMaxHealth();
+        float healthFact = glm::max(0.f, building->getHealth() / building->getMaxHealth());
         glm::vec2 size =
             glm::vec2(getParam("hud.unit_health.w"), getParam("hud.unit_health.h"));
         glm::vec2 offset =
@@ -152,19 +152,21 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
         if (!queue.empty())
         {
             // display production bar
-            float prodFactor = queue.front().time / queue.front().max_time;
+            float prodFactor = 1.f - queue.front().time / queue.front().max_time;
             size =
                 glm::vec2(getParam("hud.unit_prod.w"), getParam("hud.unit_prod.h"));
             offset =
                 glm::vec2(getParam("hud.unit_prod.x"), getParam("hud.unit_prod.y"));
             pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution_;
+            pos += offset;
             // Purple underneath for max time
             drawRect(pos, size, glm::vec4(0.5, 0, 1, 1));
             // Green on top for time elapsed
+            pos.x -= size.x * (1.f - prodFactor) / 2.f;
             size.x *= prodFactor;
             drawRect(pos, size, glm::vec4(0, 0, 1, 1));
-            glEnable(GL_DEPTH_TEST);
         }
+        glEnable(GL_DEPTH_TEST);
     }
     else
     {

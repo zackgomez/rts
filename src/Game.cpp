@@ -7,6 +7,7 @@
 #include "Building.h"
 #include "MessageHub.h"
 #include "Projectile.h"
+#include "EntityFactory.h"
 
 Game::Game(Map *map, const std::vector<Player *> &players) :
     map_(map),
@@ -187,49 +188,15 @@ void Game::handleMessage(const Message &msg)
 {
     if (msg["type"] == MessageTypes::SPAWN_ENTITY)
     {
-        // TODO(zack) need some kind of factory here that takes these messages
-        // and returns the constructed entity
-        assert(msg.isMember("entity_type"));
-        assert(msg.isMember("entity_pid"));
-        assert(msg.isMember("entity_pos"));
+        assert(msg.isMember("entity_class"));
+        assert(msg.isMember("entity_name"));
 
-        if (msg["entity_type"] == "PROJECTILE")
-        {
-            assert(msg.isMember("projectile_target"));
-            assert(msg.isMember("projectile_name"));
-
-            Projectile *proj =
-                new Projectile(msg["entity_pid"].asUInt64(),
-                        toVec3(msg["entity_pos"]),
-                        msg["projectile_name"].asString(),
-                        msg["projectile_target"].asUInt64());
-            entities_[proj->getID()] = proj;
-        }
-        else if (msg["entity_type"] == "UNIT")
-        {
-            assert(msg.isMember("unit_name"));
-
-            Unit *unit =
-                new Unit(msg["entity_pid"].asUInt64(),
-                        toVec3(msg["entity_pos"]),
-                        msg["unit_name"].asString());
-            entities_[unit->getID()] = unit;
-        }
-        else if (msg["entity_type"] == "BUILDING")
-        {
-            assert(msg.isMember("building_name"));
-
-            Building *building =
-                new Building(msg["entity_pid"].asUInt64(),
-                        toVec3(msg["entity_pos"]),
-                        msg["building_name"].asString());
-            entities_[building->getID()] = building;
-        }
-        else
-        {
-            logger_->warning() << "Asked to spawn unknown entity: " << msg;
-        }
-
+        Entity *ent = EntityFactory::get()->construct(
+				msg["entity_class"].asString(),
+				msg["entity_name"].asString(),
+				msg);
+        if (ent)
+            entities_[ent->getID()] = ent;
     }
     else
     {
@@ -320,7 +287,8 @@ void Game::handleAction(int64_t playerID, const PlayerAction &action)
     {
         Message msg;
         msg["to"] = action["entity"];
-        msg["type"] = MessageTypes::ENQUEUE;
+        msg["type"] = MessageTypes::ORDER;
+    	msg["order_type"] = OrderTypes::ENQUEUE;
         msg["prod"] = action["prod"];
 
     	MessageHub::get()->sendMessage(msg);

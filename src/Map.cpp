@@ -1,5 +1,7 @@
 #include "Map.h"
 #include "MessageHub.h"
+#include "Unit.h"
+#include "Building.h"
 
 void Map::init()
 {
@@ -10,14 +12,14 @@ void Map::init()
     Message msg;
     msg["to"] = toJson(NO_ENTITY);
     msg["type"] = MessageTypes::SPAWN_ENTITY;
-    msg["entity_type"] = "UNIT";
-    msg["unit_name"] = "unit";
+    msg["entity_class"] = "UNIT";
+    msg["entity_name"] = "unit";
 
     Message buildingMsg;
     buildingMsg["to"] = toJson(NO_ENTITY);
     buildingMsg["type"] = MessageTypes::SPAWN_ENTITY;
-    buildingMsg["entity_type"] = "BUILDING";
-    buildingMsg["building_name"] = "building";
+    buildingMsg["entity_class"] = Building::TYPE;
+    buildingMsg["entity_name"] = "building";
 
     for (int64_t pid = 1; pid <= 2; pid++)
     {

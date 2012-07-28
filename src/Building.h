@@ -5,14 +5,14 @@
 #include "Logger.h"
 
 class Building :
-    public Entity, public Actor
+    public Actor
 {
 public:
-    explicit Building(int64_t playerID, const glm::vec3 &pos,
-            const std::string &name);
+    explicit Building(const std::string &name, const Json::Value &params);
     virtual ~Building() { }
 
-    virtual const std::string getType() const { return "BUILDING"; }
+    static const std::string TYPE;
+    virtual const std::string getType() const { return TYPE; }
 
     virtual void handleMessage(const Message &msg);
     virtual void update(float dt);
