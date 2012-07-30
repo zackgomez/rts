@@ -96,6 +96,7 @@ void gameThread()
     const float simdt = 1.f / simrate;
 
     game->start(simdt);
+	float delay;
 
     while (game->isRunning())
     {
@@ -103,8 +104,13 @@ void gameThread()
         uint32_t start = SDL_GetTicks();
 
         game->update(simdt);
-
-        SDL_Delay(int(1000*simdt - (SDL_GetTicks() - start)));
+		delay = int(1000*simdt - (SDL_GetTicks() - start));
+		// If we want to delay for zero seconds, we've used our time slice
+		// and are lagging. 
+		delay = glm::clamp(delay, 0.0f, 1000.0f * simdt);
+		assert(delay <= 1000 * simdt);
+		assert(delay >= 0);
+        SDL_Delay(delay);
     }
 }
 

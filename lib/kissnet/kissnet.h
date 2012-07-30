@@ -3,7 +3,7 @@
 #include <exception>
 #include <vector>
 #include <list>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 namespace kissnet
 {
@@ -28,7 +28,7 @@ private:
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 class tcp_socket;
-typedef boost::shared_ptr<tcp_socket> tcp_socket_ptr;
+typedef std::shared_ptr<tcp_socket> tcp_socket_ptr;
 
 class tcp_socket
 {
