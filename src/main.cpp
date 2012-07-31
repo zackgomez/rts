@@ -46,17 +46,79 @@ NetPlayer * getOpponent(const std::string &ip)
     }
     else
     {
-        logger->info() << "Connecting to " << ip << ":" << port << '\n';
+        bool connected = false;
         sock = kissnet::tcp_socket::create();
-        sock->connect(ip, port);
+        for (int i = 0; i < getParam("network.connectAttempts"); i++)
+        {
+            try
+            {
+                logger->info() << "Trying connection to " << ip << ":" << port << '\n';
+                sock->connect(ip, port);
+                // If connection is successful, yay
+                connected = true;
+                break;
+            }
+            catch (kissnet::socket_exception &e)
+            {
+                logger->warning() << "Failed to connected: '"
+                    << e.what() << "'\n";
+            }
+
+            SDL_Delay(1000 * getParam("network.connectInterval"));
+        }
+        if (!connected)
+        {
+            logger->info() << "Unable to connect after " << 
+                getParam("network.connectAttempts") << " attempts\n";
+            return NULL;
+        }
     }
 
     logger->info() << "Initiating handshake with "
         << sock->getHostname() << ":" << sock->getPort() << '\n';
+    NetConnection *conn = new NetConnection(sock);
+
+    // HANDSHAKE
+    // TODO(zack): Wow, this is just atrocious... look into "workflows" or
+    // something...
+    // Send our version
+    Json::Value v;
+    v["type"] = "HANDSHAKE";
+    v["handshake_version"] = strParam("version");
+    conn->sendMessage(v);
+    // Wait for responses
+    std::queue<Json::Value> &queue = conn->getQueue();
+    bool version_checked = false;
+    while (!version_checked)
+    {
+        logger->info() << "Handshaking...\n";
+        if (!queue.empty())
+        {
+            Json::Value msg = queue.front();
+            queue.pop();
+
+            logger->info() << "Received handshake message " << msg << '\n';
+            assert(msg["type"] == "HANDSHAKE");
+            if (!version_checked)
+            {
+                assert(msg.isMember("handshake_version"));
+                if (msg["handshake_version"] != strParam("version"))
+                {
+                    logger->error() << "Wrong handshake version from connection\n";
+                    conn->stop();
+                    return NULL;
+                }
+                version_checked = true;
+                continue;
+            }
+        }
+        else
+            SDL_Delay(100);
+    }
 
     int64_t playerID = ip.empty() ? 2 : 1;
     logger->info() << "Creating NetPlayer with pid: " << playerID << '\n';
-    return new NetPlayer(playerID, sock);
+    return new NetPlayer(playerID, conn);
 }
 
 std::vector<Player *> getPlayers(const std::vector<std::string> &args)
@@ -72,6 +134,11 @@ std::vector<Player *> getPlayers(const std::vector<std::string> &args)
         if (!ip.empty())
             playerID = 2;
         NetPlayer *opp = getOpponent(ip);
+        if (!opp)
+        {
+            logger->info() << "Couldn't get opponent\n";
+            exit(0);
+        }
         opp->setLocalPlayer(playerID);
         players.push_back(opp);
     }

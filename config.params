@@ -1,5 +1,9 @@
 framerate 60.0
 simrate   10.0
+version   v0.2
+
+network.connectAttempts 10
+network.connectInterval 0.50
 
 unit.speed 3.0
 unit.turnRate 800.0

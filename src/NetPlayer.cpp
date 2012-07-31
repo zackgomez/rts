@@ -66,33 +66,62 @@ void netThreadFunc(kissnet::tcp_socket_ptr sock, std::queue<PlayerAction> &queue
     logger->info() << "Thread finished\n";
 }
 
-NetPlayer::NetPlayer(int64_t playerID, kissnet::tcp_socket_ptr sock) :
-    Player(playerID),
-    sock_(sock),
+NetConnection::NetConnection(kissnet::tcp_socket_ptr sock) :
     running_(true),
+    sock_(sock)
+{
+    netThread_ = std::thread(netThreadFunc, sock_, std::ref(queue_),
+            std::ref(mutex_), std::ref(running_));
+}
+
+NetConnection::~NetConnection()
+{
+    stop();
+    netThread_.join();
+}
+
+void NetConnection::stop()
+{
+    running_ = false;
+}
+
+void NetConnection::sendMessage(const Json::Value &message)
+{
+    std::string body = writer_.write(message);
+    uint32_t len = body.size();
+    // TODO(zack) endianness issue here?
+    std::string msg((char *) &len, 4);
+    msg.append(body);
+
+    // Just send out the message
+    sock_->send(msg);
+}
+
+NetPlayer::NetPlayer(int64_t playerID, NetConnection *conn) :
+    Player(playerID),
+    connection_(conn),
     doneTick_(-1e6),
     localPlayerID_(-1)
 {
+    assert(connection_);
     logger_ = Logger::getLogger("NetPlayer");
-    netThread_ = std::thread(netThreadFunc, sock_, std::ref(actions_),
-            std::ref(mutex_), std::ref(running_));
 }
 
 NetPlayer::~NetPlayer()
 {
-    running_ = false;
-    // TODO(zack) interrupt the other thread if possible
-    netThread_.join();
+    connection_->stop();
+    delete connection_;
 }
 
 bool NetPlayer::update(int64_t tick)
 {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> lock(connection_->getMutex());
+    std::queue<PlayerAction> &actions = connection_->getQueue();
     // Read as many actions as were queued
-    while (!actions_.empty())
+    while (!actions.empty())
     {
-        PlayerAction a = actions_.front();
-        actions_.pop();
+        PlayerAction a = actions.front();
+        actions.pop();
 
         assert(a["pid"].asInt64() == playerID_ || a["type"] == ActionTypes::LEAVE_GAME);
         game_->addAction(playerID_, a);
@@ -121,18 +150,10 @@ void NetPlayer::playerAction(int64_t playerID, const PlayerAction &action)
 
     // Only send messages relating to the local player(s?) on this machine
     if (playerID == localPlayerID_)
-    {
-        std::string body = writer_.write(action);
-        uint32_t len = body.size();
-        // TODO(zack) endianness issue here?
-        std::string msg((char *) &len, 4);
-        msg.append(body);
-
-        // Just send out the message
-        sock_->send(msg);
-    }
+        connection_->sendMessage(action);
 
     // If the action was a leave game, close down thread
     if (action["type"] == ActionTypes::LEAVE_GAME)
-        running_ = false;
+        connection_->stop();
 }
+

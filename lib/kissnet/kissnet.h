@@ -54,6 +54,7 @@ public:
 
     // Bare metal functions
     int  getSocket() const;
+    // TODO(zack) add bool connected() const;
 
 private:
     tcp_socket();
