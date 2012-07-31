@@ -4,23 +4,27 @@
 #include <glm/glm.hpp>
 #include "Logger.h"
 
+namespace rts {
+
 class Building :
-    public Actor
+  public Actor
 {
 public:
-    explicit Building(const std::string &name, const Json::Value &params);
-    virtual ~Building() { }
+  explicit Building(const std::string &name, const Json::Value &params);
+  virtual ~Building() { }
 
-    static const std::string TYPE;
-    virtual const std::string getType() const { return TYPE; }
+  static const std::string TYPE;
+  virtual const std::string getType() const { return TYPE; }
 
-    virtual void handleMessage(const Message &msg);
-    virtual void update(float dt);
-    virtual bool needsRemoval() const;
+  virtual void handleMessage(const Message &msg);
+  virtual void update(float dt);
+  virtual bool needsRemoval() const;
 
 private:
-    static LoggerPtr logger_;
+  static LoggerPtr logger_;
 
 protected:
-    void enqueue(const Message &queue_order);
+  void enqueue(const Message &queue_order);
 };
+}; // namespace rts
+

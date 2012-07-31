@@ -36,4 +36,4 @@ obj:
 tags:
 	ctags -R src
 
-.PHONY: clean force_look config
+.PHONY: clean force_look config tags

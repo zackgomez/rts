@@ -4,20 +4,23 @@
 #include "glm.h"
 #include "Logger.h"
 
+namespace rts {
+
 class Entity;
 
 class EntityFactory
 {
 public:
-    static EntityFactory *get();
+  static EntityFactory *get();
 
-    Entity * construct(const std::string &cl,
-            const std::string &name, const Json::Value &params);
+  Entity * construct(const std::string &cl,
+      const std::string &name, const Json::Value &params);
 
 private:
-    EntityFactory();
-    ~EntityFactory();
+  EntityFactory();
+  ~EntityFactory();
 
-    LoggerPtr logger_;
+  LoggerPtr logger_;
 };
 
+};

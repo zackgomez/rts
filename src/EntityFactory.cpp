@@ -3,6 +3,8 @@
 #include "Projectile.h"
 #include "Building.h"
 
+namespace rts {
+
 EntityFactory::EntityFactory()
 {
     logger_ = Logger::getLogger("EntityFactory");
@@ -36,3 +38,4 @@ Entity * EntityFactory::construct(const std::string &cl,
     }
 }
 
+}; // namespace rts

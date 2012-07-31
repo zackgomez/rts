@@ -5,25 +5,29 @@
 #include "MessageHub.h"
 #include "Unit.h"
 
+namespace rts {
+
 LoggerPtr Building::logger_;
 const std::string Building::TYPE = "BUILDING";
 
 Building::Building(const std::string &name, const Json::Value &params) :
-    Actor(name, params)
+  Actor(name, params)
 {
 }
 
 void Building::handleMessage(const Message &msg)
 {
-    Actor::handleMessage(msg);
+  Actor::handleMessage(msg);
 }
 
 void Building::update(float dt)
 {
-    Actor::update(dt);
+  Actor::update(dt);
 }
 
 bool Building::needsRemoval() const
 {
-    return health_ <= 0.f;
+  return health_ <= 0.f;
 }
+
+}; // rts

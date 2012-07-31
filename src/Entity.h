@@ -8,15 +8,17 @@
 #include "glm.h"
 #include "Message.h"
 
-typedef uint64_t eid_t;
-
-const eid_t NO_ENTITY = 0;
-const int64_t NO_PLAYER = -1;
+namespace rts
+{
+const id_t NO_ENTITY = 0;
+const id_t NO_PLAYER = 0;
+const id_t GAME_ID   = 0;
 const glm::vec3 NO_POSITION = glm::vec3(HUGE_VAL);
 
 class Entity
 {
 public:
+    const static id_t STARTING_ID;
     explicit Entity(const std::string &name, const Json::Value &params,
             bool mobile = false, bool targetable = false);
     virtual ~Entity();
@@ -25,9 +27,9 @@ public:
     bool isMobile() const { return mobile_; }
 
     // This entity's unique id
-    eid_t getID() const { return id_; }
+    id_t getID() const { return id_; }
     // The player than owns this entity, or NO_PLAYER
-    int64_t getPlayerID() const { return playerID_; }
+    id_t getPlayerID() const { return playerID_; }
     const std::string& getName() const { return name_; }
     virtual const std::string getType() const = 0;
 
@@ -61,13 +63,13 @@ protected:
     float turnSpeed_;
 
 private:
-    static uint64_t lastID_;
+    static id_t lastID_;
 
-    eid_t id_;
-    int64_t playerID_;
+    id_t id_;
+    id_t playerID_;
     std::string name_;
 
     bool mobile_;
     bool targetable_;
 };
-
+}; // namespace rts
