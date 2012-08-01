@@ -45,12 +45,18 @@ void renderMesh(
     const glm::mat4 &modelMatrix,
     const Mesh *mesh);
 
-
 /* Draws a rectangle at the given pixels.
+ * (0,0) is the top-left corner.
+ * drawRectCenter will use pos as the center of the rect being drawn,
+ * drawRext will use pos as the top-left corner of the rect being drawn.
  * NOTE: the depth test should be disabled.
  */
-void drawRect(
+void drawRectCenter(
     const glm::vec2 &pos, // center
+    const glm::vec2 &size, // width/height
+    const glm::vec4 &color);
+void drawRect(
+    const glm::vec2 &pos, // top left corner
     const glm::vec2 &size, // width/height
     const glm::vec4 &color);
 void drawTexture(

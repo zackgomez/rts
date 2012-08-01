@@ -224,7 +224,7 @@ void drawRect(
     projStack.pop();
 }
 
-void drawTexture(
+void drawTextureCenter(
     const glm::vec2 &pos, // center
     const glm::vec2 &size, // width/height
     const GLuint texture)
@@ -252,6 +252,17 @@ void drawTexture(
 
   viewStack.pop();
   projStack.pop();
+}
+
+void drawTexture(
+        const glm::vec2 &pos, // top left corner
+        const glm::vec2 &size, // width/height
+        const GLuint texture)
+{
+    glm::vec2 center = pos;
+    center.x += size.x / 2;
+    center.y += size.y / 2;
+    drawTextureCenter(center, size, texture);
 }
 
 MatrixStack& getViewStack()
