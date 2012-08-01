@@ -12,6 +12,7 @@
 #include "Unit.h"
 #include "Building.h"
 #include "ParamReader.h"
+#include <sstream>
 
 namespace rts {
 
@@ -162,7 +163,7 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
       pos += offset;
       // Purple underneath for max time
       drawRect(pos, size, glm::vec4(0.5, 0, 1, 1));
-      // Green on top for time elapsed
+      // Blue on top for time elapsed
       pos.x -= size.x * (1.f - prodFactor) / 2.f;
       size.x *= prodFactor;
       drawRect(pos, size, glm::vec4(0, 0, 1, 1));
@@ -173,6 +174,55 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
   {
     logger_->warning() << "Unable to render entity " << entity->getName() << '\n';
   }
+}
+
+void OpenGLRenderer::renderUI()
+{
+    int res_x = getParam("resolution.x");
+    int res_y = getParam("resolution.y");
+
+    glDisable(GL_DEPTH_TEST);
+
+    //TODO(connor) there may be a better way to do this
+    // perhaps store the names of all the UI elements in an array
+    // and iterate over it?
+
+    // top bar:
+    glm::vec2 pos;
+    pos.x = getParam("ui.topbar_x");
+    if (pos.x < 0) pos.x += res_x;
+    pos.y = getParam("ui.topbar_y");
+    if (pos.y < 0) pos.y += res_y;
+    glm::vec2 size;
+    size.x = getParam("ui.topbar_w");
+    size.y = getParam("ui.topbar_h");
+    const char * path = strParam("ui.topbar_image").c_str();
+    GLuint tex = makeTexture(path);
+    drawTexture(pos, size, tex);
+
+    // minimap underlay
+    pos.x = getParam("ui.minimap_x");
+    if (pos.x < 0) pos.x += res_x;
+    pos.y = getParam("ui.minimap_y");
+    if (pos.y < 0) pos.y += res_y;
+    size.x = getParam("ui.minimap_w");
+    size.y = getParam("ui.minimap_h");
+    path = strParam("ui.minimap_image").c_str();
+    tex = makeTexture(path);
+    drawTexture(pos, size, tex);
+
+    // unit info underlay:
+    pos.x = getParam("ui.unitinfo_x");
+    if (pos.x < 0) pos.x += res_x;
+    pos.y = getParam("ui.unitinfo_y");
+    if (pos.y < 0) pos.y += res_y;
+    size.x = getParam("ui.unitinfo_w");
+    size.y = getParam("ui.unitinfo_h");
+    path = strParam("ui.unitinfo_image").c_str();
+    tex = makeTexture(path);
+    drawTexture(pos, size, tex);
+
+    glEnable(GL_DEPTH_TEST);
 }
 
 void OpenGLRenderer::renderMap(const Map *map)
@@ -274,6 +324,8 @@ void OpenGLRenderer::endRender()
     // Reset each frame
     dragStart_ = glm::vec3(HUGE_VAL);
   }
+
+  renderUI();
 
   SDL_GL_SwapBuffers();
 }

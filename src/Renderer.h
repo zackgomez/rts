@@ -22,6 +22,7 @@ public:
   void setGame(const Game *game) { game_ = game; }
 
   virtual void renderEntity(const Entity *entity) = 0;
+  virtual void renderUI() = 0;
   virtual void renderMap(const Map *map) = 0;
 
   virtual void startRender(float dt) = 0;
@@ -38,6 +39,7 @@ public:
   ~OpenGLRenderer();
 
   virtual void renderEntity(const Entity *entity);
+  virtual void renderUI();
   virtual void renderMap(const Map *map);
 
   virtual void startRender(float dt);

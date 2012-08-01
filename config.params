@@ -52,6 +52,23 @@ resolution.y 800
 
 ui.minDragDistance 0.3
 
+# UI elements
+ui.minimap_image images/UI/minimap_underlay.png
+ui.minimap_x 0
+ui.minimap_y -300
+ui.minimap_w 300
+ui.minimap_h 300
+ui.unitinfo_image images/UI/actor_underlay.png
+ui.unitinfo_x -400
+ui.unitinfo_y -300
+ui.unitinfo_w 400
+ui.unitinfo_h 300
+ui.topbar_image images/UI/top_bar_1280.png
+ui.topbar_x 0
+ui.topbar_y 0
+ui.topbar_w 1280
+ui.topbar_h 50
+
 camera.panspeed 10.0
 camera.panspeed.key 0.1
 camera.panthresh 100
