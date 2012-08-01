@@ -24,6 +24,7 @@ GLuint linkProgram(GLuint vert, GLuint frag);
 
 GLuint makeBuffer(GLenum type, const void *data, GLsizei size);
 // free buffer
+// TODO(zack) rename to loadTexture
 GLuint makeTexture(const char *filename);
 void   freeTexture(GLuint tex);
 
@@ -52,3 +53,7 @@ void drawRect(
     const glm::vec2 &pos, // center
     const glm::vec2 &size, // width/height
     const glm::vec4 &color);
+void drawTexture(
+    const glm::vec2 &pos, // center
+    const glm::vec2 &size, // width/height
+    const GLuint texture);

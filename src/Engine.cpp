@@ -17,6 +17,7 @@ static struct
 {
     GLuint colorProgram;
     GLuint rectBuffer;
+    GLuint texProgram;
 } resources;
 
 struct vert_p4n4t2
@@ -223,6 +224,36 @@ void drawRect(
     projStack.pop();
 }
 
+void drawTexture(
+    const glm::vec2 &pos, // center
+    const glm::vec2 &size, // width/height
+    const GLuint texture)
+{
+  glm::mat4 transform =
+    glm::scale(
+        glm::translate(glm::mat4(1.f), glm::vec3(pos, 0.f)),
+        glm::vec3(size, 1.f));
+
+  viewStack.push();
+  viewStack.current() = glm::mat4(1.f);
+  projStack.push();
+  projStack.current() = 
+    glm::ortho(0.f, screenRes.x, screenRes.y, 0.f);
+
+  glUseProgram(resources.texProgram);
+  GLuint textureUniform = glGetUniformLocation(resources.texProgram, "texture");
+  glUniform1i(textureUniform, 0);
+
+  glActiveTexture(GL_TEXTURE0);
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, texture);
+
+  renderRectangleProgram(transform);
+
+  viewStack.pop();
+  projStack.pop();
+}
+
 MatrixStack& getViewStack()
 {
     return viewStack;
@@ -330,31 +361,32 @@ GLuint makeBuffer(GLenum type, const void *data, GLsizei size)
 
 GLuint makeTexture(const char *filename)
 {
-    int width, height, depth;
-    void *pixels = stbi_load(filename, &width, &height, &depth, 4);
-    GLuint texture;
+  int width, height, depth;
+  void *pixels = stbi_load(filename, &width, &height, &depth, 4);
+  GLuint texture;
 
-    if (!pixels)
-    {
-        logger->warning() << "Unable to load texture from " << filename << "\n";
-        return 0;
-    }
+  if (!pixels)
+  {
+    // TODO(zack) make this throw an exception
+    logger->warning() << "Unable to load texture from " << filename << "\n";
+    return 0;
+  }
 
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_CLAMP_TO_EDGE);
-    glTexImage2D(
-            GL_TEXTURE_2D, 0,           /* target, level */
-            GL_RGBA8,                   /* internal format */
-            width, height, 0,           /* width, height, border */
-            GL_RGBA, GL_UNSIGNED_BYTE,   /* external format, type */
-            pixels                      /* pixels */
-            );
-    stbi_image_free(pixels);
-    return texture;
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_CLAMP_TO_EDGE);
+  glTexImage2D(
+      GL_TEXTURE_2D, 0,           /* target, level */
+      GL_RGBA8,                   /* internal format */
+      width, height, 0,           /* width, height, border */
+      GL_RGBA, GL_UNSIGNED_BYTE,   /* external format, type */
+      pixels                      /* pixels */
+      );
+  stbi_image_free(pixels);
+  return texture;
 }
 
 void freeTexture(GLuint tex)
@@ -398,22 +430,23 @@ void setMeshTransform(Mesh *mesh, const glm::mat4 &transform)
 
 static int loadResources()
 {
-    const float rectPositions[] = {
-        0.5, 0.5, 0.0f, 1.0f,
-        0.5, -0.5, 0.0f, 1.0f,
-        -0.5, 0.5, 0.0f, 1.0f,
-        -0.5, -0.5, 0.0f, 1.0f,
-    };
+  const float rectPositions[] = {
+    0.5, 0.5, 0.0f, 1.0f,
+    0.5, -0.5, 0.0f, 1.0f,
+    -0.5, 0.5, 0.0f, 1.0f,
+    -0.5, -0.5, 0.0f, 1.0f,
+  };
 
-    resources.rectBuffer = makeBuffer(
-            GL_ARRAY_BUFFER,
-            rectPositions,
-            sizeof(rectPositions));
+  resources.rectBuffer = makeBuffer(
+      GL_ARRAY_BUFFER,
+      rectPositions,
+      sizeof(rectPositions));
 
-    // Create solid color program for renderRectangleColor
-	resources.colorProgram = loadProgram("shaders/color.v.glsl", "shaders/color.f.glsl");
+  // Create solid color program for renderRectangleColor
+  resources.colorProgram = loadProgram("shaders/color.v.glsl", "shaders/color.f.glsl");
+  resources.texProgram = loadProgram("shaders/texsimple.v.glsl", "shaders/texsimple.f.glsl");
 
-    return 1;
+  return 1;
 }
 
 struct facevert { int v, vt, vn; };
