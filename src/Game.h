@@ -85,6 +85,9 @@ protected:
   tick_t tickOffset_;
   tick_t sync_tick_;
 
+  // Entities that need removal at the end of a tick
+  std::vector<id_t> deadEntities_;
+
   bool paused_;
   bool running_;
 };

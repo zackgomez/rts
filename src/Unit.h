@@ -21,7 +21,6 @@ public:
 
   virtual void handleMessage(const Message &msg);
   virtual void update(float dt);
-  virtual bool needsRemoval() const;
 
   float getRange() const;
   float getFiringArc() const;

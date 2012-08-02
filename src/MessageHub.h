@@ -18,7 +18,8 @@ public:
   const Entity *getEntity(id_t eid) const;
   // Immediately dispatches message
   void sendMessage(const Message &msg);
-  // TODO dispatchMessage (sends after unit updates until no more messages)
+
+  void sendRemovalMessage(const Entity *e);
 
   // Returns the entity that scores the LOWEST with the given scoring function.
   // Scoring function should have signature float scorer(const Entity *);

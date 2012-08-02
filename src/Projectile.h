@@ -13,12 +13,10 @@ public:
   virtual const std::string getType() const { return TYPE; }
 
   virtual void update(float dt);
-  virtual bool needsRemoval() const;
   virtual void handleMessage(const Message &msg);
 
 protected:
   id_t targetID_;
-  bool done_;
 
 private:
   static LoggerPtr logger_;

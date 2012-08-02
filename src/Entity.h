@@ -39,8 +39,6 @@ public:
     const float getAngle() const { return angle_; }
     // This unit's rough bounding radius
     const float getRadius() const { return radius_; }
-    // When true, will be destructed by engine
-    virtual bool needsRemoval() const = 0;
 
     // Interpolation functions
     virtual glm::vec3 getPosition(float dt) const;

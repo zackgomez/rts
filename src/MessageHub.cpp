@@ -55,4 +55,16 @@ void MessageHub::sendMessage(const Message &msg)
     game_->sendMessage(toID(to[i]), msg);
 }
 
+void MessageHub::sendRemovalMessage(const Entity *e)
+{
+	assert(e);
+
+	Message msg;
+	msg["to"] = GAME_ID;
+	msg["type"] = MessageTypes::DESTROY_ENTITY;
+	msg["eid"] = e->getID();
+
+	sendMessage(msg);
+}
+
 }; // rts

@@ -84,11 +84,6 @@ void Unit::update(float dt)
   Actor::update(dt);
 }
 
-bool Unit::needsRemoval() const
-{
-  return health_ <= 0.f;
-}
-
 float Unit::getRange() const
 {
   return param("range");

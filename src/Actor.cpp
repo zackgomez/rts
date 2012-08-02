@@ -37,7 +37,8 @@ void Actor::handleMessage(const Message &msg)
 
     // Just take damage for now
     health_ -= msg["damage"].asFloat();
-    health_ = glm::max(health_, 0.f);
+    if (health_ <= 0.f)
+      MessageHub::get()->sendRemovalMessage(this);
   }
   else if (msg["type"] == MessageTypes::ORDER)
   {

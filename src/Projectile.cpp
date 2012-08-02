@@ -7,10 +7,9 @@ namespace rts {
 LoggerPtr Projectile::logger_;
 const std::string Projectile::TYPE = "PROJECTILE";
 
-Projectile::Projectile(const std::string &name, const Json::Value &params)
-  : Entity(name, params, true)
-    , targetID_(NO_ENTITY)
-    , done_(false)
+Projectile::Projectile(const std::string &name, const Json::Value &params) :
+  Entity(name, params, true),
+  targetID_(NO_ENTITY)
 {
   if (!logger_.get())
     logger_ = Logger::getLogger("Projectile");
@@ -25,7 +24,7 @@ void Projectile::update(float dt)
   // If target doesn't exist for whatever reason, then I guess we're done
   if (!targetEnt)
   {
-    done_ = true;
+    MessageHub::get()->sendRemovalMessage(this);
     return;
   }
   // Always go directly towards target
@@ -45,16 +44,11 @@ void Projectile::update(float dt)
     msg["pid"] = toJson(getPlayerID());
     msg["damage"] = param("damage");
     MessageHub::get()->sendMessage(msg);
-    done_ = true;
+    MessageHub::get()->sendRemovalMessage(this);
   }
 
   // Move/rotate/etc
   Entity::update(dt);
-}
-
-bool Projectile::needsRemoval() const
-{
-  return done_;
 }
 
 void Projectile::handleMessage(const Message &msg)

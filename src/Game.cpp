@@ -132,17 +132,15 @@ void Game::update(float dt)
   {
     Entity *entity = it.second;
     entity->update(dt);
-    // Check for removal
-    if (entity->needsRemoval())
-      deadEnts.push_back(entity->getID());
   }
   // Remove deadEnts
-  for (auto eid : deadEnts)
+  for (auto eid : deadEntities_)
   {
     Entity *e = entities_[eid];
     entities_.erase(eid);
     delete e;
   }
+  deadEntities_.clear();
   // unlock entities automatically when lock goes out of scope
 
   // Next tick
@@ -201,6 +199,11 @@ void Game::handleMessage(const Message &msg)
         msg);
     if (ent)
       entities_[ent->getID()] = ent;
+  }
+  else if (msg["type"] == MessageTypes::DESTROY_ENTITY)
+  {
+	  assert(msg.isMember("eid"));
+	  deadEntities_.push_back(toID(msg["eid"]));
   }
   else
   {
