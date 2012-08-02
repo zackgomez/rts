@@ -183,7 +183,7 @@ void OpenGLRenderer::renderUI()
 
     glDisable(GL_DEPTH_TEST);
 
-    //TODO(connor) there may be a better way to do this
+    // TODO(connor) there may be a better way to do this
     // perhaps store the names of all the UI elements in an array
     // and iterate over it?
 
