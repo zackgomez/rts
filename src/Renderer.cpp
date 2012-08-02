@@ -12,7 +12,6 @@
 #include "Unit.h"
 #include "Building.h"
 #include "ParamReader.h"
-#include <sstream>
 
 namespace rts {
 
