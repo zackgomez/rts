@@ -3,6 +3,8 @@
 #include "glm.h"
 #include "MessageHub.h"
 #include "Unit.h"
+#include "Projectile.h"
+#include "Weapon.h"
 
 namespace rts {
 
@@ -10,14 +12,16 @@ LoggerPtr Actor::logger_;
 
 Actor::Actor(const std::string &name, const Json::Value &params,
     bool mobile, bool targetable) :
-  Entity(name, params, mobile, targetable)
+  Entity(name, params, mobile, targetable),
+  weapon_(NULL)
 {
   if (!logger_.get())
     logger_ = Logger::getLogger("Actor");
 
-  health_ = getMaxHealth();
+  if (hasStrParam("weapon"))
+    weapon_ = new Weapon(strParam(name + ".weapon"), this);
 
-  attack_timer_ = 0.f;
+  health_ = getMaxHealth();
 }
 
 Actor::~Actor()
@@ -33,7 +37,7 @@ void Actor::handleMessage(const Message &msg)
 
     // TODO(zack) figure out how to deal with this case (friendly fire)
     // when we have from, we can work that in here too
-    assert(msg["pid"].asInt64() != getPlayerID());
+    assert(toID(msg["pid"]) != getPlayerID());
 
     // Just take damage for now
     health_ -= msg["damage"].asFloat();
@@ -96,7 +100,8 @@ void Actor::produce(const std::string &prod_name)
 void Actor::update(float dt)
 {
   // count down the attack timer
-  attack_timer_ = glm::max(0.f, attack_timer_ - dt);
+  if (weapon_)
+    weapon_->update(dt);
 
   // Update production
   if (!production_queue_.empty())
@@ -111,11 +116,6 @@ void Actor::update(float dt)
 
   // Move etc
   Entity::update(dt);
-}
-
-void Actor::resetAttackTimer()
-{
-  attack_timer_ = param("cooldown");
 }
 }; // rts
 

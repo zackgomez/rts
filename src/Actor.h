@@ -7,6 +7,8 @@
 
 namespace rts {
 
+class Weapon;
+
 namespace OrderTypes
 {
   const std::string MOVE = "MOVE";
@@ -34,19 +36,18 @@ public:
   virtual void update(float dt);
   virtual std::queue<Production> getProductionQueue() const { return production_queue_; }
 
-  float getAttackTimer() const { return attack_timer_; }
   float getHealth() const { return health_; }
   float getMaxHealth() const { return param("health"); }
 
 protected:
   virtual void handleOrder(const Message &order);
 
-  void resetAttackTimer();
   void enqueue(const Message &queue_order);
   void produce(const std::string &prod_name);
 
   float health_;
-  float attack_timer_;
+
+  Weapon *weapon_;
 
   std::queue<Production> production_queue_;
 

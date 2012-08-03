@@ -84,4 +84,14 @@ float Entity::param(const std::string &p) const
   return getParam(name_ + "." + p);
 }
 
+bool Entity::hasParam(const std::string &p) const
+{
+  return ParamReader::get()->hasFloat(name_ + "." + p);
+}
+
+bool Entity::hasStrParam(const std::string &p) const
+{
+  return ParamReader::get()->hasString(name_ + "." + p);
+}
+
 };

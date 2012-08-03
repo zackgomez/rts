@@ -5,34 +5,38 @@ version   v0.2
 network.connectAttempts 10
 network.connectInterval 0.50
 
+# time after melee attacks before unit can ranged attack again
+global.meleeCooldown 0.33
+
 unit.speed 3.0
 unit.turnRate 800.0
 unit.health 100.0
 unit.prodCount 0
-unit.range 6.0
-unit.cooldown 1.0
-unit.firingArc 30.0
+unit.radius    0.5
 unit.buildTime 10.0
-unit.radius 0.5
+unit.weapon basic_rifle
 
-unit.meleeRange    0.7
-unit.meleeArc      60.0
-unit.meleeDamage   0.5
-unit.meleeWindUp   0.2
-unit.meleeWinDown  0.2
-unit.meleeCooldown 0.1
+basic_rifle.range     6.0
+basic_rifle.cooldown  0.5
+basic_rifle.arc       30.0
+basic_rifle.windup    0.2
+basic_rifle.winddown  0.3
+# projectile params
+basic_rifle.speed 10.0
+basic_rifle.radius 0.3
+basic_rifle.damage 10.0
+
+basic_knife.range     0.7
+basic_knife.arc       60.0
+basic_knife.damage    0.5
+basic_knife.windup    0.2
+basic_knife.winddown  0.2
+basic_knife.cooldown  0.1
 
 building.radius 1.0
 building.health 700.0
 building.prodCount 1
 building.prod1 unit
-building.cooldown 0.0
-building.range 0.0
-building.firingArc 0.0
-
-projectile.speed 10.0
-projectile.radius 0.3
-projectile.damage 10.0
 
 # DEBUG PARAMS
 slowPlayer.dropChance 0.05

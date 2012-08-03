@@ -22,9 +22,6 @@ public:
   virtual void handleMessage(const Message &msg);
   virtual void update(float dt);
 
-  float getRange() const;
-  float getFiringArc() const;
-
   // Unit state functions
   // if the target is in range and within firing arc
   bool canAttack(const Entity *target) const;

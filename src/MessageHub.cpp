@@ -60,9 +60,9 @@ void MessageHub::sendRemovalMessage(const Entity *e)
 	assert(e);
 
 	Message msg;
-	msg["to"] = GAME_ID;
+	msg["to"] = toJson(GAME_ID);
 	msg["type"] = MessageTypes::DESTROY_ENTITY;
-	msg["eid"] = e->getID();
+	msg["eid"] = toJson(e->getID());
 
 	sendMessage(msg);
 }

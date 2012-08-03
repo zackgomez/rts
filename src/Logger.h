@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 
+#define LOG(str) std::cout << __FILE__ << ":" <<  __LINE__ << " "#str << " - "
+
 class Logger;
 typedef std::auto_ptr<Logger> LoggerPtr;
 
@@ -13,6 +15,12 @@ public:
   {
     LoggerPtr ret(new Logger(prefix));
     return ret;
+  }
+
+  std::ostream& log()
+  {
+    std::cout << prefix_ << ": ";
+    return std::cout;
   }
 
   std::ostream& debug()

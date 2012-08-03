@@ -1,9 +1,10 @@
 #define GLM_SWIZZLE_XYZW
+#include <cmath>
 #include "Unit.h"
 #include "ParamReader.h"
-#include "math.h"
 #include "MessageHub.h"
 #include "Projectile.h"
+#include "Weapon.h"
 
 namespace rts {
 
@@ -84,33 +85,16 @@ void Unit::update(float dt)
   Actor::update(dt);
 }
 
-float Unit::getRange() const
-{
-  return param("range");
-}
-
-float Unit::getFiringArc() const
-{
-  return param("firingArc");
-}
-
 bool Unit::canAttack(const Entity *e) const
 {
-  glm::vec3 targetPos = e->getPosition();
-  float targetAngle = angleToTarget(targetPos); 
-  // difference between facing and target
-  float arc = addAngles(targetAngle, -angle_);
-  float dist = glm::distance(pos_, targetPos);
-
-  // Need to be in range and in arc
-  return (dist < getRange() && fabs(arc) < getFiringArc() / 2.f);
+  return weapon_->canAttack(e);
 }
 
 bool Unit::withinRange(const Entity *e) const
 {
   glm::vec3 targetPos = e->getPosition();
   float dist = glm::distance(pos_, targetPos);
-  return dist < getRange();
+  return dist < weapon_->getMaxRange();
 }
 
 void Unit::turnTowards(const glm::vec3 &targetPos, float dt)
@@ -155,23 +139,10 @@ void Unit::attackTarget(const Entity *e)
   // If we can't attack, don't!
   // TODO(zack) I know this is inefficient (the caller probably just called
   // canAttack(), but it's alright for now)
-  if (!canAttack(e) || attack_timer_ > 0.f)
+  if (weapon_->getState() != Weapon::READY || !canAttack(e))
     return;
 
-  // Send projectile
-  Message spawnMsg;
-  spawnMsg["to"] = toJson(NO_ENTITY); // Send to game object
-  spawnMsg["type"] = MessageTypes::SPAWN_ENTITY;
-  spawnMsg["entity_class"] = Projectile::TYPE;
-  spawnMsg["entity_name"] = "projectile"; // TODO(zack) make a param
-  spawnMsg["entity_pid"] = toJson(getPlayerID());
-  spawnMsg["entity_pos"] = toJson(pos_);
-  spawnMsg["projectile_target"] = toJson(e->getID());
-
-  MessageHub::get()->sendMessage(spawnMsg);
-
-  // reload
-  resetAttackTimer();
+  weapon_->fire(e);
 }
 
 const Entity * Unit::getTarget(id_t lastTargetID) const
@@ -204,7 +175,7 @@ const Entity * Unit::getTarget(id_t lastTargetID) const
               e->getPosition());
             // Only take ones that are within attack range, sort
             // by distance
-            return dist < getRange() ? dist : HUGE_VAL;
+            return dist < weapon_->getMaxRange() ? dist : HUGE_VAL;
           }
           return HUGE_VAL;
         }
