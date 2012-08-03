@@ -226,8 +226,6 @@ MoveState::MoveState(const glm::vec3 &target, Unit *unit) :
   targetID_(NO_ENTITY),
   target_(target)
 {
-  // Make sure the unit stands on the terrain
-  target_.y += unit_->getRadius(); 
 }
 
 MoveState::MoveState(id_t targetID, Unit *unit) :

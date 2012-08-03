@@ -39,6 +39,8 @@ public:
     const float getAngle() const { return angle_; }
     // This unit's rough bounding radius
     const float getRadius() const { return radius_; }
+    // Returns this entities height
+    const float getHeight() const { return height_; }
 
     // Interpolation functions
     virtual glm::vec3 getPosition(float dt) const;
@@ -60,6 +62,7 @@ protected:
     glm::vec3 pos_;
     float angle_;
     float radius_;
+    float height_;
 
     float speed_;
     float turnSpeed_;

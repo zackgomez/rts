@@ -31,7 +31,7 @@ void Map::init()
 
   for (id_t pid = 1; pid <= 2; pid++)
   {
-    glm::vec3 pos(0.f, 0.5f, 0.f);
+    glm::vec3 pos(0.f, 0.0f, 0.f);
     float z = pid == 1 ? 8.f : -8.f;
     for (int i = 0; i < 3; i++)
     {

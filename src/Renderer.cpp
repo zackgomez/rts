@@ -42,10 +42,7 @@ OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution) :
   meshes_["building"] = loadMesh("models/building.obj");
   meshes_["basic_bullet"] = loadMesh("models/projectile.obj");
   // unit model is based at 0, height 1, translate to center of model
-  glm::mat4 unitMeshTrans = glm::scale(
-      glm::translate(glm::mat4(1.f), glm::vec3(0, -0.5f, 0)),
-      glm::vec3(1, 0.5f, 1)
-  );
+  glm::mat4 unitMeshTrans = glm::scale(glm::mat4(1.f), glm::vec3(1, 0.5f, 1));
   setMeshTransform(meshes_["unit"], unitMeshTrans);
   setMeshTransform(
     meshes_["melee_unit"],

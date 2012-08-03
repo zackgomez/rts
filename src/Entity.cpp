@@ -17,6 +17,7 @@ Entity::Entity(const std::string &name,
   pos_(HUGE_VAL),
   angle_(0.f),
   radius_(0.f),
+  height_(0.f),
   speed_(0.f),
   turnSpeed_(0.f)
 {
@@ -24,6 +25,7 @@ Entity::Entity(const std::string &name,
   if (params.isMember("entity_pos")) pos_ = toVec3(params["entity_pos"]);
   if (params.isMember("entity_angle")) angle_ = params["entity_angle"].asFloat();
   radius_ = param("radius");
+  height_ = param("height");
 }
 
 Entity::~Entity()
