@@ -16,20 +16,31 @@ unit.radius    0.5
 unit.buildTime 10.0
 unit.weapon basic_rifle
 
+basic_rifle.type      ranged
 basic_rifle.range     6.0
 basic_rifle.cooldown  0.5
 basic_rifle.arc       30.0
 basic_rifle.windup    0.2
 basic_rifle.winddown  0.3
+basic_rifle.projectile basic_bullet
 # projectile params
-basic_rifle.speed 10.0
-basic_rifle.radius 0.3
-basic_rifle.damage 10.0
+basic_bullet.speed 10.0
+basic_bullet.radius 0.3
+basic_bullet.damage 10.0
 
-basic_knife.range     0.7
+melee_unit.speed 4.5
+melee_unit.turnRate 800.0
+melee_unit.health 50.0
+melee_unit.prodCount 0
+melee_unit.radius 0.5
+melee_unit.buildTime 10.0
+melee_unit.weapon basic_knife
+
+basic_knife.type      melee
+basic_knife.range     1.0
 basic_knife.arc       60.0
-basic_knife.damage    0.5
-basic_knife.windup    0.2
+basic_knife.damage    15.0
+basic_knife.windup    0.0
 basic_knife.winddown  0.2
 basic_knife.cooldown  0.1
 

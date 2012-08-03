@@ -12,6 +12,7 @@
 #include "Unit.h"
 #include "Building.h"
 #include "ParamReader.h"
+#include "Projectile.h"
 
 namespace rts {
 
@@ -34,20 +35,26 @@ OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution) :
 
   // Load resources
   mapProgram_ = loadProgram("shaders/map.v.glsl", "shaders/map.f.glsl");
-  unitProgram_ = loadProgram("shaders/unit.v.glsl", "shaders/unit.f.glsl"); 
-  unitMesh_ = loadMesh("models/soldier.obj");
-  buildingMesh_ = loadMesh("models/building.obj");
-  projectileMesh_ = loadMesh("models/projectile.obj");
+  meshProgram_ = loadProgram("shaders/unit.v.glsl", "shaders/unit.f.glsl"); 
+  // TODO(zack) read these and the transforms from params
+  meshes_["unit"] = loadMesh("models/soldier.obj");
+  meshes_["melee_unit"] = loadMesh("models/melee_unit.obj");
+  meshes_["building"] = loadMesh("models/building.obj");
+  meshes_["basic_bullet"] = loadMesh("models/projectile.obj");
   // unit model is based at 0, height 1, translate to center of model
-  glm::mat4 unitMeshTrans =
-    glm::scale(
-        glm::translate(glm::mat4(1.f), glm::vec3(0, -0.5f, 0)),
-        glm::vec3(1, 0.5f, 1));
-  setMeshTransform(unitMesh_, unitMeshTrans);
+  glm::mat4 unitMeshTrans = glm::scale(
+      glm::translate(glm::mat4(1.f), glm::vec3(0, -0.5f, 0)),
+      glm::vec3(1, 0.5f, 1)
+  );
+  setMeshTransform(meshes_["unit"], unitMeshTrans);
+  setMeshTransform(
+    meshes_["melee_unit"],
+    glm::scale(unitMeshTrans, glm::vec3(2.f))
+  );
 
   glm::mat4 projMeshTrans =
     glm::rotate(glm::mat4(1.f), 90.f, glm::vec3(1, 0, 0));
-  setMeshTransform(projectileMesh_, projMeshTrans);
+  setMeshTransform(meshes_["basic_bullet"], projMeshTrans);
 }
 
 OpenGLRenderer::~OpenGLRenderer()
@@ -58,7 +65,6 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
 {
   glm::vec3 pos = entity->getPosition(simdt_);
   float rotAngle = entity->getAngle(simdt_);
-  const std::string &name = entity->getName();
   const std::string &type = entity->getType();
 
   // Interpolate if they move
@@ -70,104 +76,20 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
         -rotAngle, glm::vec3(0, 1, 0)),
       glm::vec3(entity->getRadius() / 0.5f));
 
-  if (type == Unit::TYPE)
+  if (type == Unit::TYPE || type == Building::TYPE)
   {
-    const Unit *unit = (const Unit *) entity;
-    // if selected draw as green
-    glm::vec4 color = selection_.count(entity->getID()) ?  glm::vec4(0, 1, 0, 1) : glm::vec4(0, 0, 1, 1);
-
-    glUseProgram(unitProgram_);
-    GLuint colorUniform = glGetUniformLocation(unitProgram_, "color");
-    GLuint lightPosUniform = glGetUniformLocation(unitProgram_, "lightPos");
-    glUniform4fv(colorUniform, 1, glm::value_ptr(color));
-    glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
-    renderMesh(transform, unitMesh_);
-
-    glm::vec4 ndc = getProjectionStack().current() * getViewStack().current() *
-      transform * glm::vec4(0, 0, 0, 1);
-    ndc /= ndc.w;
-    ndcCoords_[entity] = glm::vec3(ndc);
-
-    // display health bar
-    glDisable(GL_DEPTH_TEST);
-    float healthFact = glm::max(0.f, unit->getHealth() / unit->getMaxHealth());
-    glm::vec2 size =
-      glm::vec2(getParam("hud.unit_health.w"), getParam("hud.unit_health.h"));
-    glm::vec2 offset =
-      glm::vec2(getParam("hud.unit_health.x"), getParam("hud.unit_health.y"));
-    glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution_;
-    pos += offset;
-    // Red underneath for max health
-    drawRect(pos, size, glm::vec4(1, 0, 0, 1));
-    // Green on top for current health
-    pos.x -= size.x * (1.f - healthFact) / 2.f;
-    size.x *= healthFact;
-    drawRect(pos, size, glm::vec4(0, 1, 0, 1));
-    glEnable(GL_DEPTH_TEST);
+    renderActor((const Actor *) entity, transform);
   }
-  else if (type == "PROJECTILE")
+  else if (type == Projectile::TYPE)
   {
     glm::vec4 color = glm::vec4(0.5, 0.7, 0.5, 1);
-    glUseProgram(unitProgram_);
-    GLuint colorUniform = glGetUniformLocation(unitProgram_, "color");
-    GLuint lightPosUniform = glGetUniformLocation(unitProgram_, "lightPos");
+    glUseProgram(meshProgram_);
+    GLuint colorUniform = glGetUniformLocation(meshProgram_, "color");
+    GLuint lightPosUniform = glGetUniformLocation(meshProgram_, "lightPos");
     glUniform4fv(colorUniform, 1, glm::value_ptr(color));
     glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
-    renderMesh(transform, projectileMesh_);
-  }
-  else if (type == "BUILDING")
-  {
-    const Building *building = (const Building *) entity;
-    // if selected draw as green
-    glm::vec4 color = selection_.count(entity->getID()) ?  glm::vec4(0, 1, 0, 1) : glm::vec4(0, 0, 1, 1);
-
-    glUseProgram(unitProgram_);
-    GLuint colorUniform = glGetUniformLocation(unitProgram_, "color");
-    GLuint lightPosUniform = glGetUniformLocation(unitProgram_, "lightPos");
-    glUniform4fv(colorUniform, 1, glm::value_ptr(color));
-    glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
-    renderMesh(transform, buildingMesh_);
-
-    glm::vec4 ndc = getProjectionStack().current() * getViewStack().current() *
-      transform * glm::vec4(0, 0, 0, 1);
-    ndc /= ndc.w;
-    ndcCoords_[entity] = glm::vec3(ndc);
-
-    // display health bar
-    glDisable(GL_DEPTH_TEST);
-    float healthFact = glm::max(0.f, building->getHealth() / building->getMaxHealth());
-    glm::vec2 size =
-      glm::vec2(getParam("hud.unit_health.w"), getParam("hud.unit_health.h"));
-    glm::vec2 offset =
-      glm::vec2(getParam("hud.unit_health.x"), getParam("hud.unit_health.y"));
-    glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution_;
-    pos += offset;
-    // Red underneath for max health
-    drawRect(pos, size, glm::vec4(1, 0, 0, 1));
-    // Green on top for current health
-    pos.x -= size.x * (1.f - healthFact) / 2.f;
-    size.x *= healthFact;
-    drawRect(pos, size, glm::vec4(0, 1, 0, 1));
-
-    std::queue<Actor::Production> queue = building->getProductionQueue();
-    if (!queue.empty())
-    {
-      // display production bar
-      float prodFactor = 1.f - queue.front().time / queue.front().max_time;
-      size =
-        glm::vec2(getParam("hud.unit_prod.w"), getParam("hud.unit_prod.h"));
-      offset =
-        glm::vec2(getParam("hud.unit_prod.x"), getParam("hud.unit_prod.y"));
-      pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution_;
-      pos += offset;
-      // Purple underneath for max time
-      drawRect(pos, size, glm::vec4(0.5, 0, 1, 1));
-      // Blue on top for time elapsed
-      pos.x -= size.x * (1.f - prodFactor) / 2.f;
-      size.x *= prodFactor;
-      drawRect(pos, size, glm::vec4(0, 0, 1, 1));
-    }
-    glEnable(GL_DEPTH_TEST);
+    assert(meshes_.find(entity->getName()) != meshes_.end());
+    renderMesh(transform, meshes_[entity->getName()]);
   }
   else
   {
@@ -301,6 +223,63 @@ void OpenGLRenderer::startRender(float dt)
   // Clear coordinates
   ndcCoords_.clear();
   lastTick_ = SDL_GetTicks();
+}
+
+void OpenGLRenderer::renderActor(const Actor *actor, glm::mat4 transform)
+{
+  // if selected draw as green
+  glm::vec4 color = selection_.count(actor->getID()) ?  glm::vec4(0, 1, 0, 1) : glm::vec4(0, 0, 1, 1);
+  const std::string &name = actor->getName();
+
+  // TODO(zack) parameterize shaders on name
+  glUseProgram(meshProgram_);
+  GLuint colorUniform = glGetUniformLocation(meshProgram_, "color");
+  GLuint lightPosUniform = glGetUniformLocation(meshProgram_, "lightPos");
+  glUniform4fv(colorUniform, 1, glm::value_ptr(color));
+  glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
+  assert(meshes_.find(name) != meshes_.end());
+  renderMesh(transform, meshes_[name]);
+
+  glm::vec4 ndc = getProjectionStack().current() * getViewStack().current() *
+    transform * glm::vec4(0, 0, 0, 1);
+  ndc /= ndc.w;
+  ndcCoords_[actor] = glm::vec3(ndc);
+
+  // display health bar
+  glDisable(GL_DEPTH_TEST);
+  float healthFact = glm::max(0.f, actor->getHealth() / actor->getMaxHealth());
+  glm::vec2 size =
+    glm::vec2(getParam("hud.unit_health.w"), getParam("hud.unit_health.h"));
+  glm::vec2 offset =
+    glm::vec2(getParam("hud.unit_health.x"), getParam("hud.unit_health.y"));
+  glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution_;
+  pos += offset;
+  // Red underneath for max health
+  drawRect(pos, size, glm::vec4(1, 0, 0, 1));
+  // Green on top for current health
+  pos.x -= size.x * (1.f - healthFact) / 2.f;
+  size.x *= healthFact;
+  drawRect(pos, size, glm::vec4(0, 1, 0, 1));
+
+  std::queue<Actor::Production> queue = actor->getProductionQueue();
+  if (!queue.empty())
+  {
+    // display production bar
+    float prodFactor = 1.f - queue.front().time / queue.front().max_time;
+    size =
+      glm::vec2(getParam("hud.unit_prod.w"), getParam("hud.unit_prod.h"));
+    offset =
+      glm::vec2(getParam("hud.unit_prod.x"), getParam("hud.unit_prod.y"));
+    pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution_;
+    pos += offset;
+    // Purple underneath for max time
+    drawRect(pos, size, glm::vec4(0.5, 0, 1, 1));
+    // Blue on top for time elapsed
+    pos.x -= size.x * (1.f - prodFactor) / 2.f;
+    size.x *= prodFactor;
+    drawRect(pos, size, glm::vec4(0, 0, 1, 1));
+  }
+  glEnable(GL_DEPTH_TEST);
 }
 
 void OpenGLRenderer::endRender()

@@ -19,7 +19,7 @@ Actor::Actor(const std::string &name, const Json::Value &params,
     logger_ = Logger::getLogger("Actor");
 
   if (hasStrParam("weapon"))
-    weapon_ = new Weapon(strParam(name + ".weapon"), this);
+    weapon_ = new Weapon(strParam("weapon"), this);
 
   health_ = getMaxHealth();
 }

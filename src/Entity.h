@@ -53,6 +53,7 @@ protected:
     float angleToTarget(const glm::vec3 &pos) const;
 
     float param(const std::string &p) const;
+    std::string strParam(const std::string &p) const;
     bool hasParam(const std::string &p) const;
     bool hasStrParam(const std::string &p) const;
 

@@ -11,14 +11,20 @@ void Map::init()
   // we should also create a "base" macro that expands into a headquarters
   // building and starting hero/unit/base defenses unicorns etc
 
-  Message msg;
-  msg["to"] = toJson(NO_ENTITY);
-  msg["type"] = MessageTypes::SPAWN_ENTITY;
-  msg["entity_class"] = "UNIT";
-  msg["entity_name"] = "unit";
+  Message rangedMsg;
+  rangedMsg["to"] = toJson(GAME_ID);
+  rangedMsg["type"] = MessageTypes::SPAWN_ENTITY;
+  rangedMsg["entity_class"] = "UNIT";
+  rangedMsg["entity_name"] = "unit";
+
+  Message meleeMsg;
+  meleeMsg["to"] = toJson(GAME_ID);
+  meleeMsg["type"] = MessageTypes::SPAWN_ENTITY;
+  meleeMsg["entity_class"] = "UNIT";
+  meleeMsg["entity_name"] = "melee_unit";
 
   Message buildingMsg;
-  buildingMsg["to"] = toJson(NO_ENTITY);
+  buildingMsg["to"] = toJson(GAME_ID);
   buildingMsg["type"] = MessageTypes::SPAWN_ENTITY;
   buildingMsg["entity_class"] = Building::TYPE;
   buildingMsg["entity_name"] = "building";
@@ -29,6 +35,7 @@ void Map::init()
     float z = pid == 1 ? 8.f : -8.f;
     for (int i = 0; i < 3; i++)
     {
+      Message &msg = meleeMsg;
       msg["entity_pid"] = toJson(pid);
       msg["entity_pos"] = toJson(glm::vec3(pos.x, pos.y, z));
 
@@ -40,8 +47,6 @@ void Map::init()
     buildingMsg["entity_pos"] = toJson(glm::vec3(pos.x, pos.y, z));
     MessageHub::get()->sendMessage(buildingMsg);
   }
-
-
 }
 
 }; // rts

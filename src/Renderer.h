@@ -11,6 +11,7 @@ namespace rts {
 class Map;
 class LocalPlayer;
 class Game;
+class Actor;
 struct MapHighlight;
 
 class Renderer
@@ -63,6 +64,7 @@ public:
 
 private:
   glm::vec3 screenToNDC(const glm::vec2 &screenCoord) const;
+  void renderActor(const Actor *actor, glm::mat4 transform);
 
   glm::vec3 cameraPos_;
   glm::vec3 lightPos_;
@@ -73,11 +75,10 @@ private:
   // For updating purely render aspects
   float renderdt_;
 
+  // TODO(zack) shader map
   GLuint mapProgram_;
-  GLuint unitProgram_;
-  Mesh * unitMesh_;
-  Mesh * buildingMesh_;
-  Mesh * projectileMesh_;
+  GLuint meshProgram_;
+  std::map<std::string, Mesh *> meshes_;
 
   std::map<const Entity *, glm::vec3> ndcCoords_;
   std::set<id_t> selection_;

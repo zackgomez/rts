@@ -49,6 +49,9 @@ public:
 
 private:
   float param(const std::string &p) const;
+  std::string strParam(const std::string &p) const;
+  bool hasParam(const std::string &p) const;
+  bool hasStrParam(const std::string &p) const;
 
   const std::string name_;
   const Entity *owner_;
