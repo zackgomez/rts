@@ -13,13 +13,19 @@ LoggerPtr Actor::logger_;
 Actor::Actor(const std::string &name, const Json::Value &params,
     bool mobile, bool targetable) :
   Entity(name, params, mobile, targetable),
-  weapon_(NULL)
+  melee_timer_(0.f),
+  meleeWeapon_(NULL),
+  rangedWeapon_(NULL)
 {
   if (!logger_.get())
     logger_ = Logger::getLogger("Actor");
 
-  if (hasStrParam("weapon"))
-    weapon_ = new Weapon(strParam("weapon"), this);
+  if (hasStrParam("meleeWeapon")) {
+    meleeWeapon_ = new Weapon(strParam("meleeWeapon"), this);
+  }
+  if (hasStrParam("rangedWeapon")) {
+    rangedWeapon_ = new Weapon(strParam("rangedWeapon"), this);
+  }
 
   health_ = getMaxHealth();
 }
@@ -34,6 +40,7 @@ void Actor::handleMessage(const Message &msg)
   {
     assert(msg.isMember("pid"));
     assert(msg.isMember("damage"));
+    assert(msg.isMember("damage_type"));
 
     // TODO(zack) figure out how to deal with this case (friendly fire)
     // when we have from, we can work that in here too
@@ -99,9 +106,7 @@ void Actor::produce(const std::string &prod_name)
 
 void Actor::update(float dt)
 {
-  // count down the attack timer
-  if (weapon_)
-    weapon_->update(dt);
+  melee_timer_ -= dt;
 
   // Update production
   if (!production_queue_.empty())

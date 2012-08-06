@@ -13,10 +13,20 @@ const std::string Unit::TYPE = "UNIT";
 
 Unit::Unit(const std::string &name, const Json::Value &params) :
   Actor(name, params, true),
-  state_(new IdleState(this))
-{
+  weapon_(NULL),
+  state_(new IdleState(this)) {
+
   if (!logger_.get())
     logger_ = Logger::getLogger("Unit");
+
+  // these are inited in Actor
+  weapon_ = rangedWeapon_ ? rangedWeapon_ : meleeWeapon_;
+}
+
+Unit::~Unit()
+{
+  delete rangedWeapon_;
+  delete meleeWeapon_;
 }
 
 void Unit::handleMessage(const Message &msg)
@@ -73,14 +83,25 @@ void Unit::handleOrder(const Message &order)
 
 void Unit::update(float dt)
 {
+  if (melee_timer_ <= 0.f) {
+    weapon_ = rangedWeapon_ ? rangedWeapon_ : meleeWeapon_;
+  } else {
+    weapon_ = meleeWeapon_;
+  }
+
   state_->update(dt);
 
   UnitState *next;
-  if ((next = state_->next()))
-  {
+  if ((next = state_->next())) {
     delete state_;
     state_ = next;
   }
+
+  // count down the attack timer
+  if (rangedWeapon_)
+    rangedWeapon_->update(dt);
+  if (meleeWeapon_)
+    meleeWeapon_->update(dt);
 
   Actor::update(dt);
 }

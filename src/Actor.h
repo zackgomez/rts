@@ -46,8 +46,9 @@ protected:
   void produce(const std::string &prod_name);
 
   float health_;
+  float melee_timer_;
 
-  Weapon *weapon_;
+  Weapon *rangedWeapon_, *meleeWeapon_;
 
   std::queue<Production> production_queue_;
 

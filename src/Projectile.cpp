@@ -43,6 +43,7 @@ void Projectile::update(float dt)
     msg["type"] = MessageTypes::ATTACK;
     msg["pid"] = toJson(getPlayerID());
     msg["damage"] = param("damage");
+    msg["damage_type"] = "ranged";
     MessageHub::get()->sendMessage(msg);
     MessageHub::get()->sendRemovalMessage(this);
   }

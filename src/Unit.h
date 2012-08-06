@@ -11,7 +11,7 @@ class Unit : public Actor
 {
 public:
   explicit Unit(const std::string &name, const Json::Value &params);
-  virtual ~Unit() { }
+  virtual ~Unit();
 
   static const std::string TYPE;
   virtual const std::string getType() const { return TYPE; }
@@ -41,6 +41,7 @@ public:
 protected:
   virtual void handleOrder(const Message &order);
 
+  Weapon *weapon_;
   UnitState *state_;
 
 private:

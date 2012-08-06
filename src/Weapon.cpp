@@ -83,6 +83,7 @@ void Weapon::fire(const Entity *target) {
     msg_["type"] = MessageTypes::ATTACK;
     msg_["pid"] = toJson(owner_->getPlayerID());
     msg_["damage"] = param("damage");
+    msg_["damage_type"] = type;
   } // else handled by assert
 }
 
