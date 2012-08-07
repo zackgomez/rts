@@ -97,7 +97,7 @@
         "radius" : 1.0,
         "height" : 2.0,
         "health" : 700.0,
-        "prod"   : ["unit"]
+        "prod"   : ["unit", "melee_unit"]
     },
 
 
