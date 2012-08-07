@@ -41,8 +41,8 @@ void Unit::handleMessage(const Message &msg)
 
 void Unit::handleOrder(const Message &order)
 {
-  assert(order["type"] == MessageTypes::ORDER);
-  assert(order.isMember("order_type"));
+  invariant(order["type"] == MessageTypes::ORDER, "unexpected message type");
+  invariant(order.isMember("order_type"), "malformed order message");
   UnitState *next = NULL;
   if (order["order_type"] == OrderTypes::MOVE)
   {
@@ -51,13 +51,12 @@ void Unit::handleOrder(const Message &order)
   }
   else if (order["order_type"] == OrderTypes::ATTACK)
   {
+    invariant(order.isMember("enemy_id") || order.isMember("target"),
+        "attack order missing target: " + order.toStyledString());
     if (order.isMember("enemy_id"))
-      next = new AttackState(order["enemy_id"].asUInt64(), this);
+      next = new AttackState(toID(order["enemy_id"]), this);
     else if (order.isMember("target"))
       next = new AttackMoveState(toVec3(order["target"]), this);
-    else
-      logger_->error() << "Unit got malformed attack order: "
-        << order << '\n';
   }
   else if (order["order_type"] == OrderTypes::STOP)
   {
@@ -98,10 +97,8 @@ void Unit::update(float dt)
   }
 
   // count down the attack timer
-  if (rangedWeapon_)
+  if (weapon_)
     rangedWeapon_->update(dt);
-  if (meleeWeapon_)
-    meleeWeapon_->update(dt);
 
   Actor::update(dt);
 }

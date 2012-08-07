@@ -35,8 +35,8 @@ const Entity * MessageHub::getEntity(id_t eid) const
 
 void MessageHub::sendMessage(const Message &msg)
 {
-  assert (game_);
-  assert(msg.isMember("to"));
+  invariant(game_, "unset game object");
+  invariant(msg.isMember("to"), "missing to field in message");
 
   Json::Value to = msg["to"];
 

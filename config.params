@@ -14,8 +14,8 @@
 
     "network" :
     {
-        "connectAttempts" : 10,
-        "connectInterval" : 0.50,
+        "connectAttempts" : 20,
+        "connectInterval" : 1.00,
         // DEBUG PARAMS
         "dropChance"      : 0.05
     },
@@ -23,7 +23,7 @@
     "global" :
     {
         // time after melee attacks before unit can ranged attack again
-        "meleeCooldown" : 0.33
+        "meleeCooldown" : 1.00
     },
 
     "unit" :

@@ -14,8 +14,8 @@ Projectile::Projectile(const std::string &name, const Json::Value &params) :
   if (!logger_.get())
     logger_ = Logger::getLogger("Projectile");
 
-  assert(params.isMember("projectile_target"));
-  targetID_ = params["projectile_target"].asUInt64();
+  invariant(params.isMember("projectile_target"), "missing target");
+  targetID_ = toID(params["projectile_target"]);
 }
 
 void Projectile::update(float dt)

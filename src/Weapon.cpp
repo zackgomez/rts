@@ -12,7 +12,7 @@ Weapon::Weapon(const std::string &name, const Entity *owner) :
   state_(READY),
   t_(0.f) {
   if (strParam("type") == "ranged")
-    assert(hasStrParam("projectile"));
+    invariant(hasStrParam("projectile"), "ranged weapon missing projectile");
 }
 
 float Weapon::getMaxRange() const {
@@ -69,7 +69,7 @@ void Weapon::fire(const Entity *target) {
   // TODO(zack) replace with spawn entity function, can the params here then
   msg_.clear();
   std::string type = strParam("type");
-  assert ((type == "ranged" || type == "melee") && "invalid weapon type");
+  invariant(type == "ranged" || type == "melee", "invalid weapon type");
   if (type == "ranged") {
     msg_["to"] = toJson(NO_ENTITY); // Send to game object
     msg_["type"] = MessageTypes::SPAWN_ENTITY;
@@ -84,7 +84,7 @@ void Weapon::fire(const Entity *target) {
     msg_["pid"] = toJson(owner_->getPlayerID());
     msg_["damage"] = param("damage");
     msg_["damage_type"] = type;
-  } // else handled by assert
+  } // else handled by invariant
 }
 
 void Weapon::interrupt() {

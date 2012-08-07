@@ -31,6 +31,7 @@ public:
   float getMaxRange() const;
   float getArc() const;
   WeaponState getState() const;
+  const std::string & getName() const { return name_; }
 
   // Returns true if the target is in range, and this weapon is capable
   // of firing

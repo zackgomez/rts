@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "util.h"
 #include "Engine.h"
 #include "Entity.h"
 #include "Map.h"
@@ -85,7 +86,8 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
     GLuint lightPosUniform = glGetUniformLocation(meshProgram_, "lightPos");
     glUniform4fv(colorUniform, 1, glm::value_ptr(color));
     glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
-    assert(meshes_.find(entity->getName()) != meshes_.end());
+    invariant(meshes_.find(entity->getName()) != meshes_.end(),
+        "cannot find mesh for entity " + entity->getName());
     renderMesh(transform, meshes_[entity->getName()]);
   }
   else
@@ -225,7 +227,8 @@ void OpenGLRenderer::renderActor(const Actor *actor, glm::mat4 transform)
   GLuint lightPosUniform = glGetUniformLocation(meshProgram_, "lightPos");
   glUniform4fv(colorUniform, 1, glm::value_ptr(color));
   glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
-  assert(meshes_.find(name) != meshes_.end());
+  invariant(meshes_.find(name) != meshes_.end(),
+      "missing mesh for actor " + name);
   renderMesh(transform, meshes_[name]);
 
   glm::vec4 ndc = getProjectionStack().current() * getViewStack().current() *

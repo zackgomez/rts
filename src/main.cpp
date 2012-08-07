@@ -13,6 +13,7 @@
 #include "Map.h"
 #include "Engine.h"
 #include "kissnet.h"
+#include "util.h"
 
 using namespace rts;
 
@@ -100,13 +101,14 @@ NetPlayer * getOpponent(const std::string &ip)
       queue.pop();
 
       logger->info() << "Received handshake message " << msg << '\n';
-      assert(msg["type"] == "HANDSHAKE");
+      invariant(msg["type"] == "HANDSHAKE",
+          "bad network message during handshake");
       if (!version_checked)
       {
-        assert(msg.isMember("handshake_version"));
+        invariant(msg.isMember("handshake_version"), "expected version message");
         if (msg["handshake_version"] != strParam("game.version"))
         {
-          logger->error() << "Wrong handshake version from connection\n";
+          logger->fatal() << "Wrong handshake version from connection\n";
           conn->stop();
           return NULL;
         }
@@ -177,8 +179,8 @@ void gameThread()
     // If we want to delay for zero seconds, we've used our time slice
     // and are lagging. 
     delay = glm::clamp(delay, 0.0f, 1000.0f * simdt);
-    assert(delay <= 1000 * simdt);
-    assert(delay >= 0);
+    invariant(delay <= 1000 * simdt, "invalid delay, longer than interval");
+    invariant(delay >= 0, "cannot have negative delay");
     SDL_Delay(delay);
   }
 }

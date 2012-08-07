@@ -1,9 +1,9 @@
 #pragma once
-#include <json/json.h>
 #include "Logger.h"
 #include "Entity.h"
 #include "Message.h"
 #include "Game.h"
+#include "util.h"
 
 namespace rts {
 
@@ -26,7 +26,7 @@ public:
   template <class T>
     const Entity *findEntity(T scorer) const
     {
-      assert(game_);
+      invariant(game_, "unset game object");
       return game_->findEntity(scorer);
     }
   // TODO(zack) a function that returns a list of entities similar to the

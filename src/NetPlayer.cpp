@@ -1,9 +1,11 @@
 #include "NetPlayer.h"
 #include "Game.h"
 #include "PlayerAction.h"
+#include "util.h"
 
 namespace rts {
 
+// TODO(zack): don't require reading header/payload in one shot
 net_msg readPacket(kissnet::tcp_socket_ptr sock)
   throw(kissnet::socket_exception)
   {
@@ -125,13 +127,16 @@ bool NetPlayer::update(tick_t tick)
     PlayerAction a = actions.front();
     actions.pop();
 
-    assert(a["pid"].asInt64() == playerID_ || a["type"] == ActionTypes::LEAVE_GAME);
+    invariant(
+      a["pid"].asInt64() == playerID_ || a["type"] == ActionTypes::LEAVE_GAME,
+      "bad action from network thread"
+    );
     game_->addAction(playerID_, a);
 
     // if we get a none, then we're done with another frame... make it so
     if (a["type"] == ActionTypes::DONE)
     {
-      assert(a["tick"].asInt64() > doneTick_);
+      invariant(a["tick"].asInt64() > doneTick_, "bad tick in action");
       doneTick_ = (int64_t) a["tick"].asInt64();
     }
 

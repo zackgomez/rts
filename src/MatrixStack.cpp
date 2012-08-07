@@ -1,4 +1,5 @@
 #include "MatrixStack.h"
+#include "util.h"
 
 MatrixStack::MatrixStack() :
   current_(1.f)
@@ -26,7 +27,7 @@ void MatrixStack::push()
 
 void MatrixStack::pop()
 {
-  assert(!stack_.empty());
+  invariant(!stack_.empty(), "cannot pop from empty stack");
 
   current_ = stack_.top();
   stack_.pop();

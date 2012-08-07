@@ -1,7 +1,7 @@
-#include "ParamReader.h"
-#include <cassert>
 #include <boost/algorithm/string.hpp>
+#include "ParamReader.h"
 #include "glm.h"
+#include "util.h"
 
 ParamReader::ParamReader()
 {
@@ -75,21 +75,21 @@ Json::Value ParamReader::getParam(const std::string &param) const
 const std::string strParam(const std::string &param)
 {
   Json::Value val = ParamReader::get()->getParam(param);
-  assert(val.isString());
+  invariant(val.isString(), "unknown or badly typed param");
   return val.asString();
 }
 
 const float fltParam(const std::string &param)
 {
   Json::Value val = ParamReader::get()->getParam(param);
-  assert(val.isNumeric());
+  invariant(val.isNumeric(), "unknown or badly typed param");
   return val.asFloat();
 }
 
 const float intParam(const std::string &param)
 {
   Json::Value val = ParamReader::get()->getParam(param);
-  assert(val.isInt());
+  invariant(val.isInt(), "unknown or badly typed param");
   return val.asInt();
 }
 
@@ -99,7 +99,7 @@ const std::vector<std::string> arrParam(const std::string &param)
   std::vector<std::string> result;
   for (unsigned int i = 0; i < arr.size(); i++)
   {
-    assert(arr[i].isString());
+    invariant(arr[i].isString(), "unknown or badly typed param");
     result.push_back(arr[i].asString());
   }
   return result;
@@ -107,5 +107,7 @@ const std::vector<std::string> arrParam(const std::string &param)
 
 const glm::vec2 vec2Param(const std::string &param)
 {
-  return toVec2(ParamReader::get()->getParam(param));
+  Json::Value arr = ParamReader::get()->getParam(param);
+  invariant(arr.isArray(), "vec2 param not found or not array");
+  return toVec2(arr);
 }

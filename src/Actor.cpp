@@ -5,6 +5,7 @@
 #include "Unit.h"
 #include "Projectile.h"
 #include "Weapon.h"
+#include "util.h"
 
 namespace rts {
 
@@ -38,13 +39,13 @@ void Actor::handleMessage(const Message &msg)
 {
   if (msg["type"] == MessageTypes::ATTACK)
   {
-    assert(msg.isMember("pid"));
-    assert(msg.isMember("damage"));
-    assert(msg.isMember("damage_type"));
+    invariant(msg.isMember("pid"), "malformed attack message");
+    invariant(msg.isMember("damage"), "malformed attack message");
+    invariant(msg.isMember("damage_type"), "malformed attack message");
 
     // TODO(zack) figure out how to deal with this case (friendly fire)
     // when we have from, we can work that in here too
-    assert(toID(msg["pid"]) != getPlayerID());
+    invariant(toID(msg["pid"]) != getPlayerID(), "no friendly fire");
 
     // Just take damage for now
     health_ -= msg["damage"].asFloat();
@@ -63,8 +64,8 @@ void Actor::handleMessage(const Message &msg)
 }
 void Actor::handleOrder(const Message &order)
 {
-  assert(order["type"] == MessageTypes::ORDER);
-  assert(order.isMember("order_type"));
+  invariant(order["type"] == MessageTypes::ORDER, "unknown message type");
+  invariant(order.isMember("order_type"), "missing order type");
   if (order["order_type"] == OrderTypes::ENQUEUE)
   {
     enqueue(order);
@@ -78,10 +79,10 @@ void Actor::handleOrder(const Message &order)
 
 void Actor::enqueue(const Message &queue_order)
 {
-  assert(queue_order.isMember("prod"));
+  invariant(queue_order.isMember("prod"), "missing production type");
   std::string prod_name = queue_order["prod"].asString();
 
-  // TODO(zack) assert that prod_name is something this Actor can produce
+  // TODO(zack) confirm that prod_name is something this Actor can produce
 
   Production prod;
   prod.max_time = fltParam(prod_name + ".buildTime");

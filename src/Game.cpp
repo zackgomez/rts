@@ -8,6 +8,7 @@
 #include "MessageHub.h"
 #include "Projectile.h"
 #include "EntityFactory.h"
+#include "util.h"
 
 namespace rts {
 
@@ -108,14 +109,12 @@ void Game::update(float dt)
     PlayerAction act;
     for (;;)
     {
-      assert(!pacts.empty());
+      invariant(!pacts.empty(), "unexpected empty player action");
       act = pacts.front(); pacts.pop();
-      if (act["tick"] != (Json::Value::Int64) tick_)
-      {
-        logger_->fatal() << "Got bad action @ tick " << tick_
-          << " action: " << act << '\n';
-        assert (false);
-      }
+      invariant(
+        act["tick"] == toJson(tick_),
+        "Bad action tick " + act.toStyledString()
+      );
 
       if (act["type"] == ActionTypes::DONE)
         break;
@@ -188,10 +187,13 @@ void Game::sendMessage(id_t to, const Message &msg)
 
 void Game::handleMessage(const Message &msg)
 {
+  invariant(msg.isMember("type"), "malformed message");
   if (msg["type"] == MessageTypes::SPAWN_ENTITY)
   {
-    assert(msg.isMember("entity_class"));
-    assert(msg.isMember("entity_name"));
+    invariant(msg.isMember("entity_class"),
+        "malformed DESTROY_ENTITY message");
+    invariant(msg.isMember("entity_name"),
+        "malformed DESTROY_ENTITY message");
 
     Entity *ent = EntityFactory::get()->construct(
         msg["entity_class"].asString(),
@@ -202,7 +204,7 @@ void Game::handleMessage(const Message &msg)
   }
   else if (msg["type"] == MessageTypes::DESTROY_ENTITY)
   {
-	  assert(msg.isMember("eid"));
+    invariant(msg.isMember("eid"), "malformed DESTROY_ENTITY message");
 	  deadEntities_.push_back(toID(msg["eid"]));
   }
   else
@@ -214,9 +216,9 @@ void Game::handleMessage(const Message &msg)
 void Game::addAction(id_t pid, const PlayerAction &act)
 {
   // CAREFUL: this function is called from different threads
-  assert(act.isMember("type"));
+  invariant(act.isMember("type"), "malformed player action");
   assertPid(pid);
-  assert(getPlayer(pid));
+  invariant(getPlayer(pid), "action from unknown player");
 
   // Quit game, no more loops after this, broadcast the message to all other
   // players too
@@ -228,7 +230,7 @@ void Game::addAction(id_t pid, const PlayerAction &act)
   // Handle most events by just queueing them
   else
   {
-    assert(act.isMember("tick"));
+    invariant(act.isMember("tick"), "missing tick in player action");
     std::unique_lock<std::mutex> lock(actionMutex_);
     actions_[pid].push(act);
     lock.unlock();
