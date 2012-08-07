@@ -111,3 +111,10 @@ const glm::vec2 vec2Param(const std::string &param)
   invariant(arr.isArray(), "vec2 param not found or not array");
   return toVec2(arr);
 }
+
+const glm::vec3 vec3Param(const std::string &param)
+{
+  Json::Value arr = ParamReader::get()->getParam(param);
+  invariant(arr.isArray(), "vec3 param not found or not array");
+  return toVec3(arr);
+}
