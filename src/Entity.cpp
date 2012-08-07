@@ -83,7 +83,7 @@ float Entity::angleToTarget(const glm::vec3 &target) const
 
 float Entity::param(const std::string &p) const
 {
-  return getParam(name_ + "." + p);
+  return fltParam(name_ + "." + p);
 }
 
 std::string Entity::strParam(const std::string &p) const

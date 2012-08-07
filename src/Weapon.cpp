@@ -104,7 +104,7 @@ bool Weapon::canAttack(const Entity *target) const {
 }
 
 float Weapon::param(const std::string &p) const {
-  return getParam(name_ + "." + p);
+  return fltParam(name_ + "." + p);
 }
 std::string Weapon::strParam(const std::string &p) const {
   return ::strParam(name_ + "." + p);

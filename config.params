@@ -1,106 +1,147 @@
-framerate 60.0
-simrate   10.0
-version   v0.2
+{
+    "game" :
+    {
+        "name"      : "Ragnarok 0.2",
+        "framerate" : 60.0,
+        "simrate"   : 10.0,
+        "version"   : "v0.2"
+    },
 
-network.connectAttempts 10
-network.connectInterval 0.50
+    "window" :
+    {
+        "resolution" : [1280, 800]
+    },
 
-# time after melee attacks before unit can ranged attack again
-global.meleeCooldown 0.33
+    "network" :
+    {
+        "connectAttempts" : 10,
+        "connectInterval" : 0.50,
+        // DEBUG PARAMS
+        "dropChance"      : 0.05
+    },
+    
+    "global" :
+    {
+        // time after melee attacks before unit can ranged attack again
+        "meleeCooldown" : 0.33
+    },
 
-# Unit types
-unit.speed 3.0
-unit.turnRate 800.0
-unit.health 100.0
-unit.prodCount 0
-unit.radius    0.5
-unit.height    1.0
-unit.buildTime 10.0
-unit.rangedWeapon basic_rifle
-unit.meleeWeapon  basic_knife
+    "unit" :
+    {
+        "speed"     : 3.0,
+        "turnRate"  : 800.0,
+        "health"    : 100.0,
+        "radius"    : 0.5,
+        "height"    : 1.0,
+        "buildTime" : 10.0,
+        "weapon"    : "basic_rifle"
+    },
 
-melee_unit.speed 4.5
-melee_unit.turnRate 800.0
-melee_unit.health 50.0
-melee_unit.prodCount 0
-melee_unit.radius 0.5
-melee_unit.height 1.0
-melee_unit.buildTime 10.0
-melee_unit.meleeWeapon basic_knife
-
-building.radius 1.0
-building.height 2.0
-building.health 700.0
-building.prodCount 1
-building.prod1 unit
+    "basic_rifle" :
+    {
+        "type"       : "ranged",
+        "range"      : 6.0,
+        "cooldown"   : 0.5,
+        "arc"        : 30.0,
+        "windup"     : 0.2,
+        "winddown"   : 0.3,
+        "projectile" : "basic_bullet"
+    },
 
 
-# Weapons
-basic_rifle.type      ranged
-basic_rifle.range     6.0
-basic_rifle.cooldown  0.5
-basic_rifle.arc       30.0
-basic_rifle.windup    0.2
-basic_rifle.winddown  0.3
-basic_rifle.projectile basic_bullet
-# projectile params
-basic_bullet.speed 10.0
-basic_bullet.radius 0.3
-basic_bullet.height 0.3
-basic_bullet.damage 10.0
+    "basic_bullet" :
+    {
+        // projectile params
+        "speed"  : 10.0,
+        "radius" : 0.3,
+        "damage" : 10.0,
+        "height" : 0.3
+    },
 
-basic_knife.type      melee
-basic_knife.range     1.0
-basic_knife.arc       60.0
-basic_knife.damage    5.0
-basic_knife.windup    0.0
-basic_knife.winddown  0.2
-basic_knife.cooldown  0.5
+    "melee_unit" :
+    {
+        "speed"     : 4.5,
+        "turnRate"  : 800.0,
+        "health"    : 50.0,
+        "radius"    : 0.5,
+        "height"    : 1.0,
+        "buildTime" : 10.0,
+        "weapon"    : "quick_knife"
+    },
 
-quick_knife.type      melee
-quick_knife.range     1.0
-quick_knife.arc       60.0
-quick_knife.damage    5.0
-quick_knife.windup    0.0
-quick_knife.winddown  0.2
-quick_knife.cooldown  0.2
+    "basic_knife" :
+    {
+        "type"     : "melee",
+        "range"    : 1.0,
+        "arc"      : 60.0,
+        "damage"   : 5.0,
+        "windup"   : 0.0,
+        "winddown" : 0.2,
+        "cooldown" : 0.5
+    },
 
-# DEBUG PARAMS
-slowPlayer.dropChance 0.05
+    "basic_knife" :
+    {
+        "type"     : "melee",
+        "range"    : 1.0,
+        "arc"      : 60.0,
+        "damage"   : 5.0,
+        "windup"   : 0.0,
+        "winddown" : 0.2,
+        "cooldown" : 0.2
+    },
 
-# GRAPHICS PARAMS
-window.name  Ragnarok 0.1
-hud.unit_health.w 80
-hud.unit_health.h 5
-hud.unit_health.x 0
-hud.unit_health.y 50
-hud.unit_prod.w 80
-hud.unit_prod.h 5
-hud.unit_prod.x 0
-hud.unit_prod.y 60
-resolution.x 1280
-resolution.y 800
+    "building" :
+    {
+        "radius" : 1.0,
+        "height" : 2.0,
+        "health" : 700.0,
+        "prod"   : ["unit"]
+    },
 
-ui.minDragDistance 0.3
 
-# UI elements
-ui.minimap_image images/UI/minimap_underlay.png
-ui.minimap_x 0
-ui.minimap_y -300
-ui.minimap_w 300
-ui.minimap_h 300
-ui.unitinfo_image images/UI/actor_underlay.png
-ui.unitinfo_x -400
-ui.unitinfo_y -300
-ui.unitinfo_w 400
-ui.unitinfo_h 300
-ui.topbar_image images/UI/top_bar_1280.png
-ui.topbar_x 0
-ui.topbar_y 0
-ui.topbar_w 1280
-ui.topbar_h 50
+    // GRAPHICS PARAMS
+    "hud" :
+    {
+        "actor_health" : 
+        {
+            "dim" : [80, 5],
+            "pos" : [0, 50]
+        },
+        "actor_prod" :
+        {
+            "dim" : [80, 5],
+            "pos" : [0, 60]
+        },
+        "minDragDistance" : 0.3
+    },
 
-camera.panspeed 10.0
-camera.panspeed.key 0.1
-camera.panthresh 100
+    "ui" :
+    {
+        "minimap" :
+        {
+            "image" : "images/UI/minimap_underlay.png",
+            "pos"   : [0, -300],
+            "dim"   : [300, 300]
+        },
+        "unitinfo" :
+        {
+            "image" : "images/UI/actor_underlay.png",
+            "pos"   : [-400, -300],
+            "dim"   : [400, 300]
+        },
+        "topbar" :
+        {
+            "image" : "images/UI/top_bar_1280.png",
+            "pos"   : [0, 0],
+            "dim"   : [1280, 50]
+        }
+    },
 
+    "camera" :
+    {
+        "panspeed"     : 10.0,
+        "panspeed_key" : 0.1,
+        "panthresh"    : 100
+    }
+}

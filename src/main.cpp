@@ -50,7 +50,7 @@ NetPlayer * getOpponent(const std::string &ip)
   {
     bool connected = false;
     sock = kissnet::tcp_socket::create();
-    for (int i = 0; i < getParam("network.connectAttempts"); i++)
+    for (int i = 0; i < intParam("network.connectAttempts"); i++)
     {
       try
       {
@@ -66,12 +66,12 @@ NetPlayer * getOpponent(const std::string &ip)
           << e.what() << "'\n";
       }
 
-      SDL_Delay(1000 * getParam("network.connectInterval"));
+      SDL_Delay(1000 * fltParam("network.connectInterval"));
     }
     if (!connected)
     {
       logger->info() << "Unable to connect after " << 
-        getParam("network.connectAttempts") << " attempts\n";
+        fltParam("network.connectAttempts") << " attempts\n";
       return NULL;
     }
   }
@@ -86,7 +86,7 @@ NetPlayer * getOpponent(const std::string &ip)
   // Send our version
   Json::Value v;
   v["type"] = "HANDSHAKE";
-  v["handshake_version"] = strParam("version");
+  v["handshake_version"] = strParam("game.version");
   conn->sendMessage(v);
   // Wait for responses
   std::queue<Json::Value> &queue = conn->getQueue();
@@ -104,7 +104,7 @@ NetPlayer * getOpponent(const std::string &ip)
       if (!version_checked)
       {
         assert(msg.isMember("handshake_version"));
-        if (msg["handshake_version"] != strParam("version"))
+        if (msg["handshake_version"] != strParam("game.version"))
         {
           logger->error() << "Wrong handshake version from connection\n";
           conn->stop();
@@ -150,7 +150,7 @@ std::vector<Player *> getPlayers(const std::vector<std::string> &args)
   }
 
   // Now set up local player
-  glm::vec2 res(getParam("resolution.x"), getParam("resolution.y"));
+  glm::vec2 res = vec2Param("window.resolution");
   renderer = new OpenGLRenderer(res);
 
   player = new LocalPlayer(playerID, renderer);
@@ -161,7 +161,7 @@ std::vector<Player *> getPlayers(const std::vector<std::string> &args)
 
 void gameThread()
 {
-  const float simrate = getParam("simrate");
+  const float simrate = fltParam("game.simrate");
   const float simdt = 1.f / simrate;
 
   game->start(simdt);
@@ -185,7 +185,7 @@ void gameThread()
 
 void mainloop()
 {
-  const float framerate = getParam("framerate");
+  const float framerate = fltParam("game.framerate");
   float fps = 1.f / framerate;
 
   std::thread gamet(gameThread);

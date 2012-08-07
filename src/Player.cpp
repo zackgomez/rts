@@ -66,7 +66,7 @@ void LocalPlayer::renderUpdate(float dt)
   SDL_GetMouseState(&x, &y);
   glm::vec2 screenCoord(x, y);
   const glm::vec2 &res = renderer_->getResolution();
-  const int CAMERA_PAN_THRESHOLD = getParam("camera.panthresh");
+  const int CAMERA_PAN_THRESHOLD = fltParam("camera.panthresh");
 
   // Mouse overrides keyboard
   glm::vec2 dir = cameraPanDir_;
@@ -80,7 +80,7 @@ void LocalPlayer::renderUpdate(float dt)
   else if (y > res.y - CAMERA_PAN_THRESHOLD)
     dir.y = -2 * ((res.y - y) - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
 
-  const float CAMERA_PAN_SPEED = getParam("camera.panspeed");
+  const float CAMERA_PAN_SPEED = fltParam("camera.panspeed");
   glm::vec3 delta = CAMERA_PAN_SPEED * dt * glm::vec3(dir.x, 0.f, dir.y);
   renderer_->updateCamera(delta);
 
@@ -97,7 +97,7 @@ void LocalPlayer::renderUpdate(float dt)
   // Draw drag rectangle if over threshold size
   glm::vec3 loc = renderer_->screenToTerrain(screenCoord);
   if (leftDrag_
-      && glm::distance(loc, leftStart_) > getParam("ui.minDragDistance"))
+      && glm::distance(loc, leftStart_) > fltParam("hud.minDragDistance"))
   {
     renderer_->setDragRect(leftStart_, loc);
   }
@@ -215,7 +215,7 @@ void LocalPlayer::mouseUp(const glm::vec2 &screenCoord, int button)
   if (button == SDL_BUTTON_LEFT)
   {
     std::set<id_t> newSelect;
-    if (glm::distance(leftStart_, loc) > getParam("ui.minDragDistance"))
+    if (glm::distance(leftStart_, loc) > fltParam("hud.minDragDistance"))
     {
       newSelect = renderer_->selectEntities(leftStart_, loc, playerID_);
 
@@ -232,6 +232,8 @@ void LocalPlayer::mouseUp(const glm::vec2 &screenCoord, int button)
 
 void LocalPlayer::keyPress(SDLKey key)
 {
+  static const SDLKey MAIN_KEYS[] = {SDLK_q, SDLK_w, SDLK_e, SDLK_r};
+  static const SDLKey UPGRADE_KEYS[] = {SDLK_t, SDLK_g, SDLK_b};
   // TODO(zack) watch out for pausing here
   PlayerAction action;
   if (key == SDLK_F10)
@@ -263,23 +265,6 @@ void LocalPlayer::keyPress(SDLKey key)
     action["tick"] = toJson(targetTick_);
     game_->addAction(playerID_, action);
   }
-  else if (key == SDLK_q && !selection_.empty())
-  {
-    auto sel = selection_.begin();
-    for (; sel != selection_.end(); sel++)
-    {
-      std::string name = MessageHub::get()->getEntity(*sel)->getName();
-      if (getParam(name + ".prodCount") >= 1)
-      {
-        action["type"] = ActionTypes::ENQUEUE;
-        action["entity"] = toJson(*sel);
-        action["pid"] = toJson(playerID_);
-        action["prod"] = strParam(MessageHub::get()->getEntity(*sel)->getName() + ".prod1");
-        action["tick"] = toJson(targetTick_);
-        game_->addAction(playerID_, action);
-      }
-    }
-  }
   // ESC clears out current states
   else if (key == SDLK_ESCAPE)
   {
@@ -294,6 +279,32 @@ void LocalPlayer::keyPress(SDLKey key)
   // Debug commands
   else if (key == SDLK_g)
     SDL_WM_GrabInput(SDL_GRAB_ON);
+  else
+  {
+    for (unsigned int i = 0; i < 4; i++)
+    {
+      if (key == MAIN_KEYS[i])
+      {
+        auto sel = selection_.begin();
+        const Entity *ent = MessageHub::get()->getEntity(*sel);
+        // The main action of a building is production
+        if (ent->getType() == "BUILDING")
+        {
+          std::vector<std::string> prod = arrParam(ent->getName() + ".prod");
+          if (i < prod.size())
+          {
+            action["type"] = ActionTypes::ENQUEUE;
+            action["entity"] = toJson(*sel);
+            action["pid"] = toJson(playerID_);
+            action["prod"] = prod.at(i);
+            action["tick"] = toJson(targetTick_);
+            game_->addAction(playerID_, action);
+          }
+        }
+        break;
+      }
+    }
+  }
 }
 
 void LocalPlayer::keyRelease(SDLKey key)
@@ -321,7 +332,7 @@ bool
     if (tick < 0)
       return true;
 
-    if (frand() < getParam("slowPlayer.dropChance"))
+    if (frand() < fltParam("slowPlayer.dropChance"))
     {
       Logger::getLogger("SlowPlayer")->info() << "I strike again!\n";
       return false;

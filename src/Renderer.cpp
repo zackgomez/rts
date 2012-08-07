@@ -96,8 +96,7 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
 
 void OpenGLRenderer::renderUI()
 {
-    int res_x = getParam("resolution.x");
-    int res_y = getParam("resolution.y");
+    glm::vec2 res = vec2Param("window.resolution");
 
     glDisable(GL_DEPTH_TEST);
 
@@ -106,37 +105,29 @@ void OpenGLRenderer::renderUI()
     // and iterate over it?
 
     // top bar:
-    glm::vec2 pos;
-    pos.x = getParam("ui.topbar_x");
-    if (pos.x < 0) pos.x += res_x;
-    pos.y = getParam("ui.topbar_y");
-    if (pos.y < 0) pos.y += res_y;
-    glm::vec2 size;
-    size.x = getParam("ui.topbar_w");
-    size.y = getParam("ui.topbar_h");
-    const char * path = strParam("ui.topbar_image").c_str();
+    glm::vec2 pos = vec2Param("ui.topbar.pos");
+    if (pos.x < 0) pos.x += res.x;
+    if (pos.y < 0) pos.y += res.y;
+    glm::vec2 size = vec2Param("ui.topbar.dim");
+    const char * path = strParam("ui.topbar.image").c_str();
     GLuint tex = makeTexture(path);
     drawTexture(pos, size, tex);
 
     // minimap underlay
-    pos.x = getParam("ui.minimap_x");
-    if (pos.x < 0) pos.x += res_x;
-    pos.y = getParam("ui.minimap_y");
-    if (pos.y < 0) pos.y += res_y;
-    size.x = getParam("ui.minimap_w");
-    size.y = getParam("ui.minimap_h");
-    path = strParam("ui.minimap_image").c_str();
+    pos = vec2Param("ui.minimap.pos");
+    if (pos.x < 0) pos.x += res.x;
+    if (pos.y < 0) pos.y += res.y;
+    size = vec2Param("ui.minimap.dim");
+    path = strParam("ui.minimap.image").c_str();
     tex = makeTexture(path);
     drawTexture(pos, size, tex);
 
     // unit info underlay:
-    pos.x = getParam("ui.unitinfo_x");
-    if (pos.x < 0) pos.x += res_x;
-    pos.y = getParam("ui.unitinfo_y");
-    if (pos.y < 0) pos.y += res_y;
-    size.x = getParam("ui.unitinfo_w");
-    size.y = getParam("ui.unitinfo_h");
-    path = strParam("ui.unitinfo_image").c_str();
+    pos = vec2Param("ui.unitinfo.pos");
+    if (pos.x < 0) pos.x += res.x;
+    if (pos.y < 0) pos.y += res.y;
+    size = vec2Param("ui.unitinfo.dim");
+    path = strParam("ui.unitinfo.image").c_str();
     tex = makeTexture(path);
     drawTexture(pos, size, tex);
 
@@ -245,10 +236,8 @@ void OpenGLRenderer::renderActor(const Actor *actor, glm::mat4 transform)
   // display health bar
   glDisable(GL_DEPTH_TEST);
   float healthFact = glm::max(0.f, actor->getHealth() / actor->getMaxHealth());
-  glm::vec2 size =
-    glm::vec2(getParam("hud.unit_health.w"), getParam("hud.unit_health.h"));
-  glm::vec2 offset =
-    glm::vec2(getParam("hud.unit_health.x"), getParam("hud.unit_health.y"));
+  glm::vec2 size = vec2Param("hud.actor_health.dim");
+  glm::vec2 offset = vec2Param("hud.actor_health.pos");
   glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution_;
   pos += offset;
   // Red underneath for max health
@@ -263,10 +252,8 @@ void OpenGLRenderer::renderActor(const Actor *actor, glm::mat4 transform)
   {
     // display production bar
     float prodFactor = 1.f - queue.front().time / queue.front().max_time;
-    size =
-      glm::vec2(getParam("hud.unit_prod.w"), getParam("hud.unit_prod.h"));
-    offset =
-      glm::vec2(getParam("hud.unit_prod.x"), getParam("hud.unit_prod.y"));
+    size = vec2Param("hud.actor_prod.dim");
+    offset = vec2Param("hud.actor_prod.pos");
     pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution_;
     pos += offset;
     // Purple underneath for max time

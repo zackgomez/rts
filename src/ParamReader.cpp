@@ -1,5 +1,7 @@
 #include "ParamReader.h"
 #include <cassert>
+#include <boost/algorithm/string.hpp>
+#include "glm.h"
 
 ParamReader::ParamReader()
 {
@@ -15,130 +17,95 @@ ParamReader * ParamReader::get()
 void ParamReader::loadFile(const char *filename)
 {
   std::ifstream file(filename);
-  if (!file)
+  std::string data((std::istreambuf_iterator<char>(file)), 
+      std::istreambuf_iterator<char>());
+  Json::Reader reader;
+  if (!reader.parse(data, root_))
   {
-    logger_->fatal() << "UNABLE TO OPEN " << filename << " to read params\n";
-    assert(false);
+    logger_->fatal() << "Cannot load param file " << filename << "\n"
+      << reader.getFormattedErrorMessages();
+    return;
   }
-
-  std::string line;
-  while (std::getline(file, line))
-  {
-    if (line.empty())
-      continue;
-
-    std::string key;
-    float fval;
-    std::string sval;
-
-    std::stringstream ss(line);
-    ss >> key;
-
-    assert(!key.empty());
-    // Ignore comments that start with #
-    if (key[0] == '#')
-      continue;
-
-    // Fail on double key read
-    if (floatParams_.count(key) || stringParams_.count(key))
-    {
-      logger_->fatal() << "Overwritting param " << key << '\n';
-      assert(false);
-    }
-
-
-    // Try to read as float first
-    ss >> fval;
-    if (ss)
-    {
-      floatParams_[key] = fval;
-    }
-    // if it doesn't work, read as a string parameter
-    // NOTE this only reads single word values
-    else
-    {
-      // You MUST clear the fail bit or receive no input
-      ss.clear();
-      std::getline(ss, sval);
-      //logger_->debug() << "Read [string] param '" << key << "' : '" << sval << "'\n";
-      stringParams_[key] = sval;
-    }
-  }
-}
-
-float ParamReader::getFloat(const std::string &key) const
-{
-  std::map<std::string, float>::const_iterator it = floatParams_.find(key);
-  if (it == floatParams_.end())
-  {
-    logger_->fatal() << "Unable to find [float] key " << key << '\n';
-    assert(false && "Key not found in params");
-    return 0.f;
-  }
-  else
-    return it->second;
-}
-
-const std::string & ParamReader::getString(const std::string &key) const
-{
-  std::map<std::string, std::string>::const_iterator it = stringParams_.find(key);
-  if (it == stringParams_.end())
-  {
-    logger_->fatal() << "Unable to find [string] key " << key << '\n';
-    assert(false && "Key not found in params");
-    return "";
-  }
-  else
-    return it->second;
-}
-
-void ParamReader::setParam(const std::string &key, float value)
-{
-  floatParams_[key] = value;
-}
-
-void ParamReader::setParam(const std::string &key, const std::string &value)
-{
-  stringParams_[key] = value;
-}
-
-bool ParamReader::hasFloat(const std::string &key) const
-{
-  return floatParams_.find(key) != floatParams_.end();
-}
-
-bool ParamReader::hasString(const std::string &key) const
-{
-  return stringParams_.find(key) != stringParams_.end();
 }
 
 void ParamReader::printParams() const
 {
-  logger_->info() << "Params:\n";
-  std::map<std::string, float>::const_iterator it;
-  for (it = floatParams_.begin(); it != floatParams_.end(); it++)
+  logger_->info() << root_.toStyledString() << "\n";
+}
+
+bool ParamReader::hasFloat(const std::string &param) const
+{
+  Json::Value val = getParamHelper(param);
+  return !val.isNull() && val.isNumeric();
+}
+
+bool ParamReader::hasString(const std::string &param) const
+{
+  Json::Value val = getParamHelper(param);
+  return !val.isNull() && val.isString();
+}
+
+Json::Value ParamReader::getParamHelper(const std::string &param) const
+{
+  Json::Value val = root_;
+  std::vector<std::string> param_split;
+  boost::split(param_split, param, boost::is_any_of("."));
+  for (auto& child : param_split)  
   {
-    logger_->info() << it->first << ' ' << it->second << '\n';
+    val = val.get(child, Json::Value());
+    if (val.isNull())
+    {
+      break;
+    }
   }
+  return val;
 }
 
-float getParam(const std::string &param)
+Json::Value ParamReader::getParam(const std::string &param) const
 {
-  return ParamReader::get()->getFloat(param);
+  Json::Value val = getParamHelper(param);
+  if (val.isNull())
+  {
+    logger_->fatal() << "Cannot find param " << param << "\n";
+    assert(false);
+  }
+  return val;
 }
 
-const std::string& strParam(const std::string &param)
+const std::string strParam(const std::string &param)
 {
-  return ParamReader::get()->getString(param);
+  Json::Value val = ParamReader::get()->getParam(param);
+  assert(val.isString());
+  return val.asString();
 }
 
-void setParam(const std::string &key, float value)
+const float fltParam(const std::string &param)
 {
-  ParamReader::get()->setParam(key, value);
+  Json::Value val = ParamReader::get()->getParam(param);
+  assert(val.isNumeric());
+  return val.asFloat();
 }
 
-void setParam(const std::string &key, const std::string &value)
+const float intParam(const std::string &param)
 {
-  ParamReader::get()->setParam(key, value);
+  Json::Value val = ParamReader::get()->getParam(param);
+  assert(val.isInt());
+  return val.asInt();
 }
 
+const std::vector<std::string> arrParam(const std::string &param)
+{
+  Json::Value arr = ParamReader::get()->getParam(param);
+  std::vector<std::string> result;
+  for (unsigned int i = 0; i < arr.size(); i++)
+  {
+    assert(arr[i].isString());
+    result.push_back(arr[i].asString());
+  }
+  return result;
+}
+
+const glm::vec2 vec2Param(const std::string &param)
+{
+  return toVec2(ParamReader::get()->getParam(param));
+}
