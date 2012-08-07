@@ -281,27 +281,30 @@ void LocalPlayer::keyPress(SDLKey key)
     SDL_WM_GrabInput(SDL_GRAB_ON);
   else
   {
-    for (unsigned int i = 0; i < 4; i++)
+    if (!selection_.empty())
     {
-      if (key == MAIN_KEYS[i])
+      for (unsigned int i = 0; i < 4; i++)
       {
-        auto sel = selection_.begin();
-        const Entity *ent = MessageHub::get()->getEntity(*sel);
-        // The main action of a building is production
-        if (ent->getType() == "BUILDING")
+        if (key == MAIN_KEYS[i])
         {
-          std::vector<std::string> prod = arrParam(ent->getName() + ".prod");
-          if (i < prod.size())
+          auto sel = selection_.begin();
+          const Entity *ent = MessageHub::get()->getEntity(*sel);
+          // The main action of a building is production
+          if (ent->getType() == "BUILDING")
           {
-            action["type"] = ActionTypes::ENQUEUE;
-            action["entity"] = toJson(*sel);
-            action["pid"] = toJson(playerID_);
-            action["prod"] = prod.at(i);
-            action["tick"] = toJson(targetTick_);
-            game_->addAction(playerID_, action);
+            std::vector<std::string> prod = arrParam(ent->getName() + ".prod");
+            if (i < prod.size())
+            {
+              action["type"] = ActionTypes::ENQUEUE;
+              action["entity"] = toJson(*sel);
+              action["pid"] = toJson(playerID_);
+              action["prod"] = prod.at(i);
+              action["tick"] = toJson(targetTick_);
+              game_->addAction(playerID_, action);
+            }
           }
+          break;
         }
-        break;
       }
     }
   }
