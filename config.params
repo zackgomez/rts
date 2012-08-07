@@ -28,13 +28,14 @@
 
     "unit" :
     {
-        "speed"     : 3.0,
-        "turnRate"  : 800.0,
-        "health"    : 100.0,
-        "radius"    : 0.5,
-        "height"    : 1.0,
-        "buildTime" : 10.0,
-        "weapon"    : "basic_rifle"
+        "speed"        : 3.0,
+        "turnRate"     : 800.0,
+        "health"       : 100.0,
+        "radius"       : 0.5,
+        "height"       : 1.0,
+        "buildTime"    : 10.0,
+        "rangedWeapon" : "basic_rifle",
+        "meleeWeapon"  : "basic_rifle"
     },
 
     "basic_rifle" :
@@ -60,13 +61,13 @@
 
     "melee_unit" :
     {
-        "speed"     : 4.5,
-        "turnRate"  : 800.0,
-        "health"    : 50.0,
-        "radius"    : 0.5,
-        "height"    : 1.0,
-        "buildTime" : 10.0,
-        "weapon"    : "quick_knife"
+        "speed"       : 4.5,
+        "turnRate"    : 800.0,
+        "health"      : 50.0,
+        "radius"      : 0.5,
+        "height"      : 1.0,
+        "buildTime"   : 10.0,
+        "meleeWeapon" : "quick_knife"
     },
 
     "basic_knife" :
@@ -80,7 +81,7 @@
         "cooldown" : 0.5
     },
 
-    "basic_knife" :
+    "quick_knife" :
     {
         "type"     : "melee",
         "range"    : 1.0,
