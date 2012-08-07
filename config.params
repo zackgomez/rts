@@ -33,9 +33,9 @@
         "health"       : 100.0,
         "radius"       : 0.5,
         "height"       : 1.0,
-        "buildTime"    : 10.0,
+        "buildTime"    : 1.0,
         "rangedWeapon" : "basic_rifle",
-        "meleeWeapon"  : "basic_rifle"
+        "meleeWeapon"  : "basic_knife"
     },
 
     "basic_rifle" :

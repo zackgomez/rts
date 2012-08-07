@@ -51,6 +51,11 @@ void Actor::handleMessage(const Message &msg)
     health_ -= msg["damage"].asFloat();
     if (health_ <= 0.f)
       MessageHub::get()->sendRemovalMessage(this);
+
+    // If melee then we have to not melee
+    if (msg["damage_type"] == "melee") {
+      melee_timer_ = fltParam("global.meleeCooldown");
+    }
   }
   else if (msg["type"] == MessageTypes::ORDER)
   {
