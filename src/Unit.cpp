@@ -98,7 +98,7 @@ void Unit::update(float dt)
 
   // count down the attack timer
   if (weapon_)
-    rangedWeapon_->update(dt);
+    weapon_->update(dt);
 
   Actor::update(dt);
 }
