@@ -4,7 +4,7 @@ JSON=lib/jsoncpp
 STBI=lib/stbi
 KISSNET=lib/kissnet
 CXXFLAGS=-g -O0 -Wall -I$(GLM) -std=c++0x -I$(JSON) -I$(KISSNET) -I$(STBI) -Wno-reorder
-LDFLAGS=-lSDL -lGL -lGLEW
+LDFLAGS=-lSDL -lGL -lGLEW -rdynamic
 OBJDIR=obj
 SRCDIR=src
 
