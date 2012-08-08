@@ -141,7 +141,7 @@
 
     "camera" :
     {
-        "panspeed"     : 10.0,
+        "panspeed"     : 19.0,
         "panspeed_key" : 0.1,
         "panthresh"    : 100
     }
