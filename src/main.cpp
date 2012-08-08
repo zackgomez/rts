@@ -88,7 +88,7 @@ NetPlayer * getOpponent(const std::string &ip)
   Json::Value v;
   v["type"] = "HANDSHAKE";
   v["handshake_version"] = strParam("game.version");
-  conn->sendMessage(v);
+  conn->sendPacket(v);
   // Wait for responses
   std::queue<Json::Value> &queue = conn->getQueue();
   bool version_checked = false;

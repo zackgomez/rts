@@ -72,14 +72,17 @@ void Weapon::fire(const Entity *target) {
   invariant(type == "ranged" || type == "melee", "invalid weapon type");
   if (type == "ranged") {
     msg_["to"] = toJson(NO_ENTITY); // Send to game object
+    msg_["from"] = toJson(owner_->getID()); // Send to game object
     msg_["type"] = MessageTypes::SPAWN_ENTITY;
     msg_["entity_class"] = Projectile::TYPE;
     msg_["entity_name"] = strParam("projectile");
     msg_["entity_pid"] = toJson(owner_->getPlayerID());
     msg_["entity_pos"] = toJson(owner_->getPosition());
     msg_["projectile_target"] = toJson(target->getID());
+    msg_["projectile_owner"] = toJson(owner_->getID());
   } else if (strParam("type") == "melee") {
     msg_["to"] = toJson(target->getID());
+    msg_["from"] = toJson(owner_->getID()); // Send to game object
     msg_["type"] = MessageTypes::ATTACK;
     msg_["pid"] = toJson(owner_->getPlayerID());
     msg_["damage"] = param("damage");

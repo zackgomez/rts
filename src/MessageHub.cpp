@@ -37,6 +37,7 @@ void MessageHub::sendMessage(const Message &msg)
 {
   invariant(game_, "unset game object");
   invariant(msg.isMember("to"), "missing to field in message");
+  invariant(msg.isMember("from"), "missing from field in message");
 
   Json::Value to = msg["to"];
 
@@ -61,6 +62,7 @@ void MessageHub::sendRemovalMessage(const Entity *e)
 
 	Message msg;
 	msg["to"] = toJson(GAME_ID);
+	msg["from"] = toJson(e->getID());
 	msg["type"] = MessageTypes::DESTROY_ENTITY;
 	msg["eid"] = toJson(e->getID());
 

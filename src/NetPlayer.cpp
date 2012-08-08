@@ -89,7 +89,7 @@ void NetConnection::stop()
   running_ = false;
 }
 
-void NetConnection::sendMessage(const Json::Value &message)
+void NetConnection::sendPacket(const Json::Value &message)
 {
   std::string body = writer_.write(message);
   uint32_t len = body.size();
@@ -157,7 +157,7 @@ void NetPlayer::playerAction(id_t playerID, const PlayerAction &action)
 
   // Only send messages relating to the local player(s?) on this machine
   if (playerID == localPlayerID_)
-    connection_->sendMessage(action);
+    connection_->sendPacket(action);
 
   // If the action was a leave game, close down thread
   if (action["type"] == ActionTypes::LEAVE_GAME)

@@ -259,13 +259,14 @@ const Player * Game::getPlayer(id_t pid) const
 
 void Game::handleAction(id_t playerID, const PlayerAction &action)
 {
+  Message msg;
+  msg["to"] = action["entity"];
+  msg["from"] = toJson(playerID);
+  msg["type"] = MessageTypes::ORDER;
   // TODO(zack) include player ID in messages
   if (action["type"] == ActionTypes::MOVE)
   {
     // Generate a message to target entity with move order
-    Message msg;
-    msg["to"] = action["entity"];
-    msg["type"] = MessageTypes::ORDER;
     msg["order_type"] = OrderTypes::MOVE;
     msg["target"] = action["target"];
 
@@ -274,9 +275,6 @@ void Game::handleAction(id_t playerID, const PlayerAction &action)
   else if (action["type"] == ActionTypes::ATTACK)
   {
     // Generate a message to target entity with attack order
-    Message msg;
-    msg["to"] = action["entity"];
-    msg["type"] = MessageTypes::ORDER;
     msg["order_type"] = OrderTypes::ATTACK;
     if (action.isMember("target"))
       msg["target"] = action["target"];
@@ -287,18 +285,12 @@ void Game::handleAction(id_t playerID, const PlayerAction &action)
   }
   else if (action["type"] == ActionTypes::STOP)
   {
-    Message msg;
-    msg["to"] = action["entity"];
-    msg["type"] = MessageTypes::ORDER;
     msg["order_type"] = OrderTypes::STOP;
 
     MessageHub::get()->sendMessage(msg);
   }
   else if (action["type"] == ActionTypes::ENQUEUE)
   {
-    Message msg;
-    msg["to"] = action["entity"];
-    msg["type"] = MessageTypes::ORDER;
     msg["order_type"] = OrderTypes::ENQUEUE;
     msg["prod"] = action["prod"];
 

@@ -16,6 +16,8 @@ Projectile::Projectile(const std::string &name, const Json::Value &params) :
 
   invariant(params.isMember("projectile_target"), "missing target");
   targetID_ = toID(params["projectile_target"]);
+  invariant(params.isMember("projectile_owner"), "missing owner");
+  ownerID_ = toID(params["projectile_owner"]);
 }
 
 void Projectile::update(float dt)
@@ -40,6 +42,7 @@ void Projectile::update(float dt)
     speed_ = dist / dt;
     Message msg;
     msg["to"] = toJson(targetID_);
+    msg["from"] = toJson(ownerID_);
     msg["type"] = MessageTypes::ATTACK;
     msg["pid"] = toJson(getPlayerID());
     msg["damage"] = param("damage");

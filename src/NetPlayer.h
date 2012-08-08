@@ -23,7 +23,7 @@ public:
   std::mutex& getMutex() { return mutex_; }
   void stop();
 
-  void sendMessage(const Json::Value &msg);
+  void sendPacket(const Json::Value &msg);
 
 private:
   bool running_;

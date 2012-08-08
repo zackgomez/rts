@@ -102,6 +102,7 @@ void Actor::produce(const std::string &prod_name)
   Message spawnMsg;
   spawnMsg["type"] = MessageTypes::SPAWN_ENTITY;
   spawnMsg["to"] = toJson(NO_ENTITY);
+  spawnMsg["from"] = toJson(getID());
   spawnMsg["entity_class"] = Unit::TYPE;
   spawnMsg["entity_name"] = prod_name;
   spawnMsg["entity_pid"] = toJson(getPlayerID());
