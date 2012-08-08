@@ -252,19 +252,6 @@ void LocalPlayer::keyPress(SDLKey key)
   else if (key == SDLK_LEFT)
     cameraPanDir_.x = -1.f;
 
-  // Order types
-  else if (key == SDLK_a && !selection_.empty())
-    order_ = ActionTypes::ATTACK;
-  else if (key == SDLK_m && !selection_.empty())
-    order_ = ActionTypes::MOVE;
-  else if (key == SDLK_s && !selection_.empty())
-  {
-    action["type"] = ActionTypes::STOP;
-    action["entity"] = toJson(selection_);
-    action["pid"] = toJson(playerID_);
-    action["tick"] = toJson(targetTick_);
-    game_->addAction(playerID_, action);
-  }
   // ESC clears out current states
   else if (key == SDLK_ESCAPE)
   {
@@ -279,9 +266,23 @@ void LocalPlayer::keyPress(SDLKey key)
   // Debug commands
   else if (key == SDLK_g)
     SDL_WM_GrabInput(SDL_GRAB_ON);
-  else
+  // Handle unit commands
+  else if (!selection_.empty())
   {
-    if (!selection_.empty())
+    // Order types
+    if (key == SDLK_a)
+      order_ = ActionTypes::ATTACK;
+    else if (key == SDLK_m)
+      order_ = ActionTypes::MOVE;
+    else if (key == SDLK_s)
+    {
+      action["type"] = ActionTypes::STOP;
+      action["entity"] = toJson(selection_);
+      action["pid"] = toJson(playerID_);
+      action["tick"] = toJson(targetTick_);
+      game_->addAction(playerID_, action);
+    }
+    else 
     {
       for (unsigned int i = 0; i < 4; i++)
       {
