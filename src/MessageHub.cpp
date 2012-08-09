@@ -50,8 +50,8 @@ void MessageHub::sendMessage(const Message &msg) {
   rlmsg["to"] = to;
 
   // If an array, send to each member
-  for (int i = 0; i < rlmsg.size(); i++) {
-    id_t eid = toID(rlmsg[i]);
+  for (int i = 0; i < rlmsg["to"].size(); i++) {
+    id_t eid = toID(rlmsg["to"][i]);
     if (eid == GAME_ID) {
       game_->handleMessage(rlmsg);
     } else {
