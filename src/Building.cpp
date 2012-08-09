@@ -11,22 +11,18 @@ LoggerPtr Building::logger_;
 const std::string Building::TYPE = "BUILDING";
 
 Building::Building(const std::string &name, const Json::Value &params) :
-  Actor(name, params)
-{
+  Actor(name, params) {
 }
 
-void Building::handleMessage(const Message &msg)
-{
+void Building::handleMessage(const Message &msg) {
   Actor::handleMessage(msg);
 }
 
-void Building::update(float dt)
-{
+void Building::update(float dt) {
   Actor::update(dt);
 }
 
-bool Building::needsRemoval() const
-{
+bool Building::needsRemoval() const {
   return health_ <= 0.f;
 }
 

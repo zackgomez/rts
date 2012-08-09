@@ -12,14 +12,14 @@ namespace rts {
 LoggerPtr Actor::logger_;
 
 Actor::Actor(const std::string &name, const Json::Value &params,
-    bool mobile, bool targetable) :
+             bool mobile, bool targetable) :
   Entity(name, params, mobile, targetable),
   melee_timer_(0.f),
   meleeWeapon_(NULL),
-  rangedWeapon_(NULL)
-{
-  if (!logger_.get())
+  rangedWeapon_(NULL) {
+  if (!logger_.get()) {
     logger_ = Logger::getLogger("Actor");
+  }
 
   if (hasStrParam("meleeWeapon")) {
     meleeWeapon_ = new Weapon(strParam("meleeWeapon"), this);
@@ -31,14 +31,11 @@ Actor::Actor(const std::string &name, const Json::Value &params,
   health_ = getMaxHealth();
 }
 
-Actor::~Actor()
-{
+Actor::~Actor() {
 }
 
-void Actor::handleMessage(const Message &msg)
-{
-  if (msg["type"] == MessageTypes::ATTACK)
-  {
+void Actor::handleMessage(const Message &msg) {
+  if (msg["type"] == MessageTypes::ATTACK) {
     invariant(msg.isMember("pid"), "malformed attack message");
     invariant(msg.isMember("damage"), "malformed attack message");
     invariant(msg.isMember("damage_type"), "malformed attack message");
@@ -49,41 +46,33 @@ void Actor::handleMessage(const Message &msg)
 
     // Just take damage for now
     health_ -= msg["damage"].asFloat();
-    if (health_ <= 0.f)
+    if (health_ <= 0.f) {
       MessageHub::get()->sendRemovalMessage(this);
+    }
 
     // If melee then we have to not melee
     if (msg["damage_type"] == "melee") {
       melee_timer_ = fltParam("global.meleeCooldown");
     }
-  }
-  else if (msg["type"] == MessageTypes::ORDER)
-  {
+  } else if (msg["type"] == MessageTypes::ORDER) {
     handleOrder(msg);
-  }
-  else
-  {
+  } else {
     logger_->warning() << "Actor got unknown message: "
-      << msg.toStyledString() << '\n';
+                       << msg.toStyledString() << '\n';
   }
 }
-void Actor::handleOrder(const Message &order)
-{
+void Actor::handleOrder(const Message &order) {
   invariant(order["type"] == MessageTypes::ORDER, "unknown message type");
   invariant(order.isMember("order_type"), "missing order type");
-  if (order["order_type"] == OrderTypes::ENQUEUE)
-  {
+  if (order["order_type"] == OrderTypes::ENQUEUE) {
     enqueue(order);
-  }
-  else
-  {
+  } else {
     logger_->warning() << "Actor got unknown order: "
-      << order.toStyledString() << '\n';
+                       << order.toStyledString() << '\n';
   }
 }
 
-void Actor::enqueue(const Message &queue_order)
-{
+void Actor::enqueue(const Message &queue_order) {
   invariant(queue_order.isMember("prod"), "missing production type");
   std::string prod_name = queue_order["prod"].asString();
 
@@ -96,8 +85,7 @@ void Actor::enqueue(const Message &queue_order)
   production_queue_.push(prod);
 }
 
-void Actor::produce(const std::string &prod_name)
-{
+void Actor::produce(const std::string &prod_name) {
   // TODO(zack) generalize this
   Message spawnMsg;
   spawnMsg["type"] = MessageTypes::SPAWN_ENTITY;
@@ -111,16 +99,13 @@ void Actor::produce(const std::string &prod_name)
   MessageHub::get()->sendMessage(spawnMsg);
 }
 
-void Actor::update(float dt)
-{
+void Actor::update(float dt) {
   melee_timer_ -= dt;
 
   // Update production
-  if (!production_queue_.empty())
-  {
+  if (!production_queue_.empty()) {
     production_queue_.front().time -= dt;
-    if (production_queue_.front().time <= 0)
-    {
+    if (production_queue_.front().time <= 0) {
       produce(production_queue_.front().name);
       production_queue_.pop();
     }

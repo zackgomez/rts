@@ -6,15 +6,15 @@
 
 namespace rts {
 
-class Building :
-  public Actor
-{
+class Building : public Actor {
 public:
   explicit Building(const std::string &name, const Json::Value &params);
   virtual ~Building() { }
 
   static const std::string TYPE;
-  virtual const std::string getType() const { return TYPE; }
+  virtual const std::string getType() const {
+    return TYPE;
+  }
 
   virtual void handleMessage(const Message &msg);
   virtual void update(float dt);

@@ -19,8 +19,7 @@ void setParam(const std::string &key, float value);
 void setParam(const std::string &key, const std::string &value);
 
 
-class ParamReader
-{
+class ParamReader {
 public:
   static ParamReader *get();
 

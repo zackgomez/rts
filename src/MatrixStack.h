@@ -2,8 +2,7 @@
 #include <stack>
 #include "glm.h"
 
-class MatrixStack
-{
+class MatrixStack {
 public:
   // Creates an empty matrix stack with the current matrix as the identity
   // matrix

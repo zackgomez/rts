@@ -11,8 +11,9 @@ Weapon::Weapon(const std::string &name, const Entity *owner) :
   owner_(owner),
   state_(READY),
   t_(0.f) {
-  if (strParam("type") == "ranged")
+  if (strParam("type") == "ranged") {
     invariant(hasStrParam("projectile"), "ranged weapon missing projectile");
+  }
 }
 
 float Weapon::getMaxRange() const {
@@ -35,8 +36,9 @@ void Weapon::update(float dt) {
   switch (state_) {
   case WINDUP:
     if (t_ <= 0.f) {
-      if (!msg_.isNull())
+      if (!msg_.isNull()) {
         MessageHub::get()->sendMessage(msg_);
+      }
       msg_ = Message();
       state_ = WINDDOWN;
       t_ += param("winddown");
@@ -65,7 +67,7 @@ void Weapon::fire(const Entity *target) {
   state_ = WINDUP;
   t_ = param("windup");
 
-  // Can the message 
+  // Can the message
   // TODO(zack) replace with spawn entity function, can the params here then
   msg_.clear();
   std::string type = strParam("type");
@@ -113,13 +115,11 @@ std::string Weapon::strParam(const std::string &p) const {
   return ::strParam(name_ + "." + p);
 }
 
-bool Weapon::hasParam(const std::string &p) const
-{
+bool Weapon::hasParam(const std::string &p) const {
   return ParamReader::get()->hasFloat(name_ + "." + p);
 }
 
-bool Weapon::hasStrParam(const std::string &p) const
-{
+bool Weapon::hasStrParam(const std::string &p) const {
   return ParamReader::get()->hasString(name_ + "." + p);
 }
 

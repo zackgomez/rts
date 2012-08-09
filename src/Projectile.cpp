@@ -9,10 +9,10 @@ const std::string Projectile::TYPE = "PROJECTILE";
 
 Projectile::Projectile(const std::string &name, const Json::Value &params) :
   Entity(name, params, true),
-  targetID_(NO_ENTITY)
-{
-  if (!logger_.get())
+  targetID_(NO_ENTITY) {
+  if (!logger_.get()) {
     logger_ = Logger::getLogger("Projectile");
+  }
 
   invariant(params.isMember("projectile_target"), "missing target");
   targetID_ = toID(params["projectile_target"]);
@@ -20,12 +20,10 @@ Projectile::Projectile(const std::string &name, const Json::Value &params) :
   ownerID_ = toID(params["projectile_owner"]);
 }
 
-void Projectile::update(float dt)
-{
+void Projectile::update(float dt) {
   const Entity *targetEnt = MessageHub::get()->getEntity(targetID_);
   // If target doesn't exist for whatever reason, then I guess we're done
-  if (!targetEnt)
-  {
+  if (!targetEnt) {
     MessageHub::get()->sendRemovalMessage(this);
     return;
   }
@@ -37,8 +35,7 @@ void Projectile::update(float dt)
   speed_ = param("speed");
 
   // If we would hit, then don't overshoot and send message (deal damage)
-  if (dist < speed_ * dt)
-  {
+  if (dist < speed_ * dt) {
     speed_ = dist / dt;
     Message msg;
     msg["to"] = toJson(targetID_);
@@ -55,8 +52,7 @@ void Projectile::update(float dt)
   Entity::update(dt);
 }
 
-void Projectile::handleMessage(const Message &msg)
-{
+void Projectile::handleMessage(const Message &msg) {
   logger_->warning() << "Projectile ignoring message: " << msg << '\n';
 }
 

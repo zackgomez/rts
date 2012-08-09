@@ -6,21 +6,25 @@
 
 namespace rts {
 
-struct net_msg
-{
+struct net_msg {
   uint32_t sz;
   std::string msg;
 };
 
-class NetConnection
-{
+class NetConnection {
 public:
   NetConnection(kissnet::tcp_socket_ptr sock);
   ~NetConnection();
 
-  std::queue<Json::Value>& getQueue() { return queue_; }
-  kissnet::tcp_socket_ptr getSocket() { return sock_; }
-  std::mutex& getMutex() { return mutex_; }
+  std::queue<Json::Value>& getQueue() {
+    return queue_;
+  }
+  kissnet::tcp_socket_ptr getSocket() {
+    return sock_;
+  }
+  std::mutex& getMutex() {
+    return mutex_;
+  }
   void stop();
 
   void sendPacket(const Json::Value &msg);
@@ -37,10 +41,9 @@ private:
 };
 
 net_msg readPacket(kissnet::tcp_socket_ptr sock)
-  throw(kissnet::socket_exception);
+throw(kissnet::socket_exception);
 
-class NetPlayer : public Player
-{
+class NetPlayer : public Player {
 public:
   NetPlayer(int64_t playerID, NetConnection *conn);
   virtual ~NetPlayer();
@@ -48,7 +51,9 @@ public:
   virtual bool update(tick_t tick);
   virtual void playerAction(id_t playerID, const PlayerAction &action);
 
-  void setLocalPlayer(id_t playerID) { localPlayerID_ = playerID; }
+  void setLocalPlayer(id_t playerID) {
+    localPlayerID_ = playerID;
+  }
 
 private:
   LoggerPtr logger_;

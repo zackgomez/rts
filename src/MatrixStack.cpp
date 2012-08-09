@@ -2,40 +2,34 @@
 #include "util.h"
 
 MatrixStack::MatrixStack() :
-  current_(1.f)
-{
+  current_(1.f) {
 }
 
-MatrixStack::~MatrixStack()
-{
+MatrixStack::~MatrixStack() {
 }
 
-glm::mat4 & MatrixStack::current()
-{
+glm::mat4 & MatrixStack::current() {
   return current_;
 }
 
-const glm::mat4 & MatrixStack::current() const
-{
+const glm::mat4 & MatrixStack::current() const {
   return current_;
 }
 
-void MatrixStack::push()
-{
+void MatrixStack::push() {
   stack_.push(current_);
 }
 
-void MatrixStack::pop()
-{
+void MatrixStack::pop() {
   invariant(!stack_.empty(), "cannot pop from empty stack");
 
   current_ = stack_.top();
   stack_.pop();
 }
 
-void MatrixStack::clear()
-{
+void MatrixStack::clear() {
   current_ = glm::mat4(1.f);
-  while (!stack_.empty())
+  while (!stack_.empty()) {
     stack_.pop();
+  }
 }

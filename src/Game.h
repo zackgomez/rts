@@ -15,8 +15,7 @@ class Map;
 class Player;
 
 // Handles the game logic and player actions, is very multithread aware.
-class Game
-{
+class Game {
 public:
   explicit Game(Map *map, const std::vector<Player *> &players);
   ~Game();
@@ -29,12 +28,22 @@ public:
   void update(float dt);
   void render(float dt);
   void addRenderer(Renderer *renderer);
-  const Map * getMap() const { return map_; }
-  tick_t getTick() const { return tick_; }
+  const Map * getMap() const {
+    return map_;
+  }
+  tick_t getTick() const {
+    return tick_;
+  }
   // Returns the player action tick delay
-  tick_t getTickOffset() const { return tickOffset_; }
-  bool isPaused() const { return paused_; }
-  bool isRunning() const { return running_; }
+  tick_t getTickOffset() const {
+    return tickOffset_;
+  }
+  bool isPaused() const {
+    return paused_;
+  }
+  bool isRunning() const {
+    return running_;
+  }
 
   // Does not block, should only be called from Game thread
   void sendMessage(id_t to, const Message &msg);
@@ -45,24 +54,21 @@ public:
   const Entity * getEntity(id_t eid) const;
   // Has to be inline, that sucks
   template <class T>
-    const Entity * findEntity(T scorer) const
-    {
-      float bestscore = HUGE_VAL;
-      const Entity *bestentity = NULL;
+  const Entity * findEntity(T scorer) const {
+    float bestscore = HUGE_VAL;
+    const Entity *bestentity = NULL;
 
-      for (auto& it : entities_)
-      {
-        const Entity *e = it.second;
-        float score = scorer(e);
-        if (score < bestscore)
-        {
-          bestscore = score;
-          bestentity = e;
-        }
+for (auto& it : entities_) {
+      const Entity *e = it.second;
+      float score = scorer(e);
+      if (score < bestscore) {
+        bestscore = score;
+        bestentity = e;
       }
-
-      return bestentity;
     }
+
+    return bestentity;
+  }
 
 
 protected:

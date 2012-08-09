@@ -11,8 +11,7 @@ class Entity;
  * the actor class.  It has methods for querying the capabilities for a weapon
  * as well as its use.
  */
-class Weapon
-{
+class Weapon {
 public:
   Weapon(const std::string &name, const Entity *owner);
 
@@ -20,8 +19,7 @@ public:
   // READY -> fire() -> WINDUP -> actually fire -> WINDDOWN -> COOLDOWN
   // eventually reloading will be incorporated here.  The attack can be
   // canceled by calling interrupt() during the WINDUP state.
-  enum WeaponState
-  {
+  enum WeaponState {
     READY,
     WINDUP,
     WINDDOWN,
@@ -31,7 +29,9 @@ public:
   float getMaxRange() const;
   float getArc() const;
   WeaponState getState() const;
-  const std::string & getName() const { return name_; }
+  const std::string & getName() const {
+    return name_;
+  }
 
   // Returns true if the target is in range, and this weapon is capable
   // of firing

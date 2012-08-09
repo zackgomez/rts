@@ -4,8 +4,7 @@
 
 typedef Json::Value PlayerAction;
 
-namespace ActionTypes
-{
+namespace ActionTypes {
 const std::string DONE = "DONE";
 const std::string MOVE = "MOVE";
 const std::string ATTACK = "ATTACK";

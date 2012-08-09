@@ -8,13 +8,12 @@ namespace rts {
 
 class Entity;
 
-class EntityFactory
-{
+class EntityFactory {
 public:
   static EntityFactory *get();
 
   Entity * construct(const std::string &cl,
-      const std::string &name, const Json::Value &params);
+                     const std::string &name, const Json::Value &params);
 
 private:
   EntityFactory();

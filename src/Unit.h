@@ -7,17 +7,22 @@ namespace rts {
 
 class UnitState;
 
-class Unit : public Actor
-{
+class Unit : public Actor {
 public:
   explicit Unit(const std::string &name, const Json::Value &params);
   virtual ~Unit();
 
   static const std::string TYPE;
-  virtual const std::string getType() const { return TYPE; }
+  virtual const std::string getType() const {
+    return TYPE;
+  }
 
-  virtual float getSpeed() const { return speed_; }
-  virtual float getTurnSpeed() const { return turnSpeed_; }
+  virtual float getSpeed() const {
+    return speed_;
+  }
+  virtual float getTurnSpeed() const {
+    return turnSpeed_;
+  }
 
   virtual void handleMessage(const Message &msg);
   virtual void update(float dt);
@@ -49,11 +54,10 @@ private:
 
 };
 
-class UnitState
-{
+class UnitState {
 public:
   explicit UnitState(Unit *unit) : unit_(unit) { }
-  virtual ~UnitState() { } 
+  virtual ~UnitState() { }
 
   virtual void update(float dt) = 0;
   // Called when this state is interrupted, return is same as next
@@ -65,8 +69,7 @@ protected:
   Unit *unit_;
 };
 
-class IdleState : public UnitState
-{
+class IdleState : public UnitState {
 public:
   explicit IdleState(Unit *unit);
   virtual ~IdleState() { }
@@ -80,8 +83,7 @@ protected:
   id_t targetID_;
 };
 
-class MoveState : public UnitState
-{
+class MoveState : public UnitState {
 public:
   explicit MoveState(const glm::vec3 &target, Unit *unit);
   explicit MoveState(id_t targetID, Unit *unit);
@@ -98,8 +100,7 @@ protected:
   glm::vec3 target_;
 };
 
-class AttackState : public UnitState
-{
+class AttackState : public UnitState {
 public:
   explicit AttackState(id_t target_id, Unit *unit);
   virtual ~AttackState();
@@ -112,8 +113,7 @@ protected:
   id_t targetID_;
 };
 
-class AttackMoveState : public UnitState
-{
+class AttackMoveState : public UnitState {
 public:
   explicit AttackMoveState(const glm::vec3 &target, Unit *unit);
   virtual ~AttackMoveState();

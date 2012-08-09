@@ -46,8 +46,7 @@ std::string get_backtrace(size_t ignore) {
     for (char *j = stack_strings[i]; *j; ++j) {
       if (*j == '(') {
         begin = j;
-      }
-      else if (*j == '+') {
+      } else if (*j == '+') {
         end = j;
       }
     }
@@ -61,17 +60,14 @@ std::string get_backtrace(size_t ignore) {
       if (ret) {
         // return value may be a realloc() of the input
         function = ret;
-      }
-      else {
+      } else {
         // demangling failed, just pretend it's a C function with no args
         std::strncpy(function, begin, sz);
         std::strncat(function, "()", sz);
         function[sz-1] = '\0';
       }
       ss << "    " << stack_strings[i] << ":" << function << '\n';
-    }
-    else
-    {
+    } else {
       // didn't find the mangled name, just print the whole line
       ss << "    " << stack_strings[i] << '\n';
     }

@@ -23,20 +23,19 @@ OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution) :
   cameraPos_(0.f, 5.f, 0.f),
   resolution_(resolution),
   dragStart_(HUGE_VAL),
-  dragEnd_(HUGE_VAL)
-{
-  if (!logger_.get())
+  dragEnd_(HUGE_VAL) {
+  if (!logger_.get()) {
     logger_ = Logger::getLogger("OGLRenderer");
+  }
 
-  if (!initEngine(resolution_))
-  {
+  if (!initEngine(resolution_)) {
     logger_->fatal() << "Unable to initialize graphics resources\n";
     exit(1);
   }
 
   // Load resources
   mapProgram_ = loadProgram("shaders/map.v.glsl", "shaders/map.f.glsl");
-  meshProgram_ = loadProgram("shaders/unit.v.glsl", "shaders/unit.f.glsl"); 
+  meshProgram_ = loadProgram("shaders/unit.v.glsl", "shaders/unit.f.glsl");
   // TODO(zack) read these and the transforms from params
   meshes_["unit"] = loadMesh("models/soldier.obj");
   meshes_["melee_unit"] = loadMesh("models/melee_unit.obj");
@@ -55,35 +54,30 @@ OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution) :
   setMeshTransform(meshes_["basic_bullet"], projMeshTrans);
 }
 
-OpenGLRenderer::~OpenGLRenderer()
-{
+OpenGLRenderer::~OpenGLRenderer() {
 }
 
 void OpenGLRenderer::renderMessages(const std::set<Message> &messages) {
   // TODO(zack): `parse` messages into effects or something
 }
 
-void OpenGLRenderer::renderEntity(const Entity *entity)
-{
+void OpenGLRenderer::renderEntity(const Entity *entity) {
   glm::vec3 pos = entity->getPosition(simdt_);
   float rotAngle = entity->getAngle(simdt_);
   const std::string &type = entity->getType();
 
   // Interpolate if they move
   glm::mat4 transform = glm::scale(
-      glm::rotate(
-        glm::translate(glm::mat4(1.f), pos),
-        // TODO(zack) why does rotAngle need to be negative here?
-        // I think openGL may use a "left handed" coordinate system...
-        -rotAngle, glm::vec3(0, 1, 0)),
-      glm::vec3(entity->getRadius() / 0.5f));
+                          glm::rotate(
+                            glm::translate(glm::mat4(1.f), pos),
+                            // TODO(zack) why does rotAngle need to be negative here?
+                            // I think openGL may use a "left handed" coordinate system...
+                            -rotAngle, glm::vec3(0, 1, 0)),
+                          glm::vec3(entity->getRadius() / 0.5f));
 
-  if (type == Unit::TYPE || type == Building::TYPE)
-  {
+  if (type == Unit::TYPE || type == Building::TYPE) {
     renderActor((const Actor *) entity, transform);
-  }
-  else if (type == Projectile::TYPE)
-  {
+  } else if (type == Projectile::TYPE) {
     // TODO(zack): move to renderProjectile
     // TODO(zack): make this color to a param in Projectile
     glm::vec4 color = glm::vec4(0.5, 0.7, 0.5, 1);
@@ -93,57 +87,65 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
     glUniform4fv(colorUniform, 1, glm::value_ptr(color));
     glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
     invariant(meshes_.find(entity->getName()) != meshes_.end(),
-        "cannot find mesh for entity " + entity->getName());
+              "cannot find mesh for entity " + entity->getName());
     renderMesh(transform, meshes_[entity->getName()]);
-  }
-  else
-  {
+  } else {
     logger_->warning() << "Unable to render entity " << entity->getName() << '\n';
   }
 }
 
-void OpenGLRenderer::renderUI()
-{
-    glm::vec2 res = vec2Param("window.resolution");
+void OpenGLRenderer::renderUI() {
+  glm::vec2 res = vec2Param("window.resolution");
 
-    glDisable(GL_DEPTH_TEST);
+  glDisable(GL_DEPTH_TEST);
 
-    // TODO(connor) there may be a better way to do this
-    // perhaps store the names of all the UI elements in an array
-    // and iterate over it?
+  // TODO(connor) there may be a better way to do this
+  // perhaps store the names of all the UI elements in an array
+  // and iterate over it?
 
-    // top bar:
-    glm::vec2 pos = vec2Param("ui.topbar.pos");
-    if (pos.x < 0) pos.x += res.x;
-    if (pos.y < 0) pos.y += res.y;
-    glm::vec2 size = vec2Param("ui.topbar.dim");
-    const char * path = strParam("ui.topbar.image").c_str();
-    GLuint tex = makeTexture(path);
-    drawTexture(pos, size, tex);
+  // top bar:
+  glm::vec2 pos = vec2Param("ui.topbar.pos");
+  if (pos.x < 0) {
+    pos.x += res.x;
+  }
+  if (pos.y < 0) {
+    pos.y += res.y;
+  }
+  glm::vec2 size = vec2Param("ui.topbar.dim");
+  const char * path = strParam("ui.topbar.image").c_str();
+  GLuint tex = makeTexture(path);
+  drawTexture(pos, size, tex);
 
-    // minimap underlay
-    pos = vec2Param("ui.minimap.pos");
-    if (pos.x < 0) pos.x += res.x;
-    if (pos.y < 0) pos.y += res.y;
-    size = vec2Param("ui.minimap.dim");
-    path = strParam("ui.minimap.image").c_str();
-    tex = makeTexture(path);
-    drawTexture(pos, size, tex);
+  // minimap underlay
+  pos = vec2Param("ui.minimap.pos");
+  if (pos.x < 0) {
+    pos.x += res.x;
+  }
+  if (pos.y < 0) {
+    pos.y += res.y;
+  }
+  size = vec2Param("ui.minimap.dim");
+  path = strParam("ui.minimap.image").c_str();
+  tex = makeTexture(path);
+  drawTexture(pos, size, tex);
 
-    // unit info underlay:
-    pos = vec2Param("ui.unitinfo.pos");
-    if (pos.x < 0) pos.x += res.x;
-    if (pos.y < 0) pos.y += res.y;
-    size = vec2Param("ui.unitinfo.dim");
-    path = strParam("ui.unitinfo.image").c_str();
-    tex = makeTexture(path);
-    drawTexture(pos, size, tex);
+  // unit info underlay:
+  pos = vec2Param("ui.unitinfo.pos");
+  if (pos.x < 0) {
+    pos.x += res.x;
+  }
+  if (pos.y < 0) {
+    pos.y += res.y;
+  }
+  size = vec2Param("ui.unitinfo.dim");
+  path = strParam("ui.unitinfo.image").c_str();
+  tex = makeTexture(path);
+  drawTexture(pos, size, tex);
 
-    glEnable(GL_DEPTH_TEST);
+  glEnable(GL_DEPTH_TEST);
 }
 
-void OpenGLRenderer::renderMap(const Map *map)
-{
+void OpenGLRenderer::renderMap(const Map *map) {
   const glm::vec2 &mapSize = map->getSize();
 
   const glm::vec4 mapColor(0.25, 0.2, 0.15, 1.0);
@@ -155,44 +157,39 @@ void OpenGLRenderer::renderMap(const Map *map)
   glUniform2fv(mapSizeUniform, 1, glm::value_ptr(mapSize));
 
   glm::mat4 transform = glm::rotate(
-      glm::scale(glm::mat4(1.f), glm::vec3(mapSize.x, 1.f, mapSize.y)),
-      90.f, glm::vec3(1, 0, 0));
+                          glm::scale(glm::mat4(1.f), glm::vec3(mapSize.x, 1.f, mapSize.y)),
+                          90.f, glm::vec3(1, 0, 0));
   renderRectangleProgram(transform);
 
   // Render each of the highlights
-  for (auto& hl : highlights_)
-  {
+for (auto& hl : highlights_) {
     hl.remaining -= renderdt_;
     glm::mat4 transform =
       glm::scale(
-          glm::rotate(
-            glm::translate(glm::mat4(1.f),
-              glm::vec3(hl.pos.x, 0.01f, hl.pos.y)),
-            90.f, glm::vec3(1, 0, 0)),
-          glm::vec3(0.33f));
+        glm::rotate(
+          glm::translate(glm::mat4(1.f),
+                         glm::vec3(hl.pos.x, 0.01f, hl.pos.y)),
+          90.f, glm::vec3(1, 0, 0)),
+        glm::vec3(0.33f));
     renderRectangleColor(transform, glm::vec4(1, 0, 0, 1));
   }
   // Remove done highlights
-  for (size_t i = 0; i < highlights_.size(); )
-  {
-    if (highlights_[i].remaining <= 0.f)
-    {
+  for (size_t i = 0; i < highlights_.size(); ) {
+    if (highlights_[i].remaining <= 0.f) {
       std::swap(highlights_[i], highlights_[highlights_.size() - 1]);
       highlights_.pop_back();
-    }
-    else
+    } else {
       i++;
+    }
   }
 
 }
 
-void OpenGLRenderer::startRender(float dt)
-{
+void OpenGLRenderer::startRender(float dt) {
   simdt_ = dt;
   renderdt_ = SDL_GetTicks() - lastTick_;
 
-  if (game_->isPaused())
-  {
+  if (game_->isPaused()) {
     simdt_ = renderdt_ = 0.f;
     //logger_->info() << "Rendering paused frame @ tick " << tick << '\n';
   }
@@ -210,8 +207,8 @@ void OpenGLRenderer::startRender(float dt)
   getViewStack().clear();
   getViewStack().current() =
     glm::lookAt(cameraPos_,
-        glm::vec3(cameraPos_.x, 0, cameraPos_.z - 0.5f),
-        glm::vec3(0, 0, -1));
+                glm::vec3(cameraPos_.x, 0, cameraPos_.z - 0.5f),
+                glm::vec3(0, 0, -1));
 
   // Set up lights
   lightPos_ = applyMatrix(getViewStack().current(), glm::vec3(-5, 10, -5));
@@ -221,13 +218,12 @@ void OpenGLRenderer::startRender(float dt)
   lastTick_ = SDL_GetTicks();
 }
 
-void OpenGLRenderer::renderActor(const Actor *actor, glm::mat4 transform)
-{
+void OpenGLRenderer::renderActor(const Actor *actor, glm::mat4 transform) {
   // if selected draw as green
   glm::vec4 color = selection_.count(actor->getID())
-    // TODO(zack): make these params...
-    ? glm::vec4(0, 1, 0, 1) // selected color
-    : glm::vec4(0, 0, 1, 1); // default color TODO(zack): based on playerID
+                    // TODO(zack): make these params...
+                    ? glm::vec4(0, 1, 0, 1) // selected color
+                    : glm::vec4(0, 0, 1, 1); // default color TODO(zack): based on playerID
   // TODO(zack): Flash units white if damage taken
   const std::string &name = actor->getName();
 
@@ -238,11 +234,11 @@ void OpenGLRenderer::renderActor(const Actor *actor, glm::mat4 transform)
   glUniform4fv(colorUniform, 1, glm::value_ptr(color));
   glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
   invariant(meshes_.find(name) != meshes_.end(),
-      "missing mesh for actor " + name);
+            "missing mesh for actor " + name);
   renderMesh(transform, meshes_[name]);
 
   glm::vec4 ndc = getProjectionStack().current() * getViewStack().current() *
-    transform * glm::vec4(0, 0, 0, 1);
+                  transform * glm::vec4(0, 0, 0, 1);
   ndc /= ndc.w;
   ndcCoords_[actor] = glm::vec3(ndc);
 
@@ -261,8 +257,7 @@ void OpenGLRenderer::renderActor(const Actor *actor, glm::mat4 transform)
   drawRect(pos, size, glm::vec4(0, 1, 0, 1));
 
   std::queue<Actor::Production> queue = actor->getProductionQueue();
-  if (!queue.empty())
-  {
+  if (!queue.empty()) {
     // display production bar
     float prodFactor = 1.f - queue.front().time / queue.front().max_time;
     size = vec2Param("hud.actor_prod.dim");
@@ -279,13 +274,11 @@ void OpenGLRenderer::renderActor(const Actor *actor, glm::mat4 transform)
   glEnable(GL_DEPTH_TEST);
 }
 
-void OpenGLRenderer::endRender()
-{
+void OpenGLRenderer::endRender() {
   glm::mat4 fullmat =
     getProjectionStack().current() * getViewStack().current();
   // Render drag selection if it exists
-  if (dragStart_ != glm::vec3(HUGE_VAL))
-  {
+  if (dragStart_ != glm::vec3(HUGE_VAL)) {
     glm::vec2 start = applyMatrix(fullmat, dragStart_).xy;
     glm::vec2 end = applyMatrix(fullmat, dragEnd_).xy;
     start = (glm::vec2(start.x, -start.y) + glm::vec2(1.f)) * 0.5f * resolution_;
@@ -305,32 +298,28 @@ void OpenGLRenderer::endRender()
   SDL_GL_SwapBuffers();
 }
 
-void OpenGLRenderer::updateCamera(const glm::vec3 &delta)
-{
+void OpenGLRenderer::updateCamera(const glm::vec3 &delta) {
   cameraPos_ += delta;
 
   glm::vec2 mapSize = game_->getMap()->getSize() / 2.f;
   cameraPos_ = glm::clamp(
-      cameraPos_,
-      glm::vec3(-mapSize.x, 0.f, -mapSize.y),
-      glm::vec3(mapSize.x, 20.f, mapSize.y));
+                 cameraPos_,
+                 glm::vec3(-mapSize.x, 0.f, -mapSize.y),
+                 glm::vec3(mapSize.x, 20.f, mapSize.y));
 }
 
-id_t OpenGLRenderer::selectEntity(const glm::vec2 &screenCoord) const
-{
+id_t OpenGLRenderer::selectEntity(const glm::vec2 &screenCoord) const {
   glm::vec2 pos = glm::vec2(screenToNDC(screenCoord));
 
   id_t eid = NO_ENTITY;
   float bestDist = HUGE_VAL;
   // Find the best entity
-  for (auto& pair : ndcCoords_)
-  {
+for (auto& pair : ndcCoords_) {
     float dist = glm::distance(pos, glm::vec2(pair.second));
     // TODO(zack) transform radius and use it instead of hardcoded number..
     // Must be inside the entities radius and better than previous
     const float thresh = sqrtf(0.009f);
-    if (dist < thresh && dist < bestDist)
-    {
+    if (dist < thresh && dist < bestDist) {
       bestDist = dist;
       eid = pair.first->getID();
     }
@@ -340,8 +329,7 @@ id_t OpenGLRenderer::selectEntity(const glm::vec2 &screenCoord) const
 }
 
 std::set<id_t> OpenGLRenderer::selectEntities(
-    const glm::vec3 &start, const glm::vec3 &end, id_t pid) const
-{
+  const glm::vec3 &start, const glm::vec3 &end, id_t pid) const {
   assertPid(pid);
   glm::mat4 fullMatrix =
     getProjectionStack().current() * getViewStack().current();
@@ -352,16 +340,14 @@ std::set<id_t> OpenGLRenderer::selectEntities(
   glm::vec2 size = glm::abs(e - s);
   std::set<id_t> ret;
 
-  for (auto &pair : ndcCoords_)
-  {
+for (auto &pair : ndcCoords_) {
     glm::vec2 p = glm::vec2(pair.second);
     // Inside rect and owned by player
     // TODO(zack) make this radius aware, right now the center must be in
     // their.
     if (fabs(p.x - center.x) < size.x / 2.f
         && fabs(p.y - center.y) < size.y / 2.f
-        && pair.first->getPlayerID() == pid)
-    {
+        && pair.first->getPlayerID() == pid) {
       ret.insert(pair.first->getID());
     }
   }
@@ -369,27 +355,23 @@ std::set<id_t> OpenGLRenderer::selectEntities(
   return ret;
 }
 
-void OpenGLRenderer::setSelection(const std::set<id_t> &select)
-{
+void OpenGLRenderer::setSelection(const std::set<id_t> &select) {
   selection_ = select;
 }
 
-void OpenGLRenderer::highlight(const glm::vec2 &mapCoord)
-{
+void OpenGLRenderer::highlight(const glm::vec2 &mapCoord) {
   MapHighlight hl;
   hl.pos = mapCoord;
   hl.remaining = 0.5f;
   highlights_.push_back(hl);
 }
 
-void OpenGLRenderer::setDragRect(const glm::vec3 &s, const glm::vec3 &e)
-{
+void OpenGLRenderer::setDragRect(const glm::vec3 &s, const glm::vec3 &e) {
   dragStart_ = s;
   dragEnd_ = e;
 }
 
-glm::vec3 OpenGLRenderer::screenToTerrain(const glm::vec2 &screenCoord) const
-{
+glm::vec3 OpenGLRenderer::screenToTerrain(const glm::vec2 &screenCoord) const {
   glm::vec4 ndc = glm::vec4(screenToNDC(screenCoord), 1.f);
 
   ndc = glm::inverse(getProjectionStack().current() * getViewStack().current()) * ndc;
@@ -402,20 +384,20 @@ glm::vec3 OpenGLRenderer::screenToTerrain(const glm::vec2 &screenCoord) const
   const glm::vec2 mapSize = game_->getMap()->getSize() / 2.f;
   // Don't return a non terrain coordinate
   if (terrain.x < -mapSize.x || terrain.x > mapSize.x
-      || terrain.z < -mapSize.y || terrain.z > mapSize.y)
+      || terrain.z < -mapSize.y || terrain.z > mapSize.y) {
     return glm::vec3(HUGE_VAL);
+  }
 
   return glm::vec3(terrain);
 }
 
-glm::vec3 OpenGLRenderer::screenToNDC(const glm::vec2 &screen) const
-{
+glm::vec3 OpenGLRenderer::screenToNDC(const glm::vec2 &screen) const {
   float z;
   glReadPixels(screen.x, resolution_.y - screen.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
   return glm::vec3(
-      2.f * (screen.x / resolution_.x) - 1.f,
-      2.f * (1.f - (screen.y / resolution_.y)) - 1.f,
-      z);
+           2.f * (screen.x / resolution_.x) - 1.f,
+           2.f * (1.f - (screen.y / resolution_.y)) - 1.f,
+           z);
 }
 
 };

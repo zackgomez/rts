@@ -7,8 +7,7 @@
 
 namespace rts {
 
-class MessageHub
-{
+class MessageHub {
 public:
   static MessageHub* get();
   ~MessageHub();
@@ -24,11 +23,10 @@ public:
   // Returns the entity that scores the LOWEST with the given scoring function.
   // Scoring function should have signature float scorer(const Entity *);
   template <class T>
-    const Entity *findEntity(T scorer) const
-    {
-      invariant(game_, "unset game object");
-      return game_->findEntity(scorer);
-    }
+  const Entity *findEntity(T scorer) const {
+    invariant(game_, "unset game object");
+    return game_->findEntity(scorer);
+  }
   // TODO(zack) a function that returns a list of entities similar to the
   // above function
 

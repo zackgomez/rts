@@ -12,15 +12,18 @@ namespace rts {
 class OpenGLRenderer;
 class Game;
 
-class Player
-{
+class Player {
 public:
   explicit Player(id_t playerID) : playerID_(playerID), game_(NULL) { }
   virtual ~Player() {}
 
-  id_t getPlayerID() const { return playerID_; }
+  id_t getPlayerID() const {
+    return playerID_;
+  }
 
-  virtual void setGame(Game *game) { game_ = game; }
+  virtual void setGame(Game *game) {
+    game_ = game;
+  }
 
   /* Called at the start of each tick, should finalize the previous frame
     * and begin preparing input for the next frame.
@@ -44,8 +47,7 @@ protected:
   Game *game_;
 };
 
-class LocalPlayer : public Player
-{
+class LocalPlayer : public Player {
 public:
   LocalPlayer(id_t playerID, OpenGLRenderer *renderer);
   virtual ~LocalPlayer();
@@ -59,7 +61,7 @@ public:
   virtual void renderUpdate(float dt);
 
   void quitEvent();
-  // TODO(zack) make these events take our own button description, they 
+  // TODO(zack) make these events take our own button description, they
   // currently take SDL_BUTTON_*
   void mouseDown(const glm::vec2 &screenCoord, int button);
   void mouseUp(const glm::vec2 &screenCoord, int button);
@@ -73,7 +75,7 @@ private:
 
   OpenGLRenderer *renderer_;
   // The tick the current actions will be executed on
-  tick_t targetTick_; 
+  tick_t targetTick_;
   tick_t doneTick_;
   std::set<id_t> selection_;
 
@@ -89,8 +91,7 @@ private:
 
 
 // Player used for testing that occasionally drops frames
-class SlowPlayer : public Player
-{
+class SlowPlayer : public Player {
 public:
   SlowPlayer(id_t playerID) : Player(playerID) { }
 
