@@ -81,7 +81,6 @@ void Game::update(float dt)
 {
   // lock
   std::unique_lock<std::mutex> lock(mutex_);
-  //logger_->info() << "Simulating tick " << tick_ << '\n';
 
   // First update players
   bool playersReady = updatePlayers();
@@ -158,6 +157,10 @@ void Game::render(float dt)
     renderer->startRender(dt);
 
   for (auto &renderer : renderers_)
+    renderer->renderMessages(messages_);
+  messages_.clear();
+
+  for (auto &renderer : renderers_)
     renderer->renderMap(map_);
 
   for (auto &it : entities_)
@@ -175,14 +178,14 @@ void Game::sendMessage(id_t to, const Message &msg)
 {
   assertEid(to);
   auto it = entities_.find(to);
-  if (it == entities_.end())
-  {
+  if (it == entities_.end()) {
     logger_->warning() << "Tried to send message to unknown entity:\n" 
       << msg.toStyledString() << '\n';
     return;
   }
 
   it->second->handleMessage(msg);
+  messages_.insert(msg);
 }
 
 void Game::handleMessage(const Message &msg)
@@ -210,7 +213,11 @@ void Game::handleMessage(const Message &msg)
   else
   {
     logger_->warning() << "Game received unknown message type: " << msg;
+    // No other work, if unknown message
+    return;
   }
+
+  messages_.insert(msg);
 }
 
 void Game::addAction(id_t pid, const PlayerAction &act)

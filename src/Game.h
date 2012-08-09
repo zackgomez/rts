@@ -88,6 +88,9 @@ protected:
   // Entities that need removal at the end of a tick
   std::vector<id_t> deadEntities_;
 
+  // The messages sent during the last calculated frame
+  std::set<Message> messages_;
+
   bool paused_;
   bool running_;
 };

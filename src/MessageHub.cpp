@@ -41,19 +41,28 @@ void MessageHub::sendMessage(const Message &msg)
 
   Json::Value to = msg["to"];
 
-  if (!to.isArray())
-  {
-    id_t eid = toID(to);
-    if (eid == NO_ENTITY)
-      game_->handleMessage(msg);
-    else
-      game_->sendMessage(eid, msg);
-    return;
+  // TODO(zack): force `to` to array here (see T61)
+
+  // Force `to` as array
+  if (!to.isArray()) {
+    to = Json::Value(Json::arrayValue);
+    to.append(msg["to"]);
   }
+  invariant(to.isArray(), "'to' field must be an array");
+
+  // Message with `to` as array for easy renderer consumption
+  Message rlmsg = msg;
+  rlmsg["to"] = to;
 
   // If an array, send to each member
-  for (int i = 0; i < to.size(); i++)
-    game_->sendMessage(toID(to[i]), msg);
+  for (int i = 0; i < rlmsg.size(); i++) {
+    id_t eid = toID(rlmsg[i]);
+    if (eid == GAME_ID) {
+      game_->handleMessage(rlmsg);
+    } else {
+      game_->sendMessage(eid, rlmsg);
+    }
+  }
 }
 
 void MessageHub::sendRemovalMessage(const Entity *e)

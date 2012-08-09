@@ -59,6 +59,10 @@ OpenGLRenderer::~OpenGLRenderer()
 {
 }
 
+void OpenGLRenderer::renderMessages(const std::set<Message> &messages) {
+  // TODO(zack): `parse` messages into effects or something
+}
+
 void OpenGLRenderer::renderEntity(const Entity *entity)
 {
   glm::vec3 pos = entity->getPosition(simdt_);
@@ -80,6 +84,8 @@ void OpenGLRenderer::renderEntity(const Entity *entity)
   }
   else if (type == Projectile::TYPE)
   {
+    // TODO(zack): move to renderProjectile
+    // TODO(zack): make this color to a param in Projectile
     glm::vec4 color = glm::vec4(0.5, 0.7, 0.5, 1);
     glUseProgram(meshProgram_);
     GLuint colorUniform = glGetUniformLocation(meshProgram_, "color");
@@ -218,7 +224,11 @@ void OpenGLRenderer::startRender(float dt)
 void OpenGLRenderer::renderActor(const Actor *actor, glm::mat4 transform)
 {
   // if selected draw as green
-  glm::vec4 color = selection_.count(actor->getID()) ?  glm::vec4(0, 1, 0, 1) : glm::vec4(0, 0, 1, 1);
+  glm::vec4 color = selection_.count(actor->getID())
+    // TODO(zack): make these params...
+    ? glm::vec4(0, 1, 0, 1) // selected color
+    : glm::vec4(0, 0, 1, 1); // default color TODO(zack): based on playerID
+  // TODO(zack): Flash units white if damage taken
   const std::string &name = actor->getName();
 
   // TODO(zack) parameterize shaders on name

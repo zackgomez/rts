@@ -22,6 +22,8 @@ public:
 
   void setGame(const Game *game) { game_ = game; }
 
+  // Called before anything other render* functions are called
+  virtual void renderMessages(const std::set<Message> &messages) = 0;
   virtual void renderEntity(const Entity *entity) = 0;
   virtual void renderMap(const Map *map) = 0;
 
@@ -38,6 +40,7 @@ public:
   OpenGLRenderer(const glm::vec2 &resolution);
   ~OpenGLRenderer();
 
+  virtual void renderMessages(const std::set<Message> &messages);
   virtual void renderEntity(const Entity *entity);
   virtual void renderUI();
   virtual void renderMap(const Map *map);
@@ -65,6 +68,9 @@ public:
 private:
   glm::vec3 screenToNDC(const glm::vec2 &screenCoord) const;
   void renderActor(const Actor *actor, glm::mat4 transform);
+
+  // cached messages
+  std::set<Message> messages_;
 
   glm::vec3 cameraPos_;
   glm::vec3 lightPos_;
