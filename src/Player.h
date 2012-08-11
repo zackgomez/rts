@@ -14,7 +14,8 @@ class Game;
 
 class Player {
 public:
-  explicit Player(id_t playerID) : playerID_(playerID), game_(NULL) { }
+  explicit Player(id_t playerID, const glm::vec3 &color)
+    : playerID_(playerID), game_(NULL), color_(color) { }
   virtual ~Player() {}
 
   id_t getPlayerID() const {
@@ -26,30 +27,36 @@ public:
   }
 
   /* Called at the start of each tick, should finalize the previous frame
-    * and begin preparing input for the next frame.
-    * NOTE: this may be called multiple times per tick, if some players aren't
-    * ready.
-    *
-    * @arg tick is the tick being simulated
-    * @return true, if this player has submitted all input for the given frame
-    */
+   * and begin preparing input for the next frame.
+   * NOTE: this may be called multiple times per tick, if some players aren't
+   * ready.
+   *
+   * @arg tick is the tick being simulated
+   * @return true, if this player has submitted all input for the given frame
+   */
   virtual bool update(tick_t tick) = 0;
   /* Called each time any player performs an action (including this player).
-    * This function should execute quickly (i.e. not perform blocking
-    * operations).
-    * @arg playerID The player who performed the action.
-    * @arg arction The action itself.
-    */
+   * This function should execute quickly (i.e. not perform blocking
+   * operations).
+   * @arg playerID The player who performed the action.
+   * @arg arction The action itself.
+   */
   virtual void playerAction(id_t playerID, const PlayerAction &action) = 0;
+
+  /* Returns this player's color. */
+  glm::vec3 getColor() const {
+    return color_;
+  }
 
 protected:
   id_t playerID_;
   Game *game_;
+  glm::vec3 color_;
 };
 
 class LocalPlayer : public Player {
 public:
-  LocalPlayer(id_t playerID, OpenGLRenderer *renderer);
+  LocalPlayer(id_t playerID, const glm::vec3 &color, OpenGLRenderer *renderer);
   virtual ~LocalPlayer();
 
   virtual bool update(tick_t tick);
@@ -93,7 +100,7 @@ private:
 // Player used for testing that occasionally drops frames
 class SlowPlayer : public Player {
 public:
-  SlowPlayer(id_t playerID) : Player(playerID) { }
+  SlowPlayer(id_t playerID) : Player(playerID, glm::vec3(0.f)) { }
 
   virtual bool update(tick_t tick);
   virtual void playerAction(id_t playerID, const PlayerAction &action) { }

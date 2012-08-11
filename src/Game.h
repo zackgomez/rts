@@ -52,13 +52,15 @@ public:
   void addAction(id_t pid, const PlayerAction &act);
 
   const Entity * getEntity(id_t eid) const;
+  const Player * getPlayer(id_t pid) const;
+
   // Has to be inline, that sucks
   template <class T>
   const Entity * findEntity(T scorer) const {
     float bestscore = HUGE_VAL;
     const Entity *bestentity = NULL;
 
-for (auto& it : entities_) {
+    for (auto& it : entities_) {
       const Entity *e = it.second;
       float score = scorer(e);
       if (score < bestscore) {
@@ -72,7 +74,6 @@ for (auto& it : entities_) {
 
 
 protected:
-  const Player * getPlayer(id_t pid) const;
   virtual void handleAction(id_t playerID, const PlayerAction &action);
   // Returns true if all the players have submitted input for the current tick_
   bool updatePlayers();

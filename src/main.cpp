@@ -33,6 +33,15 @@ OpenGLRenderer *renderer;
 // TODO take this in as an argument!
 const std::string port = "27465";
 
+// player 1...n
+// TODO(zack) eventually read these from player config and in network handshake
+glm::vec3 getPlayerColor(int player) {
+  invariant(player == 1 || player == 2, "unknown player");
+  std::stringstream ss;
+  ss << "colors.player" << player;
+  return vec3Param(ss.str());
+}
+
 NetPlayer * getOpponent(const std::string &ip) {
   kissnet::tcp_socket_ptr sock;
   // Host
@@ -109,7 +118,7 @@ NetPlayer * getOpponent(const std::string &ip) {
 
   int64_t playerID = ip.empty() ? 2 : 1;
   logger->info() << "Creating NetPlayer with pid: " << playerID << '\n';
-  return new NetPlayer(playerID, conn);
+  return new NetPlayer(playerID, getPlayerColor(playerID), conn);
 }
 
 std::vector<Player *> getPlayers(const std::vector<std::string> &args) {
@@ -138,7 +147,7 @@ std::vector<Player *> getPlayers(const std::vector<std::string> &args) {
   glm::vec2 res = vec2Param("window.resolution");
   renderer = new OpenGLRenderer(res);
 
-  player = new LocalPlayer(playerID, renderer);
+  player = new LocalPlayer(playerID, getPlayerColor(playerID), renderer);
   players.push_back(player);
 
   return players;
@@ -232,7 +241,7 @@ int main (int argc, char **argv) {
 
   logger = Logger::getLogger("Main");
 
-  ParamReader::get()->loadFile("config.params");
+  ParamReader::get()->loadFile("config.json");
 
   if (!initLibs()) {
     exit(1);

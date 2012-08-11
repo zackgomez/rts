@@ -8,10 +8,9 @@
 
 namespace rts {
 
-const int tickOffset = 1;
-
-LocalPlayer::LocalPlayer(id_t playerID, OpenGLRenderer *renderer) :
-  Player(playerID),
+LocalPlayer::LocalPlayer(id_t playerID, const glm::vec3 &color,
+    OpenGLRenderer *renderer) :
+  Player(playerID, color),
   renderer_(renderer),
   targetTick_(0),
   doneTick_(-1e6), // no done ticks

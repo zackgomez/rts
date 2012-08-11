@@ -14,6 +14,7 @@
 #include "Building.h"
 #include "ParamReader.h"
 #include "Projectile.h"
+#include "Player.h"
 
 namespace rts {
 
@@ -219,11 +220,12 @@ void OpenGLRenderer::startRender(float dt) {
 }
 
 void OpenGLRenderer::renderActor(const Actor *actor, glm::mat4 transform) {
+  const Player *player = game_->getPlayer(actor->getPlayerID());
+  glm::vec3 pcolor = player ? player->getColor() : glm::vec3(0.f);
   // if selected draw as green
   glm::vec4 color = selection_.count(actor->getID())
-                    // TODO(zack): make these params...
-                    ? glm::vec4(0, 1, 0, 1) // selected color
-                    : glm::vec4(0, 0, 1, 1); // default color TODO(zack): based on playerID
+                    ? glm::vec4(vec3Param("colors.selected"), 1.f)
+                    : glm::vec4(pcolor, 1.f);
   // TODO(zack): Flash units white if damage taken
   const std::string &name = actor->getName();
 
@@ -314,7 +316,7 @@ id_t OpenGLRenderer::selectEntity(const glm::vec2 &screenCoord) const {
   id_t eid = NO_ENTITY;
   float bestDist = HUGE_VAL;
   // Find the best entity
-for (auto& pair : ndcCoords_) {
+  for (auto& pair : ndcCoords_) {
     float dist = glm::distance(pos, glm::vec2(pair.second));
     // TODO(zack) transform radius and use it instead of hardcoded number..
     // Must be inside the entities radius and better than previous
@@ -340,7 +342,7 @@ std::set<id_t> OpenGLRenderer::selectEntities(
   glm::vec2 size = glm::abs(e - s);
   std::set<id_t> ret;
 
-for (auto &pair : ndcCoords_) {
+  for (auto &pair : ndcCoords_) {
     glm::vec2 p = glm::vec2(pair.second);
     // Inside rect and owned by player
     // TODO(zack) make this radius aware, right now the center must be in
