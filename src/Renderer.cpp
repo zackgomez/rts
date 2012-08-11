@@ -24,7 +24,8 @@ OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution) :
   cameraPos_(0.f, 5.f, 0.f),
   resolution_(resolution),
   dragStart_(HUGE_VAL),
-  dragEnd_(HUGE_VAL) {
+  dragEnd_(HUGE_VAL),
+  lastRender_(0) {
   if (!logger_.get()) {
     logger_ = Logger::getLogger("OGLRenderer");
   }
@@ -188,7 +189,10 @@ for (auto& hl : highlights_) {
 
 void OpenGLRenderer::startRender(float dt) {
   simdt_ = dt;
-  renderdt_ = SDL_GetTicks() - lastTick_;
+  if (lastRender_)
+    renderdt_ = (SDL_GetTicks() - lastRender_) / 1000.f;
+  else
+    renderdt_ = 0;
 
   if (game_->isPaused()) {
     simdt_ = renderdt_ = 0.f;
@@ -216,7 +220,7 @@ void OpenGLRenderer::startRender(float dt) {
 
   // Clear coordinates
   ndcCoords_.clear();
-  lastTick_ = SDL_GetTicks();
+  lastRender_ = SDL_GetTicks();
 }
 
 void OpenGLRenderer::renderActor(const Actor *actor, glm::mat4 transform) {

@@ -80,9 +80,9 @@ private:
   glm::vec3 lightPos_;
   glm::vec2 resolution_;
   // Used to interpolate, last tick seen, and dt since last tick
-  tick_t lastTick_;
   float simdt_;
   // For updating purely render aspects
+  uint32_t lastRender_;
   float renderdt_;
 
   // TODO(zack) shader map
