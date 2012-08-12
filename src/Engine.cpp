@@ -373,7 +373,7 @@ GLuint makeTexture(const char *filename) {
     GL_TEXTURE_2D, 0,           /* target, level */
     GL_RGBA8,                   /* internal format */
     width, height, 0,           /* width, height, border */
-    GL_RGBA, GL_UNSIGNED_BYTE,   /* external format, type */
+    GL_RGBA, GL_UNSIGNED_BYTE,  /* external format, type */
     pixels                      /* pixels */
   );
   stbi_image_free(pixels);
