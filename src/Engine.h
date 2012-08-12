@@ -21,7 +21,7 @@ GLuint linkProgram(GLuint vert, GLuint frag);
 GLuint makeBuffer(GLenum type, const void *data, GLsizei size);
 // free buffer
 // TODO(zack) rename to loadTexture
-GLuint makeTexture(const char *filename);
+GLuint makeTexture(const std::string &filename);
 void   freeTexture(GLuint tex);
 
 Mesh * loadMesh(const std::string &objFile);

@@ -352,9 +352,9 @@ GLuint makeBuffer(GLenum type, const void *data, GLsizei size) {
   return buf;
 }
 
-GLuint makeTexture(const char *filename) {
+GLuint makeTexture(const std::string &filename) {
   int width, height, depth;
-  void *pixels = stbi_load(filename, &width, &height, &depth, 4);
+  void *pixels = stbi_load(filename.c_str(), &width, &height, &depth, 4);
   GLuint texture;
 
   if (!pixels) {

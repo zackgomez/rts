@@ -51,6 +51,11 @@ OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution) :
     glm::scale(unitMeshTrans, glm::vec3(2.f))
   );
 
+  // TODO(zack) resource manager or something
+  textures_["minimap"] = makeTexture(strParam("ui.minimap.image"));
+  textures_["unitinfo"] = makeTexture(strParam("ui.unitinfo.image"));
+  textures_["topbar"] = makeTexture(strParam("ui.topbar.image"));
+
   glm::mat4 projMeshTrans =
     glm::rotate(glm::mat4(1.f), 90.f, glm::vec3(1, 0, 0));
   setMeshTransform(meshes_["basic_bullet"], projMeshTrans);
@@ -114,8 +119,7 @@ void OpenGLRenderer::renderUI() {
     pos.y += res.y;
   }
   glm::vec2 size = vec2Param("ui.topbar.dim");
-  const char * path = strParam("ui.topbar.image").c_str();
-  GLuint tex = makeTexture(path);
+  GLuint tex = textures_["topbar"];
   drawTexture(pos, size, tex);
 
   // minimap underlay
@@ -127,8 +131,7 @@ void OpenGLRenderer::renderUI() {
     pos.y += res.y;
   }
   size = vec2Param("ui.minimap.dim");
-  path = strParam("ui.minimap.image").c_str();
-  tex = makeTexture(path);
+  tex = textures_["minimap"];
   drawTexture(pos, size, tex);
 
   // unit info underlay:
@@ -140,8 +143,7 @@ void OpenGLRenderer::renderUI() {
     pos.y += res.y;
   }
   size = vec2Param("ui.unitinfo.dim");
-  path = strParam("ui.unitinfo.image").c_str();
-  tex = makeTexture(path);
+  tex = textures_["unitinfo"];
   drawTexture(pos, size, tex);
 
   glEnable(GL_DEPTH_TEST);
