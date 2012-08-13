@@ -23,8 +23,13 @@ Game::Game(Map *map, const std::vector<Player *> &players) :
 
   MessageHub::get()->setGame(this);
 
-for (auto player : players) {
+  for (auto player : players) {
     player->setGame(this);
+
+    // Add resources
+    PlayerResources res;
+    res.requisition = 0.f;
+    resources_[player->getPlayerID()] = res;
   }
 }
 
@@ -40,7 +45,7 @@ void Game::addRenderer(Renderer *renderer) {
 
 bool Game::updatePlayers() {
   bool allInput = true;
-for (auto &player : players_) {
+  for (auto &player : players_) {
     allInput &= player->update(tick_);
   }
   return allInput;
@@ -143,28 +148,29 @@ void Game::render(float dt) {
 
   dt = (SDL_GetTicks() - sync_tick_) / 1000.f;
   // Render
-for (auto &renderer : renderers_) {
+  for (auto &renderer : renderers_) {
     renderer->startRender(dt);
   }
 
-for (auto &renderer : renderers_) {
+  for (auto &renderer : renderers_) {
     renderer->renderMessages(messages_);
   }
   messages_.clear();
 
-for (auto &renderer : renderers_) {
+  for (auto &renderer : renderers_) {
     renderer->renderMap(map_);
   }
 
-for (auto &it : entities_)
-for (auto &renderer : renderers_) {
+  for (auto &it : entities_) {
+    for (auto &renderer : renderers_) {
       renderer->renderEntity(it.second);
     }
+  }
 
   // unlock
   lock.unlock();
 
-for (auto &renderer : renderers_) {
+  for (auto &renderer : renderers_) {
     renderer->endRender();
   }
 }
@@ -200,6 +206,13 @@ void Game::handleMessage(const Message &msg) {
   } else if (msg["type"] == MessageTypes::DESTROY_ENTITY) {
     invariant(msg.isMember("eid"), "malformed DESTROY_ENTITY message");
     deadEntities_.push_back(toID(msg["eid"]));
+  } else if (msg["type"] == MessageTypes::ADD_RESOURCE) {
+    invariant(msg.isMember("pid"), "malformed ADD_RESOURCE message");
+    invariant(msg.isMember("amount"), "malformed ADD_RESOURCE message");
+    id_t pid = toID(msg["pid"]);
+    invariant(getPlayer(pid), "unknown player for ADD_RESOURCE message");
+    float amount = msg["amount"].asFloat();
+    resources_[pid].requisition += amount;
   } else {
     logger_->warning() << "Game received unknown message type: " << msg;
     // No other work, if unknown message
@@ -230,7 +243,7 @@ void Game::addAction(id_t pid, const PlayerAction &act) {
   }
 
   // Broadcast action to all players
-for (auto& player : players_) {
+  for (auto& player : players_) {
     player->playerAction(pid, act);
   }
 }
@@ -242,12 +255,20 @@ const Entity * Game::getEntity(id_t eid) const {
 
 const Player * Game::getPlayer(id_t pid) const {
   assertPid(pid);
-for (auto player : players_)
+  for (auto player : players_) {
     if (player->getPlayerID() == pid) {
       return player;
     }
+  }
 
   return NULL;
+}
+
+const PlayerResources& Game::getResources(id_t pid) const {
+  auto it = resources_.find(pid);
+  invariant(it != resources_.end(),
+      "Unknown playerID to get resources for");
+  return it->second;
 }
 
 void Game::handleAction(id_t playerID, const PlayerAction &action) {
@@ -255,7 +276,6 @@ void Game::handleAction(id_t playerID, const PlayerAction &action) {
   msg["to"] = action["entity"];
   msg["from"] = toJson(playerID);
   msg["type"] = MessageTypes::ORDER;
-  // TODO(zack) include player ID in messages
   if (action["type"] == ActionTypes::MOVE) {
     // Generate a message to target entity with move order
     msg["order_type"] = OrderTypes::MOVE;

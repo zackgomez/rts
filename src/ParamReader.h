@@ -8,12 +8,13 @@
 #include "glm.h"
 
 // Global convenience methods
-const float fltParam(const std::string &param);
-const float intParam(const std::string &param);
-const glm::vec2 vec2Param(const std::string &param);
-const glm::vec3 vec3Param(const std::string &param);
-const std::string strParam(const std::string &param);
-const std::vector<std::string> arrParam(const std::string &param);
+float fltParam(const std::string &param);
+int intParam(const std::string &param);
+glm::vec2 vec2Param(const std::string &param);
+glm::vec3 vec3Param(const std::string &param);
+glm::vec4 vec4Param(const std::string &param);
+std::string strParam(const std::string &param);
+std::vector<std::string> arrParam(const std::string &param);
 
 void setParam(const std::string &key, float value);
 void setParam(const std::string &key, const std::string &value);

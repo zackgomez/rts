@@ -15,7 +15,8 @@ class Game;
 class Player {
 public:
   explicit Player(id_t playerID, const glm::vec3 &color)
-    : playerID_(playerID), game_(NULL), color_(color) { }
+    : playerID_(playerID), game_(NULL), color_(color) {
+  }
   virtual ~Player() {}
 
   id_t getPlayerID() const {
@@ -96,6 +97,12 @@ private:
   LoggerPtr logger_;
 };
 
+class DummyPlayer : public Player {
+public:
+  DummyPlayer(id_t playerID);
+  virtual bool update(tick_t tick);
+  virtual void playerAction(id_t playerID, const PlayerAction &action) { }
+};
 
 // Player used for testing that occasionally drops frames
 class SlowPlayer : public Player {

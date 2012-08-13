@@ -71,5 +71,16 @@ void MessageHub::sendRemovalMessage(const Entity *e) {
 
   sendMessage(msg);
 }
+void MessageHub::sendResourceMessage(id_t from, id_t pid, float amount)
+{
+  Message msg;
+  msg["to"] = toJson(GAME_ID);
+  msg["from"] = toJson(from);
+  msg["type"] = MessageTypes::ADD_RESOURCE;
+  msg["pid"] = toJson(pid);
+  msg["amount"] = amount;
+
+  sendMessage(msg);
+}
 
 }; // rts

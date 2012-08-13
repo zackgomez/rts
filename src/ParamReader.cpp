@@ -60,25 +60,25 @@ Json::Value ParamReader::getParam(const std::string &param) const {
   return val;
 }
 
-const std::string strParam(const std::string &param) {
+std::string strParam(const std::string &param) {
   Json::Value val = ParamReader::get()->getParam(param);
   invariant(val.isString(), "unknown or badly typed param");
   return val.asString();
 }
 
-const float fltParam(const std::string &param) {
+float fltParam(const std::string &param) {
   Json::Value val = ParamReader::get()->getParam(param);
   invariant(val.isNumeric(), "unknown or badly typed param");
   return val.asFloat();
 }
 
-const float intParam(const std::string &param) {
+int intParam(const std::string &param) {
   Json::Value val = ParamReader::get()->getParam(param);
   invariant(val.isInt(), "unknown or badly typed param");
   return val.asInt();
 }
 
-const std::vector<std::string> arrParam(const std::string &param) {
+std::vector<std::string> arrParam(const std::string &param) {
   Json::Value arr = ParamReader::get()->getParam(param);
   std::vector<std::string> result;
   for (unsigned int i = 0; i < arr.size(); i++) {
@@ -88,14 +88,23 @@ const std::vector<std::string> arrParam(const std::string &param) {
   return result;
 }
 
-const glm::vec2 vec2Param(const std::string &param) {
+glm::vec2 vec2Param(const std::string &param) {
   Json::Value arr = ParamReader::get()->getParam(param);
-  invariant(arr.isArray(), "vec2 param not found or not array");
+  invariant(arr.isArray() && arr.size() == 2,
+      "vec2 param not found or not correctly sized array");
   return toVec2(arr);
 }
 
-const glm::vec3 vec3Param(const std::string &param) {
+glm::vec3 vec3Param(const std::string &param) {
   Json::Value arr = ParamReader::get()->getParam(param);
-  invariant(arr.isArray(), "vec3 param not found or not array");
+  invariant(arr.isArray() && arr.size() == 3,
+      "vec3 param not found or not correctly sized array");
   return toVec3(arr);
+}
+
+glm::vec4 vec4Param(const std::string &param) {
+  Json::Value arr = ParamReader::get()->getParam(param);
+  invariant(arr.isArray() && arr.size() == 4,
+      "vec4 param not found or not correctly sized array");
+  return toVec4(arr);
 }

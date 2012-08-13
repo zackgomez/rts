@@ -191,7 +191,7 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m) {
   glUseProgram(0);
 }
 
-void drawRect(
+void drawRectCenter(
   const glm::vec2 &pos,
   const glm::vec2 &size,
   const glm::vec4 &color) {
@@ -210,6 +210,14 @@ void drawRect(
 
   viewStack.pop();
   projStack.pop();
+}
+
+void drawRect(
+  const glm::vec2 &pos,
+  const glm::vec2 &size,
+  const glm::vec4 &color) {
+  glm::vec2 center = pos + size/2.f;
+  drawRectCenter(center, size, color);
 }
 
 void drawTextureCenter(
@@ -249,9 +257,7 @@ void drawTexture(
   const glm::vec2 &size, // width/height
   const GLuint texture,
   const glm::vec4 &texcoord) {
-  glm::vec2 center = pos;
-  center.x += size.x / 2;
-  center.y += size.y / 2;
+  glm::vec2 center = pos + size / 2.f;
   drawTextureCenter(center, size, texture, texcoord);
 }
 

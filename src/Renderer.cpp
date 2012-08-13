@@ -23,6 +23,7 @@ namespace rts {
 LoggerPtr OpenGLRenderer::logger_;
 
 OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution) :
+  player_(NULL),
   cameraPos_(0.f, 5.f, 0.f),
   resolution_(resolution),
   dragStart_(HUGE_VAL),
@@ -115,9 +116,14 @@ void OpenGLRenderer::renderEntity(const Entity *entity) {
   }
 }
 
-void OpenGLRenderer::renderUI() {
-  glm::vec2 res = vec2Param("window.resolution");
+glm::vec2 OpenGLRenderer::convertUIPos(const glm::vec2 &pos) {
+  return glm::vec2(
+      pos.x < 0 ? pos.x + resolution_.x : pos.x,
+      pos.y < 0 ? pos.y + resolution_.y : pos.y
+  );
+}
 
+void OpenGLRenderer::renderUI() {
   glDisable(GL_DEPTH_TEST);
 
   // TODO(connor) there may be a better way to do this
@@ -125,37 +131,28 @@ void OpenGLRenderer::renderUI() {
   // and iterate over it?
 
   // top bar:
-  glm::vec2 pos = vec2Param("ui.topbar.pos");
-  if (pos.x < 0) {
-    pos.x += res.x;
-  }
-  if (pos.y < 0) {
-    pos.y += res.y;
-  }
+  glm::vec2 pos = convertUIPos(vec2Param("ui.topbar.pos"));
   glm::vec2 size = vec2Param("ui.topbar.dim");
   GLuint tex = textures_["topbar"];
   drawTexture(pos, size, tex);
 
+  // Requestion display
+  pos = convertUIPos(vec2Param("ui.reqdisplay.pos"));
+  size = vec2Param("ui.reqdisplay.size");
+  float height = fltParam("ui.reqdisplay.fontHeight");
+  std::stringstream ss;
+  ss << "Req: " << game_->getResources(player_->getPlayerID()).requisition;
+  drawRect(pos, size, vec4Param("ui.reqdisplay.bgcolor"));
+  FontManager::get()->drawString(ss.str(), pos, height);
+
   // minimap underlay
-  pos = vec2Param("ui.minimap.pos");
-  if (pos.x < 0) {
-    pos.x += res.x;
-  }
-  if (pos.y < 0) {
-    pos.y += res.y;
-  }
+  pos = convertUIPos(vec2Param("ui.minimap.pos"));
   size = vec2Param("ui.minimap.dim");
   tex = textures_["minimap"];
   drawTexture(pos, size, tex);
 
   // unit info underlay:
-  pos = vec2Param("ui.unitinfo.pos");
-  if (pos.x < 0) {
-    pos.x += res.x;
-  }
-  if (pos.y < 0) {
-    pos.y += res.y;
-  }
+  pos = convertUIPos(vec2Param("ui.unitinfo.pos"));
   size = vec2Param("ui.unitinfo.dim");
   tex = textures_["unitinfo"];
   drawTexture(pos, size, tex);
@@ -180,7 +177,7 @@ void OpenGLRenderer::renderMap(const Map *map) {
   renderRectangleProgram(transform);
 
   // Render each of the highlights
-for (auto& hl : highlights_) {
+  for (auto& hl : highlights_) {
     hl.remaining -= renderdt_;
     glm::mat4 transform =
       glm::scale(
@@ -288,11 +285,11 @@ void OpenGLRenderer::renderActor(const Actor *actor, glm::mat4 transform) {
   glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution_;
   pos += offset;
   // Red underneath for max health
-  drawRect(pos, size, glm::vec4(1, 0, 0, 1));
+  drawRectCenter(pos, size, glm::vec4(1, 0, 0, 1));
   // Green on top for current health
   pos.x -= size.x * (1.f - healthFact) / 2.f;
   size.x *= healthFact;
-  drawRect(pos, size, glm::vec4(0, 1, 0, 1));
+  drawRectCenter(pos, size, glm::vec4(0, 1, 0, 1));
 
   std::queue<Actor::Production> queue = actor->getProductionQueue();
   if (!queue.empty()) {
@@ -303,11 +300,11 @@ void OpenGLRenderer::renderActor(const Actor *actor, glm::mat4 transform) {
     pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution_;
     pos += offset;
     // Purple underneath for max time
-    drawRect(pos, size, glm::vec4(0.5, 0, 1, 1));
+    drawRectCenter(pos, size, glm::vec4(0.5, 0, 1, 1));
     // Blue on top for time elapsed
     pos.x -= size.x * (1.f - prodFactor) / 2.f;
     size.x *= prodFactor;
-    drawRect(pos, size, glm::vec4(0, 0, 1, 1));
+    drawRectCenter(pos, size, glm::vec4(0, 0, 1, 1));
   }
   glEnable(GL_DEPTH_TEST);
 }
@@ -325,7 +322,7 @@ void OpenGLRenderer::endRender() {
     glDisable(GL_DEPTH_TEST);
 
     // TODO(zack): make this color a param
-    drawRect((start + end) / 2.f, end - start, glm::vec4(0.2f, 0.6f, 0.2f, 0.3f));
+    drawRectCenter((start + end) / 2.f, end - start, glm::vec4(0.2f, 0.6f, 0.2f, 0.3f));
     // Reset each frame
     dragStart_ = glm::vec3(HUGE_VAL);
   }

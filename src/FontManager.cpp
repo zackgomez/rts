@@ -25,7 +25,7 @@ FontManager::~FontManager() {
 
 void FontManager::drawString(const std::string &s, const glm::vec2 &pos,
     float height) {
-  glm::vec2 p(pos);
+  glm::vec2 p(pos.x, pos.y + height);
   float fact = height / glyphSize_;
   for (char c : s) {
     p.x += drawCharacter(c, p, fact);

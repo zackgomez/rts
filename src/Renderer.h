@@ -42,6 +42,10 @@ public:
   OpenGLRenderer(const glm::vec2 &resolution);
   ~OpenGLRenderer();
 
+  void setLocalPlayer(const LocalPlayer *p) {
+    player_ = p;
+  }
+
   virtual void renderMessages(const std::set<Message> &messages);
   virtual void renderEntity(const Entity *entity);
   virtual void renderUI();
@@ -74,9 +78,11 @@ public:
 private:
   glm::vec3 screenToNDC(const glm::vec2 &screenCoord) const;
   void renderActor(const Actor *actor, glm::mat4 transform);
+  glm::vec2 convertUIPos(const glm::vec2 &pos);
 
   // cached messages
   std::set<Message> messages_;
+  const LocalPlayer *player_;
 
   glm::vec3 cameraPos_;
   glm::vec3 lightPos_;

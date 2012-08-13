@@ -13,6 +13,7 @@ namespace rts {
 class Renderer;
 class Map;
 class Player;
+struct PlayerResources;
 
 // Handles the game logic and player actions, is very multithread aware.
 class Game {
@@ -53,6 +54,7 @@ public:
 
   const Entity * getEntity(id_t eid) const;
   const Player * getPlayer(id_t pid) const;
+  const PlayerResources& getResources(id_t pid) const;
 
   // Has to be inline, that sucks
   template <class T>
@@ -87,6 +89,7 @@ protected:
   std::vector<Player *> players_;
   std::map<id_t, Entity *> entities_;
   std::set<Renderer *> renderers_;
+  std::map<id_t, PlayerResources> resources_;
   std::map<id_t, std::queue<PlayerAction>> actions_;
   tick_t tick_;
   tick_t tickOffset_;
@@ -101,5 +104,9 @@ protected:
   bool paused_;
   bool running_;
 };
-}; // namespace rts
 
+struct PlayerResources {
+  float requisition;
+};
+
+}; // namespace rts

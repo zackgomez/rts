@@ -141,6 +141,8 @@ std::vector<Player *> getPlayers(const std::vector<std::string> &args) {
     players.push_back(opp);
   } else if (!args.empty() && args[0] == "--slowp") {
     players.push_back(new SlowPlayer(2));
+  } else {
+    players.push_back(new DummyPlayer(2));
   }
 
   // Now set up local player
@@ -148,6 +150,8 @@ std::vector<Player *> getPlayers(const std::vector<std::string> &args) {
   renderer = new OpenGLRenderer(res);
 
   player = new LocalPlayer(playerID, getPlayerColor(playerID), renderer);
+  renderer->setLocalPlayer(player);
+
   players.push_back(player);
 
   return players;

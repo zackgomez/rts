@@ -20,6 +20,13 @@ void Building::handleMessage(const Message &msg) {
 
 void Building::update(float dt) {
   Actor::update(dt);
+
+  // Building generates requisition
+  MessageHub::get()->sendResourceMessage(
+    getID(),
+    getPlayerID(),
+    param("reqGen") * dt
+  );
 }
 
 bool Building::needsRemoval() const {

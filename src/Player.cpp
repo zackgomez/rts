@@ -271,6 +271,8 @@ void LocalPlayer::keyPress(SDLKey key) {
     } else {
       for (unsigned int i = 0; i < 4; i++) {
         if (key == MAIN_KEYS[i]) {
+          // TODO(zack): this assumption that head of selection is always the
+          // unit we're building on is not good
           auto sel = selection_.begin();
           const Entity *ent = MessageHub::get()->getEntity(*sel);
           // The main action of a building is production
@@ -280,7 +282,7 @@ void LocalPlayer::keyPress(SDLKey key) {
               action["type"] = ActionTypes::ENQUEUE;
               action["entity"] = toJson(*sel);
               action["pid"] = toJson(playerID_);
-              action["prod"] = prod.at(i);
+              action["prod"] = prod[i];
               action["tick"] = toJson(targetTick_);
               game_->addAction(playerID_, action);
             }
@@ -308,6 +310,22 @@ LocalPlayer::setSelection(const std::set<id_t> &s) {
   renderer_->setSelection(selection_);
 }
 
+DummyPlayer::DummyPlayer(id_t playerID) :
+  Player(playerID, vec3Param("debug.dummyColor")) {
+}
+
+bool DummyPlayer::update(tick_t tick) {
+  if (tick < 0) {
+    return true;
+  }
+
+  PlayerAction a;
+  a["type"] = ActionTypes::DONE;
+  a["tick"] = (Json::Value::Int64) tick;
+  a["pid"] = (Json::Value::Int64) playerID_;
+  game_->addAction(playerID_, a);
+  return true;
+}
 
 bool
 SlowPlayer::update(tick_t tick) {
