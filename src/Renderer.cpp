@@ -15,6 +15,7 @@
 #include "ParamReader.h"
 #include "Projectile.h"
 #include "Player.h"
+#include "MessageHub.h"
 
 namespace rts {
 
@@ -62,10 +63,20 @@ OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution) :
 }
 
 OpenGLRenderer::~OpenGLRenderer() {
+  for(Effect *effect : effects_) {
+    delete effect;
+  }
 }
 
 void OpenGLRenderer::renderMessages(const std::set<Message> &messages) {
-  // TODO(zack): `parse` messages into effects or something
+  for (const Message &msg : messages) {
+    if (msg["type"] == MessageTypes::ATTACK) {
+      for (Json::Value _victim : msg["to"]) {
+        id_t victim = toID(_victim);
+        effects_.push_back(new BloodEffect(victim));
+      }
+    }
+  }
 }
 
 void OpenGLRenderer::renderEntity(const Entity *entity) {
@@ -198,12 +209,14 @@ void OpenGLRenderer::startRender(float dt) {
 
   if (game_->isPaused()) {
     simdt_ = renderdt_ = 0.f;
-    //logger_->info() << "Rendering paused frame @ tick " << tick << '\n';
   }
 
   glClearColor(0.f, 0.f, 0.f, 0.f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
   glEnable(GL_DEPTH_TEST);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   // Set up matrices
   float aspectRatio = resolution_.x / resolution_.y;
@@ -219,6 +232,20 @@ void OpenGLRenderer::startRender(float dt) {
 
   // Set up lights
   lightPos_ = applyMatrix(getViewStack().current(), glm::vec3(-5, 10, -5));
+
+  // Display effects
+  for (size_t i = 0; i < effects_.size(); i++) {
+    Effect *effect = effects_[i];
+
+    effect->render(renderdt_);
+
+    if (effect->needsRemoval()) {
+      delete effect;
+      // Swap trick
+      std::swap(effects_[i], effects_[effects_.size() - 1]);
+      effects_.pop_back();
+    }
+  }
 
   // Clear coordinates
   ndcCoords_.clear();
@@ -293,8 +320,6 @@ void OpenGLRenderer::endRender() {
     end = (glm::vec2(end.x, -end.y) + glm::vec2(1.f)) * 0.5f * resolution_;
 
     glDisable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     drawRect((start + end) / 2.f, end - start, glm::vec4(0.2f, 0.6f, 0.2f, 0.3f));
     // Reset each frame
@@ -403,9 +428,55 @@ glm::vec3 OpenGLRenderer::screenToNDC(const glm::vec2 &screen) const {
   float z;
   glReadPixels(screen.x, resolution_.y - screen.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
   return glm::vec3(
-           2.f * (screen.x / resolution_.x) - 1.f,
-           2.f * (1.f - (screen.y / resolution_.y)) - 1.f,
-           z);
+      2.f * (screen.x / resolution_.x) - 1.f,
+      2.f * (1.f - (screen.y / resolution_.y)) - 1.f,
+      z);
+}
+
+BloodEffect::BloodEffect(id_t aid) :
+  aid_(aid),
+  t_(0.f) {
+
+  assertEid(aid);
+}
+
+BloodEffect::~BloodEffect() {
+  // nop
+}
+
+void BloodEffect::render(float dt) {
+  // TODO(zack) replace this with a cool blood effect and or damage text
+  t_ += dt;
+
+  Actor *a = (Actor *) MessageHub::get()->getEntity(aid_);
+  // TODO(zack): assert that this entity IS an actor
+  if (!a) {
+    // If entity died, no more effect
+    t_ = HUGE_VAL;
+    return;
+  }
+
+  glm::vec3 pos = a->getPosition() + glm::vec3(0.f, a->getHeight(), 0.f);
+  float size = a->getRadius() / 2.5f;
+  glm::mat4 transform =
+    glm::rotate(
+      glm::rotate(
+        glm::scale(
+          glm::translate(glm::mat4(1.f), pos),
+          glm::vec3(size)
+        ),
+        rad2deg(M_PI * t_),
+        glm::vec3(0, 1, 0)
+      ),
+      90.f,
+      glm::vec3(1.f, 0.f, 0.f)
+   );
+
+  renderRectangleColor(transform, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+}
+
+bool BloodEffect::needsRemoval() const {
+  return t_ >= fltParam("effects.damageRenderDuration");
 }
 
 };

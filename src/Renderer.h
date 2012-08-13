@@ -12,7 +12,6 @@ class Map;
 class LocalPlayer;
 class Game;
 class Actor;
-struct MapHighlight;
 
 class Renderer {
 public:
@@ -34,6 +33,9 @@ public:
 protected:
   const Game *game_;
 };
+
+struct MapHighlight;
+class Effect;
 
 class OpenGLRenderer : public Renderer {
 public:
@@ -95,6 +97,7 @@ private:
   std::set<id_t> selection_;
 
   std::vector<MapHighlight> highlights_;
+  std::vector<Effect*> effects_;
   glm::vec3 dragStart_, dragEnd_;
 
   static LoggerPtr logger_;
@@ -105,5 +108,27 @@ struct MapHighlight {
   glm::vec2 pos;
   float remaining;
 };
-}; // namespace rts
 
+class Effect {
+public:
+  Effect() { }
+  virtual ~Effect() { }
+
+  virtual void render(float dt) = 0;
+  virtual bool needsRemoval() const = 0;
+};
+
+class BloodEffect : public Effect {
+public:
+  BloodEffect(id_t aid);
+  virtual ~BloodEffect();
+
+  virtual void render(float dt);
+  virtual bool needsRemoval() const;
+
+private:
+  id_t aid_;
+  float t_;
+};
+
+}; // namespace rts

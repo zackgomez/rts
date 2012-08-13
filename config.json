@@ -123,6 +123,11 @@
     "minDragDistance" : 0.3
   },
 
+  "effects" :
+  {
+    "damageRenderDuration" : 0.4
+  },
+
   "ui" :
   {
     "minimap" :
