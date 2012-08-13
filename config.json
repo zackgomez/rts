@@ -123,6 +123,16 @@
     "minDragDistance" : 0.3
   },
 
+  "fonts" :
+  {
+    "FreeSans" :
+    {
+      "file" : "fonts/FreeSans.ttf",
+      "size" : 32.0,
+      "texsize" : 512
+    }
+  },
+
   "effects" :
   {
     "damageRenderDuration" : 0.4

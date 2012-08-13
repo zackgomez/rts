@@ -34,7 +34,8 @@ glm::vec2 toVec2(const Json::Value &v);
 glm::vec3 toVec3(const Json::Value &v);
 glm::vec4 toVec4(const Json::Value &v);
 
-glm::vec3 applyMatrix(const glm::mat4 &mat, const glm::vec3 &pt);
+glm::vec3 applyMatrix(const glm::mat4 &mat, const glm::vec3 &pt,
+    bool homo = true);
 
 inline float deg2rad(float deg) {
   return M_PI / 180.f * deg;

@@ -2,8 +2,9 @@ CXX=g++
 GLM=lib/glm-0.9.2.7
 JSON=lib/jsoncpp
 STBI=lib/stbi
+STBTT=lib/stb_truetype
 KISSNET=lib/kissnet
-CXXFLAGS=-g -O0 -Wall -I$(GLM) -std=c++0x -I$(JSON) -I$(KISSNET) -I$(STBI) -Wno-reorder
+CXXFLAGS=-g -O0 -Wall -I$(GLM) -std=c++0x -I$(JSON) -I$(KISSNET) -I$(STBI) -Wno-reorder -I$(STBTT)
 LDFLAGS=-lSDL -lGL -lGLEW -rdynamic
 OBJDIR=obj
 SRCDIR=src

@@ -26,8 +26,16 @@ private:
   std::string msg_;
 };
 
+class file_exception : public exception_with_trace {
+public:
+  file_exception(const std::string &msg) :
+    exception_with_trace(msg) {
+  }
+};
+
 // Thrown from invariant
 class violation_exception : public exception_with_trace {
+public:
   violation_exception(const std::string &msg) :
     exception_with_trace(msg) {
   }

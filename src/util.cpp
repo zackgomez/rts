@@ -13,7 +13,7 @@ std::string get_backtrace(size_t ignore = 0);
 
 void __invariant(bool condition, const std::string &message) {
   if (!condition) {
-    throw exception_with_trace(message);
+    throw violation_exception(message);
   }
 }
 

@@ -16,6 +16,7 @@
 #include "Projectile.h"
 #include "Player.h"
 #include "MessageHub.h"
+#include "FontManager.h"
 
 namespace rts {
 
@@ -35,6 +36,8 @@ OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution) :
     logger_->fatal() << "Unable to initialize graphics resources\n";
     exit(1);
   }
+  // Initialize font manager, if necessary
+  FontManager::get();
 
   // Load resources
   mapProgram_ = loadProgram("shaders/map.v.glsl", "shaders/map.f.glsl");
@@ -321,6 +324,7 @@ void OpenGLRenderer::endRender() {
 
     glDisable(GL_DEPTH_TEST);
 
+    // TODO(zack): make this color a param
     drawRect((start + end) / 2.f, end - start, glm::vec4(0.2f, 0.6f, 0.2f, 0.3f));
     // Reset each frame
     dragStart_ = glm::vec3(HUGE_VAL);

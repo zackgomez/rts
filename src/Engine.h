@@ -16,7 +16,7 @@ MatrixStack& getProjectionStack();
 GLuint loadProgram(const std::string &vert, const std::string &frag);
 GLuint loadShader(GLenum type, const std::string &filename);
 GLuint linkProgram(GLuint vert, GLuint frag);
-// free program
+// TODO(zack) free program
 
 GLuint makeBuffer(GLenum type, const void *data, GLsizei size);
 // free buffer
@@ -53,7 +53,13 @@ void drawRect(
   const glm::vec2 &pos, // top left corner
   const glm::vec2 &size, // width/height
   const glm::vec4 &color);
-void drawTexture(
+void drawTextureCenter(
   const glm::vec2 &pos, // center
   const glm::vec2 &size, // width/height
-  const GLuint texture);
+  const GLuint texture,
+  const glm::vec4 &texcoord = glm::vec4(0, 0, 1, 1)); // u0,v0, u1,v1
+void drawTexture(
+  const glm::vec2 &pos, // top left corner
+  const glm::vec2 &size, // width/height
+  const GLuint texture,
+  const glm::vec4 &texcoord = glm::vec4(0, 0, 1, 1)); // u0,v0, u1,v1

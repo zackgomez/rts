@@ -4,153 +4,51 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <sstream>
 #include <iomanip>
-#include <iostream>
+#include <fstream>
+#define STB_TRUETYPE_IMPLEMENTATION
+#include <stb_truetype.h>
+#include "util.h"
+#include "Logger.h"
+#include "ParamReader.h"
 
 const float widthRatio = 0.75f;
 
 FontManager::FontManager() :
-  numberTex_(0),
-  letterTex_(0) {
+  glyphTexSize_(0.f),
+  glyphTex_(0) {
   initialize();
 }
 
 FontManager::~FontManager() {
-  freeTexture(numberTex_);
-  freeTexture(letterTex_);
-
-  // TODO free/unattach program/shader
+  freeTexture(glyphTex_);
 }
 
-void FontManager::renderNumber(const glm::mat4 &transform,
-                               const glm::vec3 &color, float num) {
-  assert(num >= 0);
-  std::string s = floatStr(num);
-  size_t len = s.length();
-
-  float offset = static_cast<float>(len) / -2.f + 0.5f;
-  offset *= widthRatio;
-
-  for (size_t i = 0; i < len; i++) {
-    glm::mat4 final_transform =
-      glm::translate(transform, glm::vec3(offset, 0.f, 0.f));
-
-    renderDigit(final_transform, color, s[i]);
-
-    offset += widthRatio;
+void FontManager::drawString(const std::string &s, const glm::vec2 &pos,
+    float height) {
+  glm::vec2 p(pos);
+  float fact = height / glyphSize_;
+  for (char c : s) {
+    p.x += drawCharacter(c, p, fact);
   }
 }
 
-void FontManager::renderString(const glm::mat4 &transform,
-                               const glm::vec3 &color, const std::string &str) {
-  const size_t len = str.length();
+float FontManager::drawCharacter(char c, const glm::vec2 &pos, float fact) {
 
-  float offset = static_cast<float>(len) / -2.f + 0.5f;
-  offset *= widthRatio;
+  invariant(c >= 32 && c < 32 + 96, "invalid character to render");
+  stbtt_bakedchar bc = cdata_[c - 32];
 
-  for (size_t i = 0; i < len; i++) {
-    glm::mat4 final_transform =
-      glm::translate(transform, glm::vec3(offset, 0.f, 0.f));
+  glm::vec4 texcoord = glm::vec4(bc.x0, bc.y0, bc.x1, bc.y1) / glyphTexSize_;
+  glm::vec2 size = fact * glm::vec2(bc.x1 - bc.x0, bc.y1 - bc.y0);
+  glm::vec2 offset = fact * glm::vec2(bc.xoff, bc.yoff);
+  float advance = fact * bc.xadvance;
 
-    char ch = str[i];
+  drawTexture(pos + offset, size, glyphTex_, texcoord);
 
-    if (isalpha(ch)) {
-      renderCharacter(final_transform, color, ch);
-    } else if (isdigit(ch)) {
-      renderDigit(final_transform, color, ch);
-    } else if (isspace(ch)) {
-      // nothing
-    } else {
-      assert(false && "Can't render unknown character");
-    }
-
-
-    offset += widthRatio;
-  }
+  return advance;
 }
 
-int FontManager::numDigits(int n) {
-  int count;
-  for (count = 0; n != 0; n /= 10, count++);
-
-  return std::max(count, 1);
-}
-
-
-// TODO(zack) get rid of this in favor of a full ascii map
-void FontManager::renderDigit(const glm::mat4 &transform,
-                              const glm::vec3 &color, char dig) {
-  char digit = dig - '0';
-
-  // FIXME(zack) remove this special case
-  if (dig == '.') {
-    return;
-  }
-
-  glm::vec2 size(1.f/10.f, 1.f);
-  glm::vec2 pos(size.x * static_cast<float>(digit), 0.f);
-
-  // Set up the shader
-  GLuint posUniform = glGetUniformLocation(numProgram_, "pos");
-  GLuint sizeUniform = glGetUniformLocation(numProgram_, "size");
-  GLuint colorUniform = glGetUniformLocation(numProgram_, "color");
-
-  glUseProgram(numProgram_);
-  glUniform2fv(posUniform, 1, glm::value_ptr(pos));
-  glUniform2fv(sizeUniform, 1, glm::value_ptr(size));
-  glUniform3fv(colorUniform, 1, glm::value_ptr(color));
-  glUseProgram(0);
-  // Set up the texture
-  glActiveTexture(GL_TEXTURE0);
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, numberTex_);
-
-  renderRectangleProgram(glm::scale(transform, glm::vec3(0.66f, -1.f, 1.f)));
-
-  glDisable(GL_TEXTURE_2D);
-}
-
-void FontManager::renderCharacter(const glm::mat4 &transform,
-                                  const glm::vec3 &color, char ch) {
-  ch = toupper(ch);
-  int ind = ch - 'A';
-  assert(ind >= 0 && ind < 26);
-
-  glm::vec2 size(1.f/26.f, 1.f);
-  glm::vec2 pos(size.x * static_cast<float>(ind), 0.f);
-
-  // Set up the shader
-  GLuint posUniform = glGetUniformLocation(numProgram_, "pos");
-  GLuint sizeUniform = glGetUniformLocation(numProgram_, "size");
-  GLuint colorUniform = glGetUniformLocation(numProgram_, "color");
-
-  glUseProgram(numProgram_);
-  glUniform2fv(posUniform, 1, glm::value_ptr(pos));
-  glUniform2fv(sizeUniform, 1, glm::value_ptr(size));
-  glUniform3fv(colorUniform, 1, glm::value_ptr(color));
-  glUseProgram(0);
-  // Set up the texture
-  glActiveTexture(GL_TEXTURE0);
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, letterTex_);
-
-  renderRectangleProgram(glm::scale(transform, glm::vec3(0.66f, -1.f, 1.f)));
-
-  glDisable(GL_TEXTURE_2D);
-}
-
-int FontManager::numChars(float f) {
-  return floatStr(f).length();
-}
-
-std::string FontManager::floatStr(float f) {
-  std::stringstream ss;
-  if (f != (int) f) {
-    ss.precision(2);
-    ss.setf(std::ios::fixed, std::ios::floatfield);
-  }
-  ss << f;
-
-  return ss.str();
+void FontManager::drawTex() const {
+  drawTexture(glm::vec2(400, 400), glm::vec2(400, 400), glyphTex_);
 }
 
 FontManager * FontManager::get() {
@@ -159,9 +57,36 @@ FontManager * FontManager::get() {
 }
 
 void FontManager::initialize() {
-  numberTex_ = makeTexture("images/numbers-64.png");
-  letterTex_ = makeTexture("images/capital-letters-64.png");
+  // TODO(zack): Read the various fonts from config, right now only one,
+  // hardcoded
+  std::string font_file = strParam("fonts.FreeSans.file");
+  std::ifstream f(font_file.c_str(), std::ios_base::binary);
+  if (!f) {
+    throw file_exception("file: " + font_file + " not found");
+  }
 
-  numProgram_ = loadProgram("shaders/num.v.glsl", "shaders/num.f.glsl");
-  assert(numProgram_);
+  std::string fontstr;
+  f.seekg(0, std::ios::end);
+  fontstr.reserve(f.tellg());
+  f.seekg(0, std::ios::beg);
+  fontstr.assign((std::istreambuf_iterator<char>(f)),
+      std::istreambuf_iterator<char>());
+
+  glyphTexSize_ = intParam("fonts.FreeSans.texsize");
+  glyphSize_ = fltParam("fonts.FreeSans.size");
+  unsigned char temp_bitmap[glyphTexSize_ * glyphTexSize_];
+  stbtt_BakeFontBitmap((unsigned char*) fontstr.c_str(), 0, // font data
+      glyphSize_, // font size
+      temp_bitmap,
+      glyphTexSize_, glyphTexSize_,
+      32, 96, // character range
+      cdata_);
+
+  glGenTextures(1, &glyphTex_);
+  glBindTexture(GL_TEXTURE_2D, glyphTex_);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA,
+      glyphTexSize_, glyphTexSize_, 0,
+      GL_ALPHA, GL_UNSIGNED_BYTE, temp_bitmap);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }

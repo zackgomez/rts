@@ -215,7 +215,8 @@ void drawRect(
 void drawTextureCenter(
   const glm::vec2 &pos, // center
   const glm::vec2 &size, // width/height
-  const GLuint texture) {
+  const GLuint texture,
+  const glm::vec4 &texcoord) {
   glm::mat4 transform =
     glm::scale(
       glm::translate(glm::mat4(1.f), glm::vec3(pos, 0.f)),
@@ -229,7 +230,9 @@ void drawTextureCenter(
 
   glUseProgram(resources.texProgram);
   GLuint textureUniform = glGetUniformLocation(resources.texProgram, "texture");
+  GLuint tcUniform = glGetUniformLocation(resources.texProgram, "texcoord");
   glUniform1i(textureUniform, 0);
+  glUniform4fv(tcUniform, 1, glm::value_ptr(texcoord));
 
   glActiveTexture(GL_TEXTURE0);
   glEnable(GL_TEXTURE_2D);
@@ -244,11 +247,12 @@ void drawTextureCenter(
 void drawTexture(
   const glm::vec2 &pos, // top left corner
   const glm::vec2 &size, // width/height
-  const GLuint texture) {
+  const GLuint texture,
+  const glm::vec4 &texcoord) {
   glm::vec2 center = pos;
   center.x += size.x / 2;
   center.y += size.y / 2;
-  drawTextureCenter(center, size, texture);
+  drawTextureCenter(center, size, texture, texcoord);
 }
 
 MatrixStack& getViewStack() {
