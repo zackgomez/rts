@@ -253,8 +253,7 @@ int main (int argc, char **argv) {
 
   // Set up players and game
   std::vector<Player *> players = getPlayers(args);
-  game = new Game(new Map(glm::vec2(20, 20)), players);
-  game->addRenderer(renderer);
+  game = new Game(new Map(glm::vec2(20, 20)), players, renderer);
 
   // RUN IT
   mainloop();

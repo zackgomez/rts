@@ -18,7 +18,8 @@ struct PlayerResources;
 // Handles the game logic and player actions, is very multithread aware.
 class Game {
 public:
-  explicit Game(Map *map, const std::vector<Player *> &players);
+  explicit Game(Map *map, const std::vector<Player *> &players,
+      Renderer *renderer);
   ~Game();
 
   // Synchronizes game between players and does any other initialization
@@ -28,7 +29,6 @@ public:
 
   void update(float dt);
   void render(float dt);
-  void addRenderer(Renderer *renderer);
   const Map * getMap() const {
     return map_;
   }
@@ -88,7 +88,7 @@ protected:
   Map *map_;
   std::vector<Player *> players_;
   std::map<id_t, Entity *> entities_;
-  std::set<Renderer *> renderers_;
+  Renderer *renderer_;
   std::map<id_t, PlayerResources> resources_;
   std::map<id_t, std::queue<PlayerAction>> actions_;
   tick_t tick_;

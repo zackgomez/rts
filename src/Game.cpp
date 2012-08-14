@@ -12,9 +12,11 @@
 
 namespace rts {
 
-Game::Game(Map *map, const std::vector<Player *> &players) :
+Game::Game(Map *map, const std::vector<Player *> &players,
+    Renderer *renderer) :
   map_(map),
   players_(players),
+  renderer_(renderer),
   tick_(0),
   tickOffset_(2),
   paused_(true),
@@ -31,16 +33,13 @@ Game::Game(Map *map, const std::vector<Player *> &players) :
     res.requisition = 0.f;
     resources_[player->getPlayerID()] = res;
   }
+
+  renderer_->setGame(this);
 }
 
 Game::~Game() {
   MessageHub::get()->setGame(NULL);
   delete map_;
-}
-
-void Game::addRenderer(Renderer *renderer) {
-  renderers_.insert(renderer);
-  renderer->setGame(this);
 }
 
 bool Game::updatePlayers() {
@@ -147,32 +146,22 @@ void Game::render(float dt) {
   std::unique_lock<std::mutex> lock(mutex_);
 
   dt = (SDL_GetTicks() - sync_tick_) / 1000.f;
-  // Render
-  for (auto &renderer : renderers_) {
-    renderer->startRender(dt);
-  }
 
-  for (auto &renderer : renderers_) {
-    renderer->renderMessages(messages_);
-  }
+  renderer_->startRender(dt);
+
+  renderer_->renderMessages(messages_);
   messages_.clear();
 
-  for (auto &renderer : renderers_) {
-    renderer->renderMap(map_);
-  }
+  renderer_->renderMap(map_);
 
   for (auto &it : entities_) {
-    for (auto &renderer : renderers_) {
-      renderer->renderEntity(it.second);
-    }
+    renderer_->renderEntity(it.second);
   }
 
   // unlock
   lock.unlock();
 
-  for (auto &renderer : renderers_) {
-    renderer->endRender();
-  }
+  renderer_->endRender();
 }
 
 void Game::sendMessage(id_t to, const Message &msg) {
