@@ -141,7 +141,7 @@ void OpenGLRenderer::renderUI() {
   size = vec2Param("ui.reqdisplay.size");
   float height = fltParam("ui.reqdisplay.fontHeight");
   std::stringstream ss;
-  ss << "Req: " << game_->getResources(player_->getPlayerID()).requisition;
+  ss << "Req: " << (int)game_->getResources(player_->getPlayerID()).requisition;
   drawRect(pos, size, vec4Param("ui.reqdisplay.bgcolor"));
   FontManager::get()->drawString(ss.str(), pos, height);
 
