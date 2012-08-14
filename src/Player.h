@@ -9,7 +9,7 @@
 
 namespace rts {
 
-class OpenGLRenderer;
+class Renderer;
 class Game;
 
 class Player {
@@ -57,7 +57,7 @@ protected:
 
 class LocalPlayer : public Player {
 public:
-  LocalPlayer(id_t playerID, const glm::vec3 &color, OpenGLRenderer *renderer);
+  LocalPlayer(id_t playerID, const glm::vec3 &color, Renderer *renderer);
   virtual ~LocalPlayer();
 
   virtual bool update(tick_t tick);
@@ -81,7 +81,7 @@ public:
 private:
   void setSelection(const std::set<id_t> &new_selection);
 
-  OpenGLRenderer *renderer_;
+  Renderer *renderer_;
   // The tick the current actions will be executed on
   tick_t targetTick_;
   tick_t doneTick_;

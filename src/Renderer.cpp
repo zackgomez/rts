@@ -20,9 +20,10 @@
 
 namespace rts {
 
-LoggerPtr OpenGLRenderer::logger_;
+LoggerPtr Renderer::logger_;
 
-OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution) :
+Renderer::Renderer(const glm::vec2 &resolution) :
+  game_(NULL),
   player_(NULL),
   cameraPos_(0.f, 5.f, 0.f),
   resolution_(resolution),
@@ -66,13 +67,13 @@ OpenGLRenderer::OpenGLRenderer(const glm::vec2 &resolution) :
   setMeshTransform(meshes_["basic_bullet"], projMeshTrans);
 }
 
-OpenGLRenderer::~OpenGLRenderer() {
+Renderer::~Renderer() {
   for(Effect *effect : effects_) {
     delete effect;
   }
 }
 
-void OpenGLRenderer::renderMessages(const std::set<Message> &messages) {
+void Renderer::renderMessages(const std::set<Message> &messages) {
   for (const Message &msg : messages) {
     if (msg["type"] == MessageTypes::ATTACK) {
       for (Json::Value _victim : msg["to"]) {
@@ -83,7 +84,7 @@ void OpenGLRenderer::renderMessages(const std::set<Message> &messages) {
   }
 }
 
-void OpenGLRenderer::renderEntity(const Entity *entity) {
+void Renderer::renderEntity(const Entity *entity) {
   glm::vec3 pos = entity->getPosition(simdt_);
   float rotAngle = entity->getAngle(simdt_);
   const std::string &type = entity->getType();
@@ -116,14 +117,14 @@ void OpenGLRenderer::renderEntity(const Entity *entity) {
   }
 }
 
-glm::vec2 OpenGLRenderer::convertUIPos(const glm::vec2 &pos) {
+glm::vec2 Renderer::convertUIPos(const glm::vec2 &pos) {
   return glm::vec2(
       pos.x < 0 ? pos.x + resolution_.x : pos.x,
       pos.y < 0 ? pos.y + resolution_.y : pos.y
   );
 }
 
-void OpenGLRenderer::renderUI() {
+void Renderer::renderUI() {
   glDisable(GL_DEPTH_TEST);
 
   // TODO(connor) there may be a better way to do this
@@ -160,7 +161,7 @@ void OpenGLRenderer::renderUI() {
   glEnable(GL_DEPTH_TEST);
 }
 
-void OpenGLRenderer::renderMap(const Map *map) {
+void Renderer::renderMap(const Map *map) {
   const glm::vec2 &mapSize = map->getSize();
 
   const glm::vec4 mapColor(0.25, 0.2, 0.15, 1.0);
@@ -200,7 +201,7 @@ void OpenGLRenderer::renderMap(const Map *map) {
 
 }
 
-void OpenGLRenderer::startRender(float dt) {
+void Renderer::startRender(float dt) {
   simdt_ = dt;
   if (lastRender_)
     renderdt_ = (SDL_GetTicks() - lastRender_) / 1000.f;
@@ -252,7 +253,7 @@ void OpenGLRenderer::startRender(float dt) {
   lastRender_ = SDL_GetTicks();
 }
 
-void OpenGLRenderer::renderActor(const Actor *actor, glm::mat4 transform) {
+void Renderer::renderActor(const Actor *actor, glm::mat4 transform) {
   const Player *player = game_->getPlayer(actor->getPlayerID());
   glm::vec3 pcolor = player ? player->getColor() : glm::vec3(0.f);
   // if selected draw as green
@@ -309,7 +310,7 @@ void OpenGLRenderer::renderActor(const Actor *actor, glm::mat4 transform) {
   glEnable(GL_DEPTH_TEST);
 }
 
-void OpenGLRenderer::endRender() {
+void Renderer::endRender() {
   glm::mat4 fullmat =
     getProjectionStack().current() * getViewStack().current();
   // Render drag selection if it exists
@@ -332,7 +333,7 @@ void OpenGLRenderer::endRender() {
   SDL_GL_SwapBuffers();
 }
 
-void OpenGLRenderer::updateCamera(const glm::vec3 &delta) {
+void Renderer::updateCamera(const glm::vec3 &delta) {
   cameraPos_ += delta;
 
   glm::vec2 mapSize = game_->getMap()->getSize() / 2.f;
@@ -342,7 +343,7 @@ void OpenGLRenderer::updateCamera(const glm::vec3 &delta) {
                  glm::vec3(mapSize.x, 20.f, mapSize.y));
 }
 
-id_t OpenGLRenderer::selectEntity(const glm::vec2 &screenCoord) const {
+id_t Renderer::selectEntity(const glm::vec2 &screenCoord) const {
   glm::vec2 pos = glm::vec2(screenToNDC(screenCoord));
 
   id_t eid = NO_ENTITY;
@@ -362,7 +363,7 @@ id_t OpenGLRenderer::selectEntity(const glm::vec2 &screenCoord) const {
   return eid;
 }
 
-std::set<id_t> OpenGLRenderer::selectEntities(
+std::set<id_t> Renderer::selectEntities(
   const glm::vec3 &start, const glm::vec3 &end, id_t pid) const {
   assertPid(pid);
   glm::mat4 fullMatrix =
@@ -389,23 +390,23 @@ std::set<id_t> OpenGLRenderer::selectEntities(
   return ret;
 }
 
-void OpenGLRenderer::setSelection(const std::set<id_t> &select) {
+void Renderer::setSelection(const std::set<id_t> &select) {
   selection_ = select;
 }
 
-void OpenGLRenderer::highlight(const glm::vec2 &mapCoord) {
+void Renderer::highlight(const glm::vec2 &mapCoord) {
   MapHighlight hl;
   hl.pos = mapCoord;
   hl.remaining = 0.5f;
   highlights_.push_back(hl);
 }
 
-void OpenGLRenderer::setDragRect(const glm::vec3 &s, const glm::vec3 &e) {
+void Renderer::setDragRect(const glm::vec3 &s, const glm::vec3 &e) {
   dragStart_ = s;
   dragEnd_ = e;
 }
 
-glm::vec3 OpenGLRenderer::screenToTerrain(const glm::vec2 &screenCoord) const {
+glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
   glm::vec4 ndc = glm::vec4(screenToNDC(screenCoord), 1.f);
 
   ndc = glm::inverse(getProjectionStack().current() * getViewStack().current()) * ndc;
@@ -425,7 +426,7 @@ glm::vec3 OpenGLRenderer::screenToTerrain(const glm::vec2 &screenCoord) const {
   return glm::vec3(terrain);
 }
 
-glm::vec3 OpenGLRenderer::screenToNDC(const glm::vec2 &screen) const {
+glm::vec3 Renderer::screenToNDC(const glm::vec2 &screen) const {
   float z;
   glReadPixels(screen.x, resolution_.y - screen.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
   return glm::vec3(

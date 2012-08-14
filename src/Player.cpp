@@ -9,7 +9,7 @@
 namespace rts {
 
 LocalPlayer::LocalPlayer(id_t playerID, const glm::vec3 &color,
-    OpenGLRenderer *renderer) :
+    Renderer *renderer) :
   Player(playerID, color),
   renderer_(renderer),
   targetTick_(0),

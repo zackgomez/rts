@@ -28,7 +28,7 @@ LoggerPtr logger;
 
 LocalPlayer *player;
 Game *game;
-OpenGLRenderer *renderer;
+Renderer *renderer;
 
 // TODO take this in as an argument!
 const std::string port = "27465";
@@ -147,7 +147,7 @@ std::vector<Player *> getPlayers(const std::vector<std::string> &args) {
 
   // Now set up local player
   glm::vec2 res = vec2Param("window.resolution");
-  renderer = new OpenGLRenderer(res);
+  renderer = new Renderer(res);
 
   player = new LocalPlayer(playerID, getPlayerColor(playerID), renderer);
   renderer->setLocalPlayer(player);

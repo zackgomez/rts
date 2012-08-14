@@ -12,38 +12,20 @@ class Map;
 class LocalPlayer;
 class Game;
 class Actor;
-
-class Renderer {
-public:
-  Renderer() : game_(NULL) { }
-  virtual ~Renderer() { }
-
-  void setGame(const Game *game) {
-    game_ = game;
-  }
-
-  // Called before anything other render* functions are called
-  virtual void renderMessages(const std::set<Message> &messages) = 0;
-  virtual void renderEntity(const Entity *entity) = 0;
-  virtual void renderMap(const Map *map) = 0;
-
-  virtual void startRender(float dt) = 0;
-  virtual void endRender() = 0;
-
-protected:
-  const Game *game_;
-};
-
 struct MapHighlight;
 class Effect;
 
-class OpenGLRenderer : public Renderer {
+class Renderer {
 public:
-  OpenGLRenderer(const glm::vec2 &resolution);
-  ~OpenGLRenderer();
+  Renderer(const glm::vec2 &resolution);
+  ~Renderer();
 
   void setLocalPlayer(const LocalPlayer *p) {
     player_ = p;
+  }
+
+  void setGame(const Game *game) {
+    game_ = game;
   }
 
   virtual void renderMessages(const std::set<Message> &messages);
@@ -82,6 +64,7 @@ private:
 
   // cached messages
   std::set<Message> messages_;
+  const Game *game_;
   const LocalPlayer *player_;
 
   glm::vec3 cameraPos_;
