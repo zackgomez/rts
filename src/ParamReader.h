@@ -1,11 +1,11 @@
 #pragma once
 #include <map>
-#include <json/json.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <json/json.h>
+#include <glm/glm.hpp>
 #include "Logger.h"
-#include "glm.h"
 
 // Global convenience methods
 float fltParam(const std::string &param);

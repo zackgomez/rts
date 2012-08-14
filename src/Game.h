@@ -1,5 +1,5 @@
 #pragma once
-#include "glm.h"
+#include <glm/glm.hpp>
 #include <set>
 #include <vector>
 #include <mutex>

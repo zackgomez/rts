@@ -1,10 +1,10 @@
 #pragma once
-#include <SDL/SDL.h>
-#include "Entity.h"
 #include <queue>
+#include <SDL/SDL.h>
 #include <json/json.h>
-#include "glm.h"
+#include <glm/glm.hpp>
 #include "PlayerAction.h"
+#include "Entity.h"
 #include "Logger.h"
 
 namespace rts {

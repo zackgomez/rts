@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
+#include <glm/glm.hpp>
 #include "Message.h"
-#include "glm.h"
 
 namespace rts {
 

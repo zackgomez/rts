@@ -1,6 +1,6 @@
 #pragma once
 #include <stack>
-#include "glm.h"
+#include <glm/glm.hpp>
 
 class MatrixStack {
 public:

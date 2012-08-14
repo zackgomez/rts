@@ -1,6 +1,5 @@
 #include <boost/algorithm/string.hpp>
 #include "ParamReader.h"
-#include "glm.h"
 #include "util.h"
 
 ParamReader::ParamReader() {

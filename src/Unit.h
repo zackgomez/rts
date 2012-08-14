@@ -1,6 +1,6 @@
 #pragma once
+#include <glm/glm.hpp>
 #include "Actor.h"
-#include "glm.h"
 #include "Logger.h"
 
 namespace rts {

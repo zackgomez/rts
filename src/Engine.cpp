@@ -2,6 +2,7 @@
 #include <SDL/SDL.h>
 #include <GL/glew.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include "Logger.h"
 #include "ParamReader.h"
 #include "stb_image.c"

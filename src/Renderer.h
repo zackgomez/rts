@@ -1,7 +1,7 @@
 #pragma once
-#include <GL/glew.h>
 #include <map>
-#include "glm.h"
+#include <GL/glew.h>
+#include <glm/glm.hpp>
 #include "Logger.h"
 #include "Entity.h"
 #include "Engine.h"

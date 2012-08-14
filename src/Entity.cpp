@@ -1,5 +1,6 @@
 #include "Entity.h"
 #include "ParamReader.h"
+#include "util.h"
 
 namespace rts {
 

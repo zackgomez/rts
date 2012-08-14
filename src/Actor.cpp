@@ -1,6 +1,5 @@
 #include "Actor.h"
 #include "ParamReader.h"
-#include "glm.h"
 #include "MessageHub.h"
 #include "Unit.h"
 #include "Projectile.h"

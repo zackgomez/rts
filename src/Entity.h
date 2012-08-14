@@ -5,8 +5,9 @@
 #include <string>
 #include <math.h>
 #include <json/json.h>
-#include "glm.h"
+#include <glm/glm.hpp>
 #include "Message.h"
+#include "Types.h"
 
 namespace rts {
 const id_t NO_ENTITY = 0;

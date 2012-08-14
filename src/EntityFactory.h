@@ -1,7 +1,8 @@
 #pragma once
 #include <map>
 #include <string>
-#include "glm.h"
+#include <glm/glm.hpp>
+#include <json/json.h>
 #include "Logger.h"
 
 namespace rts {

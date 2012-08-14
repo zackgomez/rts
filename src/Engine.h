@@ -1,7 +1,7 @@
 #pragma once
 #include <GL/glew.h>
 #include <string>
-#include "glm.h"
+#include <glm/glm.hpp>
 #include "MatrixStack.h"
 
 struct Mesh;
