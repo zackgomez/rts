@@ -7,7 +7,7 @@
 struct Mesh;
 
 
-int initEngine(const glm::vec2 &resolution);
+void initEngine(const glm::vec2 &resolution);
 void teardownEngine();
 
 MatrixStack& getViewStack();

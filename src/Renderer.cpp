@@ -34,10 +34,7 @@ Renderer::Renderer(const glm::vec2 &resolution) :
     logger_ = Logger::getLogger("OGLRenderer");
   }
 
-  if (!initEngine(resolution_)) {
-    logger_->fatal() << "Unable to initialize graphics resources\n";
-    exit(1);
-  }
+  initEngine(resolution_);
   // Initialize font manager, if necessary
   FontManager::get();
 

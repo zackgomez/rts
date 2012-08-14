@@ -5,6 +5,7 @@
 #include "Logger.h"
 #include "ParamReader.h"
 #include "stb_image.c"
+#include "Exception.h"
 
 static bool initialized = false;
 static LoggerPtr logger;
@@ -33,14 +34,14 @@ struct Mesh {
 };
 
 // Static helper functions
-static int loadResources();
+static void loadResources();
 static int loadVerts(const std::string &filename,
                      vert_p4n4t2 **verts, size_t *nverts);
 
-int initEngine(const glm::vec2 &resolution) {
+void initEngine(const glm::vec2 &resolution) {
   // TODO(zack) check to see if we're changing resolution
   if (initialized) {
-    return 1;
+    return;
   }
 
   screenRes = resolution;
@@ -50,9 +51,9 @@ int initEngine(const glm::vec2 &resolution) {
   }
 
   if (SDL_Init(SDL_INIT_VIDEO)) {
-    logger->fatal() << "Couldn't initialize SDL: " <<
-                    SDL_GetError() << '\n';
-    return 0;
+    std::stringstream ss; ss << "Couldn't initialize SDL: "
+      << SDL_GetError() << '\n';
+    throw engine_exception(ss.str());
   }
 
   int flags = SDL_OPENGL;
@@ -60,29 +61,24 @@ int initEngine(const glm::vec2 &resolution) {
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_Surface *screen = SDL_SetVideoMode(resolution.x, resolution.y, 32, flags);
   if (screen == NULL) {
-    logger->fatal() << "Couldn't set video mode: " << SDL_GetError() << '\n';
-    return 0;
+    std::stringstream ss; ss << "Couldn't set video mode: " << SDL_GetError()
+      << '\n';
+    throw engine_exception(ss.str());
   }
   GLenum err = glewInit();
   if (err != GLEW_OK) {
-    logger->fatal() <<  "Error: " << glewGetErrorString(err) << '\n';
-    return 0;
+    std::stringstream ss; ss <<  "Error: " << glewGetErrorString(err) << '\n';
+    throw engine_exception(ss.str());
   }
 
   logger->info() << "GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << '\n';
 
   SDL_WM_SetCaption((strParam("game.name") + "  BUILT  " __DATE__ " " __TIME__).c_str(), "rts");
   //SDL_WM_GrabInput(SDL_GRAB_ON);
-
+  
   initialized = true;
-
-  if (!loadResources()) {
-    logger->fatal() << "Unable to load resources, bailing...\n";
-    return 0;
-  }
-
-  // success
-  return 1;
+  
+  loadResources();
 }
 
 void teardownEngine() {
@@ -151,7 +147,8 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m) {
   GLuint program;
   glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*) &program);
   if (!program) {
-    logger->warning() << "No active program on call to " << __FUNCTION__ << "\n";
+    logger->warning() << "No active program on call to " << __FUNCTION__
+      << "\n";
     return;
   }
   const glm::mat4 projMatrix = projStack.current();
@@ -318,9 +315,11 @@ GLuint loadShader(GLenum type, const std::string &filename) {
       break;
     }
 
-    fprintf(stderr, "Compile failure in %s shader:\n%s\n", strShaderType, strInfoLog);
+    std::stringstream ss;
+    ss << "Compile failure in " << strShaderType << " shader:\n"
+      << strInfoLog << '\n';
     delete[] strInfoLog;
-    return 0;
+    throw engine_exception(ss.str());
   }
 
   return shader;
@@ -343,8 +342,9 @@ GLuint linkProgram(GLuint vert, GLuint frag) {
     GLchar *strInfoLog = new GLchar[infoLogLength + 1];
     glGetProgramInfoLog(program, infoLogLength, NULL, strInfoLog);
     fprintf(stderr, "Linker failure: %s\n", strInfoLog);
+    std::stringstream ss; ss << "Linker Failure: " << strInfoLog << '\n';
     delete[] strInfoLog;
-    return 0;
+    throw engine_exception(ss.str());
   }
 
   glDetachShader(program, vert);
@@ -368,9 +368,7 @@ GLuint makeTexture(const std::string &filename) {
   GLuint texture;
 
   if (!pixels) {
-    // TODO(zack) make this throw an exception
-    logger->warning() << "Unable to load texture from " << filename << "\n";
-    return 0;
+    throw engine_exception("Unable to load texture from " + filename);
   }
 
   glGenTextures(1, &texture);
@@ -427,7 +425,7 @@ void setMeshTransform(Mesh *mesh, const glm::mat4 &transform) {
 
 // -------- STATIC FUNCTIONS ---------
 
-static int loadResources() {
+static void loadResources() {
   const float rectPositions[] = {
     0.5, 0.5, 0.0f, 1.0f,
     0.5, -0.5, 0.0f, 1.0f,
@@ -443,8 +441,6 @@ static int loadResources() {
   // Create solid color program for renderRectangleColor
   resources.colorProgram = loadProgram("shaders/color.v.glsl", "shaders/color.f.glsl");
   resources.texProgram = loadProgram("shaders/texsimple.v.glsl", "shaders/texsimple.f.glsl");
-
-  return 1;
 }
 
 struct facevert {

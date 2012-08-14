@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include <exception>
+#include "Exception.h"
 
 /*
  * A variation of assert that throws an exception instead of calling abort.
@@ -15,28 +15,3 @@
     std::string() + __FILE__ ":" S__LINE__ " " #condition " - " + message)
 
 void __invariant(bool condition, const std::string &message);
-
-class exception_with_trace : public std::exception {
-public:
-  exception_with_trace(const std::string &msg);
-
-  virtual const char *what() const throw();
-
-private:
-  std::string msg_;
-};
-
-class file_exception : public exception_with_trace {
-public:
-  file_exception(const std::string &msg) :
-    exception_with_trace(msg) {
-  }
-};
-
-// Thrown from invariant
-class violation_exception : public exception_with_trace {
-public:
-  violation_exception(const std::string &msg) :
-    exception_with_trace(msg) {
-  }
-};
