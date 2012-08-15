@@ -140,6 +140,21 @@ void Renderer::renderUI() {
   drawRect(pos, size, vec4Param("ui.reqdisplay.bgcolor"));
   FontManager::get()->drawString(ss.str(), pos, height);
 
+  // Victory points
+  pos = convertUIPos(vec2Param("ui.vicdisplay.pos"));
+  size = vec2Param("ui.vicdisplay.size");
+  height = fltParam("ui.vicdisplay.fontHeight");
+  // TODO(connor) this should probably iterate over teams, not players, but we
+  // dont have teams yet..
+  for (auto &player : game_->getPlayers())
+  {
+    ss.str("");
+    ss << (int)game_->getResources(player->getPlayerID()).victory_points;
+    drawRect(pos, size, glm::vec4(player->getColor(), 1));
+    FontManager::get()->drawString(ss.str(), pos, height);
+    pos.x += size.x * 2.0;
+  }
+
   // minimap underlay
   pos = convertUIPos(vec2Param("ui.minimap.pos"));
   size = vec2Param("ui.minimap.dim");

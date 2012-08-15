@@ -54,6 +54,7 @@ public:
 
   const Entity * getEntity(id_t eid) const;
   const Player * getPlayer(id_t pid) const;
+  const std::vector<Player *>& getPlayers() const { return players_; }
   const PlayerResources& getResources(id_t pid) const;
 
   // Has to be inline, that sucks
@@ -107,6 +108,7 @@ protected:
 
 struct PlayerResources {
   float requisition;
+  float victory_points;
 };
 
 }; // namespace rts

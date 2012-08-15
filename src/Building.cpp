@@ -21,12 +21,21 @@ void Building::handleMessage(const Message &msg) {
 void Building::update(float dt) {
   Actor::update(dt);
 
-  // Building generates requisition
-  MessageHub::get()->sendResourceMessage(
-    getID(),
-    getPlayerID(),
-    param("reqGen") * dt
-  );
+  // Building generates resources
+  if (hasParam("reqGen"))
+    MessageHub::get()->sendResourceMessage(
+      getID(),
+      getPlayerID(),
+      ResourceTypes::REQUISITION,
+      param("reqGen") * dt
+    );
+  if (hasParam("victoryGen"))
+    MessageHub::get()->sendResourceMessage(
+      getID(),
+      getPlayerID(),
+      ResourceTypes::VICTORY,
+      param("victoryGen") * dt
+    );
 }
 
 bool Building::needsRemoval() const {

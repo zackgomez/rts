@@ -24,10 +24,11 @@
   {
     "meshes"   :
     {
-      "unit"         : "models/soldier.obj",
-      "melee_unit"   : "models/melee_unit.obj",
-      "building"     : "models/building.obj",
-      "basic_bullet" : "models/projectile.obj"
+      "unit"          : "models/soldier.obj",
+      "melee_unit"    : "models/melee_unit.obj",
+      "building"      : "models/building.obj",
+      "basic_bullet"  : "models/projectile.obj",
+      "victory_point" : "models/vic_point.obj"
     },
     "textures" :
     {
@@ -122,6 +123,16 @@
     "reqGen" : 1.0
   },
 
+  "victory_point" :
+  {
+    "model"      : "victory_point",
+    "radius"     : 1.0,
+    "height"     : 2.0,
+    "health"     : 100.0,
+    "prod"       : [],
+    "victoryGen" : 1.0
+  },
+
   "colors" :
   {
     "player1" : [0.0, 0.5, 0.5],
@@ -186,6 +197,12 @@
       "size"        : [150, 50],
       "fontHeight" : 32.0,
       "bgcolor"    : [0.4, 0.4, 0.4, 1.0]
+    },
+    "vicdisplay" :
+    {
+      "pos"        : [600, 0],
+      "size"       : [70, 50],
+      "fontHeight" : 32.0
     }
   },
 

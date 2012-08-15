@@ -33,6 +33,13 @@ void Map::init() {
   buildingMsg["entity_class"] = Building::TYPE;
   buildingMsg["entity_name"] = "building";
 
+  Message vpMsg;
+  vpMsg["to"] = toJson(GAME_ID);
+  vpMsg["from"] = toJson(GAME_ID);
+  vpMsg["type"] = MessageTypes::SPAWN_ENTITY;
+  vpMsg["entity_class"] = Building::TYPE;
+  vpMsg["entity_name"] = "victory_point";
+
   for (id_t pid = 1; pid <= 2; pid++) {
     glm::vec3 pos(0.f, 0.0f, 0.f);
     float z = pid == 1 ? 8.f : -8.f;
@@ -48,6 +55,11 @@ void Map::init() {
     buildingMsg["entity_pid"] = toJson(pid);
     buildingMsg["entity_pos"] = toJson(glm::vec3(pos.x, pos.y, z));
     MessageHub::get()->sendMessage(buildingMsg);
+
+    pos.x -= 3.f;
+    vpMsg["entity_pid"] = toJson(pid);
+    vpMsg["entity_pos"] = toJson(glm::vec3(pos.x, pos.y, z));
+    MessageHub::get()->sendMessage(vpMsg);
   }
 }
 

@@ -198,10 +198,15 @@ void Game::handleMessage(const Message &msg) {
   } else if (msg["type"] == MessageTypes::ADD_RESOURCE) {
     invariant(msg.isMember("pid"), "malformed ADD_RESOURCE message");
     invariant(msg.isMember("amount"), "malformed ADD_RESOURCE message");
+    invariant(msg.isMember("resource"), "malformed ADD_RESOURCE message");
     id_t pid = toID(msg["pid"]);
     invariant(getPlayer(pid), "unknown player for ADD_RESOURCE message");
     float amount = msg["amount"].asFloat();
-    resources_[pid].requisition += amount;
+    if (msg["resource"] == ResourceTypes::REQUISITION) {
+      resources_[pid].requisition += amount;
+    } else if (msg["resource"] == ResourceTypes::VICTORY) {
+      resources_[pid].victory_points += amount;
+    }
   } else {
     logger_->warning() << "Game received unknown message type: " << msg;
     // No other work, if unknown message

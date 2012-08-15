@@ -19,7 +19,8 @@ public:
   void sendMessage(const Message &msg);
 
   void sendRemovalMessage(const Entity *e);
-  void sendResourceMessage(id_t from, id_t pid, float amount);
+  void sendResourceMessage(id_t from, id_t pid, const std::string &resource,
+      float amount);
 
   // Returns the entity that scores the LOWEST with the given scoring function.
   // Scoring function should have signature float scorer(const Entity *);

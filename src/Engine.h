@@ -6,7 +6,6 @@
 
 struct Mesh;
 
-
 void initEngine(const glm::vec2 &resolution);
 void teardownEngine();
 
