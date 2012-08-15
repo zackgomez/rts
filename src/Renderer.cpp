@@ -12,6 +12,7 @@
 #include "Game.h"
 #include "Unit.h"
 #include "Building.h"
+#include "ResourceManager.h"
 #include "ParamReader.h"
 #include "Projectile.h"
 #include "Player.h"
@@ -41,30 +42,26 @@ Renderer::Renderer(const glm::vec2 &resolution) :
   // Load resources
   mapProgram_ = loadProgram("shaders/map.v.glsl", "shaders/map.f.glsl");
   meshProgram_ = loadProgram("shaders/unit.v.glsl", "shaders/unit.f.glsl");
-  // TODO(zack) read these and the transforms from params
-  meshes_["unit"] = loadMesh("models/soldier.obj");
-  meshes_["melee_unit"] = loadMesh("models/melee_unit.obj");
-  meshes_["building"] = loadMesh("models/building.obj");
-  meshes_["basic_bullet"] = loadMesh("models/projectile.obj");
+  ResourceManager::get()->loadResources();
+  
   // unit model is based at 0, height 1, translate to center of model
   glm::mat4 unitMeshTrans = glm::scale(glm::mat4(1.f), glm::vec3(1, 0.5f, 1));
-  setMeshTransform(meshes_["unit"], unitMeshTrans);
+  setMeshTransform(ResourceManager::get()->getMesh("unit"), unitMeshTrans);
   setMeshTransform(
-    meshes_["melee_unit"],
+    ResourceManager::get()->getMesh("melee_unit"),
     glm::scale(unitMeshTrans, glm::vec3(2.f))
   );
 
-  // TODO(zack) resource manager or something
-  textures_["minimap"] = makeTexture(strParam("ui.minimap.image"));
-  textures_["unitinfo"] = makeTexture(strParam("ui.unitinfo.image"));
-  textures_["topbar"] = makeTexture(strParam("ui.topbar.image"));
-
   glm::mat4 projMeshTrans =
     glm::rotate(glm::mat4(1.f), 90.f, glm::vec3(1, 0, 0));
-  setMeshTransform(meshes_["basic_bullet"], projMeshTrans);
+  setMeshTransform(
+    ResourceManager::get()->getMesh("basic_bullet"), 
+    projMeshTrans
+  );
 }
 
 Renderer::~Renderer() {
+  ResourceManager::get()->unloadResources();
   for(Effect *effect : effects_) {
     delete effect;
   }
@@ -106,9 +103,8 @@ void Renderer::renderEntity(const Entity *entity) {
     GLuint lightPosUniform = glGetUniformLocation(meshProgram_, "lightPos");
     glUniform4fv(colorUniform, 1, glm::value_ptr(color));
     glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
-    invariant(meshes_.find(entity->getName()) != meshes_.end(),
-              "cannot find mesh for entity " + entity->getName());
-    renderMesh(transform, meshes_[entity->getName()]);
+    Mesh * mesh = ResourceManager::get()->getMesh(entity->getName());
+    renderMesh(transform, mesh);
   } else {
     logger_->warning() << "Unable to render entity " << entity->getName() << '\n';
   }
@@ -131,7 +127,8 @@ void Renderer::renderUI() {
   // top bar:
   glm::vec2 pos = convertUIPos(vec2Param("ui.topbar.pos"));
   glm::vec2 size = vec2Param("ui.topbar.dim");
-  GLuint tex = textures_["topbar"];
+  GLuint tex = 
+    ResourceManager::get()->getTexture(strParam("ui.topbar.texture"));
   drawTexture(pos, size, tex);
 
   // Requestion display
@@ -146,13 +143,13 @@ void Renderer::renderUI() {
   // minimap underlay
   pos = convertUIPos(vec2Param("ui.minimap.pos"));
   size = vec2Param("ui.minimap.dim");
-  tex = textures_["minimap"];
+  tex = ResourceManager::get()->getTexture(strParam("ui.minimap.texture"));
   drawTexture(pos, size, tex);
 
   // unit info underlay:
   pos = convertUIPos(vec2Param("ui.unitinfo.pos"));
   size = vec2Param("ui.unitinfo.dim");
-  tex = textures_["unitinfo"];
+  tex = ResourceManager::get()->getTexture(strParam("ui.unitinfo.texture"));
   drawTexture(pos, size, tex);
 
   glEnable(GL_DEPTH_TEST);
@@ -266,9 +263,8 @@ void Renderer::renderActor(const Actor *actor, glm::mat4 transform) {
   GLuint lightPosUniform = glGetUniformLocation(meshProgram_, "lightPos");
   glUniform4fv(colorUniform, 1, glm::value_ptr(color));
   glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
-  invariant(meshes_.find(name) != meshes_.end(),
-            "missing mesh for actor " + name);
-  renderMesh(transform, meshes_[name]);
+  Mesh * mesh = ResourceManager::get()->getMesh(name);
+  renderMesh(transform, mesh);
 
   glm::vec4 ndc = getProjectionStack().current() * getViewStack().current() *
                   transform * glm::vec4(0, 0, 0, 1);

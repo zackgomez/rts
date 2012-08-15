@@ -79,8 +79,6 @@ private:
   // TODO(zack) shader map
   GLuint mapProgram_;
   GLuint meshProgram_;
-  std::map<std::string, Mesh *> meshes_;
-  std::map<std::string, GLuint> textures_;
 
   std::map<const Entity *, glm::vec3> ndcCoords_;
   std::set<id_t> selection_;

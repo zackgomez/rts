@@ -20,6 +20,23 @@
     "dropChance"      : 0.05
   },
 
+  "resources" :
+  {
+    "meshes"   :
+    {
+      "unit"         : "models/soldier.obj",
+      "melee_unit"   : "models/melee_unit.obj",
+      "building"     : "models/building.obj",
+      "basic_bullet" : "models/projectile.obj"
+    },
+    "textures" :
+    {
+      "minimap"    : "images/UI/minimap_underlay.png",
+      "unit_panel" : "images/UI/actor_underlay.png",
+      "topbar"     : "images/UI/top_bar_1280.png"
+    }
+  },
+
   "global" :
   {
     // time after melee attacks before unit can ranged attack again
@@ -28,6 +45,7 @@
 
   "unit" :
   {
+    "model"        : "unit",
     "speed"        : 3.0,
     "turnRate"     : 800.0,
     "health"       : 100.0,
@@ -53,6 +71,7 @@
   "basic_bullet" :
   {
     // projectile params
+    "model"  : "basic_bullet",
     "speed"  : 10.0,
     "radius" : 0.3,
     "damage" : 10.0,
@@ -61,6 +80,7 @@
 
   "melee_unit" :
   {
+    "melee_unit"  : "melee_unit",
     "speed"       : 4.5,
     "turnRate"    : 800.0,
     "health"      : 50.0,
@@ -94,6 +114,7 @@
 
   "building" :
   {
+    "model"  : "building",
     "radius" : 1.0,
     "height" : 2.0,
     "health" : 700.0,
@@ -143,19 +164,19 @@
   {
     "minimap" :
     {
-      "image" : "images/UI/minimap_underlay.png",
+      "texture" : "minimap",
       "pos"   : [0, -300],
       "dim"   : [300, 300]
     },
     "unitinfo" :
     {
-      "image" : "images/UI/actor_underlay.png",
+      "texture" : "unit_panel",
       "pos"   : [-400, -300],
       "dim"   : [400, 300]
     },
     "topbar" :
     {
-      "image" : "images/UI/top_bar_1280.png",
+      "texture" : "topbar",
       "pos"   : [0, 0],
       "dim"   : [1280, 50]
     },

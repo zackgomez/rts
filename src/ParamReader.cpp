@@ -52,10 +52,7 @@ for (auto& child : param_split) {
 
 Json::Value ParamReader::getParam(const std::string &param) const {
   Json::Value val = getParamHelper(param);
-  if (val.isNull()) {
-    logger_->fatal() << "Cannot find param " << param << "\n";
-    assert(false);
-  }
+  invariant(!val.isNull(), "param not found: " + param);
   return val;
 }
 
