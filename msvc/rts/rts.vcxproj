@@ -42,7 +42,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\lib\boost_1_50_0;..\..\lib\kissnet;..\..\lib\glew-1.7.0\include;..\..\lib\SDL-1.2.15\include;..\..\lib\glm-0.9.2.7;..\..\lib\jsoncpp;..\..\lib\glew-1.7.0\include\GL;..\..\lib\stbi;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\lib\stb_truetype;..\..\lib\boost_1_50_0;..\..\lib\kissnet;..\..\lib\glew-1.7.0\include;..\..\lib\SDL-1.2.15\include;..\..\lib\glm-0.9.2.7;..\..\lib\jsoncpp;..\..\lib\glew-1.7.0\include\GL;..\..\lib\stbi;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\lib\jsoncpp;..\..\lib\SDL-1.2.15\lib\x86;..\..\lib\glew-1.7.0\lib;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
@@ -86,8 +86,9 @@
     <ClCompile Include="..\..\src\Engine.cpp" />
     <ClCompile Include="..\..\src\Entity.cpp" />
     <ClCompile Include="..\..\src\EntityFactory.cpp" />
+    <ClCompile Include="..\..\src\Exception.cpp" />
+    <ClCompile Include="..\..\src\FontManager.cpp" />
     <ClCompile Include="..\..\src\Game.cpp" />
-    <ClCompile Include="..\..\src\glm.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
     <ClCompile Include="..\..\src\Map.cpp" />
     <ClCompile Include="..\..\src\MatrixStack.cpp" />
@@ -97,6 +98,7 @@
     <ClCompile Include="..\..\src\Player.cpp" />
     <ClCompile Include="..\..\src\Projectile.cpp" />
     <ClCompile Include="..\..\src\Renderer.cpp" />
+    <ClCompile Include="..\..\src\ResourceManager.cpp" />
     <ClCompile Include="..\..\src\Types.cpp" />
     <ClCompile Include="..\..\src\Unit.cpp" />
     <ClCompile Include="..\..\src\util.cpp" />
@@ -109,8 +111,9 @@
     <ClInclude Include="..\..\src\Engine.h" />
     <ClInclude Include="..\..\src\Entity.h" />
     <ClInclude Include="..\..\src\EntityFactory.h" />
+    <ClInclude Include="..\..\src\Exception.h" />
+    <ClInclude Include="..\..\src\FontManager.h" />
     <ClInclude Include="..\..\src\Game.h" />
-    <ClInclude Include="..\..\src\glm.h" />
     <ClInclude Include="..\..\src\Logger.h" />
     <ClInclude Include="..\..\src\Map.h" />
     <ClInclude Include="..\..\src\MatrixStack.h" />
@@ -121,6 +124,7 @@
     <ClInclude Include="..\..\src\PlayerAction.h" />
     <ClInclude Include="..\..\src\Projectile.h" />
     <ClInclude Include="..\..\src\Renderer.h" />
+    <ClInclude Include="..\..\src\ResourceManager.h" />
     <ClInclude Include="..\..\src\Types.h" />
     <ClInclude Include="..\..\src\Unit.h" />
     <ClInclude Include="..\..\src\util.h" />

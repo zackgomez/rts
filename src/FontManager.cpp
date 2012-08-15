@@ -74,7 +74,7 @@ void FontManager::initialize() {
 
   glyphTexSize_ = intParam("fonts.FreeSans.texsize");
   glyphSize_ = fltParam("fonts.FreeSans.size");
-  unsigned char temp_bitmap[glyphTexSize_ * glyphTexSize_];
+  unsigned char *temp_bitmap = (unsigned char *)malloc(sizeof(char) * glyphTexSize_ * glyphTexSize_);
   stbtt_BakeFontBitmap((unsigned char*) fontstr.c_str(), 0, // font data
       glyphSize_, // font size
       temp_bitmap,
@@ -89,4 +89,5 @@ void FontManager::initialize() {
       GL_ALPHA, GL_UNSIGNED_BYTE, temp_bitmap);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  free(temp_bitmap);
 }
