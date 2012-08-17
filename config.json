@@ -67,9 +67,12 @@
     "health"       : 100.0,
     "radius"       : 0.5,
     "height"       : 1.0,
-    "buildTime"    : 1.0,
     "rangedWeapon" : "basic_rifle",
-    "meleeWeapon"  : "basic_knife"
+    "meleeWeapon"  : "basic_knife",
+    "cost" : {
+      "time" : 2.0,
+      "requisition" : 10.0
+    }
   },
 
   "basic_rifle" :
@@ -102,8 +105,11 @@
     "health"      : 50.0,
     "radius"      : 0.5,
     "height"      : 1.0,
-    "buildTime"   : 10.0,
-    "meleeWeapon" : "quick_knife"
+    "meleeWeapon" : "quick_knife",
+    "cost" : {
+      "time" : 1.5,
+      "requisition" : 7.0
+    }
   },
 
   "basic_knife" :

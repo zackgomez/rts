@@ -79,7 +79,7 @@ void Actor::enqueue(const Message &queue_order) {
   // TODO(zack) confirm that prod_name is something this Actor can produce
 
   Production prod;
-  prod.max_time = fltParam(prod_name + ".buildTime");
+  prod.max_time = fltParam(prod_name + ".cost.time");
   prod.time = prod.max_time;
   prod.name = prod_name;
   production_queue_.push(prod);

@@ -285,12 +285,21 @@ void LocalPlayer::keyPress(SDLKey key) {
           if (ent->getType() == "BUILDING") {
             std::vector<std::string> prod = arrParam(ent->getName() + ".prod");
             if (i < prod.size()) {
-              action["type"] = ActionTypes::ENQUEUE;
-              action["entity"] = toJson(*sel);
-              action["pid"] = toJson(playerID_);
-              action["prod"] = prod[i];
-              action["tick"] = toJson(targetTick_);
-              game_->addAction(playerID_, action);
+              std::string prodName = prod[i];
+              float cost = fltParam(prodName + ".cost.requisition");
+              auto &resources = game_->getResources(playerID_);
+
+              if (cost <= resources.requisition) {
+                // TODO subtract cost
+                action["type"] = ActionTypes::ENQUEUE;
+                action["entity"] = toJson(*sel);
+                action["pid"] = toJson(playerID_);
+                action["prod"] = prod[i];
+                action["tick"] = toJson(targetTick_);
+                game_->addAction(playerID_, action);
+              }
+              // TODO(zack): else send a message telling the player they
+              // don't have enough of resource X (that annoying voice...)
             }
           }
           break;
