@@ -15,6 +15,7 @@ glm::vec3 vec3Param(const std::string &param);
 glm::vec4 vec4Param(const std::string &param);
 std::string strParam(const std::string &param);
 std::vector<std::string> arrParam(const std::string &param);
+Json::Value getParam(const std::string &param);
 
 void setParam(const std::string &key, float value);
 void setParam(const std::string &key, const std::string &value);

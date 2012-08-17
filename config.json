@@ -46,6 +46,19 @@
     "defaultColor"  : [1, 1, 1]
   },
 
+  "maps" :
+  {
+    "debugMap" :
+    {
+      "size" : [25, 25],
+      "players" : 2,
+      "startingPositions" : [
+        [0, 0, 8], [0, 0, -8]
+      ],
+      "startingReq" : 100
+    }
+  },
+
   "unit" :
   {
     "model"        : "unit",

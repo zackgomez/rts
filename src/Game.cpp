@@ -70,7 +70,7 @@ void Game::start(float period) {
   }
 
   // Initialize map
-  map_->init();
+  map_->init(players_);
 
   // Game is ready to go!
   paused_ = false;

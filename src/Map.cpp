@@ -1,11 +1,19 @@
+#include <vector>
 #include "Map.h"
+#include "Player.h"
 #include "MessageHub.h"
 #include "Unit.h"
 #include "Building.h"
+#include "ParamReader.h"
 
 namespace rts {
 
-void Map::init() {
+Map::Map(const std::string &mapName) :
+  name_("maps." + mapName),
+  size_(vec2Param(name_ + ".size")) {
+}
+
+void Map::init(const std::vector<Player *> &players) {
   // TODO(zack) have it read this from a map file
   // we should also create a "base" macro that expands into a headquarters
   // building and starting hero/unit/base defenses unicorns etc
@@ -13,14 +21,29 @@ void Map::init() {
   // TODO(zack): currently these message are from the game to the game.
   // Perhaps we should create a map id
 
-  for (id_t pid = 1; pid <= 2; pid++) {
-    glm::vec3 pos(0.f, 0.0f, 0.f);
-    float z = pid == 1 ? 8.f : -8.f;
+  invariant(players.size() <= intParam(name_ + ".players"),
+      "too many players for map");
 
+  for (int i = 0; i < players.size(); i++) {
+    const Player *p = players[i];
+    id_t pid = p->getPlayerID();
+
+    // Give starting resources
+    MessageHub::get()->sendResourceMessage(
+      GAME_ID,
+      pid,
+      ResourceTypes::REQUISITION,
+      fltParam(name_ + ".startingReq")
+    );
+
+    // Spawn starting units and building
+    // TODO(zack) improve this
+    int ind = pid - 1;
+    glm::vec3 pos = toVec3(getParam(name_ + ".startingPositions")[ind]);
     for (int i = 0; i < 3; i++) {
       Json::Value params;
       params["entity_pid"] = toJson(pid);
-      params["entity_pos"] = toJson(glm::vec3(pos.x, pos.y, z));
+      params["entity_pos"] = toJson(pos);
       MessageHub::get()->sendSpawnMessage(
         GAME_ID, // from
         Unit::TYPE, // class
@@ -33,7 +56,7 @@ void Map::init() {
     pos.x -= 10.f;
     Json::Value params;
     params["entity_pid"] = toJson(pid);
-    params["entity_pos"] = toJson(glm::vec3(pos.x, pos.y, z));
+    params["entity_pos"] = toJson(pos);
     MessageHub::get()->sendSpawnMessage(
       GAME_ID,
       Building::TYPE,

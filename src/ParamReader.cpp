@@ -104,3 +104,8 @@ glm::vec4 vec4Param(const std::string &param) {
       "vec4 param not found or not correctly sized array");
   return toVec4(arr);
 }
+
+Json::Value getParam(const std::string &param) {
+  Json::Value val = ParamReader::get()->getParam(param);
+  return val;
+}
