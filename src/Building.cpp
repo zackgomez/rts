@@ -14,7 +14,8 @@ Building::Building(const std::string &name, const Json::Value &params) :
   Actor(name, params),
   capAmount_(0.f),
   capperID_(NO_ENTITY),
-  lastCappingPlayerID_(NO_PLAYER) {
+  lastCappingPlayerID_(NO_PLAYER),
+  capResetDelay_(0) {
 }
 
 void Building::handleMessage(const Message &msg) {
