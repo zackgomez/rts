@@ -27,6 +27,7 @@ void Building::handleMessage(const Message &msg) {
     invariant(getType() == Building::TYPE, "can only capture structures");
     invariant(isCappable(), "structure not capturable");
 
+    // Tells us the unit is still capping the point.
     capResetDelay_ = 0;
 
     capperID_ = toID(msg["from"]);
@@ -57,6 +58,10 @@ void Building::handleMessage(const Message &msg) {
 void Building::update(float dt) {
   Actor::update(dt);
 
+  // We need a single tick delay to see if an entity is still capturing this
+  // building. The single tick ensures that the message from the capping unit
+  // would have been sent, so if no such message was sent, the unit is no
+  // longer capping.
   capResetDelay_++;
   if (capResetDelay_ > 1) capperID_ = NO_ENTITY;
 
