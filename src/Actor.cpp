@@ -86,17 +86,17 @@ void Actor::enqueue(const Message &queue_order) {
 }
 
 void Actor::produce(const std::string &prod_name) {
-  // TODO(zack) generalize this
-  Message spawnMsg;
-  spawnMsg["type"] = MessageTypes::SPAWN_ENTITY;
-  spawnMsg["to"] = toJson(NO_ENTITY);
-  spawnMsg["from"] = toJson(getID());
-  spawnMsg["entity_class"] = Unit::TYPE;
-  spawnMsg["entity_name"] = prod_name;
-  spawnMsg["entity_pid"] = toJson(getPlayerID());
-  spawnMsg["entity_pos"] = toJson(pos_ + getDirection());
+  // TODO(zack) generalize this to also include upgrades etc
+  Json::Value params;
+  params["entity_pid"] = toJson(getPlayerID());
+  // TODO (make this a param)
+  params["entity_pos"] = toJson(pos_ + getDirection());
 
-  MessageHub::get()->sendMessage(spawnMsg);
+  MessageHub::get()->sendSpawnMessage(
+    getID(),
+    Unit::TYPE,
+    prod_name,
+    params);
 }
 
 void Actor::update(float dt) {

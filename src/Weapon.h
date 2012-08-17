@@ -2,6 +2,7 @@
 #include <string>
 #include <glm/glm.hpp>
 #include "Message.h"
+#include "Types.h"
 
 namespace rts {
 
@@ -54,11 +55,13 @@ private:
   bool hasParam(const std::string &p) const;
   bool hasStrParam(const std::string &p) const;
 
+  void sendMessage();
+
   const std::string name_;
   const Entity *owner_;
   WeaponState state_;
   float t_;
-  Message msg_;
+  id_t target_;
 };
 
 } // rts

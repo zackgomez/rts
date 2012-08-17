@@ -41,6 +41,8 @@ public:
   const std::string& getName() const {
     return name_;
   }
+  // Basically returns the class of entity, must be overriden,
+  // generally returns ClassName::TYPE
   virtual const std::string getType() const = 0;
 
   // This unit's position

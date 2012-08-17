@@ -10,7 +10,8 @@ Weapon::Weapon(const std::string &name, const Entity *owner) :
   name_(name),
   owner_(owner),
   state_(READY),
-  t_(0.f) {
+  t_(0.f),
+  target_(NO_ENTITY) {
   if (strParam("type") == "ranged") {
     invariant(hasStrParam("projectile"), "ranged weapon missing projectile");
   }
@@ -36,10 +37,8 @@ void Weapon::update(float dt) {
   switch (state_) {
   case WINDUP:
     if (t_ <= 0.f) {
-      if (!msg_.isNull()) {
-        MessageHub::get()->sendMessage(msg_);
-      }
-      msg_ = Message();
+      sendMessage();
+      target_ = NO_ENTITY;
       state_ = WINDDOWN;
       t_ += param("winddown");
     }
@@ -63,37 +62,46 @@ void Weapon::update(float dt) {
   }
 }
 
+void Weapon::sendMessage() {
+  if (target_ == NO_ENTITY) {
+    return;
+  }
+  std::string type = strParam("type");
+  invariant(type == "ranged" || type == "melee", "invalid weapon type");
+
+  if (type == "ranged") {
+    // Spawn a projectile
+    Json::Value params;
+    params["entity_pid"] = toJson(owner_->getPlayerID());
+    params["entity_pos"] = toJson(owner_->getPosition());
+    params["projectile_target"] = toJson(target_);
+    params["projectile_owner"] = toJson(owner_->getID());
+    MessageHub::get()->sendSpawnMessage(
+      owner_->getID(),
+      Projectile::TYPE,
+      strParam("projectile"),
+      params
+    );
+  } else if (type == "melee") {
+    Message msg;
+    msg["to"] = toJson(target_);
+    msg["from"] = toJson(owner_->getID());
+    msg["type"] = MessageTypes::ATTACK;
+    msg["pid"] = toJson(owner_->getPlayerID());
+    msg["damage"] = param("damage");
+    msg["damage_type"] = type;
+    MessageHub::get()->sendMessage(msg);
+  }
+}
+
 void Weapon::fire(const Entity *target) {
   state_ = WINDUP;
   t_ = param("windup");
-
-  // Can the message
-  // TODO(zack) replace with spawn entity function, can the params here then
-  msg_.clear();
-  std::string type = strParam("type");
-  invariant(type == "ranged" || type == "melee", "invalid weapon type");
-  if (type == "ranged") {
-    msg_["to"] = toJson(NO_ENTITY); // Send to game object
-    msg_["from"] = toJson(owner_->getID()); // Send to game object
-    msg_["type"] = MessageTypes::SPAWN_ENTITY;
-    msg_["entity_class"] = Projectile::TYPE;
-    msg_["entity_name"] = strParam("projectile");
-    msg_["entity_pid"] = toJson(owner_->getPlayerID());
-    msg_["entity_pos"] = toJson(owner_->getPosition());
-    msg_["projectile_target"] = toJson(target->getID());
-    msg_["projectile_owner"] = toJson(owner_->getID());
-  } else if (strParam("type") == "melee") {
-    msg_["to"] = toJson(target->getID());
-    msg_["from"] = toJson(owner_->getID()); // Send to game object
-    msg_["type"] = MessageTypes::ATTACK;
-    msg_["pid"] = toJson(owner_->getPlayerID());
-    msg_["damage"] = param("damage");
-    msg_["damage_type"] = type;
-  } // else handled by invariant
+  target_ = target->getID();
 }
 
 void Weapon::interrupt() {
-  msg_ = Message();
+  target_ = NO_ENTITY;
 }
 
 bool Weapon::canAttack(const Entity *target) const {

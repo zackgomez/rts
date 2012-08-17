@@ -181,14 +181,16 @@ void Game::handleMessage(const Message &msg) {
   invariant(msg.isMember("type"), "malformed message");
   if (msg["type"] == MessageTypes::SPAWN_ENTITY) {
     invariant(msg.isMember("entity_class"),
-              "malformed DESTROY_ENTITY message");
+              "malformed SPAWN_ENTITY message");
     invariant(msg.isMember("entity_name"),
-              "malformed DESTROY_ENTITY message");
+              "malformed SPAWN_ENTITY message");
+    invariant(msg.isMember("params"),
+              "malformed SPAWN_ENTITY message");
 
     Entity *ent = EntityFactory::get()->construct(
                     msg["entity_class"].asString(),
                     msg["entity_name"].asString(),
-                    msg);
+                    msg["params"]);
     if (ent) {
       entities_[ent->getID()] = ent;
     }

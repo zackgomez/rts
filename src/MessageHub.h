@@ -18,6 +18,8 @@ public:
   // Immediately dispatches message
   void sendMessage(const Message &msg);
 
+  void sendSpawnMessage(id_t from, const std::string &eclass,
+      const std::string &ename, const Json::Value &eparams);
   void sendRemovalMessage(const Entity *e);
   void sendResourceMessage(id_t from, id_t pid, const std::string &resource,
       float amount);
