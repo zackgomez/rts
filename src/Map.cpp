@@ -55,11 +55,17 @@ void Map::init() {
     buildingMsg["entity_pid"] = toJson(pid);
     buildingMsg["entity_pos"] = toJson(glm::vec3(pos.x, pos.y, z));
     MessageHub::get()->sendMessage(buildingMsg);
+  }
 
-    pos.x -= 3.f;
-    vpMsg["entity_pid"] = toJson(pid);
-    vpMsg["entity_pos"] = toJson(glm::vec3(pos.x, pos.y, z));
+  for (int i = 0; i < 3; i++)
+  {
+    glm::vec3 pos(0.f, 0.0f, 0.f);
+    pos.z = 0.f;
+    pos.x = (i - 1) * 8.f;
+    vpMsg["entity_pid"] = toJson(NO_PLAYER);
+    vpMsg["entity_pos"] = toJson(pos);
     MessageHub::get()->sendMessage(vpMsg);
+    pos.x += 8.f;
   }
 }
 

@@ -37,6 +37,7 @@ public:
   id_t getPlayerID() const {
     return playerID_;
   }
+
   const std::string& getName() const {
     return name_;
   }
@@ -75,6 +76,11 @@ protected:
   std::string strParam(const std::string &p) const;
   bool hasParam(const std::string &p) const;
   bool hasStrParam(const std::string &p) const;
+
+  // Used to change owners, e.g. for a capture
+  void setPlayerID(id_t pid) {
+    playerID_ = pid;
+  }
 
   glm::vec3 pos_;
   float angle_;

@@ -3,6 +3,7 @@
 #include "Renderer.h"
 #include "ParamReader.h"
 #include "Entity.h"
+#include "Building.h"
 #include "Game.h"
 #include "MessageHub.h"
 
@@ -165,7 +166,12 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button) {
         renderer_->highlight(glm::vec2(loc.x, loc.z));
 
         // Queue up action
-        action["type"] = ActionTypes::ATTACK;
+        if (entity->getType() == Building::TYPE) {
+          action["type"] = ((Building*)entity)->isCappable() ?
+            ActionTypes::CAPTURE : ActionTypes::ATTACK;
+        } else {
+          action["type"] = ActionTypes::ATTACK;
+        }
         action["entity"] = toJson(selection_);
         action["enemy_id"] = toJson(eid);
         action["pid"] = toJson(playerID_);

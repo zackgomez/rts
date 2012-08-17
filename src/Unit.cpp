@@ -4,6 +4,7 @@
 #include "ParamReader.h"
 #include "MessageHub.h"
 #include "Projectile.h"
+#include "Building.h"
 #include "Weapon.h"
 
 namespace rts {
@@ -52,6 +53,10 @@ void Unit::handleOrder(const Message &order) {
     } else if (order.isMember("target")) {
       next = new AttackMoveState(toVec3(order["target"]), this);
     }
+  } else if (order["order_type"] == OrderTypes::CAPTURE) {
+    invariant(order.isMember("enemy_id"), "capture order missing target: " +
+        order.toStyledString());
+    next = new CaptureState(toID(order["enemy_id"]), this);
   } else if (order["order_type"] == OrderTypes::STOP) {
     next = new IdleState(this);
   } else {
@@ -93,7 +98,19 @@ void Unit::update(float dt) {
 }
 
 bool Unit::canAttack(const Entity *e) const {
-  return weapon_->canAttack(e);
+  if (e->getType() == Building::TYPE) {
+    return !((Building*)e)->canCapture(getID()) && weapon_->canAttack(e);
+  } else {
+    return weapon_->canAttack(e);
+  }
+}
+
+bool Unit::canCapture(const Entity *e) const {
+  invariant(e->getType() == Building::TYPE, 
+      "capture target must be a building");
+  float dist = glm::distance(e->getPosition(), getPosition());
+  return ((Building*)e)->canCapture(getID()) && 
+    dist <= fltParam("global.captureRange");
 }
 
 bool Unit::withinRange(const Entity *e) const {
@@ -147,6 +164,25 @@ void Unit::attackTarget(const Entity *e) {
   }
 
   weapon_->fire(e);
+}
+
+void Unit::captureTarget(const Entity *e, float cap) {
+  assert(e);
+
+  invariant(e->getType() == Building::TYPE, 
+      "capture target must be a building");
+
+  id_t capperID = ((Building*)e)->getCapperID();
+  if (capperID != NO_ENTITY && capperID != getID()) return;
+
+  Message msg;
+  msg["to"] = toJson(e->getID());
+  msg["from"] = toJson(getID());
+  msg["type"] = MessageTypes::CAPTURE;
+  msg["pid"] = toJson(getPlayerID());
+  msg["cap"] = cap;
+
+  MessageHub::get()->sendMessage(msg);
 }
 
 const Entity * Unit::getTarget(id_t lastTargetID) const {
@@ -360,6 +396,48 @@ UnitState * AttackMoveState::next() {
 }
 
 UnitState * AttackMoveState::stop(UnitState *next) {
+  return next;
+}
+
+CaptureState::CaptureState(id_t targetID, Unit *unit) :
+  UnitState(unit),
+  targetID_(targetID) {
+  invariant(MessageHub::get()->getEntity(targetID_)->getType() == 
+      Building::TYPE, "capture target must be a building");
+}
+
+CaptureState::~CaptureState() {
+}
+
+void CaptureState::update(float dt) {
+  // Default to no movement
+  unit_->remainStationary();
+  const Entity *target = MessageHub::get()->getEntity(targetID_);
+  if (!target) {
+    return;
+  }
+
+  // If we can cap, do so.
+  if (unit_->canCapture(target)) {
+    unit_->captureTarget(target, dt);
+  }
+  // Otherwise move towards target
+  else {
+    unit_->moveTowards(target->getPosition(), dt);
+  }
+}
+
+UnitState * CaptureState::next() {
+  // We're done capping when the building belongs to us.
+  const Entity *target = MessageHub::get()->getEntity(targetID_);
+  if (target->getPlayerID() == unit_->getPlayerID()) {
+    return new IdleState(unit_);
+  }
+
+  return NULL;
+}
+
+UnitState * CaptureState::stop(UnitState *next) {
   return next;
 }
 }; // rts

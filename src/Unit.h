@@ -30,6 +30,8 @@ public:
   // Unit state functions
   // if the target is in range and within firing arc
   bool canAttack(const Entity *target) const;
+  // if the unit is in range
+  bool canCapture(const Entity *target) const;
   // If this the target is within firing range
   bool withinRange(const Entity *target) const;
   // Rotates to face position
@@ -40,6 +42,8 @@ public:
   void remainStationary();
   // Attacks target if possible (within range, arc, cd available)
   void attackTarget(const Entity *target);
+  // Captures target
+  void captureTarget(const Entity *target, float cap);
 
   const Entity *getTarget(id_t lastTargetID) const;
 
@@ -124,6 +128,19 @@ public:
 
 protected:
   glm::vec3 targetPos_;
+  id_t targetID_;
+};
+
+class CaptureState : public UnitState {
+public:
+  explicit CaptureState(id_t target_id, Unit *unit);
+  virtual ~CaptureState();
+
+  virtual void update(float dt);
+  virtual UnitState *stop(UnitState *next);
+  virtual UnitState * next();
+
+protected:
   id_t targetID_;
 };
 

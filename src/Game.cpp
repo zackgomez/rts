@@ -287,6 +287,11 @@ void Game::handleAction(id_t playerID, const PlayerAction &action) {
     }
 
     MessageHub::get()->sendMessage(msg);
+  } else if (action["type"] == ActionTypes::CAPTURE) {
+    msg["enemy_id"] = action["enemy_id"];
+    msg["order_type"] = OrderTypes::CAPTURE;
+
+    MessageHub::get()->sendMessage(msg);
   } else if (action["type"] == ActionTypes::STOP) {
     msg["order_type"] = OrderTypes::STOP;
 

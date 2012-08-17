@@ -20,8 +20,36 @@ public:
   virtual void update(float dt);
   virtual bool needsRemoval() const;
 
+  // Returns if unit uid can capture this building
+  bool canCapture(id_t uid) const;
+  // Returns if building is capturable at all
+  bool isCappable() const {
+    return hasParam("captureTime");
+  }
+
+  float getCap() const {
+    return capAmount_;
+  }
+  float getMaxCap() const {
+    return isCappable() ? param("captureTime") : 0.f;
+  }
+  id_t getCapperID() const {
+    return capperID_;
+  }
+  void setCapperID(id_t id) {
+    capperID_ = id;
+  }
+  id_t getLastCappingPlayerID() const {
+    return lastCappingPlayerID_;
+  }
+
 private:
   static LoggerPtr logger_;
+  float capAmount_;
+  id_t capperID_;
+  id_t lastCappingPlayerID_;
+
+  int capResetDelay_;
 
 protected:
   void enqueue(const Message &queue_order);

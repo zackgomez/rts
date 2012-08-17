@@ -41,7 +41,9 @@
   "global" :
   {
     // time after melee attacks before unit can ranged attack again
-    "meleeCooldown" : 1.00
+    "meleeCooldown" : 1.00,
+    "captureRange"  : 1.0,
+    "defaultColor"  : [1, 1, 1]
   },
 
   "unit" :
@@ -125,12 +127,13 @@
 
   "victory_point" :
   {
-    "model"      : "victory_point",
-    "radius"     : 1.0,
-    "height"     : 2.0,
-    "health"     : 100.0,
-    "prod"       : [],
-    "victoryGen" : 1.0
+    "model"       : "victory_point",
+    "radius"      : 1.0,
+    "height"      : 2.0,
+    "health"      : 100.0,
+    "prod"        : [],
+    "victoryGen"  : 1.0,
+    "captureTime" : 5.0
   },
 
   "colors" :
@@ -152,6 +155,11 @@
     {
       "dim" : [80, 5],
       "pos" : [0, 60]
+    },
+    "actor_cap" :
+    {
+      "dim" : [80, 5],
+      "pos" : [0, 50]
     },
     "minDragDistance" : 0.3
   },

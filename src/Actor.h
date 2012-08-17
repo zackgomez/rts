@@ -12,6 +12,7 @@ class Weapon;
 namespace OrderTypes {
 const std::string MOVE = "MOVE";
 const std::string ATTACK = "ATTACK";
+const std::string CAPTURE = "CAPTURE";
 const std::string ATTACK_MOVE = "AMOVE";
 const std::string STOP = "STOP";
 const std::string ENQUEUE = "ENQUEUE";

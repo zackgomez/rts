@@ -4,6 +4,7 @@
 #include "Unit.h"
 #include "Projectile.h"
 #include "Weapon.h"
+#include "Building.h"
 #include "util.h"
 
 namespace rts {

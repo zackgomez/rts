@@ -264,7 +264,8 @@ void Renderer::startRender(float dt) {
 
 void Renderer::renderActor(const Actor *actor, glm::mat4 transform) {
   const Player *player = game_->getPlayer(actor->getPlayerID());
-  glm::vec3 pcolor = player ? player->getColor() : glm::vec3(0.f);
+  glm::vec3 pcolor = player ? player->getColor() : 
+    vec3Param("global.defaultColor");
   // if selected draw as green
   glm::vec4 color = selection_.count(actor->getID())
                     ? glm::vec4(vec3Param("colors.selected"), 1.f)
@@ -286,27 +287,56 @@ void Renderer::renderActor(const Actor *actor, glm::mat4 transform) {
   ndc /= ndc.w;
   ndcCoords_[actor] = glm::vec3(ndc);
 
-  // display health bar
   glDisable(GL_DEPTH_TEST);
-  float healthFact = glm::max(0.f, actor->getHealth() / actor->getMaxHealth());
-  glm::vec2 size = vec2Param("hud.actor_health.dim");
-  glm::vec2 offset = vec2Param("hud.actor_health.pos");
-  glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution_;
-  pos += offset;
-  // Red underneath for max health
-  drawRectCenter(pos, size, glm::vec4(1, 0, 0, 1));
-  // Green on top for current health
-  pos.x -= size.x * (1.f - healthFact) / 2.f;
-  size.x *= healthFact;
-  drawRectCenter(pos, size, glm::vec4(0, 1, 0, 1));
+
+  if (actor->getType() == Building::TYPE && 
+      ((Building*)actor)->isCappable()) {
+    Building *building = (Building*)actor;
+    if (building->getCap() > 0.f && 
+        building->getCap() < building->getMaxCap()) {
+      // display health bar
+      float capFact = glm::max(0.f, building->getCap() / building->getMaxCap());
+      glm::vec2 size = vec2Param("hud.actor_cap.dim");
+      glm::vec2 offset = vec2Param("hud.actor_cap.pos");
+      glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * 
+        resolution_;
+      pos += offset;
+      // Black underneath
+      drawRectCenter(pos, size, glm::vec4(0, 0, 0, 1));
+      pos.x -= size.x * (1.f - capFact) / 2.f;
+      size.x *= capFact;
+      // Get player color: If it is owned by a player, use that color.
+      // If it it unowned, used the capping player's color.
+      glm::vec3 cap_color = pcolor;
+      if (building->getPlayerID() == NO_PLAYER) {
+        id_t pid = building->getLastCappingPlayerID();
+        cap_color = game_->getPlayer(pid)->getColor();
+      }
+      drawRectCenter(pos, size, glm::vec4(cap_color, 1));
+    }
+  } else {
+    // display health bar
+    float healthFact = glm::max(0.f, actor->getHealth() / actor->getMaxHealth());
+    glm::vec2 size = vec2Param("hud.actor_health.dim");
+    glm::vec2 offset = vec2Param("hud.actor_health.pos");
+    glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) *
+      resolution_;
+    pos += offset;
+    // Red underneath for max health
+    drawRectCenter(pos, size, glm::vec4(1, 0, 0, 1));
+    // Green on top for current health
+    pos.x -= size.x * (1.f - healthFact) / 2.f;
+    size.x *= healthFact;
+    drawRectCenter(pos, size, glm::vec4(0, 1, 0, 1));
+  }
 
   std::queue<Actor::Production> queue = actor->getProductionQueue();
   if (!queue.empty()) {
     // display production bar
     float prodFactor = 1.f - queue.front().time / queue.front().max_time;
-    size = vec2Param("hud.actor_prod.dim");
-    offset = vec2Param("hud.actor_prod.pos");
-    pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution_;
+    glm::vec2 size = vec2Param("hud.actor_prod.dim");
+    glm::vec2 offset = vec2Param("hud.actor_prod.pos");
+    glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution_;
     pos += offset;
     // Purple underneath for max time
     drawRectCenter(pos, size, glm::vec4(0.5, 0, 1, 1));
@@ -315,6 +345,7 @@ void Renderer::renderActor(const Actor *actor, glm::mat4 transform) {
     size.x *= prodFactor;
     drawRectCenter(pos, size, glm::vec4(0, 0, 1, 1));
   }
+
   glEnable(GL_DEPTH_TEST);
 }
 
