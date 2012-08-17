@@ -65,12 +65,10 @@ void Map::init(const std::vector<Player *> &players) {
     );
   }
 
-  // TODO(zack): read these positions from params
-  for (int i = 0; i < 3; i++)
+  Json::Value victoryPoints = getParam(name_ + ".victoryPoints");
+  for (int i = 0; i < victoryPoints.size(); i++)
   {
-    glm::vec3 pos(0.f, 0.0f, 0.f);
-    pos.z = 0.f;
-    pos.x = (i - 1) * 8.f;
+    glm::vec3 pos = toVec3(victoryPoints[i]);
     Json::Value params;
     params["entity_pid"] = toJson(NO_PLAYER);
     params["entity_pos"] = toJson(pos);
@@ -79,7 +77,6 @@ void Map::init(const std::vector<Player *> &players) {
         Building::TYPE,
         "victory_point",
         params);
-    pos.x += 8.f;
   }
 }
 

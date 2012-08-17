@@ -55,7 +55,13 @@
       "startingPositions" : [
         [0, 0, 8], [0, 0, -8]
       ],
-      "startingReq" : 100
+      "startingReq" : 100,
+
+      "victoryPoints" : [
+        [-8, 0, 0],
+        [0, 0, 0],
+        [8, 0, 0]
+      ]
     }
   },
 
