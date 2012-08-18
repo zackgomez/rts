@@ -28,7 +28,8 @@
       "melee_unit"    : "models/melee_unit.obj",
       "building"      : "models/building.obj",
       "basic_bullet"  : "models/projectile.obj",
-      "victory_point" : "models/vic_point.obj"
+      "victory_point" : "models/vic_point.obj",
+      "req_point"     : "models/req.obj"
     },
     "textures" :
     {
@@ -62,6 +63,12 @@
         [-8, 0, 0],
         [0, 0, 0],
         [8, 0, 0]
+      ],
+      "reqPoints" : [
+        [-4, 0, -4],
+        [-4, 0, 4],
+        [4, 0, 4],
+        [4, 0, -4]
       ]
     }
   },
@@ -159,6 +166,17 @@
     "health"      : 100.0,
     "prod"        : [],
     "victoryGen"  : 1.0,
+    "captureTime" : 5.0
+  },
+
+  "req_point" :
+  {
+    "model"       : "req_point",
+    "radius"      : 1.0,
+    "height"      : 2.0,
+    "health"      : 100.0,
+    "prod"        : [],
+    "reqGen"      : 1.0,
     "captureTime" : 5.0
   },
 

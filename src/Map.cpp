@@ -78,5 +78,18 @@ void Map::init(const std::vector<Player *> &players) {
         "victory_point",
         params);
   }
+  Json::Value reqPoints = getParam(name_ + ".reqPoints");
+  for (int i = 0; i < reqPoints.size(); i++)
+  {
+    glm::vec3 pos = toVec3(reqPoints[i]);
+    Json::Value params;
+    params["entity_pid"] = toJson(NO_PLAYER);
+    params["entity_pos"] = toJson(pos);
+    MessageHub::get()->sendSpawnMessage(
+        GAME_ID,
+        Building::TYPE,
+        "req_point",
+        params);
+  }
 }
 }; // rts
