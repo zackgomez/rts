@@ -43,6 +43,9 @@ public:
     return param("health");
   }
 
+  // Returns sight radius
+  const float getSight() const { return param("sight"); }
+
 protected:
   virtual void handleOrder(const Message &order);
 

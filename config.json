@@ -88,6 +88,7 @@
     "height"       : 1.0,
     "rangedWeapon" : "basic_rifle",
     "meleeWeapon"  : "basic_knife",
+    "sight"        : 9.0,
     "cost" : {
       "time" : 2.0,
       "requisition" : 10.0
@@ -124,6 +125,7 @@
     "health"      : 50.0,
     "radius"      : 0.5,
     "height"      : 1.0,
+    "sight"       : 9.0,
     "meleeWeapon" : "quick_knife",
     "cost" : {
       "time" : 1.5,
@@ -159,6 +161,7 @@
     "radius" : 1.0,
     "height" : 2.0,
     "health" : 700.0,
+    "sight"  : 9.0,
     "prod"   : ["unit", "melee_unit"],
     "reqGen" : 1.0
   },
@@ -169,6 +172,7 @@
     "radius"      : 1.0,
     "height"      : 2.0,
     "health"      : 100.0,
+    "sight"       : 2.0,
     "prod"        : [],
     "victoryGen"  : 1.0,
     "captureTime" : 5.0
@@ -180,6 +184,7 @@
     "radius"      : 1.0,
     "height"      : 2.0,
     "health"      : 100.0,
+    "sight"       : 2.0,
     "prod"        : [],
     "reqGen"      : 1.0,
     "captureTime" : 5.0

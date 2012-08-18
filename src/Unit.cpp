@@ -211,7 +211,7 @@ const Entity * Unit::getTarget(id_t lastTargetID) const {
           e->getPosition());
         // Only take ones that are within attack range, sort
         // by distance
-        return dist < weapon_->getMaxRange() ? dist : HUGE_VAL;
+        return dist < getSight() ? dist : HUGE_VAL;
       }
       return HUGE_VAL;
     }
@@ -320,28 +320,27 @@ void AttackState::update(float dt) {
   // Default to no movement
   unit_->remainStationary();
   const Entity *target = MessageHub::get()->getEntity(targetID_);
-  // TODO(zack) or target is out of sight
-  if (!target) {
+  // TODO(brooklyn) unit out of global sight (must be accounted for) 
+  if (!target)
     return;
-  }
 
   // If we can shoot them, do so
   if (unit_->canAttack(target)) {
     unit_->attackTarget(target);
-  }
-  // Otherwise move towards target
-  else {
+  } else { 
+    // Otherwise move towards target
     unit_->moveTowards(target->getPosition(), dt);
   }
 }
 
 UnitState * AttackState::next() {
   // We're done pursuing when the target is DEAD
-  // TODO(zack): incorporate a sight radius
   const Entity *target = MessageHub::get()->getEntity(targetID_);
-  if (!target) {
+
+  // Checks that distance between units is in sight range
+  // TODO(brooklyn) add condition to consider global sight
+  if (!target)
     return new IdleState(unit_);
-  }
 
   return NULL;
 }
@@ -369,6 +368,7 @@ void AttackMoveState::update(float dt) {
   else {
     // no movement by default
     unit_->remainStationary();
+
     // If we can shoot them, do so
     if (unit_->canAttack(targetEnt)) {
       unit_->attackTarget(targetEnt);

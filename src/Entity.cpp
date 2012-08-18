@@ -1,5 +1,6 @@
 #include "Entity.h"
 #include "ParamReader.h"
+#include "MessageHub.h"
 #include "util.h"
 
 namespace rts {
@@ -60,7 +61,7 @@ glm::vec3 Entity::getPosition(float dt) const {
     return getPosition();
   }
 
-  glm::vec3 vel = speed_ * getDirection(getAngle(dt));
+glm::vec3 vel = speed_ * getDirection(getAngle(dt));
   return pos_ + vel * dt;
 }
 
@@ -83,6 +84,12 @@ const glm::vec3 Entity::getDirection() const {
 float Entity::angleToTarget(const glm::vec3 &target) const {
   glm::vec3 delta = target - pos_;
   return rad2deg(atan2(delta.z , delta.x));
+}
+
+float Entity::distanceBetweenEntities(const Entity *e) const
+{
+  glm::vec3 targetPos = e->getPosition();
+  return glm::length(targetPos - pos_);
 }
 
 float Entity::param(const std::string &p) const {

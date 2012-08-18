@@ -69,6 +69,9 @@ public:
   virtual void handleMessage(const Message& msg) = 0;
   virtual void update(float dt) = 0;
 
+  float distanceBetweenEntities(const Entity *e) const;
+
+
 protected:
   static const glm::vec3 getDirection(float angle);
   const glm::vec3 getDirection() const;
