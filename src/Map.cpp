@@ -28,41 +28,48 @@ void Map::init(const std::vector<Player *> &players) {
     const Player *p = players[i];
     id_t pid = p->getPlayerID();
 
-    // Give starting resources
-    MessageHub::get()->sendResourceMessage(
-      GAME_ID,
-      pid,
-      ResourceTypes::REQUISITION,
-      fltParam(name_ + ".startingReq")
-    );
-
-    // Spawn starting units and building
-    // TODO(zack) improve this
     int ind = pid - 1;
     glm::vec3 pos = toVec3(getParam(name_ + ".startingPositions")[ind]);
-    for (int i = 0; i < 3; i++) {
-      Json::Value params;
-      params["entity_pid"] = toJson(pid);
-      params["entity_pos"] = toJson(pos);
-      MessageHub::get()->sendSpawnMessage(
-        GAME_ID, // from
-        Unit::TYPE, // class
-        "melee_unit", // name
-        params
-      );
-
-      pos.x += 2.f;
+    glm::vec3 dir = glm::normalize(
+      toVec3(getParam(name_ + ".startingDirections")[ind])
+    );
+    glm::vec3 tangent = glm::cross(glm::vec3(0, 1, 0), dir);
+    float angle = rad2deg(acosf(glm::dot(glm::vec3(1, 0, 0), dir)));
+    float sign =
+      glm::dot(glm::cross(glm::vec3(1, 0, 0), glm::vec3(0, 1, 0)), dir);
+    if (sign < 0) {
+      angle = -angle;
     }
-    pos.x -= 10.f;
+
+    // Spawn starting building
     Json::Value params;
     params["entity_pid"] = toJson(pid);
     params["entity_pos"] = toJson(pos);
+    params["entity_angle"] = angle;
     MessageHub::get()->sendSpawnMessage(
       GAME_ID,
       Building::TYPE,
       "building",
       params
     );
+
+    // Spawn starting units
+    // TODO(zack): get rid of these hardcoded numbers (2.0f, 1.5f)
+    pos += dir * 2.0f;
+    pos -= tangent * 1.5f;
+    for (int i = 0; i < 3; i++) {
+      Json::Value params;
+      params["entity_pid"] = toJson(pid);
+      params["entity_pos"] = toJson(pos);
+      params["entity_angle"] = angle;
+      MessageHub::get()->sendSpawnMessage(
+        GAME_ID, // from
+        Unit::TYPE, // class
+        "melee_unit", // name
+        params
+      );
+      pos += tangent * 1.5f;
+    }
   }
 
   Json::Value victoryPoints = getParam(name_ + ".victoryPoints");

@@ -77,6 +77,12 @@ void Game::start(float period) {
     SDL_Delay(int(1000*period));
   }
 
+  // Starting resources
+  float startingReq = fltParam("global.startingRequisition");
+  for (auto &player : players_) {
+    resources_[player->getPlayerID()].requisition += startingReq;
+  }
+
   // Initialize map
   map_->init(players_);
 

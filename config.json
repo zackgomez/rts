@@ -45,7 +45,8 @@
     "meleeCooldown" : 1.00,
     "captureRange"  : 1.0,
     "defaultColor"  : [1, 1, 1],
-    "pointsToWin"   : 100
+    "pointsToWin"   : 100,
+    "startingRequisition" : 100
   },
 
   "maps" :
@@ -55,9 +56,13 @@
       "size" : [25, 25],
       "players" : 2,
       "startingPositions" : [
-        [0, 0, 8], [0, 0, -8]
+        [0, 0, 11],
+        [0, 0, -11]
       ],
-      "startingReq" : 100,
+      "startingDirections" : [
+        [0, 0, -1],
+        [0, 0, 1]
+      ],
 
       "victoryPoints" : [
         [-8, 0, 0],
