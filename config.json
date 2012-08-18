@@ -43,7 +43,8 @@
     // time after melee attacks before unit can ranged attack again
     "meleeCooldown" : 1.00,
     "captureRange"  : 1.0,
-    "defaultColor"  : [1, 1, 1]
+    "defaultColor"  : [1, 1, 1],
+    "pointsToWin"   : 100
   },
 
   "maps" :

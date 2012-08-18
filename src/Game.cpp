@@ -125,6 +125,14 @@ for (auto &player : players_) {
 
       handleAction(pid, act);
     }
+
+    // Check to see if this player has won
+    if (resources_[pid].victory_points >= intParam("global.pointsToWin")) {
+      logger_->info() << "Player " << pid << " has won the game!\n";
+      // TODO(connor) do something cooler than exit here, like give them candy.
+      // TODO(connor) also, send a message to game.
+      running_ = false;
+    }
   }
   // Allow more actions
   actionLock.unlock();
