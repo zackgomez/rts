@@ -79,5 +79,4 @@ void Map::init(const std::vector<Player *> &players) {
         params);
   }
 }
-
 }; // rts

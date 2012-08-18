@@ -10,8 +10,13 @@
 #include "EntityFactory.h"
 #include "util.h"
 #include "ParamReader.h"
+#include <algorithm>
 
 namespace rts {
+
+bool comparePlayerID(Player *p1, Player *p2) {
+  return p1->getPlayerID() < p2->getPlayerID();
+}
 
 Game::Game(Map *map, const std::vector<Player *> &players,
     Renderer *renderer) :
@@ -34,6 +39,8 @@ Game::Game(Map *map, const std::vector<Player *> &players,
     res.requisition = 0.f;
     resources_[player->getPlayerID()] = res;
   }
+  // sort players to ensure consistency
+  std::sort(players_.begin(), players_.end(), comparePlayerID);
 
   renderer_->setGame(this);
 }
@@ -314,5 +321,4 @@ void Game::handleAction(id_t playerID, const PlayerAction &action) {
         << "Unknown action type from player " << playerID << " : " << action["type"].asString() << '\n';
   }
 }
-
 }; // rts
