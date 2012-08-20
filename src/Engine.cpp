@@ -7,6 +7,7 @@
 #include "ParamReader.h"
 #include "stb_image.c"
 #include "Exception.h"
+#include "ResourceManager.h"
 
 static bool initialized = false;
 static LoggerPtr logger;
@@ -78,6 +79,8 @@ void initEngine(const glm::vec2 &resolution) {
   //SDL_WM_GrabInput(SDL_GRAB_ON);
   
   initialized = true;
+
+  ResourceManager::get()->loadResources();
   
   loadResources();
 }
@@ -86,6 +89,8 @@ void teardownEngine() {
   if (!initialized) {
     return;
   }
+
+  ResourceManager::get()->unloadResources();
 
   SDL_Quit();
   initialized = false;
@@ -440,8 +445,8 @@ static void loadResources() {
                            sizeof(rectPositions));
 
   // Create solid color program for renderRectangleColor
-  resources.colorProgram = loadProgram("shaders/color.v.glsl", "shaders/color.f.glsl");
-  resources.texProgram = loadProgram("shaders/texsimple.v.glsl", "shaders/texsimple.f.glsl");
+  resources.colorProgram = ResourceManager::get()->getShader("color");
+  resources.texProgram = ResourceManager::get()->getShader("texsimple");
 }
 
 struct facevert {

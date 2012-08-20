@@ -39,11 +39,6 @@ Renderer::Renderer(const glm::vec2 &resolution) :
   // Initialize font manager, if necessary
   FontManager::get();
 
-  // Load resources
-  mapProgram_ = loadProgram("shaders/map.v.glsl", "shaders/map.f.glsl");
-  meshProgram_ = loadProgram("shaders/unit.v.glsl", "shaders/unit.f.glsl");
-  ResourceManager::get()->loadResources();
-  
   // unit model is based at 0, height 1, translate to center of model
   glm::mat4 unitMeshTrans = glm::scale(glm::mat4(1.f), glm::vec3(1, 0.5f, 1));
   setMeshTransform(ResourceManager::get()->getMesh("unit"), unitMeshTrans);
@@ -98,9 +93,10 @@ void Renderer::renderEntity(const Entity *entity) {
     // TODO(zack): move to renderProjectile
     // TODO(zack): make this color to a param in Projectile
     glm::vec4 color = glm::vec4(0.5, 0.7, 0.5, 1);
-    glUseProgram(meshProgram_);
-    GLuint colorUniform = glGetUniformLocation(meshProgram_, "color");
-    GLuint lightPosUniform = glGetUniformLocation(meshProgram_, "lightPos");
+    GLuint meshProgram = ResourceManager::get()->getShader("unit");
+    glUseProgram(meshProgram);
+    GLuint colorUniform = glGetUniformLocation(meshProgram, "color");
+    GLuint lightPosUniform = glGetUniformLocation(meshProgram, "lightPos");
     glUniform4fv(colorUniform, 1, glm::value_ptr(color));
     glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
     Mesh * mesh = ResourceManager::get()->getMesh(entity->getName());
@@ -175,9 +171,10 @@ void Renderer::renderMap(const Map *map) {
 
   const glm::vec4 mapColor(0.25, 0.2, 0.15, 1.0);
 
-  glUseProgram(mapProgram_);
-  GLuint colorUniform = glGetUniformLocation(mapProgram_, "color");
-  GLuint mapSizeUniform = glGetUniformLocation(mapProgram_, "mapSize");
+  GLuint mapProgram = ResourceManager::get()->getShader("map");
+  glUseProgram(mapProgram);
+  GLuint colorUniform = glGetUniformLocation(mapProgram, "color");
+  GLuint mapSizeUniform = glGetUniformLocation(mapProgram, "mapSize");
   glUniform4fv(colorUniform, 1, glm::value_ptr(mapColor));
   glUniform2fv(mapSizeUniform, 1, glm::value_ptr(mapSize));
 
@@ -274,9 +271,10 @@ void Renderer::renderActor(const Actor *actor, glm::mat4 transform) {
   const std::string &name = actor->getName();
 
   // TODO(zack) parameterize shaders on name
-  glUseProgram(meshProgram_);
-  GLuint colorUniform = glGetUniformLocation(meshProgram_, "color");
-  GLuint lightPosUniform = glGetUniformLocation(meshProgram_, "lightPos");
+  GLuint meshProgram = ResourceManager::get()->getShader("unit");
+  glUseProgram(meshProgram);
+  GLuint colorUniform = glGetUniformLocation(meshProgram, "color");
+  GLuint lightPosUniform = glGetUniformLocation(meshProgram, "lightPos");
   glUniform4fv(colorUniform, 1, glm::value_ptr(color));
   glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
   Mesh * mesh = ResourceManager::get()->getMesh(name);

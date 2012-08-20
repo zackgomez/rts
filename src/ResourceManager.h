@@ -16,12 +16,14 @@ public:
 
   Mesh * getMesh(const std::string &name);
   GLuint getTexture(const std::string &name);
+  GLuint getShader(const std::string &name);
   
 private:
   ResourceManager();
 
   std::map<std::string, Mesh*> meshes_;
   std::map<std::string, GLuint> textures_;
+  std::map<std::string, GLuint> shaders_;
 
   LoggerPtr logger_;
 };

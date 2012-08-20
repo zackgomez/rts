@@ -76,10 +76,6 @@ private:
   uint32_t lastRender_;
   float renderdt_;
 
-  // TODO(zack) shader map
-  GLuint mapProgram_;
-  GLuint meshProgram_;
-
   std::map<const Entity *, glm::vec3> ndcCoords_;
   std::set<id_t> selection_;
 
