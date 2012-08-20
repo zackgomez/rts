@@ -19,6 +19,8 @@ LocalPlayer::LocalPlayer(id_t playerID, const glm::vec3 &color,
   cameraPanDir_(0.f),
   shift_(false),
   leftDrag_(false),
+  message_(),
+  state_(PlayerState::DEFAULT),
   order_() {
   assertPid(playerID);
   logger_ = Logger::getLogger("LocalPlayer");
@@ -225,11 +227,13 @@ void LocalPlayer::mouseUp(const glm::vec2 &screenCoord, int button) {
   // nop
 }
 
-void LocalPlayer::keyPress(SDLKey key) {
+void LocalPlayer::keyPress(SDL_keysym keysym) {
   static const SDLKey MAIN_KEYS[] = {SDLK_q, SDLK_w, SDLK_e, SDLK_r};
   static const SDLKey UPGRADE_KEYS[] = {SDLK_t, SDLK_g, SDLK_b};
+  SDLKey key = keysym.sym;
   // TODO(zack) watch out for pausing here
   PlayerAction action;
+  // Actions available in all player states:
   if (key == SDLK_F10) {
     action["type"] = ActionTypes::LEAVE_GAME;
     action["pid"] = toJson(playerID_);
@@ -245,71 +249,116 @@ void LocalPlayer::keyPress(SDLKey key) {
   } else if (key == SDLK_LEFT) {
     cameraPanDir_.x = -1.f;
   }
-
-  // ESC clears out current states
-  else if (key == SDLK_ESCAPE) {
-    if (!order_.empty()) {
-      order_.clear();
-    } else {
-      setSelection(std::set<id_t>());
+  // Actions specific to state:
+  else if (state_ == PlayerState::DEFAULT) {
+    if (key == SDLK_RETURN) {
+      state_ = PlayerState::CHATTING;
+      SDL_EnableUNICODE(SDL_ENABLE);
+      SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, 
+          SDL_DEFAULT_REPEAT_INTERVAL);
     }
-  } else if (key == SDLK_LSHIFT || key == SDLK_RSHIFT) {
-    shift_ = true;
-  }
 
-  // Debug commands
-  else if (key == SDLK_g) {
-    SDL_WM_GrabInput(SDL_GRAB_ON);
-  }
-  // Handle unit commands
-  else if (!selection_.empty()) {
-    // Order types
-    if (key == SDLK_a) {
-      order_ = ActionTypes::ATTACK;
-    } else if (key == SDLK_m) {
-      order_ = ActionTypes::MOVE;
-    } else if (key == SDLK_s) {
-      action["type"] = ActionTypes::STOP;
-      action["entity"] = toJson(selection_);
-      action["pid"] = toJson(playerID_);
-      action["tick"] = toJson(targetTick_);
-      game_->addAction(playerID_, action);
-    } else {
-      for (unsigned int i = 0; i < 4; i++) {
-        if (key == MAIN_KEYS[i]) {
-          // TODO(zack): this assumption that head of selection is always the
-          // unit we're building on is not good
-          auto sel = selection_.begin();
-          const Entity *ent = MessageHub::get()->getEntity(*sel);
-          // The main action of a building is production
-          if (ent->getType() == "BUILDING") {
-            std::vector<std::string> prod = arrParam(ent->getName() + ".prod");
-            if (i < prod.size()) {
-              std::string prodName = prod[i];
-              float cost = fltParam(prodName + ".cost.requisition");
-              auto &resources = game_->getResources(playerID_);
+    // ESC clears out current states
+    else if (key == SDLK_ESCAPE) {
+      if (!order_.empty()) {
+        order_.clear();
+      } else {
+        setSelection(std::set<id_t>());
+      }
+    } else if (key == SDLK_LSHIFT || key == SDLK_RSHIFT) {
+      shift_ = true;
+    }
+  
+    else if (key == SDLK_g) {
+      // Debug commands
+      SDL_WM_GrabInput(SDL_GRAB_ON);
+    }
+    // Handle unit commands
+    else if (!selection_.empty()) {
+      // Order types
+      if (key == SDLK_a) {
+        order_ = ActionTypes::ATTACK;
+      } else if (key == SDLK_m) {
+        order_ = ActionTypes::MOVE;
+      } else if (key == SDLK_s) {
+        action["type"] = ActionTypes::STOP;
+        action["entity"] = toJson(selection_);
+        action["pid"] = toJson(playerID_);
+        action["tick"] = toJson(targetTick_);
+        game_->addAction(playerID_, action);
+      } else {
+        for (unsigned int i = 0; i < 4; i++) {
+          if (key == MAIN_KEYS[i]) {
+            // TODO(zack): this assumption that head of selection is always 
+            // the unit we're building on is not good
+            auto sel = selection_.begin();
+            const Entity *ent = MessageHub::get()->getEntity(*sel);
+            // The main action of a building is production
+            if (ent->getType() == "BUILDING") {
+              std::vector<std::string> prod = arrParam(ent->getName() + 
+                  ".prod");
+              if (i < prod.size()) {
+                std::string prodName = prod[i];
+                float cost = fltParam(prodName + ".cost.requisition");
+                auto &resources = game_->getResources(playerID_);
 
-              if (cost <= resources.requisition) {
-                // TODO subtract cost
-                action["type"] = ActionTypes::ENQUEUE;
-                action["entity"] = toJson(*sel);
-                action["pid"] = toJson(playerID_);
-                action["prod"] = prod[i];
-                action["tick"] = toJson(targetTick_);
-                game_->addAction(playerID_, action);
+                if (cost <= resources.requisition) {
+                  // TODO subtract cost
+                  action["type"] = ActionTypes::ENQUEUE;
+                  action["entity"] = toJson(*sel);
+                  action["pid"] = toJson(playerID_);
+                  action["prod"] = prod[i];
+                  action["tick"] = toJson(targetTick_);
+                  game_->addAction(playerID_, action);
+                }
+                // TODO(zack): else send a message telling the player they
+                // don't have enough of resource X (that annoying voice...)
               }
-              // TODO(zack): else send a message telling the player they
-              // don't have enough of resource X (that annoying voice...)
             }
+            break;
           }
-          break;
         }
       }
+    }
+  } else if (state_ == PlayerState::CHATTING) {
+    char unicode = keysym.unicode;
+    if (key == SDLK_RETURN) {
+      SDL_EnableUNICODE(SDL_DISABLE);
+      SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
+      state_ = PlayerState::DEFAULT;
+      if (!message_.empty()) {
+        Message msg;
+        action["pid"] = toJson(playerID_);
+        action["type"] = ActionTypes::CHAT;
+        action["chat"] = message_;
+        action["tick"] = toJson(targetTick_);
+        game_->addAction(playerID_, action);
+      }
+      message_.clear();
+    } else if (key == SDLK_ESCAPE) {
+      // Clears message and exits chat mode.
+      SDL_EnableUNICODE(SDL_DISABLE);
+      SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
+      state_ = PlayerState::DEFAULT;
+      message_.clear();
+      // Hides chat window
+      renderer_->displayChatBox(0.f);
+    } else if (key == SDLK_BACKSPACE) {
+      if (!message_.empty())
+        message_.erase(message_.end() - 1);
+    } else if (unicode != 0 && 
+        (keysym.mod == KMOD_NONE   || 
+         keysym.mod == KMOD_LSHIFT ||
+         keysym.mod == KMOD_RSHIFT ||
+         keysym.mod == KMOD_CAPS   ||
+         keysym.mod == KMOD_NUM    )) {
+      message_.append(1, unicode);
     }
   }
 }
 
-void LocalPlayer::keyRelease(SDLKey key) {
+void LocalPlayer::keyRelease(SDL_keysym keysym) {
+  SDLKey key = keysym.sym;
   if (key == SDLK_RIGHT || key == SDLK_LEFT) {
     cameraPanDir_.x = 0.f;
   } else if (key == SDLK_UP || key == SDLK_DOWN) {
@@ -317,6 +366,15 @@ void LocalPlayer::keyRelease(SDLKey key) {
   } else if (key == SDLK_LSHIFT || key == SDLK_RSHIFT) {
     shift_ = false;
   }
+}
+
+void LocalPlayer::addChatMessage(const std::string &chat) {
+  chatMessages_.push_back(chat);
+}
+
+void LocalPlayer::displayChatWindow() {
+  logger_->debug() << "displaying chat window\n";
+  renderer_->displayChatBox(fltParam("hud.messages.chatDisplayTime"));
 }
 
 void
@@ -327,7 +385,7 @@ LocalPlayer::setSelection(const std::set<id_t> &s) {
 
 DummyPlayer::DummyPlayer(id_t playerID) :
   Player(playerID, vec3Param("debug.dummyColor")) {
-}
+  }
 
 bool DummyPlayer::update(tick_t tick) {
   if (tick < 0) {

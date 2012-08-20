@@ -11,6 +11,7 @@ const std::string ATTACK = "ATTACK";
 const std::string CAPTURE = "CAPTURE";
 const std::string STOP = "STOP";
 const std::string ENQUEUE = "ENQUEUE";
+const std::string CHAT = "CHAT";
 
 const std::string LEAVE_GAME = "LEAVE_GAME";
 };

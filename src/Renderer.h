@@ -57,6 +57,8 @@ public:
   void highlight(const glm::vec2 &mapCoord);
   void setDragRect(const glm::vec3 &start, const glm::vec3 &end);
 
+  void displayChatBox(float time) { displayChatBoxTimer_ = time; }
+
 private:
   glm::vec3 screenToNDC(const glm::vec2 &screenCoord) const;
   void renderActor(const Actor *actor, glm::mat4 transform);
@@ -75,6 +77,8 @@ private:
   // For updating purely render aspects
   uint32_t lastRender_;
   float renderdt_;
+  
+  float displayChatBoxTimer_;
 
   std::map<const Entity *, glm::vec3> ndcCoords_;
   std::set<id_t> selection_;

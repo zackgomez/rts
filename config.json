@@ -233,7 +233,18 @@
       "dim" : [80, 5],
       "pos" : [0, 50]
     },
-    "minDragDistance" : 0.3
+    "minDragDistance" : 0.3,
+    "messages" :
+    {
+      // where the local message is drawn
+      "pos"             : [25, -320],
+      "fontHeight"      : 16,
+      "heightBuffer"    : 4,
+      "max"             : 12,
+      "backgroundColor" : [1, 1, 1, 0.25],
+      "backgroundWidth" : 400,
+      "chatDisplayTime" : 5.0
+    }
   },
 
   "fonts" :

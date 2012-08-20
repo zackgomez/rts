@@ -290,49 +290,65 @@ const PlayerResources& Game::getResources(id_t pid) const {
 }
 
 void Game::handleAction(id_t playerID, const PlayerAction &action) {
-  Message msg;
-  msg["to"] = action["entity"];
-  msg["from"] = toJson(playerID);
-  msg["type"] = MessageTypes::ORDER;
-  if (action["type"] == ActionTypes::MOVE) {
-    // Generate a message to target entity with move order
-    msg["order_type"] = OrderTypes::MOVE;
-    msg["target"] = action["target"];
+  if (action["type"] == ActionTypes::CHAT) {
+    invariant(action.isMember("chat"), "malformed CHAT action");
+    std::stringstream ss;
+    ss << "Player " << playerID << ": ";
+    ss << action["chat"].asString();
 
-    MessageHub::get()->sendMessage(msg);
-  } else if (action["type"] == ActionTypes::ATTACK) {
-    // Generate a message to target entity with attack order
-    msg["order_type"] = OrderTypes::ATTACK;
-    if (action.isMember("target")) {
-      msg["target"] = action["target"];
+    // Tell all players that we are chatting..
+    // TODO(connor) iterate over only a target set of players so we can do team
+    // chat, whispers, etc. Define this target set as a member of msg.
+    for (auto &player : players_) {
+      player->addChatMessage(ss.str());
+      player->displayChatWindow();
     }
-    if (action.isMember("enemy_id")) {
-      msg["enemy_id"] = action["enemy_id"];
-    }
-
-    MessageHub::get()->sendMessage(msg);
-  } else if (action["type"] == ActionTypes::CAPTURE) {
-    msg["enemy_id"] = action["enemy_id"];
-    msg["order_type"] = OrderTypes::CAPTURE;
-
-    MessageHub::get()->sendMessage(msg);
-  } else if (action["type"] == ActionTypes::STOP) {
-    msg["order_type"] = OrderTypes::STOP;
-
-    MessageHub::get()->sendMessage(msg);
-  } else if (action["type"] == ActionTypes::ENQUEUE) {
-    msg["order_type"] = OrderTypes::ENQUEUE;
-    msg["prod"] = action["prod"];
-
-    float cost = fltParam(msg["prod"].asString() + ".cost.requisition");
-    invariant(cost <= resources_[playerID].requisition,
-      "insufficient requsition to enqueue");
-    resources_[playerID].requisition -= cost;
-
-    MessageHub::get()->sendMessage(msg);
   } else {
-    logger_->warning()
-        << "Unknown action type from player " << playerID << " : " << action["type"].asString() << '\n';
+    Message msg;
+    msg["to"] = action["entity"];
+    msg["from"] = toJson(playerID);
+    msg["type"] = MessageTypes::ORDER;
+    if (action["type"] == ActionTypes::MOVE) {
+      // Generate a message to target entity with move order
+      msg["order_type"] = OrderTypes::MOVE;
+      msg["target"] = action["target"];
+
+      MessageHub::get()->sendMessage(msg);
+    } else if (action["type"] == ActionTypes::ATTACK) {
+      // Generate a message to target entity with attack order
+      msg["order_type"] = OrderTypes::ATTACK;
+      if (action.isMember("target")) {
+        msg["target"] = action["target"];
+      }
+      if (action.isMember("enemy_id")) {
+        msg["enemy_id"] = action["enemy_id"];
+      }
+
+      MessageHub::get()->sendMessage(msg);
+    } else if (action["type"] == ActionTypes::CAPTURE) {
+      msg["enemy_id"] = action["enemy_id"];
+      msg["order_type"] = OrderTypes::CAPTURE;
+
+      MessageHub::get()->sendMessage(msg);
+    } else if (action["type"] == ActionTypes::STOP) {
+      msg["order_type"] = OrderTypes::STOP;
+
+      MessageHub::get()->sendMessage(msg);
+    } else if (action["type"] == ActionTypes::ENQUEUE) {
+      msg["order_type"] = OrderTypes::ENQUEUE;
+      msg["prod"] = action["prod"];
+
+      float cost = fltParam(msg["prod"].asString() + ".cost.requisition");
+      invariant(cost <= resources_[playerID].requisition,
+          "insufficient requsition to enqueue");
+      resources_[playerID].requisition -= cost;
+
+      MessageHub::get()->sendMessage(msg);
+    } else {
+      logger_->warning()
+        << "Unknown action type from player " << playerID << " : " 
+        << action["type"].asString() << '\n';
+    }
   }
 }
 }; // rts

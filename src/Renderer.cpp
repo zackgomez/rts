@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <algorithm>
 #include "util.h"
 #include "Engine.h"
 #include "Entity.h"
@@ -30,6 +31,7 @@ Renderer::Renderer(const glm::vec2 &resolution) :
   resolution_(resolution),
   dragStart_(HUGE_VAL),
   dragEnd_(HUGE_VAL),
+  displayChatBoxTimer_(0.f),
   lastRender_(0) {
   if (!logger_.get()) {
     logger_ = Logger::getLogger("OGLRenderer");
@@ -162,6 +164,32 @@ void Renderer::renderUI() {
   size = vec2Param("ui.unitinfo.dim");
   tex = ResourceManager::get()->getTexture(strParam("ui.unitinfo.texture"));
   drawTexture(pos, size, tex);
+
+  // Render messages
+  if (displayChatBoxTimer_ > 0.f || 
+      player_->getState() == PlayerState::CHATTING) {
+    pos = convertUIPos(vec2Param("hud.messages.pos"));
+    float fontHeight = fltParam("hud.messages.fontHeight");
+    float messageHeight = fontHeight + fltParam("hud.messages.heightBuffer");
+    height = intParam("hud.messages.max") * messageHeight;
+    glm::vec2 startPos = pos - glm::vec2(0, height);
+    if (player_->getState() == PlayerState::CHATTING) height += messageHeight;
+    size = glm::vec2(fltParam("hud.messages.backgroundWidth"), height);
+    drawRect(startPos, size, vec4Param("hud.messages.backgroundColor"));
+    const std::vector<std::string> &messages = player_->getChatMessages();
+    int numMessages = std::min(intParam("hud.messages.max"), 
+        (int)messages.size());
+    for (int i = 1; i <= numMessages; i++) {
+      std::string message = messages[messages.size() - i];
+      glm::vec2 messagePos = pos;
+      messagePos.y -= i * messageHeight;
+      FontManager::get()->drawString(message, messagePos, fontHeight);
+    }
+    std::string localMessage = player_->getLocalMessage();
+    if (!localMessage.empty())
+      FontManager::get()->drawString(localMessage, pos, fontHeight);
+  }
+  displayChatBoxTimer_ -= renderdt_;
 
   glEnable(GL_DEPTH_TEST);
 }

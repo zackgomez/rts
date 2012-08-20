@@ -201,10 +201,10 @@ void handleInput(float dt) {
   while (SDL_PollEvent(&event)) {
     switch (event.type) {
     case SDL_KEYDOWN:
-      player->keyPress(event.key.keysym.sym);
+      player->keyPress(event.key.keysym);
       break;
     case SDL_KEYUP:
-      player->keyRelease(event.key.keysym.sym);
+      player->keyRelease(event.key.keysym);
       break;
     case SDL_MOUSEBUTTONDOWN:
       screenCoord = glm::vec2(event.button.x, event.button.y);

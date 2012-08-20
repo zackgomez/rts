@@ -3,6 +3,7 @@
 #include <SDL/SDL.h>
 #include <json/json.h>
 #include <glm/glm.hpp>
+#include <string>
 #include "PlayerAction.h"
 #include "Entity.h"
 #include "Logger.h"
@@ -11,6 +12,11 @@ namespace rts {
 
 class Renderer;
 class Game;
+
+namespace PlayerState {
+  const std::string DEFAULT = "DEFAULT";
+  const std::string CHATTING = "CHATTING";
+}
 
 class Player {
 public:
@@ -44,6 +50,9 @@ public:
    */
   virtual void playerAction(id_t playerID, const PlayerAction &action) = 0;
 
+  virtual void addChatMessage(const std::string &chat) {}
+  virtual void displayChatWindow() {}
+
   /* Returns this player's color. */
   glm::vec3 getColor() const {
     return color_;
@@ -75,8 +84,20 @@ public:
   void mouseUp(const glm::vec2 &screenCoord, int button);
   // TODO(zack) create our own keycode representation so we don't have to
   // use SDLs here
-  void keyPress(SDLKey key);
-  void keyRelease(SDLKey key);
+  void keyPress(SDL_keysym key);
+  void keyRelease(SDL_keysym key);
+
+  // Returns the message the player is currently typing
+  const std::string& getLocalMessage() const { return message_; }
+
+  virtual void addChatMessage(const std::string &chat);
+  const std::vector<std::string>& getChatMessages() const { 
+    return chatMessages_; 
+  }
+
+  virtual void displayChatWindow();
+
+  const std::string& getState() const { return state_; }
 
 private:
   void setSelection(const std::set<id_t> &new_selection);
@@ -90,9 +111,13 @@ private:
   glm::vec2 cameraPanDir_;
 
   bool shift_;
+  bool chatting_;
+  std::string message_;
+  std::vector<std::string> chatMessages_;
   bool leftDrag_;
   glm::vec3 leftStart_;
   std::string order_;
+  std::string state_;
 
   LoggerPtr logger_;
 };
