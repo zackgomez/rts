@@ -24,7 +24,8 @@ void handleInput(float dt);
 int initLibs();
 void cleanup();
 
-NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID);
+NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID,
+    const glm::vec3 &localPlayerColor);
 
 LoggerPtr logger;
 
@@ -34,15 +35,6 @@ Renderer *renderer;
 
 // TODO(zack) take this in as an argument!
 const std::string port = "27465";
-
-// player 1...n
-// TODO(zack) eventually read these from player config and in network handshake
-glm::vec3 getPlayerColor(int player) {
-  invariant(player == 1 || player == 2, "unknown player");
-  std::stringstream ss;
-  ss << "colors.player" << player;
-  return vec3Param(ss.str());
-}
 
 NetPlayer * getOpponent(const std::string &ip) {
   kissnet::tcp_socket_ptr sock;
@@ -86,10 +78,11 @@ NetPlayer * getOpponent(const std::string &ip) {
   // TODO(zack): eventually this ID will be assigned to use by the match
   // maker
   rts::id_t localPlayerID = ip.empty() ? STARTING_PID : STARTING_PID + 1;
-  return handshake(conn, localPlayerID);
+  return handshake(conn, localPlayerID, vec3Param("local.playerColor"));
 }
 
-NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID) {
+NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID,
+    const glm::vec3 &localPlayerColor) {
   // Some chaced params
   const std::string version = strParam("game.version");
   const float maxT = fltParam("network.handshake.maxWait");
@@ -100,6 +93,7 @@ NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID) {
   v["type"] = "HANDSHAKE";
   v["version"] = version;
   v["pid"] = toJson(localPlayerID);
+  v["color"] = toJson(localPlayerColor);
   // TODO(zack): include color
   // TODO(zack): include params checksum
   conn->sendPacket(v);
@@ -123,15 +117,22 @@ NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID) {
         // Fail
         break;
       }
-      if (!msg.isMember("pid")) { // TODO(zack) OR it's not a valid pid...
-        LOG(FATAL) << "Missing pid from handshake version\n";
+      rts::id_t pid;
+      if (!msg.isMember("pid") || !(pid = assertPid(toID(msg["pid"])))) {
+        LOG(FATAL) << "Missing pid from handshake message.\n";
         // fail
         break;
       }
+      glm::vec3 color;
+      // TODO(zack): or isn't vec3/valid color
+      if (!msg.isMember("color")) {
+        LOG(FATAL) << "Mssing color in handshake message.\n";
+        // fail
+        break;
+      }
+      color = toVec3(msg["color"]);
 
       // Success, make a new player
-      rts::id_t pid = assertPid(toID(msg["pid"]));
-      glm::vec3 color = getPlayerColor(pid - STARTING_PID + 1);
       return new NetPlayer(pid, color, conn);
     }
 
@@ -172,7 +173,7 @@ std::vector<Player *> getPlayers(const std::vector<std::string> &args) {
   glm::vec2 res = vec2Param("window.resolution");
   renderer = new Renderer(res);
 
-  glm::vec3 color = getPlayerColor(playerID - STARTING_PID + 1);
+  glm::vec3 color = vec3Param("local.playerColor");
   player = new LocalPlayer(playerID, color, renderer);
   renderer->setLocalPlayer(player);
 

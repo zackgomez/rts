@@ -2,10 +2,10 @@
 {
   "game" :
   {
-    "name"      : "Ragnarok 0.2",
+    "name"      : "Ragnarok 0.3",
     "framerate" : 60.0,
     "simrate"   : 10.0,
-    "version"   : "v0.2"
+    "version"   : "v0.3"
   },
 
   "window" :
@@ -216,9 +216,8 @@
 
   "colors" :
   {
-    "player1" : [0.0, 0.5, 0.5],
-    "player2" : [0.5, 0.0, 0.5],
-    "selected" : [0.1, 0.8, 0.1]
+    "selected" : [0.1, 0.8, 0.1],
+    "dummyPlayer" : [0.2, 0.2, 0.2]
   },
 
   // GRAPHICS PARAMS
@@ -308,10 +307,5 @@
     "panspeed"     : 19.0,
     "panspeed_key" : 0.1,
     "panthresh"    : 100
-  },
-
-  "debug" :
-  {
-    "dummyColor" : [0.2, 0.2, 0.2]
   }
 }

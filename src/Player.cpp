@@ -385,8 +385,8 @@ LocalPlayer::setSelection(const std::set<id_t> &s) {
 }
 
 DummyPlayer::DummyPlayer(id_t playerID) :
-  Player(playerID, vec3Param("debug.dummyColor")) {
-  }
+  Player(playerID, vec3Param("colors.dummyPlayer")) {
+}
 
 bool DummyPlayer::update(tick_t tick) {
   if (tick < 0) {
