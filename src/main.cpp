@@ -25,7 +25,7 @@ int initLibs();
 void cleanup();
 
 NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID,
-    const glm::vec3 &localPlayerColor);
+    const std::string &localPlayerName, const glm::vec3 &localPlayerColor);
 
 LoggerPtr logger;
 
@@ -78,11 +78,12 @@ NetPlayer * getOpponent(const std::string &ip) {
   // TODO(zack): eventually this ID will be assigned to use by the match
   // maker
   rts::id_t localPlayerID = ip.empty() ? STARTING_PID : STARTING_PID + 1;
-  return handshake(conn, localPlayerID, vec3Param("local.playerColor"));
+  return handshake(conn, localPlayerID, strParam("local.username"),
+      vec3Param("local.playerColor"));
 }
 
 NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID,
-    const glm::vec3 &localPlayerColor) {
+    const std::string &localPlayerName, const glm::vec3 &localPlayerColor) {
   // Some chaced params
   const std::string version = strParam("game.version");
   const float maxT = fltParam("network.handshake.maxWait");
@@ -94,7 +95,7 @@ NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID,
   v["version"] = version;
   v["pid"] = toJson(localPlayerID);
   v["color"] = toJson(localPlayerColor);
-  // TODO(zack): include color
+  v["name"] = localPlayerName;
   // TODO(zack): include params checksum
   conn->sendPacket(v);
 
@@ -111,18 +112,21 @@ NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID,
         // Fail
         break;
       }
+
       if (!msg.isMember("version") || msg["version"] != version) {
         LOG(FATAL) << "Mismatched game version from connection "
           << "(theirs: " << msg["version"] << " ours: " << version << ")\n";
         // Fail
         break;
       }
+
       rts::id_t pid;
       if (!msg.isMember("pid") || !(pid = assertPid(toID(msg["pid"])))) {
         LOG(FATAL) << "Missing pid from handshake message.\n";
         // fail
         break;
       }
+
       glm::vec3 color;
       // TODO(zack): or isn't vec3/valid color
       if (!msg.isMember("color")) {
@@ -132,8 +136,16 @@ NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID,
       }
       color = toVec3(msg["color"]);
 
+      std::string name;
+      if (!msg.isMember("name")) {
+        LOG(FATAL) << "Mssing name in handshake message.\n";
+        // fail
+        break;
+      }
+      name = msg["name"].asString();
+
       // Success, make a new player
-      return new NetPlayer(pid, color, conn);
+      return new NetPlayer(pid, name, color, conn);
     }
 
     // No message, wait and check again
@@ -174,7 +186,8 @@ std::vector<Player *> getPlayers(const std::vector<std::string> &args) {
   renderer = new Renderer(res);
 
   glm::vec3 color = vec3Param("local.playerColor");
-  player = new LocalPlayer(playerID, color, renderer);
+  std::string name = strParam("local.username");
+  player = new LocalPlayer(playerID, name, color, renderer);
   renderer->setLocalPlayer(player);
 
   players.push_back(player);

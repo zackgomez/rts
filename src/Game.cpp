@@ -297,7 +297,7 @@ void Game::handleAction(id_t playerID, const PlayerAction &action) {
   if (action["type"] == ActionTypes::CHAT) {
     invariant(action.isMember("chat"), "malformed CHAT action");
     std::stringstream ss;
-    ss << "Player " << playerID << ": ";
+    ss << getPlayer(playerID)->getName() << ": ";
     ss << action["chat"].asString();
 
     // Tell all players that we are chatting..

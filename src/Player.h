@@ -20,13 +20,17 @@ namespace PlayerState {
 
 class Player {
 public:
-  explicit Player(id_t playerID, const glm::vec3 &color)
-    : playerID_(playerID), game_(NULL), color_(color) {
+  explicit Player(id_t playerID, const std::string &name, const glm::vec3 &color)
+    : playerID_(playerID), name_(name), color_(color), game_(NULL) {
   }
   virtual ~Player() {}
 
   id_t getPlayerID() const {
     return playerID_;
+  }
+
+  const std::string &getName() const {
+    return name_;
   }
 
   virtual void setGame(Game *game) {
@@ -60,13 +64,14 @@ public:
 
 protected:
   id_t playerID_;
-  Game *game_;
+  const std::string name_;
   glm::vec3 color_;
+  Game *game_;
 };
 
 class LocalPlayer : public Player {
 public:
-  LocalPlayer(id_t playerID, const glm::vec3 &color, Renderer *renderer);
+  LocalPlayer(id_t playerID, const std::string &name, const glm::vec3 &color, Renderer *renderer);
   virtual ~LocalPlayer();
 
   virtual bool update(tick_t tick);
@@ -132,7 +137,7 @@ public:
 // Player used for testing that occasionally drops frames
 class SlowPlayer : public Player {
 public:
-  SlowPlayer(id_t playerID) : Player(playerID, glm::vec3(0.f)) { }
+  SlowPlayer(id_t playerID) : Player(playerID, "SlowP", glm::vec3(0.f)) { }
 
   virtual bool update(tick_t tick);
   virtual void playerAction(id_t playerID, const PlayerAction &action) { }

@@ -45,7 +45,8 @@ throw(kissnet::socket_exception);
 
 class NetPlayer : public Player {
 public:
-  NetPlayer(int64_t playerID, const glm::vec3 &color, NetConnection *conn);
+  NetPlayer(int64_t playerID, const std::string &name, const glm::vec3 &color,
+      NetConnection *conn);
   virtual ~NetPlayer();
 
   virtual bool update(tick_t tick);

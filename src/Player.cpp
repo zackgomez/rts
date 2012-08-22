@@ -9,9 +9,9 @@
 
 namespace rts {
 
-LocalPlayer::LocalPlayer(id_t playerID, const glm::vec3 &color,
-    Renderer *renderer) :
-  Player(playerID, color),
+LocalPlayer::LocalPlayer(id_t playerID, const std::string &name, 
+    const glm::vec3 &color, Renderer *renderer) :
+  Player(playerID, name, color),
   renderer_(renderer),
   targetTick_(0),
   doneTick_(-1e6), // no done ticks
@@ -385,7 +385,7 @@ LocalPlayer::setSelection(const std::set<id_t> &s) {
 }
 
 DummyPlayer::DummyPlayer(id_t playerID) :
-  Player(playerID, vec3Param("colors.dummyPlayer")) {
+  Player(playerID, "DummyPlayer", vec3Param("colors.dummyPlayer")) {
 }
 
 bool DummyPlayer::update(tick_t tick) {

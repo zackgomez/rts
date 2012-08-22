@@ -92,9 +92,9 @@ void NetConnection::sendPacket(const Json::Value &message) {
   sock_->send(msg);
 }
 
-NetPlayer::NetPlayer(int64_t playerID, const glm::vec3 &color,
-    NetConnection *conn) :
-  Player(playerID, color),
+NetPlayer::NetPlayer(int64_t playerID, const std::string &name,
+    const glm::vec3 &color, NetConnection *conn) :
+  Player(playerID, name, color),
   connection_(conn),
   doneTick_(-1e6),
   localPlayerID_(-1) {
