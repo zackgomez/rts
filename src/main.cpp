@@ -24,6 +24,8 @@ void handleInput(float dt);
 int initLibs();
 void cleanup();
 
+NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID);
+
 LoggerPtr logger;
 
 LocalPlayer *player;
@@ -77,54 +79,74 @@ NetPlayer * getOpponent(const std::string &ip) {
     }
   }
 
-  logger->info() << "Initiating handshake with "
-                 << sock->getHostname() << ":" << sock->getPort() << '\n';
+  LOG(INFO) << "Connected to " << sock->getHostname() << ":" << sock->getPort()
+    << '\n';
   NetConnection *conn = new NetConnection(sock);
+  // If we're hosting, then we'll take the lower id
+  // TODO(zack): eventually this ID will be assigned to use by the match
+  // maker
+  rts::id_t localPlayerID = ip.empty() ? STARTING_PID : STARTING_PID + 1;
+  return handshake(conn, localPlayerID);
+}
 
-  // HANDSHAKE
-  // TODO(zack): Wow, this is just atrocious... look into "workflows" or
-  // something...
-  // Send our version
+NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID) {
+  // Some chaced params
+  const std::string version = strParam("game.version");
+  const float maxT = fltParam("network.handshake.maxWait");
+  const float interval = fltParam("network.handshake.checkInterval");
+
+  // First send our message
   Json::Value v;
   v["type"] = "HANDSHAKE";
-  v["handshake_version"] = strParam("game.version");
+  v["version"] = version;
+  v["pid"] = toJson(localPlayerID);
+  // TODO(zack): include color
+  // TODO(zack): include params checksum
   conn->sendPacket(v);
-  // Wait for responses
+
   std::queue<Json::Value> &queue = conn->getQueue();
-  bool version_checked = false;
-  while (!version_checked) {
-    logger->info() << "Handshaking...\n";
+  for (float t = 0.f; t <= maxT; t += interval) {
     if (!queue.empty()) {
       Json::Value msg = queue.front();
       queue.pop();
 
-      logger->info() << "Received handshake message " << msg << '\n';
-      invariant(msg["type"] == "HANDSHAKE",
-                "bad network message during handshake");
-      if (!version_checked) {
-        invariant(msg.isMember("handshake_version"), "expected version message");
-        if (msg["handshake_version"] != strParam("game.version")) {
-          logger->fatal() << "Wrong handshake version from connection\n";
-          conn->stop();
-          return NULL;
-        }
-        version_checked = true;
-        continue;
+      LOG(INFO) << "Received handshake message " << msg << '\n';
+
+      if (!msg.isMember("type") || msg["type"] != "HANDSHAKE") {
+        LOG(FATAL) << "Received unexpected message during handshake\n";
+        // Fail
+        break;
       }
-    } else {
-      SDL_Delay(100);
+      if (!msg.isMember("version") || msg["version"] != version) {
+        LOG(FATAL) << "Mismatched game version from connection "
+          << "(theirs: " << msg["version"] << " ours: " << version << ")\n";
+        // Fail
+        break;
+      }
+      if (!msg.isMember("pid")) { // TODO(zack) OR it's not a valid pid...
+        LOG(FATAL) << "Missing pid from handshake version\n";
+        // fail
+        break;
+      }
+
+      // Success, make a new player
+      rts::id_t pid = assertPid(toID(msg["pid"]));
+      glm::vec3 color = getPlayerColor(pid - STARTING_PID + 1);
+      return new NetPlayer(pid, color, conn);
     }
+
+    // No message, wait and check again
+    SDL_Delay(1000 * interval);
   }
 
-  rts::id_t playerID = STARTING_PID + (ip.empty() ? 1 : 0);
-  logger->info() << "Creating NetPlayer with pid: " << playerID << '\n';
-  glm::vec3 color = getPlayerColor(playerID - STARTING_PID + 1);
-  return new NetPlayer(playerID, color, conn);
-}
+  // Didn't get the handshake message...
+  LOG(ERROR) << "Unable to handshake...\n";
+  conn->stop();
+  return NULL;
+};
 
 std::vector<Player *> getPlayers(const std::vector<std::string> &args) {
-  // TODO(zack) streamline this, add some handshake in network setup that assigns
-  // IDs correctly
+  // TODO(zack) use matchmaker, or just create local and dummy players
   int64_t playerID = STARTING_PID;
   std::vector<Player *> players;
   // First get opponent if exists
