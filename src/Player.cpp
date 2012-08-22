@@ -22,6 +22,7 @@ LocalPlayer::LocalPlayer(id_t playerID, const glm::vec3 &color,
   message_(),
   state_(PlayerState::DEFAULT),
   order_() {
+
   assertPid(playerID);
   logger_ = Logger::getLogger("LocalPlayer");
 }

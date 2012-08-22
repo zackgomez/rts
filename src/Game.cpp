@@ -272,6 +272,10 @@ const Entity * Game::getEntity(id_t eid) const {
 }
 
 const Player * Game::getPlayer(id_t pid) const {
+  if (pid == NO_PLAYER) {
+    return NULL;
+  }
+
   assertPid(pid);
   for (auto player : players_) {
     if (player->getPlayerID() == pid) {
@@ -279,7 +283,7 @@ const Player * Game::getPlayer(id_t pid) const {
     }
   }
 
-  return NULL;
+  invariant(false, "Asked to find unknown pid!");
 }
 
 const PlayerResources& Game::getResources(id_t pid) const {

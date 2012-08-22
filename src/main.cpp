@@ -30,7 +30,7 @@ LocalPlayer *player;
 Game *game;
 Renderer *renderer;
 
-// TODO take this in as an argument!
+// TODO(zack) take this in as an argument!
 const std::string port = "27465";
 
 // player 1...n
@@ -116,21 +116,22 @@ NetPlayer * getOpponent(const std::string &ip) {
     }
   }
 
-  int64_t playerID = ip.empty() ? 2 : 1;
+  rts::id_t playerID = STARTING_PID + (ip.empty() ? 1 : 0);
   logger->info() << "Creating NetPlayer with pid: " << playerID << '\n';
-  return new NetPlayer(playerID, getPlayerColor(playerID), conn);
+  glm::vec3 color = getPlayerColor(playerID - STARTING_PID + 1);
+  return new NetPlayer(playerID, color, conn);
 }
 
 std::vector<Player *> getPlayers(const std::vector<std::string> &args) {
   // TODO(zack) streamline this, add some handshake in network setup that assigns
   // IDs correctly
-  int64_t playerID = 1;
+  int64_t playerID = STARTING_PID;
   std::vector<Player *> players;
   // First get opponent if exists
   if (!args.empty() && args[0] == "--2p") {
     std::string ip = args.size() > 1 ? args[1] : std::string();
     if (!ip.empty()) {
-      playerID = 2;
+      playerID++;
     }
     NetPlayer *opp = getOpponent(ip);
     if (!opp) {
@@ -140,16 +141,17 @@ std::vector<Player *> getPlayers(const std::vector<std::string> &args) {
     opp->setLocalPlayer(playerID);
     players.push_back(opp);
   } else if (!args.empty() && args[0] == "--slowp") {
-    players.push_back(new SlowPlayer(2));
+    players.push_back(new SlowPlayer(playerID + 1));
   } else {
-    players.push_back(new DummyPlayer(2));
+    players.push_back(new DummyPlayer(playerID + 1));
   }
 
   // Now set up local player
   glm::vec2 res = vec2Param("window.resolution");
   renderer = new Renderer(res);
 
-  player = new LocalPlayer(playerID, getPlayerColor(playerID), renderer);
+  glm::vec3 color = getPlayerColor(playerID - STARTING_PID + 1);
+  player = new LocalPlayer(playerID, color, renderer);
   renderer->setLocalPlayer(player);
 
   players.push_back(player);

@@ -10,14 +10,9 @@
 #include "Types.h"
 
 namespace rts {
-const id_t NO_ENTITY = 0;
-const id_t NO_PLAYER = 0;
-const id_t GAME_ID   = 0;
-const glm::vec3 NO_POSITION = glm::vec3(HUGE_VAL);
 
 class Entity {
 public:
-  const static id_t STARTING_ID;
   explicit Entity(const std::string &name, const Json::Value &params,
                   bool mobile = false, bool targetable = false);
   virtual ~Entity();

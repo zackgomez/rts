@@ -5,8 +5,7 @@
 
 namespace rts {
 
-const id_t Entity::STARTING_ID = 100;
-id_t Entity::lastID_ = Entity::STARTING_ID;
+id_t Entity::lastID_ = STARTING_EID;
 
 Entity::Entity(const std::string &name,
                const Json::Value &params,
@@ -22,8 +21,9 @@ Entity::Entity(const std::string &name,
   height_(0.f),
   speed_(0.f),
   turnSpeed_(0.f) {
+
   if (params.isMember("entity_pid")) {
-    playerID_ = params["entity_pid"].asUInt64();
+    playerID_ = toID(params["entity_pid"]);
   }
   if (params.isMember("entity_pos")) {
     pos_ = toVec3(params["entity_pos"]);
@@ -33,6 +33,11 @@ Entity::Entity(const std::string &name,
   }
   radius_ = param("radius");
   height_ = param("height");
+
+  // Make sure we did it right
+  assertEid(id_);
+  assertPid(playerID_);
+  // TODO(zack) assertTid
 }
 
 Entity::~Entity() {

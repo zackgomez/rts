@@ -27,8 +27,8 @@ void Map::init(const std::vector<Player *> &players) {
   for (int i = 0; i < players.size(); i++) {
     const Player *p = players[i];
     id_t pid = p->getPlayerID();
+    int ind = pid - STARTING_PID;
 
-    int ind = pid - 1;
     glm::vec3 pos = toVec3(getParam(name_ + ".startingPositions")[ind]);
     glm::vec3 dir = glm::normalize(
       toVec3(getParam(name_ + ".startingDirections")[ind])
@@ -47,7 +47,7 @@ void Map::init(const std::vector<Player *> &players) {
     params["entity_pos"] = toJson(pos);
     params["entity_angle"] = angle;
     MessageHub::get()->sendSpawnMessage(
-      GAME_ID,
+      MAP_ID,
       Building::TYPE,
       "building",
       params
@@ -63,7 +63,7 @@ void Map::init(const std::vector<Player *> &players) {
       params["entity_pos"] = toJson(pos);
       params["entity_angle"] = angle;
       MessageHub::get()->sendSpawnMessage(
-        GAME_ID, // from
+        MAP_ID, // from
         Unit::TYPE, // class
         "melee_unit", // name
         params
@@ -80,7 +80,7 @@ void Map::init(const std::vector<Player *> &players) {
     params["entity_pid"] = toJson(NO_PLAYER);
     params["entity_pos"] = toJson(pos);
     MessageHub::get()->sendSpawnMessage(
-        GAME_ID,
+        MAP_ID,
         Building::TYPE,
         "victory_point",
         params);
@@ -93,7 +93,7 @@ void Map::init(const std::vector<Player *> &players) {
     params["entity_pid"] = toJson(NO_PLAYER);
     params["entity_pos"] = toJson(pos);
     MessageHub::get()->sendSpawnMessage(
-        GAME_ID,
+        MAP_ID,
         Building::TYPE,
         "req_point",
         params);
