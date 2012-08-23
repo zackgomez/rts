@@ -206,8 +206,7 @@ std::vector<Player *> getPlayers(const std::vector<std::string> &args) {
   }
 
   // Now set up local player
-  glm::vec2 res = vec2Param("window.resolution");
-  renderer = new Renderer(res);
+  renderer = new Renderer();
 
   glm::vec3 color = vec3Param("local.playerColor");
   std::string name = strParam("local.username");

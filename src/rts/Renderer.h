@@ -17,7 +17,7 @@ class Effect;
 
 class Renderer {
 public:
-  Renderer(const glm::vec2 &resolution);
+  Renderer();
   ~Renderer();
 
   void setLocalPlayer(const LocalPlayer *p) {

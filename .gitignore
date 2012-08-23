@@ -6,3 +6,4 @@ rts.exe
 lib/**/*.o
 tags
 lib/boost_1_50_0
+local.json

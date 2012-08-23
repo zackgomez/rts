@@ -24,11 +24,11 @@ namespace rts {
 
 LoggerPtr Renderer::logger_;
 
-Renderer::Renderer(const glm::vec2 &resolution) :
+Renderer::Renderer() :
   game_(NULL),
   player_(NULL),
   cameraPos_(0.f, 5.f, 0.f),
-  resolution_(resolution),
+  resolution_(vec2Param("local.resolution")),
   dragStart_(HUGE_VAL),
   dragEnd_(HUGE_VAL),
   displayChatBoxTimer_(0.f),

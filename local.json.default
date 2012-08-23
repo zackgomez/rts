@@ -1,0 +1,8 @@
+{
+  // Player Configuration
+  "username" : "Player",
+  "playerColor" : [0.1, 0.1, 0.8],
+
+  // Game Preferences
+  "resolution" : [1280, 800]
+}

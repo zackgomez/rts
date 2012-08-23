@@ -18,8 +18,8 @@ MMOBJ = $(patsubst $(MMDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(MMDI
 
 all: obj rts matchmaker
 
-rts: $(RTSOBJ) $(COMMONOBJ)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+rts: $(RTSOBJ) $(COMMONOBJ) local.json
+	$(CXX) $(CXXFLAGS) -o $@ $(RTSOBJ) $(COMMONOBJ) $(LDFLAGS)
 
 matchmaker: $(MMOBJ) $(COMMONOBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
@@ -36,6 +36,9 @@ $(JSON)/jsoncpp.o: $(JSON)/jsoncpp.cpp
 
 $(KISSNET)/kissnet.o: $(KISSNET)/kissnet.cpp
 	$(CXX) -c $(CXXFLAGS) -o $@ $^
+
+local.json: local.json.default
+	cp local.json.default local.json
 
 clean:
 	rm -f rts obj/*
