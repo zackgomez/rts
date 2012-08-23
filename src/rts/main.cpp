@@ -25,7 +25,8 @@ int initLibs();
 void cleanup();
 
 NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID,
-    const std::string &localPlayerName, const glm::vec3 &localPlayerColor);
+    rts::id_t localPlayerTID, const std::string &localPlayerName,
+    const glm::vec3 &localPlayerColor);
 
 LoggerPtr logger;
 
@@ -78,12 +79,14 @@ NetPlayer * getOpponent(const std::string &ip) {
   // TODO(zack): eventually this ID will be assigned to use by the match
   // maker
   rts::id_t localPlayerID = ip.empty() ? STARTING_PID : STARTING_PID + 1;
-  return handshake(conn, localPlayerID, strParam("local.username"),
-      vec3Param("local.playerColor"));
+  rts::id_t localPlayerTID = ip.empty() ? STARTING_TID : STARTING_TID + 1;
+  return handshake(conn, localPlayerID, localPlayerTID,
+      strParam("local.username"), vec3Param("local.playerColor"));
 }
 
 NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID,
-    const std::string &localPlayerName, const glm::vec3 &localPlayerColor) {
+    rts::id_t localPlayerTID, const std::string &localPlayerName,
+    const glm::vec3 &localPlayerColor) {
   // Some chaced params
   const std::string version = strParam("game.version");
   const float maxT = fltParam("network.handshake.maxWait");
@@ -95,6 +98,7 @@ NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID,
   v["type"] = "HANDSHAKE";
   v["version"] = version;
   v["pid"] = toJson(localPlayerID);
+  v["tid"] = toJson(localPlayerTID);
   v["color"] = toJson(localPlayerColor);
   v["name"] = localPlayerName;
   v["param_checksum"] = paramChecksum;

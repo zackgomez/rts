@@ -4,19 +4,31 @@ JSON=lib/jsoncpp
 STBI=lib/stbi
 STBTT=lib/stb_truetype
 KISSNET=lib/kissnet
-CXXFLAGS=-g -O0 -Wall -I$(GLM) -std=c++0x -I$(JSON) -I$(KISSNET) -I$(STBI) -Wno-reorder -I$(STBTT)
+CXXFLAGS=-g -O0 -Wall -I$(GLM) -std=c++0x -I$(JSON) -I$(KISSNET) -I$(STBI) -Wno-reorder -I$(STBTT) -I$(COMMONDIR)
 LDFLAGS=-lSDL -lGL -lGLEW -rdynamic
 OBJDIR=obj
 SRCDIR=src
+RTSDIR=$(SRCDIR)/rts
+COMMONDIR=$(SRCDIR)/common
+MMDIR=$(SRCDIR)/matchmaker
 
-OBJECTS = $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(SRCDIR)/*.cpp))) $(JSON)/jsoncpp.o $(KISSNET)/kissnet.o
+COMMONOBJ = $(patsubst $(COMMONDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(COMMONDIR)/*.cpp))) $(JSON)/jsoncpp.o $(KISSNET)/kissnet.o
+RTSOBJ = $(patsubst $(RTSDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(RTSDIR)/*.cpp)))
+MMOBJ = $(patsubst $(MMDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(MMDIR)/*.cpp)))
 
-all: obj rts
+all: obj rts matchmaker
 
-rts: $(OBJECTS)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJECTS) $(LDFLAGS)
+rts: $(RTSOBJ) $(COMMONOBJ)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+matchmaker: $(MMOBJ) $(COMMONOBJ)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+$(OBJDIR)/%.o: $(RTSDIR)/%.cpp
+	$(CXX) -c $(CXXFLAGS) -o $(OBJDIR)/$*.o $<
+$(OBJDIR)/%.o: $(COMMONDIR)/%.cpp
+	$(CXX) -c $(CXXFLAGS) -o $(OBJDIR)/$*.o $<
+$(OBJDIR)/%.o: $(MMDIR)/%.cpp
 	$(CXX) -c $(CXXFLAGS) -o $(OBJDIR)/$*.o $<
 
 $(JSON)/jsoncpp.o: $(JSON)/jsoncpp.cpp

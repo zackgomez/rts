@@ -1,5 +1,4 @@
 #include "Types.h"
-#include "Entity.h"
 
 namespace rts {
 
@@ -20,6 +19,4 @@ id_t assertTid(id_t id) {
   return id;
 }
 
-
-
-};
+}; // rts

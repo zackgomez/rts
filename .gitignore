@@ -1,5 +1,6 @@
 obj
-rts
+/rts
+/matchmaker
 *.dll
 rts.exe
 lib/**/*.o
