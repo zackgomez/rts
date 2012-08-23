@@ -88,6 +88,7 @@ NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID,
   const std::string version = strParam("game.version");
   const float maxT = fltParam("network.handshake.maxWait");
   const float interval = fltParam("network.handshake.checkInterval");
+  const uint32_t paramChecksum = ParamReader::get()->getFileChecksum();
 
   // First send our message
   Json::Value v;
@@ -96,7 +97,7 @@ NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID,
   v["pid"] = toJson(localPlayerID);
   v["color"] = toJson(localPlayerColor);
   v["name"] = localPlayerName;
-  // TODO(zack): include params checksum
+  v["param_checksum"] = paramChecksum;
   conn->sendPacket(v);
 
   std::queue<Json::Value> &queue = conn->getQueue();
@@ -117,6 +118,15 @@ NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID,
         LOG(FATAL) << "Mismatched game version from connection "
           << "(theirs: " << msg["version"] << " ours: " << version << ")\n";
         // Fail
+        break;
+      }
+
+      if (!msg.isMember("param_checksum")
+          || msg["param_checksum"].asUInt() != paramChecksum) {
+        LOG(FATAL) << "Mismatched params file checksum (theirs: " << std::hex
+          << msg["param_checksum"].asUInt() << " ours: " << paramChecksum
+          << std::dec << ")\n";
+        // fail
         break;
       }
 

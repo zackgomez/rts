@@ -33,11 +33,18 @@ public:
 
   void printParams() const;
 
+  // Returns a checksum of the root file loaded.  Any included files have 
+  // their inclusion noted, but not the contents.
+  uint32_t getFileChecksum() const {
+    return fileChecksum_;
+  }
+
 private:
   ParamReader();
   Json::Value getParamHelper(const std::string &param) const;
   LoggerPtr logger_;
 
   Json::Value root_;
+  uint32_t fileChecksum_;
 };
 
