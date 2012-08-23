@@ -14,7 +14,6 @@ public:
 
   void setGame(Game *game);
 
-  const Entity *getEntity(id_t eid) const;
   // Immediately dispatches message
   void sendMessage(const Message &msg);
 

@@ -20,21 +20,30 @@ namespace PlayerState {
 
 class Player {
 public:
-  explicit Player(id_t playerID, const std::string &name, const glm::vec3 &color)
-    : playerID_(playerID), name_(name), color_(color), game_(NULL) {
+  explicit Player(id_t playerID, id_t teamID, const std::string &name,
+      const glm::vec3 &color) :
+    playerID_(playerID), teamID_(teamID), name_(name), color_(color),
+    game_(NULL)
+  {
+    assertPid(playerID_);
+    assertTid(teamID_);
   }
   virtual ~Player() {}
+
+  void setGame(Game *game) {
+    game_ = game;
+  }
 
   id_t getPlayerID() const {
     return playerID_;
   }
 
-  const std::string &getName() const {
-    return name_;
+  id_t getTeamID() const {
+    return teamID_;
   }
 
-  virtual void setGame(Game *game) {
-    game_ = game;
+  const std::string &getName() const {
+    return name_;
   }
 
   /* Called at the start of each tick, should finalize the previous frame
@@ -64,14 +73,17 @@ public:
 
 protected:
   id_t playerID_;
+  id_t teamID_;
   const std::string name_;
   glm::vec3 color_;
+
   Game *game_;
 };
 
 class LocalPlayer : public Player {
 public:
-  LocalPlayer(id_t playerID, const std::string &name, const glm::vec3 &color, Renderer *renderer);
+  LocalPlayer(id_t playerID, id_t teamID, const std::string &name,
+      const glm::vec3 &color, Renderer *renderer);
   virtual ~LocalPlayer();
 
   virtual bool update(tick_t tick);
@@ -129,7 +141,7 @@ private:
 
 class DummyPlayer : public Player {
 public:
-  DummyPlayer(id_t playerID);
+  DummyPlayer(id_t playerID, id_t teamID);
   virtual bool update(tick_t tick);
   virtual void playerAction(id_t playerID, const PlayerAction &action) { }
 };
@@ -137,7 +149,8 @@ public:
 // Player used for testing that occasionally drops frames
 class SlowPlayer : public Player {
 public:
-  SlowPlayer(id_t playerID) : Player(playerID, "SlowP", glm::vec3(0.f)) { }
+  SlowPlayer(id_t playerID, id_t teamID) :
+    Player(playerID, teamID, "SlowP", glm::vec3(0.f)) { }
 
   virtual bool update(tick_t tick);
   virtual void playerAction(id_t playerID, const PlayerAction &action) { }

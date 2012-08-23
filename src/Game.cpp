@@ -18,6 +18,8 @@ bool comparePlayerID(Player *p1, Player *p2) {
   return p1->getPlayerID() < p2->getPlayerID();
 }
 
+Game* Game::instance_ = NULL;
+
 Game::Game(Map *map, const std::vector<Player *> &players,
     Renderer *renderer) :
   map_(map),
@@ -33,7 +35,6 @@ Game::Game(Map *map, const std::vector<Player *> &players,
 
   for (auto player : players) {
     player->setGame(this);
-
     // Add resources
     PlayerResources res;
     res.requisition = 0.f;
@@ -43,11 +44,15 @@ Game::Game(Map *map, const std::vector<Player *> &players,
   std::sort(players_.begin(), players_.end(), comparePlayerID);
 
   renderer_->setGame(this);
+
+  assert(!instance_);
+  instance_ = this;
 }
 
 Game::~Game() {
   MessageHub::get()->setGame(NULL);
   delete map_;
+  instance_ = NULL;
 }
 
 bool Game::updatePlayers() {
@@ -284,6 +289,7 @@ const Player * Game::getPlayer(id_t pid) const {
   }
 
   invariant(false, "Asked to find unknown pid!");
+  return NULL;
 }
 
 const PlayerResources& Game::getResources(id_t pid) const {

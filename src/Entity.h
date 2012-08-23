@@ -32,6 +32,7 @@ public:
   id_t getPlayerID() const {
     return playerID_;
   }
+  id_t getTeamID() const;
 
   const std::string& getName() const {
     return name_;

@@ -6,6 +6,7 @@
 namespace rts {
 
 class UnitState;
+class Building;
 
 class Unit : public Actor {
 public:
@@ -31,7 +32,7 @@ public:
   // if the target is in range and within firing arc
   bool canAttack(const Entity *target) const;
   // if the unit is in range
-  bool canCapture(const Entity *target) const;
+  bool canCapture(const Building *target) const;
   // If this the target is within firing range
   bool withinRange(const Entity *target) const;
   // Rotates to face position
@@ -43,7 +44,7 @@ public:
   // Attacks target if possible (within range, arc, cd available)
   void attackTarget(const Entity *target);
   // Captures target
-  void captureTarget(const Entity *target, float cap);
+  void captureTarget(const Building *target, float cap);
 
   const Entity *getTarget(id_t lastTargetID) const;
 

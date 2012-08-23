@@ -2,6 +2,7 @@
 #include "ParamReader.h"
 #include "MessageHub.h"
 #include "util.h"
+#include "Player.h"
 
 namespace rts {
 
@@ -37,10 +38,18 @@ Entity::Entity(const std::string &name,
   // Make sure we did it right
   assertEid(id_);
   assertPid(playerID_);
-  // TODO(zack) assertTid
 }
 
 Entity::~Entity() {
+}
+
+id_t Entity::getTeamID() const {
+  // No player, no team
+  if (playerID_ == NO_PLAYER) {
+    return NO_TEAM;
+  }
+  // A bit inefficient but OK for now
+  return Game::get()->getPlayer(playerID_)->getTeamID();
 }
 
 void Entity::update(float dt) {

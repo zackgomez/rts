@@ -9,9 +9,9 @@
 
 namespace rts {
 
-LocalPlayer::LocalPlayer(id_t playerID, const std::string &name, 
+LocalPlayer::LocalPlayer(id_t playerID, id_t teamID, const std::string &name, 
     const glm::vec3 &color, Renderer *renderer) :
-  Player(playerID, name, color),
+  Player(playerID, teamID, name, color),
   renderer_(renderer),
   targetTick_(0),
   doneTick_(-1e6), // no done ticks
@@ -23,7 +23,6 @@ LocalPlayer::LocalPlayer(id_t playerID, const std::string &name,
   state_(PlayerState::DEFAULT),
   order_() {
 
-  assertPid(playerID);
   logger_ = Logger::getLogger("LocalPlayer");
 }
 
@@ -88,9 +87,10 @@ void LocalPlayer::renderUpdate(float dt) {
 
   // Deselect dead entities
   std::set<id_t> newsel;
-for (auto eid : selection_) {
+  for (auto eid : selection_) {
     assertEid(eid);
-    if (MessageHub::get()->getEntity(eid)) {
+    const Entity *e = game_->getEntity(eid);
+    if (e && e->getPlayerID() == playerID_) {
       newsel.insert(eid);
     }
   }
@@ -144,11 +144,11 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button) {
       action["type"] = order_;
       action["entity"] = toJson(selection_);
       action["target"] = toJson(loc);
-      if (entity && entity->getPlayerID() != playerID_) {
+      if (entity && entity->getTeamID() != teamID_) {
         action["enemy_id"] = toJson(entity->getID());
       }
-      action["pid"] = (Json::Value::Int64) playerID_;
-      action["tick"] = (Json::Value::Int64) targetTick_;
+      action["pid"] = toJson(playerID_);
+      action["tick"] = toJson(targetTick_);
 
       // Clear order
       order_.clear();
@@ -162,7 +162,7 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button) {
     else {
       // If right clicked on enemy unit (and we have a selection)
       // go attack them
-      if (entity && entity->getPlayerID() != playerID_
+      if (entity && entity->getTeamID() != teamID_
           && !selection_.empty()) {
         // Visual feedback
         // TODO make this something related to the unit clicked on
@@ -293,7 +293,7 @@ void LocalPlayer::keyPress(SDL_keysym keysym) {
             // TODO(zack): this assumption that head of selection is always 
             // the unit we're building on is not good
             auto sel = selection_.begin();
-            const Entity *ent = MessageHub::get()->getEntity(*sel);
+            const Entity *ent = game_->getEntity(*sel);
             // The main action of a building is production
             if (ent->getType() == "BUILDING") {
               std::vector<std::string> prod = arrParam(ent->getName() + 
@@ -384,8 +384,8 @@ LocalPlayer::setSelection(const std::set<id_t> &s) {
   renderer_->setSelection(selection_);
 }
 
-DummyPlayer::DummyPlayer(id_t playerID) :
-  Player(playerID, "DummyPlayer", vec3Param("colors.dummyPlayer")) {
+DummyPlayer::DummyPlayer(id_t playerID, id_t teamID) :
+  Player(playerID, teamID, "DummyPlayer", vec3Param("colors.dummyPlayer")) {
 }
 
 bool DummyPlayer::update(tick_t tick) {

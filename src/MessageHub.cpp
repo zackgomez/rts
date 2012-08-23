@@ -25,10 +25,6 @@ void MessageHub::setGame(Game *game) {
   game_ = game;
 }
 
-const Entity * MessageHub::getEntity(id_t eid) const {
-  return game_->getEntity(eid);
-}
-
 void MessageHub::sendMessage(const Message &msg) {
   invariant(game_, "unset game object");
   invariant(msg.isMember("to"), "missing to field in message");

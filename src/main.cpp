@@ -137,6 +137,13 @@ NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID,
         break;
       }
 
+      rts::id_t tid;
+      if (!msg.isMember("tid") || !(tid = assertTid(toID(msg["tid"])))) {
+        LOG(FATAL) << "Missing tid from handshake message.\n";
+        // fail
+        break;
+      }
+
       glm::vec3 color;
       // TODO(zack): or isn't vec3/valid color
       if (!msg.isMember("color")) {
@@ -155,7 +162,7 @@ NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID,
       name = msg["name"].asString();
 
       // Success, make a new player
-      return new NetPlayer(pid, name, color, conn);
+      return new NetPlayer(pid, tid, name, color, conn);
     }
 
     // No message, wait and check again
@@ -170,13 +177,16 @@ NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID,
 
 std::vector<Player *> getPlayers(const std::vector<std::string> &args) {
   // TODO(zack) use matchmaker, or just create local and dummy players
-  int64_t playerID = STARTING_PID;
+  rts::id_t playerID = STARTING_PID;
+  rts::id_t teamID = STARTING_TID;
+
   std::vector<Player *> players;
   // First get opponent if exists
   if (!args.empty() && args[0] == "--2p") {
     std::string ip = args.size() > 1 ? args[1] : std::string();
     if (!ip.empty()) {
       playerID++;
+      teamID++;
     }
     NetPlayer *opp = getOpponent(ip);
     if (!opp) {
@@ -186,9 +196,9 @@ std::vector<Player *> getPlayers(const std::vector<std::string> &args) {
     opp->setLocalPlayer(playerID);
     players.push_back(opp);
   } else if (!args.empty() && args[0] == "--slowp") {
-    players.push_back(new SlowPlayer(playerID + 1));
+    players.push_back(new SlowPlayer(playerID + 1, teamID + 1));
   } else {
-    players.push_back(new DummyPlayer(playerID + 1));
+    players.push_back(new DummyPlayer(playerID + 1, teamID + 1));
   }
 
   // Now set up local player
@@ -197,7 +207,7 @@ std::vector<Player *> getPlayers(const std::vector<std::string> &args) {
 
   glm::vec3 color = vec3Param("local.playerColor");
   std::string name = strParam("local.username");
-  player = new LocalPlayer(playerID, name, color, renderer);
+  player = new LocalPlayer(playerID, teamID, name, color, renderer);
   renderer->setLocalPlayer(player);
 
   players.push_back(player);

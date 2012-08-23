@@ -6,6 +6,7 @@
 #include "Projectile.h"
 #include "Building.h"
 #include "Weapon.h"
+#include "Game.h"
 
 namespace rts {
 
@@ -105,11 +106,9 @@ bool Unit::canAttack(const Entity *e) const {
   }
 }
 
-bool Unit::canCapture(const Entity *e) const {
-  invariant(e->getType() == Building::TYPE, 
-      "capture target must be a building");
+bool Unit::canCapture(const Building *e) const {
   float dist = glm::distance(e->getPosition(), getPosition());
-  return ((Building*)e)->canCapture(getID()) && 
+  return e->canCapture(getID()) && 
     dist <= fltParam("global.captureRange");
 }
 
@@ -166,15 +165,12 @@ void Unit::attackTarget(const Entity *e) {
   weapon_->fire(e);
 }
 
-void Unit::captureTarget(const Entity *e, float cap) {
+void Unit::captureTarget(const Building *e, float cap) {
   assert(e);
 
-  invariant(e->getType() == Building::TYPE, 
-      "capture target must be a building");
+  invariant(e->canCapture(getID()), "should be able to cap");
 
-  id_t capperID = ((Building*)e)->getCapperID();
-  if (capperID != NO_ENTITY && capperID != getID()) return;
-
+  // TODO(zack): MessageHub::sendCaptureMessage
   Message msg;
   msg["to"] = toJson(e->getID());
   msg["from"] = toJson(getID());
@@ -189,7 +185,7 @@ const Entity * Unit::getTarget(id_t lastTargetID) const {
   const Entity *target = NULL;
   // Default to last target
   if (lastTargetID != NO_ENTITY
-      && (target = MessageHub::get()->getEntity(lastTargetID))) {
+      && (target = Game::get()->getEntity(lastTargetID))) {
     // Can't attack them if they're too far away
     if (!withinRange(target)) {
       target = NULL;
@@ -202,20 +198,20 @@ const Entity * Unit::getTarget(id_t lastTargetID) const {
     // In vim, these {} are marked as errors, that's just because vim doesn't
     // know c++11
     target = MessageHub::get()->findEntity(
-    [&](const Entity *e) -> float {
-      if (e->getPlayerID() != NO_PLAYER
-      && e->getPlayerID() != getPlayerID()
-      && e->isTargetable()) {
-        float dist = glm::distance(
-          pos_,
-          e->getPosition());
-        // Only take ones that are within attack range, sort
-        // by distance
-        return dist < getSight() ? dist : HUGE_VAL;
+      [&](const Entity *e) -> float {
+        if (e->getPlayerID() != NO_PLAYER
+            && e->getTeamID() != getTeamID()
+            && e->isTargetable()) {
+          float dist = glm::distance(
+            pos_,
+            e->getPosition());
+          // Only take ones that are within attack range, sort
+          // by distance
+          return dist < getSight() ? dist : HUGE_VAL;
+        }
+        return HUGE_VAL;
       }
-      return HUGE_VAL;
-    }
-             );
+    );
   }
 
   return target;
@@ -268,7 +264,7 @@ MoveState::MoveState(id_t targetID, Unit *unit) :
 
 void MoveState::updateTarget() {
   if (targetID_ != NO_ENTITY) {
-    const Entity *e = MessageHub::get()->getEntity(targetID_);
+    const Entity *e = Game::get()->getEntity(targetID_);
     if (!e) {
       targetID_ = NO_ENTITY;
     } else {
@@ -299,7 +295,7 @@ UnitState * MoveState::next() {
 
   // Or target entity has died
   if (targetID_ != NO_ENTITY
-      && MessageHub::get()->getEntity(targetID_) == NULL) {
+      && Game::get()->getEntity(targetID_) == NULL) {
     return new IdleState(unit_);
   }
 
@@ -319,7 +315,7 @@ AttackState::~AttackState() {
 void AttackState::update(float dt) {
   // Default to no movement
   unit_->remainStationary();
-  const Entity *target = MessageHub::get()->getEntity(targetID_);
+  const Entity *target = Game::get()->getEntity(targetID_);
   // TODO(brooklyn) unit out of global sight (must be accounted for) 
   if (!target)
     return;
@@ -335,7 +331,7 @@ void AttackState::update(float dt) {
 
 UnitState * AttackState::next() {
   // We're done pursuing when the target is DEAD
-  const Entity *target = MessageHub::get()->getEntity(targetID_);
+  const Entity *target = Game::get()->getEntity(targetID_);
 
   // Checks that distance between units is in sight range
   // TODO(brooklyn) add condition to consider global sight
@@ -402,7 +398,7 @@ UnitState * AttackMoveState::stop(UnitState *next) {
 CaptureState::CaptureState(id_t targetID, Unit *unit) :
   UnitState(unit),
   targetID_(targetID) {
-  invariant(MessageHub::get()->getEntity(targetID_)->getType() == 
+  invariant(Game::get()->getEntity(targetID_)->getType() == 
       Building::TYPE, "capture target must be a building");
 }
 
@@ -412,25 +408,29 @@ CaptureState::~CaptureState() {
 void CaptureState::update(float dt) {
   // Default to no movement
   unit_->remainStationary();
-  const Entity *target = MessageHub::get()->getEntity(targetID_);
+  const Entity *target = Game::get()->getEntity(targetID_);
   if (!target) {
     return;
   }
+  invariant(target->getType() == Building::TYPE,
+      "capture target must be a building");
+  const Building *btarget = (const Building *) target;
+  
 
   // If we can cap, do so.
-  if (unit_->canCapture(target)) {
-    unit_->captureTarget(target, dt);
+  if (unit_->canCapture(btarget)) {
+    unit_->captureTarget(btarget, dt);
   }
   // Otherwise move towards target
   else {
-    unit_->moveTowards(target->getPosition(), dt);
+    unit_->moveTowards(btarget->getPosition(), dt);
   }
 }
 
 UnitState * CaptureState::next() {
   // We're done capping when the building belongs to us.
-  const Entity *target = MessageHub::get()->getEntity(targetID_);
-  if (target->getPlayerID() == unit_->getPlayerID()) {
+  const Entity *target = Game::get()->getEntity(targetID_);
+  if (target->getTeamID() == unit_->getTeamID()) {
     return new IdleState(unit_);
   }
 

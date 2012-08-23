@@ -22,6 +22,8 @@ public:
       Renderer *renderer);
   ~Game();
 
+  static const Game* get() { return instance_; }
+
   // Synchronizes game between players and does any other initialization
   // required
   // @arg period the time to wait between each check
@@ -104,6 +106,9 @@ protected:
 
   bool paused_;
   bool running_;
+
+private:
+  static Game *instance_;
 };
 
 struct PlayerResources {

@@ -515,7 +515,7 @@ void BloodEffect::render(float dt) {
   // TODO(zack) replace this with a cool blood effect and or damage text
   t_ += dt;
 
-  Actor *a = (Actor *) MessageHub::get()->getEntity(aid_);
+  Actor *a = (Actor *) Game::get()->getEntity(aid_);
   // TODO(zack): assert that this entity IS an actor
   if (!a) {
     // If entity died, no more effect
