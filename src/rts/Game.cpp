@@ -70,6 +70,10 @@ void Game::start(float period) {
   // tickOffset_, so when we run frame 0, they're generating input for frame
   // tickOffset_
   for (tick_ = -tickOffset_+1; tick_ < 0; ) {
+    // Fix for quiting
+    if (!running_) {
+      return;
+    }
     logger_->info() << "Running synch frame " << tick_ << '\n';
 
     // Lock the player update
@@ -77,9 +81,11 @@ void Game::start(float period) {
     // See if everyone is ready to go
     if (updatePlayers()) {
       tick_++;
+    } else {
+      // unlock before delay
+      lock.unlock();
+      SDL_Delay(int(1000*period));
     }
-
-    SDL_Delay(int(1000*period));
   }
 
   // Starting resources
