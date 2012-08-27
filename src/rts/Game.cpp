@@ -38,6 +38,7 @@ Game::Game(Map *map, const std::vector<Player *> &players,
     // Add resources
     PlayerResources res;
     res.requisition = 0.f;
+    res.victory_points = 0.f;
     resources_[player->getPlayerID()] = res;
   }
   // sort players to ensure consistency

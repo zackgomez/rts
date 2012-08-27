@@ -8,16 +8,22 @@ ParamReader::ParamReader() {
 }
 
 ParamReader * ParamReader::get() {
-  static ParamReader pr;
-  return &pr;
+  static ParamReader instance;
+  return &instance;
 }
 
 void ParamReader::loadFile(const char *filename) {
   std::ifstream file(filename);
+  if (!file) {
+    logger_->fatal() << "Unable to read file " << filename << '\n';
+    assert(false);
+    return;
+  }
   Json::Reader reader;
   if (!reader.parse(file, root_)) {
     logger_->fatal() << "Cannot load param file " << filename << "\n"
                      << reader.getFormattedErrorMessages();
+    assert(false);
     return;
   }
 
