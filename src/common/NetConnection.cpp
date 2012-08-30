@@ -1,4 +1,6 @@
 #include "NetConnection.h"
+#include "Logger.h"
+#include <cassert>
 
 struct net_msg {
   uint32_t sz;
@@ -17,8 +19,7 @@ throw(kissnet::socket_exception) {
       throw kissnet::socket_exception("client disconnected gracefully");
     }
 
-    Logger::getLogger("readPacket")->fatal() << "Read " << bytes_read
-        << " as header.\n";
+    LOG(FATAL) << "Read " << bytes_read << " as header.\n";
     assert(false && "Didn't read a full 4 byte header");
   }
 
@@ -33,36 +34,36 @@ throw(kissnet::socket_exception) {
   return ret;
 }
 
-void netThreadFunc(kissnet::tcp_socket_ptr sock, std::queue<PlayerAction> &queue,
+void netThreadFunc(kissnet::tcp_socket_ptr sock, std::queue<Json::Value> &queue,
                    std::mutex &queueMutex, bool &running) {
-  LoggerPtr logger = Logger::getLogger("NetThread");
   Json::Reader reader;
   while (running) {
     // Each loop, push exactly one message onto queue
-    PlayerAction act;
+    Json::Value msg;
     try {
+      // TODO(zack): add maybe 100ms timeout to this so the game/thread joins
+      // more readily
       net_msg packet = readPacket(sock);
 
       // Parse
-      reader.parse(packet.msg, act);
+      reader.parse(packet.msg, msg);
 
       //logger->debug() << "Received action: " << act << '\n';
 
     } catch (kissnet::socket_exception e) {
-      logger->error() << "Caught socket exception '" << e.what()
+      LOG(ERROR) << "Caught socket exception '" << e.what()
                       << "'... terminating thread.\n";
-      // On exception, leave game
-      act["type"] = ActionTypes::LEAVE_GAME;
+      // On exception, quit thread
       running = false;
     }
 
     // Lock and queue
     std::unique_lock<std::mutex> lock(queueMutex);
-    queue.push(act);
+    queue.push(msg);
     // automatically unlocks when lock goes out of scope
   }
 
-  logger->info() << "Thread finished\n";
+  LOG(INFO) << "Thread finished\n";
 }
 
 NetConnection::NetConnection(kissnet::tcp_socket_ptr sock) :

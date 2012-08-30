@@ -1,7 +1,8 @@
 #pragma once
 #include <thread>
 #include <mutex>
-#include "Player.h"
+#include <queue>
+#include <json/json.h>
 #include "kissnet.h"
 
 class NetConnection {
@@ -12,13 +13,20 @@ public:
   std::queue<Json::Value>& getQueue() {
     return queue_;
   }
+
   kissnet::tcp_socket_ptr getSocket() {
     return sock_;
   }
+
   std::mutex& getMutex() {
     return mutex_;
   }
+
   void stop();
+
+  bool running() const {
+    return running_;
+  }
 
   void sendPacket(const Json::Value &msg);
 

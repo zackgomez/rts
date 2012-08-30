@@ -23,13 +23,24 @@ NetPlayer::~NetPlayer() {
 bool NetPlayer::update(tick_t tick) {
   std::unique_lock<std::mutex> lock(connection_->getMutex());
   std::queue<PlayerAction> &actions = connection_->getQueue();
+
+  // If thread has died, then we're done
+  if (!connection_->running()) {
+    PlayerAction a;
+    a["type"] = ActionTypes::LEAVE_GAME;
+    a["pid"] = toJson(playerID_);
+    game_->addAction(playerID_, a);
+    // We're done with the entire game, including this tick
+    return true;
+  }
+
   // Read as many actions as were queued
   while (!actions.empty()) {
     PlayerAction a = actions.front();
     actions.pop();
 
     invariant(
-      a["pid"].asInt64() == playerID_ || a["type"] == ActionTypes::LEAVE_GAME,
+      toID(a["pid"]) == playerID_ || a["type"] == ActionTypes::LEAVE_GAME,
       "bad action from network thread"
     );
     game_->addAction(playerID_, a);
