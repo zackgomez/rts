@@ -10,7 +10,8 @@ namespace rts {
 
 Map::Map(const std::string &mapName) :
   name_("maps." + mapName),
-  size_(vec2Param(name_ + ".size")) {
+  size_(vec2Param(name_ + ".size")),
+  color_(vec4Param(name_ + ".minimapColor")) {
 }
 
 void Map::init(const std::vector<Player *> &players) {

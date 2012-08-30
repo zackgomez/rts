@@ -115,6 +115,17 @@ glm::vec2 Renderer::convertUIPos(const glm::vec2 &pos) {
   );
 }
 
+glm::vec2 Renderer::worldToMinimap(const glm::vec3 &mapPos) {
+  const glm::vec2 &mapSize = game_->getMap()->getSize();
+  const glm::vec2 minimapSize = vec2Param("ui.minimap.dim");  
+  const glm::vec2 minimapPos = convertUIPos(vec2Param("ui.minimap.pos"));
+  glm::vec2 pos = mapPos.xz;
+  pos += mapSize / 2.f;
+  pos *= minimapSize / mapSize;
+  pos += minimapPos;
+  return pos;
+}
+
 void Renderer::renderUI() {
   glDisable(GL_DEPTH_TEST);
 
@@ -165,6 +176,9 @@ void Renderer::renderUI() {
   tex = ResourceManager::get()->getTexture(strParam("ui.unitinfo.texture"));
   drawTexture(pos, size, tex);
 
+  // minimap
+  renderMinimap();
+
   // Render messages
   if (displayChatBoxTimer_ > 0.f || 
       player_->getState() == PlayerState::CHATTING) {
@@ -194,10 +208,62 @@ void Renderer::renderUI() {
   glEnable(GL_DEPTH_TEST);
 }
 
+void Renderer::renderMinimap() {
+  const glm::vec2 &mapSize = game_->getMap()->getSize();
+  const glm::vec4 &mapColor = game_->getMap()->getMinimapColor();
+  // TODO(connor) we probably want some small buffer around the sides of the
+  // minimap so we can see the underlay image..
+  const glm::vec2 minimapSize = vec2Param("ui.minimap.dim");
+  const glm::vec2 minimapPos = convertUIPos(vec2Param("ui.minimap.pos"));
+
+  // TODO(connor) support other aspect ratios so they don't stretch or distort
+
+  // Render base image
+  drawRect(minimapPos, minimapSize, mapColor);
+
+  // Render viewport
+  glm::vec2 res = vec2Param("local.resolution");
+  glm::vec2 minimapCoord[2][2];
+  glm::vec4 lineColor = vec4Param("ui.minimap.viewportLineColor");
+
+  // Iterates over the four corners of the current viewport
+  for (int x = 0; x <= 1; x++) {
+    for (int y = 0; y <= 1; y++) {
+      glm::vec2 screenCoord(glm::vec2(x * res.x, y * res.y));
+      glm::vec3 terrainCoord = screenToTerrain(screenCoord);
+      if (terrainCoord.x == HUGE_VAL) terrainCoord.x = mapSize.x / 2;
+      if (terrainCoord.x == -HUGE_VAL) terrainCoord.x = -mapSize.x / 2;
+      if (terrainCoord.z == HUGE_VAL) terrainCoord.z = mapSize.y / 2;
+      if (terrainCoord.z == -HUGE_VAL) terrainCoord.z = -mapSize.y / 2;
+      minimapCoord[x][y] = worldToMinimap(terrainCoord);
+    }
+  }
+  drawLine(minimapCoord[0][0], minimapCoord[0][1], lineColor);
+  drawLine(minimapCoord[0][1], minimapCoord[1][1], lineColor);
+  drawLine(minimapCoord[1][1], minimapCoord[1][0], lineColor);
+  drawLine(minimapCoord[1][0], minimapCoord[0][0], lineColor);
+
+  // render actors
+  for (auto &pair : mapCoords_) {
+    const Entity *e = pair.first;
+    const glm::vec3 &mapCoord = pair.second;
+    glm::vec2 pos = worldToMinimap(mapCoord);
+    const Player *player = game_->getPlayer(e->getPlayerID());
+    glm::vec3 pcolor = player ? player->getColor() : 
+      vec3Param("global.defaultColor");
+    // if selected draw as green
+    glm::vec4 color = selection_.count(e->getID())
+      ? glm::vec4(vec3Param("colors.selected"), 1.f)
+      : glm::vec4(pcolor, 1.f);
+    float actorSize = fltParam("ui.minimap.actorSize");
+    drawRect(pos, glm::vec2(actorSize), color);
+  }
+}
+
 void Renderer::renderMap(const Map *map) {
   const glm::vec2 &mapSize = map->getSize();
 
-  const glm::vec4 mapColor(0.25, 0.2, 0.15, 1.0);
+  const glm::vec4 &mapColor = map->getMinimapColor();
 
   GLuint mapProgram = ResourceManager::get()->getShader("map");
   glUseProgram(mapProgram);
@@ -284,6 +350,7 @@ void Renderer::startRender(float dt) {
 
   // Clear coordinates
   ndcCoords_.clear();
+  mapCoords_.clear();
   lastRender_ = SDL_GetTicks();
 }
 
@@ -312,6 +379,7 @@ void Renderer::renderActor(const Actor *actor, glm::mat4 transform) {
                   transform * glm::vec4(0, 0, 0, 1);
   ndc /= ndc.w;
   ndcCoords_[actor] = glm::vec3(ndc);
+  mapCoords_[actor] = applyMatrix(transform, glm::vec3(0.f));
 
   glDisable(GL_DEPTH_TEST);
 
@@ -408,6 +476,20 @@ void Renderer::updateCamera(const glm::vec3 &delta) {
                  glm::vec3(mapSize.x, 20.f, mapSize.y));
 }
 
+void Renderer::minimapUpdateCamera(const glm::vec2 &screenCoord) {  
+  glm::vec2 minimapPos = convertUIPos(vec2Param("ui.minimap.pos"));  
+  glm::vec2 minimapDim = vec2Param("ui.minimap.dim");  
+  glm::vec2 mapSize = game_->getMap()->getSize();  
+  glm::vec2 mapCoord = screenCoord;  
+  mapCoord -= minimapPos;  
+  mapCoord -= glm::vec2(minimapDim.x / 2, minimapDim.y / 2); 
+  mapCoord *= mapSize / minimapDim;  
+  glm::vec3 camCoord = cameraPos_; 
+  glm::vec3 cameraDelta =  
+  glm::vec3(mapCoord.x - camCoord.x, 0, mapCoord.y - camCoord.z);  
+  updateCamera(cameraDelta); 
+}
+
 id_t Renderer::selectEntity(const glm::vec2 &screenCoord) const {
   glm::vec2 pos = glm::vec2(screenToNDC(screenCoord));
 
@@ -483,9 +565,15 @@ glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
 
   const glm::vec2 mapSize = game_->getMap()->getSize() / 2.f;
   // Don't return a non terrain coordinate
-  if (terrain.x < -mapSize.x || terrain.x > mapSize.x
-      || terrain.z < -mapSize.y || terrain.z > mapSize.y) {
-    return glm::vec3(HUGE_VAL);
+  if (terrain.x < -mapSize.x) { 
+    terrain.x = -HUGE_VAL; 
+  } else if (terrain.x > mapSize.x) {  
+     terrain.x = HUGE_VAL;  
+  }  
+  if (terrain.z < -mapSize.y) {  
+      terrain.z = -HUGE_VAL; 
+  } else if (terrain.z > mapSize.y) {  
+      terrain.z = HUGE_VAL;  
   }
 
   return glm::vec3(terrain);

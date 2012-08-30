@@ -74,6 +74,7 @@
     {
       "size" : [25, 25],
       "players" : 2,
+      "minimapColor" : [0.25, 0.2, 0.15, 1.0],
       "startingPositions" : [
         [0, 0, 11],
         [0, 0, -11]
@@ -268,7 +269,9 @@
     {
       "texture" : "minimap",
       "pos"   : [0, -300],
-      "dim"   : [300, 300]
+      "dim"   : [300, 300],
+      "viewportLineColor" : [1, 1, 1, 1],
+      "actorSize" : 4
     },
     "unitinfo" :
     {

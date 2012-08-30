@@ -31,6 +31,7 @@ public:
   virtual void renderMessages(const std::set<Message> &messages);
   virtual void renderEntity(const Entity *entity);
   virtual void renderUI();
+  virtual void renderMinimap();
   virtual void renderMap(const Map *map);
 
   virtual void startRender(float dt);
@@ -43,6 +44,8 @@ public:
     return cameraPos_;
   }
   void updateCamera(const glm::vec3 &delta);
+  // moves the camera to where you click on the minimap
+  void minimapUpdateCamera(const glm::vec2 &screenCoord);
 
   // returns 0 if no acceptable entity near click
   id_t selectEntity (const glm::vec2 &screenCoord) const;
@@ -59,10 +62,12 @@ public:
 
   void displayChatBox(float time) { displayChatBoxTimer_ = time; }
 
+  glm::vec2 convertUIPos(const glm::vec2 &pos);
+
 private:
   glm::vec3 screenToNDC(const glm::vec2 &screenCoord) const;
   void renderActor(const Actor *actor, glm::mat4 transform);
-  glm::vec2 convertUIPos(const glm::vec2 &pos);
+  glm::vec2 worldToMinimap(const glm::vec3 &mapPos);
 
   // cached messages
   std::set<Message> messages_;
@@ -81,6 +86,7 @@ private:
   float displayChatBoxTimer_;
 
   std::map<const Entity *, glm::vec3> ndcCoords_;
+  std::map<const Entity *, glm::vec3> mapCoords_;
   std::set<id_t> selection_;
 
   std::vector<MapHighlight> highlights_;

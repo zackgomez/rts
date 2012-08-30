@@ -13,12 +13,18 @@ public:
   const glm::vec2 &getSize() const {
     return size_;
   }
+
+  const glm::vec4 &getMinimapColor() const {
+    return color_;
+  }
   // Initializes the map and any start entities/etc
   void init(const std::vector<Player *> &players);
 
 private:
   std::string name_;
   glm::vec2 size_;
+  // TODO(connor) replace this with an image
+  glm::vec4 color_;
 };
 
 }; // rts

@@ -197,10 +197,13 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m) {
 void drawRectCenter(
   const glm::vec2 &pos,
   const glm::vec2 &size,
-  const glm::vec4 &color) {
+  const glm::vec4 &color,
+  float angle) {
   glm::mat4 transform =
     glm::scale(
-      glm::translate(glm::mat4(1.f), glm::vec3(pos, 0.f)),
+      glm::rotate(
+        glm::translate(glm::mat4(1.f), glm::vec3(pos, 0.f)),
+        glm::degrees(angle), glm::vec3(0, 0, 1)),
       glm::vec3(size, 1.f));
 
   viewStack.push();
@@ -271,6 +274,18 @@ MatrixStack& getViewStack() {
 MatrixStack& getProjectionStack() {
   return projStack;
 }
+
+// TODO(connor) make this draw a line, for now render a thin rectangle 
+void drawLine( 
+  const glm::vec2 &p1, 
+  const glm::vec2 &p2, 
+  const glm::vec4 &color) {  
+  glm::vec2 center = p1 + p2;  
+  center /= 2; 
+  glm::vec2 size = glm::vec2(glm::distance(p1, p2), 1);  
+  float angle = glm::atan(p1.y - p2.y, p1.x - p2.x); 
+  drawRectCenter(center, size, color, angle);  
+}  
 
 GLuint loadProgram(const std::string &vert, const std::string &frag) {
   GLuint program;

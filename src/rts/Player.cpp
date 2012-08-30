@@ -19,6 +19,7 @@ LocalPlayer::LocalPlayer(id_t playerID, id_t teamID, const std::string &name,
   cameraPanDir_(0.f),
   shift_(false),
   leftDrag_(false),
+  leftDragMinimap_(false),
   message_(),
   state_(PlayerState::DEFAULT),
   order_() {
@@ -101,6 +102,8 @@ void LocalPlayer::renderUpdate(float dt) {
   if (leftDrag_
       && glm::distance(loc, leftStart_) > fltParam("hud.minDragDistance")) {
     renderer_->setDragRect(leftStart_, loc);
+  } else if (leftDragMinimap_) {  
+    renderer_->minimapUpdateCamera(screenCoord);
   }
 }
 
@@ -126,34 +129,45 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button) {
   const Entity *entity = game_->getEntity(eid);
 
   if (button == SDL_BUTTON_LEFT) {
-    leftDrag_ = true;
-    leftStart_ = loc;
-    // If no order, then adjust selection
-    if (order_.empty()) {
-      // If no shift held, then deselect (shift just adds)
-      if (!shift_) {
-        newSelect.clear();
+    glm::vec2 minimapPos = renderer_->convertUIPos(vec2Param("ui.minimap.pos"));  
+    glm::vec2 minimapDim = vec2Param("ui.minimap.dim");  
+    // TODO(connor) perhaps clean this up with some sort of click state? 
+    if (screenCoord.x >= minimapPos.x && 
+        screenCoord.x <= minimapPos.x + minimapDim.x &&  
+        screenCoord.y >= minimapPos.y && 
+        screenCoord.y <= minimapPos.y + minimapDim.y) {  
+      leftDragMinimap_ = true; 
+    } else {
+      leftDrag_ = true;
+      leftStart_ = loc;
+      // If no order, then adjust selection
+      if (order_.empty()) {
+        // If no shift held, then deselect (shift just adds)
+        if (!shift_) {
+          newSelect.clear();
+        }
+        // If there is an entity and its ours, select
+        if (entity && entity->getPlayerID() == playerID_) {
+          newSelect.insert(eid);
+        }
       }
-      // If there is an entity and its ours, select
-      if (entity && entity->getPlayerID() == playerID_) {
-        newSelect.insert(eid);
-      }
-    }
-    // If order, then execute it
-    else {
-      action["type"] = order_;
-      action["entity"] = toJson(selection_);
-      action["target"] = toJson(loc);
-      if (entity && entity->getTeamID() != teamID_) {
-        action["enemy_id"] = toJson(entity->getID());
-      }
-      action["pid"] = toJson(playerID_);
-      action["tick"] = toJson(targetTick_);
+      // If order, then execute it
+      else {
+        action["type"] = order_;
+        action["entity"] = toJson(selection_);
+        action["target"] = toJson(loc);
+        if (entity && entity->getTeamID() != teamID_) {
+          action["enemy_id"] = toJson(entity->getID());
+        }
+        action["pid"] = toJson(playerID_);
+        action["tick"] = toJson(targetTick_);
 
-      // Clear order
-      order_.clear();
+        // Clear order
+        order_.clear();
+      }
     }
   } else if (button == SDL_BUTTON_RIGHT) {
+    // TODO(connor) make right click actions on minimap
     // If there is an order, it is canceled by right click
     if (!order_.empty()) {
       order_.clear();
@@ -183,7 +197,7 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button) {
       // If we have a selection, and they didn't click on the current
       // selection, move them to target
       else if (!selection_.empty() && (!entity || !selection_.count(eid))) {
-        if (loc != glm::vec3 (HUGE_VAL)) {
+        if (loc.x != HUGE_VAL && loc.z != HUGE_VAL) {
           // Visual feedback
           renderer_->highlight(glm::vec2(loc.x, loc.z));
 
@@ -224,6 +238,7 @@ void LocalPlayer::mouseUp(const glm::vec2 &screenCoord, int button) {
     }
 
     leftDrag_ = false;
+    leftDragMinimap_ = false;
   }
   // nop
 }

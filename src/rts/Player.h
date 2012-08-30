@@ -133,6 +133,7 @@ private:
   std::vector<std::string> chatMessages_;
   bool leftDrag_;
   glm::vec3 leftStart_;
+  bool leftDragMinimap_;
   std::string order_;
   std::string state_;
 
