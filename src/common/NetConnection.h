@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SRC_COMMON_NETCONNECTION_H_
+#define SRC_COMMON_NETCONNECTION_H_
 #include <thread>
 #include <mutex>
 #include <queue>
@@ -6,8 +7,8 @@
 #include "kissnet.h"
 
 class NetConnection {
-public:
-  NetConnection(kissnet::tcp_socket_ptr sock);
+ public:
+  explicit NetConnection(kissnet::tcp_socket_ptr sock);
   ~NetConnection();
 
   std::queue<Json::Value>& getQueue() {
@@ -30,7 +31,7 @@ public:
 
   void sendPacket(const Json::Value &msg);
 
-private:
+ private:
   bool running_;
   kissnet::tcp_socket_ptr sock_;
   std::queue<Json::Value> queue_;
@@ -40,3 +41,5 @@ private:
   // JSON writers
   Json::FastWriter writer_;
 };
+
+#endif  // SRC_COMMON_NETCONNECTION_H_

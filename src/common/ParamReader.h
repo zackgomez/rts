@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SRC_COMMON_PARAMREADER_H_
+#define SRC_COMMON_PARAMREADER_H_
 #include <map>
 #include <iostream>
 #include <fstream>
@@ -22,7 +23,7 @@ void setParam(const std::string &key, const std::string &value);
 
 
 class ParamReader {
-public:
+ public:
   static ParamReader *get();
 
   void loadFile(const char *filename);
@@ -33,13 +34,13 @@ public:
 
   void printParams() const;
 
-  // Returns a checksum of the root file loaded.  Any included files have 
+  // Returns a checksum of the root file loaded.  Any included files have
   // their inclusion noted, but not the contents.
   uint32_t getFileChecksum() const {
     return fileChecksum_;
   }
 
-private:
+ private:
   ParamReader();
   Json::Value getParamHelper(const std::string &param) const;
   LoggerPtr logger_;
@@ -48,3 +49,4 @@ private:
   uint32_t fileChecksum_;
 };
 
+#endif  // SRC_COMMON_PARAMREADER_H_

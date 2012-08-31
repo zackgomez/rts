@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SRC_COMMON_TYPES_H_
+#define SRC_COMMON_TYPES_H_
 #include <cstdint>
 #include <string>
 #include <glm/glm.hpp>
@@ -43,6 +44,6 @@ namespace ResourceTypes {
 const std::string REQUISITION = "REQUISITION";
 const std::string VICTORY     = "VICTORY";
 };
+};  // rts
 
-}; // rts
-
+#endif  // SRC_COMMON_TYPES_H_

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SRC_COMMON_LOGGER_H_
+#define SRC_COMMON_LOGGER_H_
+
 #include <memory>
 #include <iostream>
 #include <string>
@@ -9,7 +11,7 @@ class Logger;
 typedef std::auto_ptr<Logger> LoggerPtr;
 
 class Logger {
-public:
+ public:
   static LoggerPtr getLogger(const std::string &prefix) {
     LoggerPtr ret(new Logger(prefix));
     return ret;
@@ -42,8 +44,8 @@ public:
     return std::cerr;
   }
 
-private:
-  Logger(const std::string &prefix) :
+ private:
+  explicit Logger(const std::string &prefix) :
     prefix_(prefix) {
     /* Empty */
   }
@@ -51,3 +53,4 @@ private:
   std::string prefix_;
 };
 
+#endif  // SRC_COMMON_LOGGER_H_

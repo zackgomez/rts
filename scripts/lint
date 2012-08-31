@@ -1,0 +1,2 @@
+#!/bin/sh
+scripts/cpplint --filter=+whitespace,+readability,-build/include,-readability/streams,-legal/copyright,-runtime/threadsafe_fn,-readability/casting $*

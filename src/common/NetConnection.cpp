@@ -18,7 +18,6 @@ throw(kissnet::socket_exception) {
     if (bytes_read == 0) {
       throw kissnet::socket_exception("client disconnected gracefully");
     }
-
     LOG(FATAL) << "Read " << bytes_read << " as header.\n";
     assert(false && "Didn't read a full 4 byte header");
   }
@@ -34,10 +33,10 @@ throw(kissnet::socket_exception) {
   return ret;
 }
 
-void netThreadFunc(kissnet::tcp_socket_ptr sock, std::queue<Json::Value> &queue,
-                   std::mutex &queueMutex, bool &running) {
+void netThreadFunc(kissnet::tcp_socket_ptr sock, std::queue<Json::Value> *queue,
+                   std::mutex *queueMutex, bool *running) {
   Json::Reader reader;
-  while (running) {
+  while (*running) {
     // Each loop, push exactly one message onto queue
     Json::Value msg;
     try {
@@ -47,30 +46,26 @@ void netThreadFunc(kissnet::tcp_socket_ptr sock, std::queue<Json::Value> &queue,
 
       // Parse
       reader.parse(packet.msg, msg);
-
-      //logger->debug() << "Received action: " << act << '\n';
-
     } catch (kissnet::socket_exception e) {
       LOG(ERROR) << "Caught socket exception '" << e.what()
                       << "'... terminating thread.\n";
       // On exception, quit thread
-      running = false;
+      *running = false;
     }
 
     // Lock and queue
-    std::unique_lock<std::mutex> lock(queueMutex);
-    queue.push(msg);
+    std::unique_lock<std::mutex> lock(*queueMutex);
+    queue->push(msg);
     // automatically unlocks when lock goes out of scope
   }
 
   LOG(INFO) << "Thread finished\n";
 }
 
-NetConnection::NetConnection(kissnet::tcp_socket_ptr sock) :
-  running_(true),
+NetConnection::NetConnection(kissnet::tcp_socket_ptr sock)
+  : running_(true),
   sock_(sock) {
-  netThread_ = std::thread(netThreadFunc, sock_, std::ref(queue_),
-                           std::ref(mutex_), std::ref(running_));
+  netThread_ = std::thread(netThreadFunc, sock_, &queue_, &mutex_, &running_);
 }
 
 NetConnection::~NetConnection() {

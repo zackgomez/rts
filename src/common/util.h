@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SRC_COMMON_UTIL_H_
+#define SRC_COMMON_UTIL_H_
 #include <string>
 #include "Exception.h"
 #include <cstdint>
@@ -66,3 +67,5 @@ void seedRandom(unsigned int seed);
 float frand();
 
 float addAngles(float a, float b);
+
+#endif  // SRC_COMMON_UTIL_H_

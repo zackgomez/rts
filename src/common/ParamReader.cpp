@@ -28,11 +28,11 @@ void ParamReader::loadFile(const char *filename) {
   }
 
   // Checksum file
-  const size_t bufsz = 1024;
-  char buf[bufsz];
+  const size_t kFileBufSize = 1024;
+  char buf[kFileBufSize];
   boost::crc_32_type checksum;
   file.seekg(std::ios::beg);
-  while (file.read(buf, bufsz)) {
+  while (file.read(buf, kFileBufSize)) {
     checksum.process_bytes(buf, file.gcount());
   }
   fileChecksum_ = checksum.checksum();
@@ -99,7 +99,7 @@ Json::Value ParamReader::getParamHelper(const std::string &param) const {
   Json::Value val = root_;
   std::vector<std::string> param_split;
   boost::split(param_split, param, boost::is_any_of("."));
-  for (auto& child : param_split) {
+  for (const auto& child : param_split) {
     val = val.get(child, Json::Value());
     if (val.isNull()) {
       break;

@@ -18,5 +18,4 @@ id_t assertTid(id_t id) {
     (id >= STARTING_TID && id < STARTING_EID));
   return id;
 }
-
-}; // rts
+};  // rts

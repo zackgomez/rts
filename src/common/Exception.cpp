@@ -20,7 +20,6 @@ const char * exception_with_trace::what() const throw() {
 
 #ifndef _MSC_VER
 std::string get_backtrace(size_t ignore) {
-
   const size_t max_depth = 100;
   size_t stack_depth;
   void *stack_addrs[max_depth];
@@ -32,7 +31,7 @@ std::string get_backtrace(size_t ignore) {
   std::stringstream ss;
 
   for (size_t i = 1 + ignore; i < stack_depth; i++) {
-    size_t sz = 200; // just a guess, template names will go much wider
+    size_t sz = 200;  // just a guess, template names will go much wider
     char *function = static_cast<char*>(malloc(sz));
     char *begin = 0, *end = 0;
     // find the parentheses and address offset surrounding the mangled name
@@ -67,7 +66,7 @@ std::string get_backtrace(size_t ignore) {
     free(function);
   }
 
-  free(stack_strings); // malloc()ed by backtrace_symbols
+  free(stack_strings);  // malloc()ed by backtrace_symbols
 
   return ss.str();
 }
