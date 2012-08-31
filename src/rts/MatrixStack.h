@@ -1,9 +1,11 @@
-#pragma once
+#ifndef SRC_RTS_MATRIXSTACK_H_
+#define SRC_RTS_MATRIXSTACK_H_
+
 #include <stack>
 #include <glm/glm.hpp>
 
 class MatrixStack {
-public:
+ public:
   // Creates an empty matrix stack with the current matrix as the identity
   // matrix
   MatrixStack();
@@ -21,8 +23,9 @@ public:
   // resets to identity and empty stack
   void clear();
 
-private:
+ private:
   glm::mat4 current_;
   std::stack<glm::mat4> stack_;
 };
 
+#endif  // SRC_RTS_MATRIXSTACK_H_

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SRC_RTS_BUILDING_H_
+#define SRC_RTS_BUILDING_H_
+
 #include "Actor.h"
 #include "Entity.h"
 #include <glm/glm.hpp>
@@ -7,7 +9,7 @@
 namespace rts {
 
 class Building : public Actor {
-public:
+ public:
   explicit Building(const std::string &name, const Json::Value &params);
   virtual ~Building() { }
 
@@ -43,7 +45,7 @@ public:
     return lastCappingPlayerID_;
   }
 
-private:
+ private:
   static LoggerPtr logger_;
   float capAmount_;
   id_t capperID_;
@@ -51,8 +53,9 @@ private:
 
   int capResetDelay_;
 
-protected:
+ protected:
   void enqueue(const Message &queue_order);
 };
-}; // namespace rts
+};  // namespace rts
 
+#endif  // SRC_RTS_BUILDING_H_

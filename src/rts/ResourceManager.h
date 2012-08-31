@@ -1,11 +1,13 @@
-#pragma once
+#ifndef SRC_RTS_RESOURCEMANAGER_H_
+#define SRC_RTS_RESOURCEMANAGER_H_
+
 #include <GL/glew.h>
 #include "Engine.h"
 #include <map>
 #include "Logger.h"
 
 class ResourceManager {
-public:
+ public:
   ~ResourceManager();
 
   void unloadResources();
@@ -17,8 +19,8 @@ public:
   Mesh * getMesh(const std::string &name);
   GLuint getTexture(const std::string &name);
   GLuint getShader(const std::string &name);
-  
-private:
+
+ private:
   ResourceManager();
 
   std::map<std::string, Mesh*> meshes_;
@@ -27,3 +29,5 @@ private:
 
   LoggerPtr logger_;
 };
+
+#endif  // SRC_RTS_RESOURCEMANAGER_H_

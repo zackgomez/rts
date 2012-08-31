@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SRC_RTS_ENTITYFACTORY_H_
+#define SRC_RTS_ENTITYFACTORY_H_
+
 #include <map>
 #include <string>
 #include <glm/glm.hpp>
@@ -10,17 +12,18 @@ namespace rts {
 class Entity;
 
 class EntityFactory {
-public:
+ public:
   static EntityFactory *get();
 
   Entity * construct(const std::string &cl,
                      const std::string &name, const Json::Value &params);
 
-private:
+ private:
   EntityFactory();
   ~EntityFactory();
 
   LoggerPtr logger_;
 };
+};  // rts
 
-};
+#endif  // SRC_RTS_ENTITYFACTORY_H_

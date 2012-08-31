@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SRC_RTS_UNIT_H_
+#define SRC_RTS_UNIT_H_
+
 #include <glm/glm.hpp>
 #include "Actor.h"
 #include "Logger.h"
@@ -9,7 +11,7 @@ class UnitState;
 class Building;
 
 class Unit : public Actor {
-public:
+ public:
   explicit Unit(const std::string &name, const Json::Value &params);
   virtual ~Unit();
 
@@ -48,19 +50,18 @@ public:
 
   const Entity *getTarget(id_t lastTargetID) const;
 
-protected:
+ protected:
   virtual void handleOrder(const Message &order);
 
   Weapon *weapon_;
   UnitState *state_;
 
-private:
+ private:
   static LoggerPtr logger_;
-
 };
 
 class UnitState {
-public:
+ public:
   explicit UnitState(Unit *unit) : unit_(unit) { }
   virtual ~UnitState() { }
 
@@ -70,12 +71,12 @@ public:
   // Called each frame, when returns non NULL, sets new state
   virtual UnitState * next() = 0;
 
-protected:
+ protected:
   Unit *unit_;
 };
 
 class IdleState : public UnitState {
-public:
+ public:
   explicit IdleState(Unit *unit);
   virtual ~IdleState() { }
 
@@ -83,13 +84,13 @@ public:
   virtual UnitState * stop(UnitState *next);
   virtual UnitState * next();
 
-protected:
+ protected:
   // The last entity attacked, we prioritize attack them again
   id_t targetID_;
 };
 
 class MoveState : public UnitState {
-public:
+ public:
   explicit MoveState(const glm::vec3 &target, Unit *unit);
   explicit MoveState(id_t targetID, Unit *unit);
   virtual ~MoveState() { }
@@ -98,7 +99,7 @@ public:
   virtual UnitState * stop(UnitState *next);
   virtual UnitState * next();
 
-protected:
+ protected:
   void updateTarget();
 
   id_t targetID_;
@@ -106,7 +107,7 @@ protected:
 };
 
 class AttackState : public UnitState {
-public:
+ public:
   explicit AttackState(id_t target_id, Unit *unit);
   virtual ~AttackState();
 
@@ -114,12 +115,12 @@ public:
   virtual UnitState * stop(UnitState *next);
   virtual UnitState * next();
 
-protected:
+ protected:
   id_t targetID_;
 };
 
 class AttackMoveState : public UnitState {
-public:
+ public:
   explicit AttackMoveState(const glm::vec3 &target, Unit *unit);
   virtual ~AttackMoveState();
 
@@ -127,13 +128,13 @@ public:
   virtual UnitState * stop(UnitState *next);
   virtual UnitState * next();
 
-protected:
+ protected:
   glm::vec3 targetPos_;
   id_t targetID_;
 };
 
 class CaptureState : public UnitState {
-public:
+ public:
   explicit CaptureState(id_t target_id, Unit *unit);
   virtual ~CaptureState();
 
@@ -141,8 +142,9 @@ public:
   virtual UnitState *stop(UnitState *next);
   virtual UnitState * next();
 
-protected:
+ protected:
   id_t targetID_;
 };
-
 };
+
+#endif  // SRC_RTS_UNIT_H_

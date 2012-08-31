@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SRC_RTS_ENTITY_H_
+#define SRC_RTS_ENTITY_H_
+
 #include <cstdint>
 #include <string>
 #include <set>
@@ -12,7 +14,7 @@
 namespace rts {
 
 class Entity {
-public:
+ public:
   explicit Entity(const std::string &name, const Json::Value &params,
                   bool mobile = false, bool targetable = false);
   virtual ~Entity();
@@ -68,7 +70,7 @@ public:
   float distanceBetweenEntities(const Entity *e) const;
 
 
-protected:
+ protected:
   static const glm::vec3 getDirection(float angle);
   const glm::vec3 getDirection() const;
   float angleToTarget(const glm::vec3 &pos) const;
@@ -91,7 +93,7 @@ protected:
   float speed_;
   float turnSpeed_;
 
-private:
+ private:
   static id_t lastID_;
 
   id_t id_;
@@ -101,4 +103,6 @@ private:
   bool mobile_;
   bool targetable_;
 };
-}; // namespace rts
+};  // namespace rts
+
+#endif  // SRC_RTS_ENTITY_H_

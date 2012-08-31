@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SRC_RTS_MESSAGEHUB_H_
+#define SRC_RTS_MESSAGEHUB_H_
+
 #include "Logger.h"
 #include "Entity.h"
 #include "Message.h"
@@ -8,7 +10,7 @@
 namespace rts {
 
 class MessageHub {
-public:
+ public:
   static MessageHub* get();
   ~MessageHub();
 
@@ -18,26 +20,27 @@ public:
   void sendMessage(const Message &msg);
 
   void sendSpawnMessage(id_t from, const std::string &eclass,
-      const std::string &ename, const Json::Value &eparams);
+                        const std::string &ename, const Json::Value &eparams);
   void sendRemovalMessage(const Entity *e);
   void sendResourceMessage(id_t from, id_t pid, const std::string &resource,
-      float amount);
+                           float amount);
 
   // Returns the entity that scores the LOWEST with the given scoring function.
   // Scoring function should have signature float scorer(const Entity *);
+  // TODO(zack) REMOVE THIS FUNCTION and just use the Game:: version
   template <class T>
   const Entity *findEntity(T scorer) const {
     invariant(game_, "unset game object");
     return game_->findEntity(scorer);
   }
-  // TODO(zack) a function that returns a list of entities similar to the
-  // above function
 
-private:
+ private:
   // For singleton
   MessageHub();
   static MessageHub *instance;
   Game *game_;
   LoggerPtr logger_;
 };
-}; // rts
+};  // rts
+
+#endif  // SRC_RTS_MESSAGEHUB_H_

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SRC_RTS_PLAYERACTION_H_
+#define SRC_RTS_PLAYERACTION_H_
+
 #include <json/json.h>
 #include <string>
 
@@ -15,3 +17,5 @@ const std::string CHAT = "CHAT";
 
 const std::string LEAVE_GAME = "LEAVE_GAME";
 };
+
+#endif  // SRC_RTS_PLAYERACTION_H_

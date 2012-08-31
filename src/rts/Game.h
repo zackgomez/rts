@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SRC_RTS_GAME_H_
+#define SRC_RTS_GAME_H_
+
 #include <glm/glm.hpp>
 #include <set>
 #include <vector>
@@ -17,9 +19,9 @@ struct PlayerResources;
 
 // Handles the game logic and player actions, is very multithread aware.
 class Game {
-public:
+ public:
   explicit Game(Map *map, const std::vector<Player *> &players,
-      Renderer *renderer);
+                Renderer *renderer);
   ~Game();
 
   static const Game* get() { return instance_; }
@@ -65,7 +67,7 @@ public:
     float bestscore = HUGE_VAL;
     const Entity *bestentity = NULL;
 
-    for (auto& it : entities_) {
+    for (const auto& it : entities_) {
       const Entity *e = it.second;
       float score = scorer(e);
       if (score < bestscore) {
@@ -78,8 +80,8 @@ public:
   }
 
 
-protected:
-  virtual void handleAction(id_t playerID, const PlayerAction &action);
+ protected:
+  void handleAction(id_t playerID, const PlayerAction &action);
   // Returns true if all the players have submitted input for the current tick_
   bool updatePlayers();
 
@@ -107,7 +109,7 @@ protected:
   bool paused_;
   bool running_;
 
-private:
+ private:
   static Game *instance_;
 };
 
@@ -115,5 +117,6 @@ struct PlayerResources {
   float requisition;
   float victory_points;
 };
+};  // namespace rts
 
-}; // namespace rts
+#endif  // SRC_RTS_GAME_H_

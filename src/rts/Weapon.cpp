@@ -6,12 +6,12 @@
 
 namespace rts {
 
-Weapon::Weapon(const std::string &name, const Entity *owner) :
-  name_(name),
-  owner_(owner),
-  state_(READY),
-  t_(0.f),
-  target_(NO_ENTITY) {
+Weapon::Weapon(const std::string &name, const Entity *owner)
+    : name_(name),
+    owner_(owner),
+    state_(READY),
+    t_(0.f),
+    target_(NO_ENTITY) {
   if (strParam("type") == "ranged") {
     invariant(hasStrParam("projectile"), "ranged weapon missing projectile");
   }
@@ -35,30 +35,30 @@ void Weapon::update(float dt) {
   // See transitions in description of WeaponState
   // Use += here to try nd compensate for a large dt
   switch (state_) {
-  case WINDUP:
-    if (t_ <= 0.f) {
-      sendMessage();
-      target_ = NO_ENTITY;
-      state_ = WINDDOWN;
-      t_ += param("winddown");
-    }
-    // fallthrough
-  case WINDDOWN:
-    if (t_ <= 0.f) {
-      state_ = COOLDOWN;
-      t_ += param("cooldown");
-    }
-    // fallthrough
-  case COOLDOWN:
-    if (t_ <= 0.f) {
-      state_ = READY;
-    }
-    // fallthrough
-  case READY:
-    break;
-  default:
-    LOG(WARNING) << "Unknown weapon state " << state_ << '\n';
-    break;
+    case WINDUP:
+      if (t_ <= 0.f) {
+        sendMessage();
+        target_ = NO_ENTITY;
+        state_ = WINDDOWN;
+        t_ += param("winddown");
+      }
+      // fallthrough
+    case WINDDOWN:
+      if (t_ <= 0.f) {
+        state_ = COOLDOWN;
+        t_ += param("cooldown");
+      }
+      // fallthrough
+    case COOLDOWN:
+      if (t_ <= 0.f) {
+        state_ = READY;
+      }
+      // fallthrough
+    case READY:
+      break;
+    default:
+      LOG(WARNING) << "Unknown weapon state " << state_ << '\n';
+      break;
   }
 }
 
@@ -77,11 +77,10 @@ void Weapon::sendMessage() {
     params["projectile_target"] = toJson(target_);
     params["projectile_owner"] = toJson(owner_->getID());
     MessageHub::get()->sendSpawnMessage(
-      owner_->getID(),
-      Projectile::TYPE,
-      strParam("projectile"),
-      params
-    );
+        owner_->getID(),
+        Projectile::TYPE,
+        strParam("projectile"),
+        params);
   } else if (type == "melee") {
     Message msg;
     msg["to"] = toJson(target_);
@@ -130,5 +129,4 @@ bool Weapon::hasParam(const std::string &p) const {
 bool Weapon::hasStrParam(const std::string &p) const {
   return ParamReader::get()->hasString(name_ + "." + p);
 }
-
-} // rts
+}  // rts

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SRC_RTS_ACTOR_H_
+#define SRC_RTS_ACTOR_H_
+
 #include <queue>
 #include <string>
 #include <vector>
@@ -19,7 +21,7 @@ const std::string ENQUEUE = "ENQUEUE";
 };
 
 class Actor : public Entity {
-public:
+ public:
   struct Production {
     std::string name;
     float time;
@@ -48,7 +50,7 @@ public:
     return param("sight");
   }
 
-protected:
+ protected:
   virtual void handleOrder(const Message &order);
 
   void enqueue(const Message &queue_order);
@@ -61,8 +63,9 @@ protected:
 
   std::queue<Production> production_queue_;
 
-private:
+ private:
   static LoggerPtr logger_;
 };
+};  // namespace rts
 
-}; // namespace rts
+#endif  // SRC_RTS_ACTOR_H_

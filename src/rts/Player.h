@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SRC_RTS_PLAYER_H_
+#define SRC_RTS_PLAYER_H_
+
 #include <queue>
 #include <SDL/SDL.h>
 #include <json/json.h>
@@ -14,17 +16,16 @@ class Renderer;
 class Game;
 
 namespace PlayerState {
-  const std::string DEFAULT = "DEFAULT";
-  const std::string CHATTING = "CHATTING";
+const std::string DEFAULT = "DEFAULT";
+const std::string CHATTING = "CHATTING";
 }
 
 class Player {
-public:
+ public:
   explicit Player(id_t playerID, id_t teamID, const std::string &name,
-      const glm::vec3 &color) :
-    playerID_(playerID), teamID_(teamID), name_(name), color_(color),
-    game_(NULL)
-  {
+                  const glm::vec3 &color)
+      : playerID_(playerID), teamID_(teamID), name_(name), color_(color),
+        game_(NULL) {
     assertPid(playerID_);
     assertTid(teamID_);
   }
@@ -71,7 +72,7 @@ public:
     return color_;
   }
 
-protected:
+ protected:
   id_t playerID_;
   id_t teamID_;
   const std::string name_;
@@ -81,9 +82,9 @@ protected:
 };
 
 class LocalPlayer : public Player {
-public:
+ public:
   LocalPlayer(id_t playerID, id_t teamID, const std::string &name,
-      const glm::vec3 &color, Renderer *renderer);
+              const glm::vec3 &color, Renderer *renderer);
   virtual ~LocalPlayer();
 
   virtual bool update(tick_t tick);
@@ -108,15 +109,15 @@ public:
   const std::string& getLocalMessage() const { return message_; }
 
   virtual void addChatMessage(const std::string &chat);
-  const std::vector<std::string>& getChatMessages() const { 
-    return chatMessages_; 
+  const std::vector<std::string>& getChatMessages() const {
+    return chatMessages_;
   }
 
   virtual void displayChatWindow();
 
   const std::string& getState() const { return state_; }
 
-private:
+ private:
   void setSelection(const std::set<id_t> &new_selection);
 
   Renderer *renderer_;
@@ -141,7 +142,7 @@ private:
 };
 
 class DummyPlayer : public Player {
-public:
+ public:
   DummyPlayer(id_t playerID, id_t teamID);
   virtual bool update(tick_t tick);
   virtual void playerAction(id_t playerID, const PlayerAction &action) { }
@@ -149,13 +150,15 @@ public:
 
 // Player used for testing that occasionally drops frames
 class SlowPlayer : public Player {
-public:
+ public:
   SlowPlayer(id_t playerID, id_t teamID) :
-    Player(playerID, teamID, "SlowP", glm::vec3(0.f)) { }
+      Player(playerID, teamID, "SlowP", glm::vec3(0.f)) { }
 
   virtual bool update(tick_t tick);
   virtual void playerAction(id_t playerID, const PlayerAction &action) { }
 
-private:
+ private:
 };
-}; // rts
+};  // rts
+
+#endif  // SRC_RTS_PLAYER_H_

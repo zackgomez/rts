@@ -1,21 +1,23 @@
-#pragma once
+#ifndef SRC_RTS_FONTMANAGER_H_
+#define SRC_RTS_FONTMANAGER_H_
+
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <string>
 #include <stb_truetype.h>
 
 class FontManager {
-public:
+ public:
   static FontManager * get();
 
   // Pos is top left, height top of capital letters to bottom of letters that
   // drop below
-  void drawString(const std::string &s, 
-      const glm::vec2 &pos, float height);
+  void drawString(const std::string &s,
+                  const glm::vec2 &pos, float height);
 
   void drawTex() const;
 
-private:
+ private:
   FontManager();
   ~FontManager();
 
@@ -27,3 +29,5 @@ private:
   stbtt_bakedchar cdata_[96];
   GLuint glyphTex_;
 };
+
+#endif  // SRC_RTS_FONTMANAGER_H_

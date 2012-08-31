@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SRC_RTS_WEAPON_H_
+#define SRC_RTS_WEAPON_H_
+
 #include <string>
 #include <glm/glm.hpp>
 #include "Message.h"
@@ -13,7 +15,7 @@ class Entity;
  * as well as its use.
  */
 class Weapon {
-public:
+ public:
   Weapon(const std::string &name, const Entity *owner);
 
   // State transitions
@@ -49,7 +51,7 @@ public:
   // idle/moving should cancel a shot in WINDUP
   void interrupt();
 
-private:
+ private:
   float param(const std::string &p) const;
   std::string strParam(const std::string &p) const;
   bool hasParam(const std::string &p) const;
@@ -63,5 +65,6 @@ private:
   float t_;
   id_t target_;
 };
+}  // rts
 
-} // rts
+#endif  // SRC_RTS_WEAPON_H_

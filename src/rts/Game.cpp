@@ -21,14 +21,14 @@ bool comparePlayerID(Player *p1, Player *p2) {
 Game* Game::instance_ = NULL;
 
 Game::Game(Map *map, const std::vector<Player *> &players,
-    Renderer *renderer) :
-  map_(map),
-  players_(players),
-  renderer_(renderer),
-  tick_(0),
-  tickOffset_(2),
-  paused_(true),
-  running_(true) {
+    Renderer *renderer)
+  : map_(map),
+    players_(players),
+    renderer_(renderer),
+    tick_(0),
+    tickOffset_(2),
+    paused_(true),
+    running_(true) {
   logger_ = Logger::getLogger("Game");
 
   MessageHub::get()->setGame(this);

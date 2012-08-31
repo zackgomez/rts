@@ -13,11 +13,10 @@ namespace rts {
 LoggerPtr Unit::logger_;
 const std::string Unit::TYPE = "UNIT";
 
-Unit::Unit(const std::string &name, const Json::Value &params) :
-  Actor(name, params, true),
-  weapon_(NULL),
-  state_(new IdleState(this)) {
-
+Unit::Unit(const std::string &name, const Json::Value &params)
+  : Actor(name, params, true),
+    weapon_(NULL),
+    state_(new IdleState(this)) {
   if (!logger_.get()) {
     logger_ = Logger::getLogger("Unit");
   }
@@ -108,8 +107,8 @@ bool Unit::canAttack(const Entity *e) const {
 
 bool Unit::canCapture(const Building *e) const {
   float dist = glm::distance(e->getPosition(), getPosition());
-  return e->canCapture(getID()) && 
-    dist <= fltParam("global.captureRange");
+  return e->canCapture(getID())
+      && dist <= fltParam("global.captureRange");
 }
 
 bool Unit::withinRange(const Entity *e) const {
@@ -210,16 +209,15 @@ const Entity * Unit::getTarget(id_t lastTargetID) const {
           return dist < getSight() ? dist : HUGE_VAL;
         }
         return HUGE_VAL;
-      }
-    );
+      });
   }
 
   return target;
 }
 
-IdleState::IdleState(Unit *unit) :
-  UnitState(unit),
-  targetID_(NO_ENTITY) {
+IdleState::IdleState(Unit *unit)
+  : UnitState(unit),
+    targetID_(NO_ENTITY) {
 }
 
 void IdleState::update(float dt) {
@@ -232,9 +230,8 @@ void IdleState::update(float dt) {
     // If target is in range, attack
     if (unit_->canAttack(target)) {
       unit_->attackTarget(target);
-    }
-    // otherwse rotate towards
-    else {
+    } else {
+      // otherwse rotate towards
       unit_->turnTowards(target->getPosition(), dt);
     }
   }
@@ -250,16 +247,16 @@ UnitState * IdleState::stop(UnitState *next) {
   return next;
 }
 
-MoveState::MoveState(const glm::vec3 &target, Unit *unit) :
-  UnitState(unit),
-  targetID_(NO_ENTITY),
-  target_(target) {
+MoveState::MoveState(const glm::vec3 &target, Unit *unit)
+  : UnitState(unit),
+    targetID_(NO_ENTITY),
+    target_(target) {
 }
 
-MoveState::MoveState(id_t targetID, Unit *unit) :
-  UnitState(unit),
-  targetID_(targetID),
-  target_(0.f) {
+MoveState::MoveState(id_t targetID, Unit *unit)
+  : UnitState(unit),
+    targetID_(targetID),
+    target_(0.f) {
 }
 
 void MoveState::updateTarget() {
@@ -304,9 +301,9 @@ UnitState * MoveState::next() {
 }
 
 
-AttackState::AttackState(id_t targetID, Unit *unit) :
-  UnitState(unit),
-  targetID_(targetID) {
+AttackState::AttackState(id_t targetID, Unit *unit)
+  : UnitState(unit),
+    targetID_(targetID) {
 }
 
 AttackState::~AttackState() {
@@ -316,14 +313,14 @@ void AttackState::update(float dt) {
   // Default to no movement
   unit_->remainStationary();
   const Entity *target = Game::get()->getEntity(targetID_);
-  // TODO(brooklyn) unit out of global sight (must be accounted for) 
+  // TODO(brooklyn) unit out of global sight (must be accounted for)
   if (!target)
     return;
 
   // If we can shoot them, do so
   if (unit_->canAttack(target)) {
     unit_->attackTarget(target);
-  } else { 
+  } else {
     // Otherwise move towards target
     unit_->moveTowards(target->getPosition(), dt);
   }
@@ -345,10 +342,10 @@ UnitState * AttackState::stop(UnitState *next) {
   return next;
 }
 
-AttackMoveState::AttackMoveState(const glm::vec3 &target, Unit *unit) :
-  UnitState(unit),
-  targetPos_(target),
-  targetID_(NO_ENTITY) {
+AttackMoveState::AttackMoveState(const glm::vec3 &target, Unit *unit)
+  : UnitState(unit),
+    targetPos_(target),
+    targetID_(NO_ENTITY) {
 }
 
 AttackMoveState::~AttackMoveState() {
@@ -359,18 +356,16 @@ void AttackMoveState::update(float dt) {
   // If no target, move towards location
   if (!targetEnt) {
     unit_->moveTowards(targetPos_, dt);
-  }
-  // otherwise pursue target
-  else {
+  } else {
+    // otherwise pursue target
     // no movement by default
     unit_->remainStationary();
 
     // If we can shoot them, do so
     if (unit_->canAttack(targetEnt)) {
       unit_->attackTarget(targetEnt);
-    }
-    // Otherwise move towards target
-    else {
+    } else {
+      // Otherwise move towards target
       unit_->moveTowards(targetEnt->getPosition(), dt);
     }
   }
@@ -395,11 +390,11 @@ UnitState * AttackMoveState::stop(UnitState *next) {
   return next;
 }
 
-CaptureState::CaptureState(id_t targetID, Unit *unit) :
-  UnitState(unit),
-  targetID_(targetID) {
-  invariant(Game::get()->getEntity(targetID_)->getType() == 
-      Building::TYPE, "capture target must be a building");
+CaptureState::CaptureState(id_t targetID, Unit *unit)
+  : UnitState(unit),
+    targetID_(targetID) {
+  invariant(Game::get()->getEntity(targetID_)->getType() == Building::TYPE,
+            "capture target must be a building");
 }
 
 CaptureState::~CaptureState() {
@@ -415,14 +410,12 @@ void CaptureState::update(float dt) {
   invariant(target->getType() == Building::TYPE,
       "capture target must be a building");
   const Building *btarget = (const Building *) target;
-  
 
   // If we can cap, do so.
   if (unit_->canCapture(btarget)) {
     unit_->captureTarget(btarget, dt);
-  }
-  // Otherwise move towards target
-  else {
+  } else {
+    // Otherwise move towards target
     unit_->moveTowards(btarget->getPosition(), dt);
   }
 }
@@ -440,4 +433,4 @@ UnitState * CaptureState::next() {
 UnitState * CaptureState::stop(UnitState *next) {
   return next;
 }
-}; // rts
+};  // rts

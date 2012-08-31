@@ -1,4 +1,6 @@
-#pragma once
+#ifndef SRC_RTS_MAP_H_
+#define SRC_RTS_MAP_H_
+
 #include <string>
 #include <glm/glm.hpp>
 
@@ -7,7 +9,7 @@ namespace rts {
 class Player;
 
 class Map {
-public:
+ public:
   explicit Map(const std::string &mapName);
 
   const glm::vec2 &getSize() const {
@@ -20,11 +22,12 @@ public:
   // Initializes the map and any start entities/etc
   void init(const std::vector<Player *> &players);
 
-private:
+ private:
   std::string name_;
   glm::vec2 size_;
   // TODO(connor) replace this with an image
   glm::vec4 color_;
 };
+};  // rts
 
-}; // rts
+#endif  // SRC_RTS_MAP_H_
