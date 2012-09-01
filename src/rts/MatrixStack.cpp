@@ -1,8 +1,8 @@
 #include "MatrixStack.h"
 #include "util.h"
 
-MatrixStack::MatrixStack() :
-  current_(1.f) {
+MatrixStack::MatrixStack()
+  : current_(1.f) {
 }
 
 MatrixStack::~MatrixStack() {

@@ -24,15 +24,15 @@ namespace rts {
 
 LoggerPtr Renderer::logger_;
 
-Renderer::Renderer() :
-  game_(NULL),
-  player_(NULL),
-  cameraPos_(0.f, 5.f, 0.f),
-  resolution_(vec2Param("local.resolution")),
-  dragStart_(HUGE_VAL),
-  dragEnd_(HUGE_VAL),
-  displayChatBoxTimer_(0.f),
-  lastRender_(0) {
+Renderer::Renderer()
+  : game_(NULL),
+    player_(NULL),
+    cameraPos_(0.f, 5.f, 0.f),
+    resolution_(vec2Param("local.resolution")),
+    dragStart_(HUGE_VAL),
+    dragEnd_(HUGE_VAL),
+    displayChatBoxTimer_(0.f),
+    lastRender_(0) {
   if (!logger_.get()) {
     logger_ = Logger::getLogger("OGLRenderer");
   }
@@ -46,20 +46,17 @@ Renderer::Renderer() :
   setMeshTransform(ResourceManager::get()->getMesh("unit"), unitMeshTrans);
   setMeshTransform(
     ResourceManager::get()->getMesh("melee_unit"),
-    glm::scale(unitMeshTrans, glm::vec3(2.f))
-  );
+    glm::scale(unitMeshTrans, glm::vec3(2.f)));
 
   glm::mat4 projMeshTrans =
     glm::rotate(glm::mat4(1.f), 90.f, glm::vec3(1, 0, 0));
   setMeshTransform(
-    ResourceManager::get()->getMesh("basic_bullet"), 
-    projMeshTrans
-  );
+    ResourceManager::get()->getMesh("basic_bullet"),
+    projMeshTrans);
 }
 
 Renderer::~Renderer() {
-  ResourceManager::get()->unloadResources();
-  for(Effect *effect : effects_) {
+  for (Effect *effect : effects_) {
     delete effect;
   }
 }
@@ -81,13 +78,14 @@ void Renderer::renderEntity(const Entity *entity) {
   const std::string &type = entity->getType();
 
   // Interpolate if they move
-  glm::mat4 transform = glm::scale(
-                          glm::rotate(
-                            glm::translate(glm::mat4(1.f), pos),
-                            // TODO(zack) why does rotAngle need to be negative here?
-                            // I think openGL may use a "left handed" coordinate system...
-                            -rotAngle, glm::vec3(0, 1, 0)),
-                          glm::vec3(entity->getRadius() / 0.5f));
+  glm::mat4 transform =
+      glm::scale(
+        glm::rotate(
+          glm::translate(glm::mat4(1.f), pos),
+          // TODO(zack) why does rotAngle need to be negative here?
+          // I think openGL may use a "left handed" coordinate system...
+          -rotAngle, glm::vec3(0, 1, 0)),
+        glm::vec3(entity->getRadius() / 0.5f));
 
   if (type == Unit::TYPE || type == Building::TYPE) {
     renderActor((const Actor *) entity, transform);
@@ -104,20 +102,19 @@ void Renderer::renderEntity(const Entity *entity) {
     Mesh * mesh = ResourceManager::get()->getMesh(entity->getName());
     renderMesh(transform, mesh);
   } else {
-    logger_->warning() << "Unable to render entity " << entity->getName() << '\n';
+    LOG(WARNING) << "Unable to render entity " << entity->getName() << '\n';
   }
 }
 
 glm::vec2 Renderer::convertUIPos(const glm::vec2 &pos) {
   return glm::vec2(
       pos.x < 0 ? pos.x + resolution_.x : pos.x,
-      pos.y < 0 ? pos.y + resolution_.y : pos.y
-  );
+      pos.y < 0 ? pos.y + resolution_.y : pos.y);
 }
 
 glm::vec2 Renderer::worldToMinimap(const glm::vec3 &mapPos) {
   const glm::vec2 &mapSize = game_->getMap()->getSize();
-  const glm::vec2 minimapSize = vec2Param("ui.minimap.dim");  
+  const glm::vec2 minimapSize = vec2Param("ui.minimap.dim");
   const glm::vec2 minimapPos = convertUIPos(vec2Param("ui.minimap.pos"));
   glm::vec2 pos = mapPos.xz;
   pos += mapSize / 2.f;
@@ -136,7 +133,7 @@ void Renderer::renderUI() {
   // top bar:
   glm::vec2 pos = convertUIPos(vec2Param("ui.topbar.pos"));
   glm::vec2 size = vec2Param("ui.topbar.dim");
-  GLuint tex = 
+  GLuint tex =
     ResourceManager::get()->getTexture(strParam("ui.topbar.texture"));
   drawTexture(pos, size, tex);
 
@@ -155,8 +152,7 @@ void Renderer::renderUI() {
   height = fltParam("ui.vicdisplay.fontHeight");
   // TODO(connor) this should probably iterate over teams, not players, but we
   // dont have teams yet..
-  for (auto &player : game_->getPlayers())
-  {
+  for (const Player *player : game_->getPlayers()) {
     ss.str("");
     ss << (int)game_->getResources(player->getPlayerID()).victory_points;
     drawRect(pos, size, glm::vec4(player->getColor(), 1));
@@ -180,7 +176,7 @@ void Renderer::renderUI() {
   renderMinimap();
 
   // Render messages
-  if (displayChatBoxTimer_ > 0.f || 
+  if (displayChatBoxTimer_ > 0.f ||
       player_->getState() == PlayerState::CHATTING) {
     pos = convertUIPos(vec2Param("hud.messages.pos"));
     float fontHeight = fltParam("hud.messages.fontHeight");
@@ -191,7 +187,7 @@ void Renderer::renderUI() {
     size = glm::vec2(fltParam("hud.messages.backgroundWidth"), height);
     drawRect(startPos, size, vec4Param("hud.messages.backgroundColor"));
     const std::vector<std::string> &messages = player_->getChatMessages();
-    int numMessages = std::min(intParam("hud.messages.max"), 
+    int numMessages = std::min(intParam("hud.messages.max"),
         (int)messages.size());
     for (int i = 1; i <= numMessages; i++) {
       std::string message = messages[messages.size() - i];
@@ -244,12 +240,12 @@ void Renderer::renderMinimap() {
   drawLine(minimapCoord[1][0], minimapCoord[0][0], lineColor);
 
   // render actors
-  for (auto &pair : mapCoords_) {
+  for (const auto &pair : mapCoords_) {
     const Entity *e = pair.first;
     const glm::vec3 &mapCoord = pair.second;
     glm::vec2 pos = worldToMinimap(mapCoord);
     const Player *player = game_->getPlayer(e->getPlayerID());
-    glm::vec3 pcolor = player ? player->getColor() : 
+    glm::vec3 pcolor = player ? player->getColor() :
       vec3Param("global.defaultColor");
     // if selected draw as green
     glm::vec4 color = selection_.count(e->getID())
@@ -272,9 +268,12 @@ void Renderer::renderMap(const Map *map) {
   glUniform4fv(colorUniform, 1, glm::value_ptr(mapColor));
   glUniform2fv(mapSizeUniform, 1, glm::value_ptr(mapSize));
 
-  glm::mat4 transform = glm::rotate(
-                          glm::scale(glm::mat4(1.f), glm::vec3(mapSize.x, 1.f, mapSize.y)),
-                          90.f, glm::vec3(1, 0, 0));
+  glm::mat4 transform =
+      glm::rotate(
+        glm::scale(
+          glm::mat4(1.f),
+          glm::vec3(mapSize.x, 1.f, mapSize.y)),
+        90.f, glm::vec3(1, 0, 0));
   renderRectangleProgram(transform);
 
   // Render each of the highlights
@@ -298,7 +297,6 @@ void Renderer::renderMap(const Map *map) {
       i++;
     }
   }
-
 }
 
 void Renderer::startRender(float dt) {
@@ -356,7 +354,7 @@ void Renderer::startRender(float dt) {
 
 void Renderer::renderActor(const Actor *actor, glm::mat4 transform) {
   const Player *player = game_->getPlayer(actor->getPlayerID());
-  glm::vec3 pcolor = player ? player->getColor() : 
+  glm::vec3 pcolor = player ? player->getColor() :
     vec3Param("global.defaultColor");
   // if selected draw as green
   glm::vec4 color = selection_.count(actor->getID())
@@ -383,16 +381,16 @@ void Renderer::renderActor(const Actor *actor, glm::mat4 transform) {
 
   glDisable(GL_DEPTH_TEST);
 
-  if (actor->getType() == Building::TYPE && 
+  if (actor->getType() == Building::TYPE &&
       ((Building*)actor)->isCappable()) {
     Building *building = (Building*)actor;
-    if (building->getCap() > 0.f && 
+    if (building->getCap() > 0.f &&
         building->getCap() < building->getMaxCap()) {
       // display health bar
       float capFact = glm::max(0.f, building->getCap() / building->getMaxCap());
       glm::vec2 size = vec2Param("hud.actor_cap.dim");
       glm::vec2 offset = vec2Param("hud.actor_cap.pos");
-      glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * 
+      glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) *
         resolution_;
       pos += offset;
       // Black underneath
@@ -410,7 +408,9 @@ void Renderer::renderActor(const Actor *actor, glm::mat4 transform) {
     }
   } else {
     // display health bar
-    float healthFact = glm::max(0.f, actor->getHealth() / actor->getMaxHealth());
+    float healthFact = glm::max(
+        0.f,
+        actor->getHealth() / actor->getMaxHealth());
     glm::vec2 size = vec2Param("hud.actor_health.dim");
     glm::vec2 offset = vec2Param("hud.actor_health.pos");
     glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) *
@@ -430,7 +430,8 @@ void Renderer::renderActor(const Actor *actor, glm::mat4 transform) {
     float prodFactor = 1.f - queue.front().time / queue.front().max_time;
     glm::vec2 size = vec2Param("hud.actor_prod.dim");
     glm::vec2 offset = vec2Param("hud.actor_prod.pos");
-    glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution_;
+    glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f))
+        * resolution_;
     pos += offset;
     // Purple underneath for max time
     drawRectCenter(pos, size, glm::vec4(0.5, 0, 1, 1));
@@ -450,13 +451,16 @@ void Renderer::endRender() {
   if (dragStart_ != glm::vec3(HUGE_VAL)) {
     glm::vec2 start = applyMatrix(fullmat, dragStart_).xy;
     glm::vec2 end = applyMatrix(fullmat, dragEnd_).xy;
-    start = (glm::vec2(start.x, -start.y) + glm::vec2(1.f)) * 0.5f * resolution_;
-    end = (glm::vec2(end.x, -end.y) + glm::vec2(1.f)) * 0.5f * resolution_;
+    start = (glm::vec2(start.x, -start.y) + glm::vec2(1.f))
+        * 0.5f * resolution_;
+    end = (glm::vec2(end.x, -end.y) + glm::vec2(1.f))
+        * 0.5f * resolution_;
 
     glDisable(GL_DEPTH_TEST);
 
     // TODO(zack): make this color a param
-    drawRectCenter((start + end) / 2.f, end - start, glm::vec4(0.2f, 0.6f, 0.2f, 0.3f));
+    drawRectCenter((start + end) / 2.f, end - start,
+        glm::vec4(0.2f, 0.6f, 0.2f, 0.3f));
     // Reset each frame
     dragStart_ = glm::vec3(HUGE_VAL);
   }
@@ -476,18 +480,18 @@ void Renderer::updateCamera(const glm::vec3 &delta) {
                  glm::vec3(mapSize.x, 20.f, mapSize.y));
 }
 
-void Renderer::minimapUpdateCamera(const glm::vec2 &screenCoord) {  
-  glm::vec2 minimapPos = convertUIPos(vec2Param("ui.minimap.pos"));  
-  glm::vec2 minimapDim = vec2Param("ui.minimap.dim");  
-  glm::vec2 mapSize = game_->getMap()->getSize();  
-  glm::vec2 mapCoord = screenCoord;  
-  mapCoord -= minimapPos;  
-  mapCoord -= glm::vec2(minimapDim.x / 2, minimapDim.y / 2); 
-  mapCoord *= mapSize / minimapDim;  
-  glm::vec3 camCoord = cameraPos_; 
-  glm::vec3 cameraDelta =  
-  glm::vec3(mapCoord.x - camCoord.x, 0, mapCoord.y - camCoord.z);  
-  updateCamera(cameraDelta); 
+void Renderer::minimapUpdateCamera(const glm::vec2 &screenCoord) {
+  glm::vec2 minimapPos = convertUIPos(vec2Param("ui.minimap.pos"));
+  glm::vec2 minimapDim = vec2Param("ui.minimap.dim");
+  glm::vec2 mapSize = game_->getMap()->getSize();
+  glm::vec2 mapCoord = screenCoord;
+  mapCoord -= minimapPos;
+  mapCoord -= glm::vec2(minimapDim.x / 2, minimapDim.y / 2);
+  mapCoord *= mapSize / minimapDim;
+  glm::vec3 camCoord = cameraPos_;
+  glm::vec3 cameraDelta =
+      glm::vec3(mapCoord.x - camCoord.x, 0, mapCoord.y - camCoord.z);
+  updateCamera(cameraDelta);
 }
 
 id_t Renderer::selectEntity(const glm::vec2 &screenCoord) const {
@@ -496,7 +500,7 @@ id_t Renderer::selectEntity(const glm::vec2 &screenCoord) const {
   id_t eid = NO_ENTITY;
   float bestDist = HUGE_VAL;
   // Find the best entity
-  for (auto& pair : ndcCoords_) {
+  for (const auto& pair : ndcCoords_) {
     float dist = glm::distance(pos, glm::vec2(pair.second));
     // TODO(zack) transform radius and use it instead of hardcoded number..
     // Must be inside the entities radius and better than previous
@@ -522,7 +526,7 @@ std::set<id_t> Renderer::selectEntities(
   glm::vec2 size = glm::abs(e - s);
   std::set<id_t> ret;
 
-  for (auto &pair : ndcCoords_) {
+  for (const auto &pair : ndcCoords_) {
     glm::vec2 p = glm::vec2(pair.second);
     // Inside rect and owned by player
     // TODO(zack) make this radius aware, right now the center must be in
@@ -556,7 +560,8 @@ void Renderer::setDragRect(const glm::vec3 &s, const glm::vec3 &e) {
 glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
   glm::vec4 ndc = glm::vec4(screenToNDC(screenCoord), 1.f);
 
-  ndc = glm::inverse(getProjectionStack().current() * getViewStack().current()) * ndc;
+  ndc = glm::inverse(
+      getProjectionStack().current() * getViewStack().current()) * ndc;
   ndc /= ndc.w;
 
   glm::vec3 dir = glm::normalize(glm::vec3(ndc) - cameraPos_);
@@ -565,15 +570,15 @@ glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
 
   const glm::vec2 mapSize = game_->getMap()->getSize() / 2.f;
   // Don't return a non terrain coordinate
-  if (terrain.x < -mapSize.x) { 
-    terrain.x = -HUGE_VAL; 
-  } else if (terrain.x > mapSize.x) {  
-     terrain.x = HUGE_VAL;  
-  }  
-  if (terrain.z < -mapSize.y) {  
-      terrain.z = -HUGE_VAL; 
-  } else if (terrain.z > mapSize.y) {  
-      terrain.z = HUGE_VAL;  
+  if (terrain.x < -mapSize.x) {
+    terrain.x = -HUGE_VAL;
+  } else if (terrain.x > mapSize.x) {
+     terrain.x = HUGE_VAL;
+  }
+  if (terrain.z < -mapSize.y) {
+      terrain.z = -HUGE_VAL;
+  } else if (terrain.z > mapSize.y) {
+      terrain.z = HUGE_VAL;
   }
 
   return glm::vec3(terrain);
@@ -581,17 +586,17 @@ glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
 
 glm::vec3 Renderer::screenToNDC(const glm::vec2 &screen) const {
   float z;
-  glReadPixels(screen.x, resolution_.y - screen.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
+  glReadPixels(screen.x, resolution_.y - screen.y, 1, 1,
+      GL_DEPTH_COMPONENT, GL_FLOAT, &z);
   return glm::vec3(
       2.f * (screen.x / resolution_.x) - 1.f,
       2.f * (1.f - (screen.y / resolution_.y)) - 1.f,
       z);
 }
 
-BloodEffect::BloodEffect(id_t aid) :
-  aid_(aid),
-  t_(0.f) {
-
+BloodEffect::BloodEffect(id_t aid)
+  : aid_(aid),
+    t_(0.f) {
   assertEid(aid);
 }
 
@@ -618,14 +623,11 @@ void BloodEffect::render(float dt) {
       glm::rotate(
         glm::scale(
           glm::translate(glm::mat4(1.f), pos),
-          glm::vec3(size)
-        ),
+          glm::vec3(size)),
         rad2deg(M_PI * t_),
-        glm::vec3(0, 1, 0)
-      ),
+        glm::vec3(0, 1, 0)),
       90.f,
-      glm::vec3(1.f, 0.f, 0.f)
-   );
+      glm::vec3(1.f, 0.f, 0.f));
 
   renderRectangleColor(transform, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 }
@@ -633,5 +635,4 @@ void BloodEffect::render(float dt) {
 bool BloodEffect::needsRemoval() const {
   return t_ >= fltParam("effects.damageRenderDuration");
 }
-
-};
+};  // rts

@@ -58,7 +58,7 @@ Game::~Game() {
 
 bool Game::updatePlayers() {
   bool allInput = true;
-  for (auto &player : players_) {
+  for (Player *player : players_) {
     allInput &= player->update(tick_);
   }
   return allInput;
@@ -134,8 +134,7 @@ for (auto &player : players_) {
       pacts.pop();
       invariant(
         act["tick"] == toJson(tick_),
-        "Bad action tick " + act.toStyledString()
-      );
+        "Bad action tick " + act.toStyledString());
 
       if (act["type"] == ActionTypes::DONE) {
         break;
@@ -263,9 +262,8 @@ void Game::addAction(id_t pid, const PlayerAction &act) {
   if (act["type"] == ActionTypes::LEAVE_GAME) {
     running_ = false;
     logger_->info() << "Player " << pid << " has left the game.\n";
-  }
-  // Handle most events by just queueing them
-  else {
+  } else {
+    // Handle most events by just queueing them
     invariant(act.isMember("tick"), "missing tick in player action");
     std::unique_lock<std::mutex> lock(actionMutex_);
     actions_[pid].push(act);
@@ -316,7 +314,7 @@ void Game::handleAction(id_t playerID, const PlayerAction &action) {
     // Tell all players that we are chatting..
     // TODO(connor) iterate over only a target set of players so we can do team
     // chat, whispers, etc. Define this target set as a member of msg.
-    for (auto &player : players_) {
+    for (Player *player : players_) {
       player->addChatMessage(ss.str());
       player->displayChatWindow();
     }
@@ -363,9 +361,9 @@ void Game::handleAction(id_t playerID, const PlayerAction &action) {
       MessageHub::get()->sendMessage(msg);
     } else {
       logger_->warning()
-        << "Unknown action type from player " << playerID << " : " 
+        << "Unknown action type from player " << playerID << " : "
         << action["type"].asString() << '\n';
     }
   }
 }
-}; // rts
+};  // rts

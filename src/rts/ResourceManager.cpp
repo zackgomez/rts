@@ -18,7 +18,6 @@ void ResourceManager::unloadResources() {
   // TODO(connor) implement this once freeProgram has been implemented.
   // for (auto shader = shaders_.begin(); shader != shaders_.end(); shader++)
   //   freeProgram(shader->second);
-  
 
   meshes_.clear();
   textures_.clear();
@@ -35,17 +34,17 @@ void ResourceManager::loadResources() {
   Json::Value textures = ParamReader::get()->getParam("resources.textures");
   Json::Value shaders = ParamReader::get()->getParam("resources.shaders");
 
-  for (Json::ValueIterator mesh = meshes.begin(); 
+  for (Json::ValueIterator mesh = meshes.begin();
           mesh != meshes.end(); mesh++)
     meshes_[mesh.key().asString()] = loadMesh((*mesh).asString());
 
-  for (Json::ValueIterator texture = textures.begin(); 
+  for (Json::ValueIterator texture = textures.begin();
           texture != textures.end(); texture++)
     textures_[texture.key().asString()] = makeTexture((*texture).asString());
 
-  for (Json::ValueIterator shader = shaders.begin(); 
+  for (Json::ValueIterator shader = shaders.begin();
           shader != shaders.end(); shader++)
-    shaders_[shader.key().asString()] = 
+    shaders_[shader.key().asString()] =
       loadProgram((*shader)["vert"].asString(), (*shader)["frag"].asString());
 }
 
@@ -54,12 +53,12 @@ Mesh * ResourceManager::getMesh(const std::string &name) {
   return meshes_[name];
 }
 
-GLuint ResourceManager::getTexture(const std::string &name){
+GLuint ResourceManager::getTexture(const std::string &name) {
   invariant(textures_.count(name), "cannot find texture: " + name);
   return textures_[name];
 }
 
-GLuint ResourceManager::getShader(const std::string &name){
+GLuint ResourceManager::getShader(const std::string &name) {
   invariant(shaders_.count(name), "cannot find shader: " + name);
   return shaders_[name];
 }

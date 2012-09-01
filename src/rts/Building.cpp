@@ -10,19 +10,19 @@ namespace rts {
 LoggerPtr Building::logger_;
 const std::string Building::TYPE = "BUILDING";
 
-Building::Building(const std::string &name, const Json::Value &params) :
-  Actor(name, params),
-  capAmount_(0.f),
-  capperID_(NO_ENTITY),
-  lastCappingPlayerID_(NO_PLAYER),
-  capResetDelay_(0) {
+Building::Building(const std::string &name, const Json::Value &params)
+  : Actor(name, params),
+    capAmount_(0.f),
+    capperID_(NO_ENTITY),
+    lastCappingPlayerID_(NO_PLAYER),
+    capResetDelay_(0) {
 }
 
 void Building::handleMessage(const Message &msg) {
   if (msg["type"] == MessageTypes::CAPTURE) {
     invariant(msg.isMember("pid"), "malformed capture message");
     invariant(msg.isMember("cap"), "malformed attack message");
-    invariant(toID(msg["pid"]) != getPlayerID(), 
+    invariant(toID(msg["pid"]) != getPlayerID(),
         "cannot capture own structures");
     invariant(getType() == Building::TYPE, "can only capture structures");
     invariant(isCappable(), "structure not capturable");
@@ -75,31 +75,30 @@ void Building::update(float dt) {
   if (capAmount_ > getMaxCap()) capAmount_ = getMaxCap();
 
   // Building generates resources
-  if (hasParam("reqGen"))
+  if (hasParam("reqGen")) {
     MessageHub::get()->sendResourceMessage(
       getID(),
       getPlayerID(),
       ResourceTypes::REQUISITION,
-      param("reqGen") * dt
-    );
-  if (hasParam("victoryGen"))
+      param("reqGen") * dt);
+  }
+  if (hasParam("victoryGen")) {
     MessageHub::get()->sendResourceMessage(
       getID(),
       getPlayerID(),
       ResourceTypes::VICTORY,
-      param("victoryGen") * dt
-    );
+      param("victoryGen") * dt);
+  }
 }
 
 bool Building::canCapture(id_t eid) const {
   const Entity *e = Game::get()->getEntity(eid);
   id_t pid = e->getPlayerID();
-  return isCappable() && pid != getPlayerID() && 
+  return isCappable() && pid != getPlayerID() &&
     (capperID_ == NO_ENTITY || eid == capperID_);
 }
 
 bool Building::needsRemoval() const {
   return health_ <= 0.f;
 }
-
-}; // rts
+};  // rts

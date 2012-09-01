@@ -10,19 +10,18 @@ id_t Entity::lastID_ = STARTING_EID;
 
 Entity::Entity(const std::string &name,
                const Json::Value &params,
-               bool mobile, bool targetable) :
-  id_(lastID_++),
-  playerID_(NO_PLAYER),
-  name_(name),
-  mobile_(mobile),
-  targetable_(targetable),
-  pos_(HUGE_VAL),
-  angle_(0.f),
-  radius_(0.f),
-  height_(0.f),
-  speed_(0.f),
-  turnSpeed_(0.f) {
-
+               bool mobile, bool targetable)
+  : id_(lastID_++),
+    playerID_(NO_PLAYER),
+    name_(name),
+    mobile_(mobile),
+    targetable_(targetable),
+    pos_(HUGE_VAL),
+    angle_(0.f),
+    radius_(0.f),
+    height_(0.f),
+    speed_(0.f),
+    turnSpeed_(0.f) {
   if (params.isMember("entity_pid")) {
     playerID_ = toID(params["entity_pid"]);
   }
@@ -100,8 +99,7 @@ float Entity::angleToTarget(const glm::vec3 &target) const {
   return rad2deg(atan2(delta.z , delta.x));
 }
 
-float Entity::distanceBetweenEntities(const Entity *e) const
-{
+float Entity::distanceBetweenEntities(const Entity *e) const {
   glm::vec3 targetPos = e->getPosition();
   return glm::length(targetPos - pos_);
 }
@@ -121,5 +119,4 @@ bool Entity::hasParam(const std::string &p) const {
 bool Entity::hasStrParam(const std::string &p) const {
   return ParamReader::get()->hasString(name_ + "." + p);
 }
-
-};
+};  // rts

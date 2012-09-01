@@ -57,8 +57,7 @@ void MessageHub::sendMessage(const Message &msg) {
 }
 
 void MessageHub::sendSpawnMessage(id_t from, const std::string &eclass,
-    const std::string &ename, const Json::Value &eparams)
-{
+    const std::string &ename, const Json::Value &eparams) {
   Message msg;
   msg["to"]   = toJson(GAME_ID);
   msg["from"] = toJson(from);
@@ -82,11 +81,10 @@ void MessageHub::sendRemovalMessage(const Entity *e) {
   sendMessage(msg);
 }
 void MessageHub::sendResourceMessage(
-    id_t from, 
-    id_t pid, 
-    const std::string &resource, 
-    float amount)
-{
+    id_t from,
+    id_t pid,
+    const std::string &resource,
+    float amount) {
   Message msg;
   msg["to"] = toJson(GAME_ID);
   msg["from"] = toJson(from);
@@ -97,5 +95,4 @@ void MessageHub::sendResourceMessage(
 
   sendMessage(msg);
 }
-
-}; // rts
+};  // rts

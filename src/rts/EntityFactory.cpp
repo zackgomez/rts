@@ -18,7 +18,7 @@ EntityFactory * EntityFactory::get() {
 }
 
 Entity * EntityFactory::construct(const std::string &cl,
-                                  const std::string &name, const Json::Value &params) {
+    const std::string &name, const Json::Value &params) {
   // TODO(zack) use map
   if (cl == Unit::TYPE) {
     return new Unit(name, params);
@@ -32,5 +32,4 @@ Entity * EntityFactory::construct(const std::string &cl,
     return NULL;
   }
 }
-
-}; // namespace rts
+};  // namespace rts

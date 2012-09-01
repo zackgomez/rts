@@ -115,5 +115,4 @@ void Actor::update(float dt) {
   // Move etc
   Entity::update(dt);
 }
-}; // rts
-
+};  // rts

@@ -1,2 +1,6 @@
 #!/bin/sh
-scripts/cpplint --filter=+whitespace,+readability,-build/include,-readability/streams,-legal/copyright,-runtime/threadsafe_fn,-readability/casting $*
+FILTER="+whitespace,+readability,-build/include,-readability/streams,\
+-legal/copyright,-runtime/threadsafe_fn,-readability/casting,\
+-runtime/references,-runtime/sizeof,-runtime/printf"
+
+scripts/cpplint --filter=$FILTER -- $* 2>&1 || true

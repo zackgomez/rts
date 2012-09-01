@@ -6,11 +6,11 @@
 namespace rts {
 
 NetPlayer::NetPlayer(id_t playerID, id_t teamID, const std::string &name,
-    const glm::vec3 &color, NetConnection *conn) :
-  Player(playerID, teamID, name, color),
-  connection_(conn),
-  doneTick_(-1e6),
-  localPlayerID_(-1) {
+    const glm::vec3 &color, NetConnection *conn)
+  : Player(playerID, teamID, name, color),
+    connection_(conn),
+    doneTick_(-1e6),
+    localPlayerID_(-1) {
   assert(connection_);
   logger_ = Logger::getLogger("NetPlayer");
 }
@@ -41,8 +41,7 @@ bool NetPlayer::update(tick_t tick) {
 
     invariant(
       toID(a["pid"]) == playerID_ || a["type"] == ActionTypes::LEAVE_GAME,
-      "bad action from network thread"
-    );
+      "bad action from network thread");
     game_->addAction(playerID_, a);
 
     // if we get a none, then we're done with another frame... make it so
@@ -77,5 +76,4 @@ void NetPlayer::playerAction(id_t playerID, const PlayerAction &action) {
     connection_->stop();
   }
 }
-
-}; // rts
+};  // rts

@@ -8,10 +8,10 @@
 
 namespace rts {
 
-Map::Map(const std::string &mapName) :
-  name_("maps." + mapName),
-  size_(vec2Param(name_ + ".size")),
-  color_(vec4Param(name_ + ".minimapColor")) {
+Map::Map(const std::string &mapName)
+  : name_("maps." + mapName),
+    size_(vec2Param(name_ + ".size")),
+    color_(vec4Param(name_ + ".minimapColor")) {
 }
 
 void Map::init(const std::vector<Player *> &players) {
@@ -32,8 +32,7 @@ void Map::init(const std::vector<Player *> &players) {
 
     glm::vec3 pos = toVec3(getParam(name_ + ".startingPositions")[ind]);
     glm::vec3 dir = glm::normalize(
-      toVec3(getParam(name_ + ".startingDirections")[ind])
-    );
+      toVec3(getParam(name_ + ".startingDirections")[ind]));
     glm::vec3 tangent = glm::cross(glm::vec3(0, 1, 0), dir);
     float angle = rad2deg(acosf(glm::dot(glm::vec3(1, 0, 0), dir)));
     float sign =
@@ -51,8 +50,7 @@ void Map::init(const std::vector<Player *> &players) {
       MAP_ID,
       Building::TYPE,
       "building",
-      params
-    );
+      params);
 
     // Spawn starting units
     // TODO(zack): get rid of these hardcoded numbers (2.0f, 1.5f)
@@ -64,18 +62,16 @@ void Map::init(const std::vector<Player *> &players) {
       params["entity_pos"] = toJson(pos);
       params["entity_angle"] = angle;
       MessageHub::get()->sendSpawnMessage(
-        MAP_ID, // from
-        Unit::TYPE, // class
-        "melee_unit", // name
-        params
-      );
+        MAP_ID,  // from
+        Unit::TYPE,  // class
+        "melee_unit",  // name
+        params);
       pos += tangent * 1.5f;
     }
   }
 
   Json::Value victoryPoints = getParam(name_ + ".victoryPoints");
-  for (int i = 0; i < victoryPoints.size(); i++)
-  {
+  for (int i = 0; i < victoryPoints.size(); i++) {
     glm::vec3 pos = toVec3(victoryPoints[i]);
     Json::Value params;
     params["entity_pid"] = toJson(NO_PLAYER);
@@ -87,8 +83,7 @@ void Map::init(const std::vector<Player *> &players) {
         params);
   }
   Json::Value reqPoints = getParam(name_ + ".reqPoints");
-  for (int i = 0; i < reqPoints.size(); i++)
-  {
+  for (int i = 0; i < reqPoints.size(); i++) {
     glm::vec3 pos = toVec3(reqPoints[i]);
     Json::Value params;
     params["entity_pid"] = toJson(NO_PLAYER);
@@ -100,4 +95,4 @@ void Map::init(const std::vector<Player *> &players) {
         params);
   }
 }
-}; // rts
+};  // rts

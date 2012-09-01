@@ -69,19 +69,22 @@ void initEngine(const glm::vec2 &resolution) {
   }
   GLenum err = glewInit();
   if (err != GLEW_OK) {
-    std::stringstream ss; ss <<  "Error: " << glewGetErrorString(err) << '\n';
+    std::stringstream ss;
+    ss <<  "Error: " << glewGetErrorString(err) << '\n';
     throw engine_exception(ss.str());
   }
 
-  logger->info() << "GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << '\n';
+  LOG(INFO) << "GLSL Version: " <<
+      glGetString(GL_SHADING_LANGUAGE_VERSION) << '\n';
 
-  SDL_WM_SetCaption((strParam("game.name") + "  BUILT  " __DATE__ " " __TIME__).c_str(), "rts");
-  //SDL_WM_GrabInput(SDL_GRAB_ON);
-  
+  const char *buildstr = "  BUILT  " __DATE__ " " __TIME__;
+  std::string caption = strParam("game.name") + buildstr;
+  SDL_WM_SetCaption(caption.c_str(), "rts");
+  // SDL_WM_GrabInput(SDL_GRAB_ON);
+
   initialized = true;
 
   ResourceManager::get()->loadResources();
-  
   loadResources();
 }
 
@@ -96,7 +99,9 @@ void teardownEngine() {
   initialized = false;
 }
 
-void renderRectangleColor(const glm::mat4 &modelMatrix, const glm::vec4 &color) {
+void renderRectangleColor(
+    const glm::mat4 &modelMatrix,
+    const glm::vec4 &color) {
   GLuint program = resources.colorProgram;
   GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
   GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
@@ -104,8 +109,10 @@ void renderRectangleColor(const glm::mat4 &modelMatrix, const glm::vec4 &color) 
 
   // Enable program and set up values
   glUseProgram(program);
-  glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projStack.current()));
-  glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewStack.current() * modelMatrix));
+  glUniformMatrix4fv(projectionUniform, 1, GL_FALSE,
+      glm::value_ptr(projStack.current()));
+  glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE,
+      glm::value_ptr(viewStack.current() * modelMatrix));
   glUniform4fv(colorUniform, 1, glm::value_ptr(color));
 
   // Bind attributes
@@ -125,16 +132,20 @@ void renderRectangleProgram(const glm::mat4 &modelMatrix) {
   GLuint program;
   glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*) &program);
   if (!program) {
-    logger->warning() << "No active program on call to renderRectangleProgram\n";
+    LOG(WARNING) << "No active program on call to renderRectangleProgram\n";
     return;
   }
-  GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
-  GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
+  GLuint projectionUniform =
+      glGetUniformLocation(program, "projectionMatrix");
+  GLuint modelViewUniform =
+      glGetUniformLocation(program, "modelViewMatrix");
 
   // Enable program and set up values
   glUseProgram(program);
-  glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projStack.current()));
-  glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewStack.current() * modelMatrix));
+  glUniformMatrix4fv(projectionUniform, 1, GL_FALSE,
+      glm::value_ptr(projStack.current()));
+  glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE,
+      glm::value_ptr(viewStack.current() * modelMatrix));
 
   // Bind attributes
   glBindBuffer(GL_ARRAY_BUFFER, resources.rectBuffer);
@@ -158,7 +169,8 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m) {
     return;
   }
   const glm::mat4 projMatrix = projStack.current();
-  const glm::mat4 modelViewMatrix = viewStack.current() * modelMatrix * m->transform;
+  const glm::mat4 modelViewMatrix =
+      viewStack.current() * modelMatrix * m->transform;
   const glm::mat4 normalMatrix = glm::transpose(glm::inverse(modelViewMatrix));
 
   // Uniform locations
@@ -171,18 +183,24 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m) {
   GLuint texcoordAttrib = glGetAttribLocation(program, "texcoord");
   // Enable program and set up values
   glUseProgram(program);
-  glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
-  glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projMatrix));
-  glUniformMatrix4fv(normalUniform, 1, GL_FALSE, glm::value_ptr(normalMatrix));
+  glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE,
+      glm::value_ptr(modelViewMatrix));
+  glUniformMatrix4fv(projectionUniform, 1, GL_FALSE,
+      glm::value_ptr(projMatrix));
+  glUniformMatrix4fv(normalUniform, 1, GL_FALSE,
+      glm::value_ptr(normalMatrix));
 
   // Bind data
   glBindBuffer(GL_ARRAY_BUFFER, m->buffer);
   glEnableVertexAttribArray(positionAttrib);
   glEnableVertexAttribArray(normalAttrib);
   glEnableVertexAttribArray(texcoordAttrib);
-  glVertexAttribPointer(positionAttrib, 4, GL_FLOAT, GL_FALSE, sizeof(struct vert_p4n4t2), (void*) (0));
-  glVertexAttribPointer(normalAttrib,   4, GL_FLOAT, GL_FALSE, sizeof(struct vert_p4n4t2), (void*) (4 * sizeof(float)));
-  glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(struct vert_p4n4t2), (void*) (8 * sizeof(float)));
+  glVertexAttribPointer(positionAttrib, 4, GL_FLOAT, GL_FALSE,
+      sizeof(struct vert_p4n4t2), (void*) (0));
+  glVertexAttribPointer(normalAttrib,   4, GL_FLOAT, GL_FALSE,
+      sizeof(struct vert_p4n4t2), (void*) (4 * sizeof(float)));
+  glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE,
+      sizeof(struct vert_p4n4t2), (void*) (8 * sizeof(float)));
 
   // Draw
   glDrawArrays(GL_TRIANGLES, 0, m->nverts);
@@ -227,8 +245,8 @@ void drawRect(
 }
 
 void drawTextureCenter(
-  const glm::vec2 &pos, // center
-  const glm::vec2 &size, // width/height
+  const glm::vec2 &pos,  // center
+  const glm::vec2 &size,  // width/height
   const GLuint texture,
   const glm::vec4 &texcoord) {
   glm::mat4 transform =
@@ -259,8 +277,8 @@ void drawTextureCenter(
 }
 
 void drawTexture(
-  const glm::vec2 &pos, // top left corner
-  const glm::vec2 &size, // width/height
+  const glm::vec2 &pos,  // top left corner
+  const glm::vec2 &size,  // width/height
   const GLuint texture,
   const glm::vec4 &texcoord) {
   glm::vec2 center = pos + size / 2.f;
@@ -275,17 +293,17 @@ MatrixStack& getProjectionStack() {
   return projStack;
 }
 
-// TODO(connor) make this draw a line, for now render a thin rectangle 
-void drawLine( 
-  const glm::vec2 &p1, 
-  const glm::vec2 &p2, 
-  const glm::vec4 &color) {  
-  glm::vec2 center = p1 + p2;  
-  center /= 2; 
-  glm::vec2 size = glm::vec2(glm::distance(p1, p2), 1);  
-  float angle = glm::atan(p1.y - p2.y, p1.x - p2.x); 
-  drawRectCenter(center, size, color, angle);  
-}  
+// TODO(connor) make this draw a line, for now render a thin rectangle
+void drawLine(
+  const glm::vec2 &p1,
+  const glm::vec2 &p2,
+  const glm::vec4 &color) {
+  glm::vec2 center = p1 + p2;
+  center /= 2;
+  glm::vec2 size = glm::vec2(glm::distance(p1, p2), 1);
+  float angle = glm::atan(p1.y - p2.y, p1.x - p2.x);
+  drawRectCenter(center, size, color, angle);
+}
 
 GLuint loadProgram(const std::string &vert, const std::string &frag) {
   GLuint program;
@@ -324,7 +342,7 @@ GLuint loadShader(GLenum type, const std::string &filename) {
     glGetShaderInfoLog(shader, infoLogLength, NULL, strInfoLog);
 
     const char *strShaderType = NULL;
-    switch(type) {
+    switch (type) {
     case GL_VERTEX_SHADER:
       strShaderType = "vertex";
       break;
@@ -355,7 +373,7 @@ GLuint linkProgram(GLuint vert, GLuint frag) {
   glLinkProgram(program);
 
   GLint status;
-  glGetProgramiv (program, GL_LINK_STATUS, &status);
+  glGetProgramiv(program, GL_LINK_STATUS, &status);
   if (!status) {
     GLint infoLogLength;
     glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
@@ -363,7 +381,8 @@ GLuint linkProgram(GLuint vert, GLuint frag) {
     GLchar *strInfoLog = new GLchar[infoLogLength + 1];
     glGetProgramInfoLog(program, infoLogLength, NULL, strInfoLog);
     fprintf(stderr, "Linker failure: %s\n", strInfoLog);
-    std::stringstream ss; ss << "Linker Failure: " << strInfoLog << '\n';
+    std::stringstream ss;
+    ss << "Linker Failure: " << strInfoLog << '\n';
     delete[] strInfoLog;
     throw engine_exception(ss.str());
   }
@@ -403,8 +422,7 @@ GLuint makeTexture(const std::string &filename) {
     GL_RGBA8,                   /* internal format */
     width, height, 0,           /* width, height, border */
     GL_RGBA, GL_UNSIGNED_BYTE,  /* external format, type */
-    pixels                      /* pixels */
-  );
+    pixels);                    /* pixels */
   stbi_image_free(pixels);
   return texture;
 }
@@ -482,7 +500,7 @@ static facevert parseFaceVert(const char *vdef) {
   } else if (sscanf(vdef, "%d//%d", &fv.v, &fv.vn) == 2) {
     fv.v -= 1;
     fv.vn -= 1;
-    fv.vt = 0; // dummy vt @ 0 index
+    fv.vt = 0;  // dummy vt @ 0 index
   } else {
     assert(false && "unable to read unfull .obj");
   }
@@ -530,7 +548,7 @@ static int loadVerts(const std::string &filename,
     }
   }
 
-  // TODO make a logger call
+  // TODO(zack) make a logger call
   printf("verts: %d, faces: %d, norms: %d, coords: %d, extended: %d\n",
          nverts, nfaces, nnorms, ncoords, extended);
 
@@ -545,7 +563,7 @@ static int loadVerts(const std::string &filename,
   glm::vec2 *coords  = (glm::vec2*) malloc(sizeof(glm::vec2) * ncoords);
   glm::vec3 *norms   = (glm::vec3*) malloc(sizeof(glm::vec3) * nnorms);
   assert(verts && norms && coords && ffaces);
-  // TODO replace asserts will some real memory checks
+  // TODO(zack) replace asserts will some real memory checks
 
   // reset to beginning of file
   cs.clear();
@@ -564,7 +582,7 @@ static int loadVerts(const std::string &filename,
       verts[verti][0] = atof(strtok(NULL, " "));
       verts[verti][1] = atof(strtok(NULL, " "));
       verts[verti][2] = atof(strtok(NULL, " "));
-      verts[verti][3] = 1.f; // homogenous coords
+      verts[verti][3] = 1.f;  // homogenous coords
       ++verti;
     } else if (strcmp(cmd, "f") == 0) {
       // This assumes the faces are triangles

@@ -9,21 +9,20 @@
 
 namespace rts {
 
-LocalPlayer::LocalPlayer(id_t playerID, id_t teamID, const std::string &name, 
-    const glm::vec3 &color, Renderer *renderer) :
-  Player(playerID, teamID, name, color),
-  renderer_(renderer),
-  targetTick_(0),
-  doneTick_(-1e6), // no done ticks
-  selection_(),
-  cameraPanDir_(0.f),
-  shift_(false),
-  leftDrag_(false),
-  leftDragMinimap_(false),
-  message_(),
-  state_(PlayerState::DEFAULT),
-  order_() {
-
+LocalPlayer::LocalPlayer(id_t playerID, id_t teamID, const std::string &name,
+    const glm::vec3 &color, Renderer *renderer)
+  : Player(playerID, teamID, name, color),
+    renderer_(renderer),
+    targetTick_(0),
+    doneTick_(-1e6),  // no done ticks
+    selection_(),
+    cameraPanDir_(0.f),
+    shift_(false),
+    leftDrag_(false),
+    leftDragMinimap_(false),
+    message_(),
+    state_(PlayerState::DEFAULT),
+    order_() {
   logger_ = Logger::getLogger("LocalPlayer");
 }
 
@@ -102,7 +101,7 @@ void LocalPlayer::renderUpdate(float dt) {
   if (leftDrag_
       && glm::distance(loc, leftStart_) > fltParam("hud.minDragDistance")) {
     renderer_->setDragRect(leftStart_, loc);
-  } else if (leftDragMinimap_) {  
+  } else if (leftDragMinimap_) {
     renderer_->minimapUpdateCamera(screenCoord);
   }
 }
@@ -129,14 +128,14 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button) {
   const Entity *entity = game_->getEntity(eid);
 
   if (button == SDL_BUTTON_LEFT) {
-    glm::vec2 minimapPos = renderer_->convertUIPos(vec2Param("ui.minimap.pos"));  
-    glm::vec2 minimapDim = vec2Param("ui.minimap.dim");  
-    // TODO(connor) perhaps clean this up with some sort of click state? 
-    if (screenCoord.x >= minimapPos.x && 
-        screenCoord.x <= minimapPos.x + minimapDim.x &&  
-        screenCoord.y >= minimapPos.y && 
-        screenCoord.y <= minimapPos.y + minimapDim.y) {  
-      leftDragMinimap_ = true; 
+    glm::vec2 minimapPos = renderer_->convertUIPos(vec2Param("ui.minimap.pos"));
+    glm::vec2 minimapDim = vec2Param("ui.minimap.dim");
+    // TODO(connor) perhaps clean this up with some sort of click state?
+    if (screenCoord.x >= minimapPos.x &&
+        screenCoord.x <= minimapPos.x + minimapDim.x &&
+        screenCoord.y >= minimapPos.y &&
+        screenCoord.y <= minimapPos.y + minimapDim.y) {
+      leftDragMinimap_ = true;
     } else {
       leftDrag_ = true;
       leftStart_ = loc;
@@ -150,9 +149,8 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button) {
         if (entity && entity->getPlayerID() == playerID_) {
           newSelect.insert(eid);
         }
-      }
-      // If order, then execute it
-      else {
+      } else {
+        // If order, then execute it
         action["type"] = order_;
         action["entity"] = toJson(selection_);
         action["target"] = toJson(loc);
@@ -171,15 +169,14 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button) {
     // If there is an order, it is canceled by right click
     if (!order_.empty()) {
       order_.clear();
-    }
-    // Otherwise default to some right click actions
-    else {
+    } else {
+      // Otherwise default to some right click actions
       // If right clicked on enemy unit (and we have a selection)
       // go attack them
       if (entity && entity->getTeamID() != teamID_
           && !selection_.empty()) {
         // Visual feedback
-        // TODO make this something related to the unit clicked on
+        // TODO(zack) highlight the target not the ground
         renderer_->highlight(glm::vec2(loc.x, loc.z));
 
         // Queue up action
@@ -193,10 +190,9 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button) {
         action["enemy_id"] = toJson(eid);
         action["pid"] = toJson(playerID_);
         action["tick"] = toJson(targetTick_);
-      }
       // If we have a selection, and they didn't click on the current
       // selection, move them to target
-      else if (!selection_.empty() && (!entity || !selection_.count(eid))) {
+      } else if (!selection_.empty() && (!entity || !selection_.count(eid))) {
         if (loc.x != HUGE_VAL && loc.z != HUGE_VAL) {
           // Visual feedback
           renderer_->highlight(glm::vec2(loc.x, loc.z));
@@ -221,6 +217,8 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button) {
   if (action.isMember("type")) {
     game_->addAction(playerID_, action);
   }
+      // If we have a selection, and they didn't click on the current
+      // selection, move them to target
 }
 
 void LocalPlayer::mouseUp(const glm::vec2 &screenCoord, int button) {
@@ -254,9 +252,8 @@ void LocalPlayer::keyPress(SDL_keysym keysym) {
     action["type"] = ActionTypes::LEAVE_GAME;
     action["pid"] = toJson(playerID_);
     game_->addAction(playerID_, action);
-  }
   // Camera panning
-  else if (key == SDLK_UP) {
+  } else if (key == SDLK_UP) {
     cameraPanDir_.y = -1.f;
   } else if (key == SDLK_DOWN) {
     cameraPanDir_.y = 1.f;
@@ -264,18 +261,14 @@ void LocalPlayer::keyPress(SDL_keysym keysym) {
     cameraPanDir_.x = 1.f;
   } else if (key == SDLK_LEFT) {
     cameraPanDir_.x = -1.f;
-  }
-  // Actions specific to state:
-  else if (state_ == PlayerState::DEFAULT) {
+  } else if (state_ == PlayerState::DEFAULT) {
     if (key == SDLK_RETURN) {
       state_ = PlayerState::CHATTING;
       SDL_EnableUNICODE(SDL_ENABLE);
-      SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, 
+      SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,
           SDL_DEFAULT_REPEAT_INTERVAL);
-    }
-
-    // ESC clears out current states
-    else if (key == SDLK_ESCAPE) {
+    } else if (key == SDLK_ESCAPE) {
+      // ESC clears out current states
       if (!order_.empty()) {
         order_.clear();
       } else {
@@ -283,14 +276,11 @@ void LocalPlayer::keyPress(SDL_keysym keysym) {
       }
     } else if (key == SDLK_LSHIFT || key == SDLK_RSHIFT) {
       shift_ = true;
-    }
-  
-    else if (key == SDLK_g) {
+    } else if (key == SDLK_g) {
       // Debug commands
       SDL_WM_GrabInput(SDL_GRAB_ON);
-    }
-    // Handle unit commands
-    else if (!selection_.empty()) {
+    } else if (!selection_.empty()) {
+      // Handle unit commands
       // Order types
       if (key == SDLK_a) {
         order_ = ActionTypes::ATTACK;
@@ -305,13 +295,13 @@ void LocalPlayer::keyPress(SDL_keysym keysym) {
       } else {
         for (unsigned int i = 0; i < 4; i++) {
           if (key == MAIN_KEYS[i]) {
-            // TODO(zack): this assumption that head of selection is always 
+            // TODO(zack): this assumption that head of selection is always
             // the unit we're building on is not good
             auto sel = selection_.begin();
             const Entity *ent = game_->getEntity(*sel);
             // The main action of a building is production
             if (ent->getType() == "BUILDING") {
-              std::vector<std::string> prod = arrParam(ent->getName() + 
+              std::vector<std::string> prod = arrParam(ent->getName() +
                   ".prod");
               if (i < prod.size()) {
                 std::string prodName = prod[i];
@@ -319,7 +309,6 @@ void LocalPlayer::keyPress(SDL_keysym keysym) {
                 auto &resources = game_->getResources(playerID_);
 
                 if (cost <= resources.requisition) {
-                  // TODO subtract cost
                   action["type"] = ActionTypes::ENQUEUE;
                   action["entity"] = toJson(*sel);
                   action["pid"] = toJson(playerID_);
@@ -362,12 +351,12 @@ void LocalPlayer::keyPress(SDL_keysym keysym) {
     } else if (key == SDLK_BACKSPACE) {
       if (!message_.empty())
         message_.erase(message_.end() - 1);
-    } else if (unicode != 0 && 
-        (keysym.mod == KMOD_NONE   || 
+    } else if (unicode != 0 &&
+        (keysym.mod == KMOD_NONE   ||
          keysym.mod == KMOD_LSHIFT ||
          keysym.mod == KMOD_RSHIFT ||
          keysym.mod == KMOD_CAPS   ||
-         keysym.mod == KMOD_NUM    )) {
+         keysym.mod == KMOD_NUM)) {
       message_.append(1, unicode);
     }
   }
@@ -399,8 +388,8 @@ LocalPlayer::setSelection(const std::set<id_t> &s) {
   renderer_->setSelection(selection_);
 }
 
-DummyPlayer::DummyPlayer(id_t playerID, id_t teamID) :
-  Player(playerID, teamID, "DummyPlayer", vec3Param("colors.dummyPlayer")) {
+DummyPlayer::DummyPlayer(id_t playerID, id_t teamID)
+  : Player(playerID, teamID, "DummyPlayer", vec3Param("colors.dummyPlayer")) {
 }
 
 bool DummyPlayer::update(tick_t tick) {
@@ -435,5 +424,4 @@ SlowPlayer::update(tick_t tick) {
   game_->addAction(playerID_, a);
   return true;
 }
-
-}; // rts
+};  // rts

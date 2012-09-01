@@ -7,9 +7,9 @@ namespace rts {
 LoggerPtr Projectile::logger_;
 const std::string Projectile::TYPE = "PROJECTILE";
 
-Projectile::Projectile(const std::string &name, const Json::Value &params) :
-  Entity(name, params, true),
-  targetID_(NO_ENTITY) {
+Projectile::Projectile(const std::string &name, const Json::Value &params)
+  : Entity(name, params, true),
+    targetID_(NO_ENTITY) {
   if (!logger_.get()) {
     logger_ = Logger::getLogger("Projectile");
   }
@@ -55,5 +55,4 @@ void Projectile::update(float dt) {
 void Projectile::handleMessage(const Message &msg) {
   logger_->warning() << "Projectile ignoring message: " << msg << '\n';
 }
-
-}; // rts
+};  // rts

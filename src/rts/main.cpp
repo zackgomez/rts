@@ -15,7 +15,14 @@
 #include "kissnet.h"
 #include "util.h"
 
-using namespace rts;
+using rts::Player;
+using rts::LocalPlayer;
+using rts::SlowPlayer;
+using rts::DummyPlayer;
+using rts::NetPlayer;
+using rts::Game;
+using rts::Renderer;
+using rts::Map;
 
 void mainloop();
 void render();
@@ -58,7 +65,7 @@ NetPlayer * getOpponent(const std::string &ip) {
         // If connection is successful, yay
         connected = true;
         break;
-      } catch (kissnet::socket_exception &e) {
+      } catch (const kissnet::socket_exception &e) {
         logger->warning() << "Failed to connected: '"
                           << e.what() << "'\n";
       }
@@ -78,8 +85,10 @@ NetPlayer * getOpponent(const std::string &ip) {
   // If we're hosting, then we'll take the lower id
   // TODO(zack): eventually this ID will be assigned to use by the match
   // maker
-  rts::id_t localPlayerID = ip.empty() ? STARTING_PID : STARTING_PID + 1;
-  rts::id_t localPlayerTID = ip.empty() ? STARTING_TID : STARTING_TID + 1;
+  rts::id_t localPlayerID =
+      ip.empty() ? rts::STARTING_PID : rts::STARTING_PID + 1;
+  rts::id_t localPlayerTID =
+      ip.empty() ? rts::STARTING_TID : rts::STARTING_TID + 1;
   return handshake(conn, localPlayerID, localPlayerTID,
       strParam("local.username"), vec3Param("local.playerColor"));
 }
@@ -135,14 +144,14 @@ NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID,
       }
 
       rts::id_t pid;
-      if (!msg.isMember("pid") || !(pid = assertPid(toID(msg["pid"])))) {
+      if (!msg.isMember("pid") || !(pid = rts::assertPid(toID(msg["pid"])))) {
         LOG(FATAL) << "Missing pid from handshake message.\n";
         // fail
         break;
       }
 
       rts::id_t tid;
-      if (!msg.isMember("tid") || !(tid = assertTid(toID(msg["tid"])))) {
+      if (!msg.isMember("tid") || !(tid = rts::assertTid(toID(msg["tid"])))) {
         LOG(FATAL) << "Missing tid from handshake message.\n";
         // fail
         break;
@@ -181,8 +190,8 @@ NetPlayer * handshake(NetConnection *conn, rts::id_t localPlayerID,
 
 std::vector<Player *> getPlayers(const std::vector<std::string> &args) {
   // TODO(zack) use matchmaker, or just create local and dummy players
-  rts::id_t playerID = STARTING_PID;
-  rts::id_t teamID = STARTING_TID;
+  rts::id_t playerID = rts::STARTING_PID;
+  rts::id_t teamID = rts::STARTING_TID;
 
   std::vector<Player *> players;
   // First get opponent if exists
@@ -297,7 +306,7 @@ void cleanup() {
   teardownEngine();
 }
 
-int main (int argc, char **argv) {
+int main(int argc, char **argv) {
   std::string progname = argv[0];
   std::vector<std::string> args;
   for (int i = 1; i < argc; i++) {
@@ -322,4 +331,3 @@ int main (int argc, char **argv) {
 
   return 0;
 }
-

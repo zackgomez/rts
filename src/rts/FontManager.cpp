@@ -13,9 +13,9 @@
 
 const float widthRatio = 0.75f;
 
-FontManager::FontManager() :
-  glyphTexSize_(0.f),
-  glyphTex_(0) {
+FontManager::FontManager()
+  : glyphTexSize_(0.f),
+    glyphTex_(0) {
   initialize();
 }
 
@@ -33,7 +33,6 @@ void FontManager::drawString(const std::string &s, const glm::vec2 &pos,
 }
 
 float FontManager::drawCharacter(char c, const glm::vec2 &pos, float fact) {
-
   invariant(c >= 32 && c < 32 + 96, "invalid character to render");
   stbtt_bakedchar bc = cdata_[c - 32];
 
@@ -74,12 +73,13 @@ void FontManager::initialize() {
 
   glyphTexSize_ = intParam("fonts.FreeSans.texsize");
   glyphSize_ = fltParam("fonts.FreeSans.size");
-  unsigned char *temp_bitmap = (unsigned char *)malloc(sizeof(char) * glyphTexSize_ * glyphTexSize_);
-  stbtt_BakeFontBitmap((unsigned char*) fontstr.c_str(), 0, // font data
-      glyphSize_, // font size
+  unsigned char *temp_bitmap = (unsigned char *)
+      malloc(sizeof(*temp_bitmap) * glyphTexSize_ * glyphTexSize_);
+  stbtt_BakeFontBitmap((unsigned char*) fontstr.c_str(), 0,  // font data
+      glyphSize_,  // font size
       temp_bitmap,
       glyphTexSize_, glyphTexSize_,
-      32, 96, // character range
+      32, 96,  // character range
       cdata_);
 
   glGenTextures(1, &glyphTex_);
