@@ -1,12 +1,12 @@
 #define GLM_SWIZZLE_XYZW
+#include "rts/Unit.h"
 #include <cmath>
-#include "Unit.h"
-#include "ParamReader.h"
-#include "MessageHub.h"
-#include "Projectile.h"
-#include "Building.h"
-#include "Weapon.h"
-#include "Game.h"
+#include "common/ParamReader.h"
+#include "rts/Building.h"
+#include "rts/Game.h"
+#include "rts/MessageHub.h"
+#include "rts/Projectile.h"
+#include "rts/Weapon.h"
 
 namespace rts {
 

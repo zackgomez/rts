@@ -1,3 +1,4 @@
+#include "common/Exception.h"
 #ifndef _MSC_VER
 #include <execinfo.h>
 #include <string>
@@ -5,7 +6,6 @@
 #include <cxxabi.h>
 #include <cstring>
 #endif
-#include "Exception.h"
 
 // @param ignore the number of traces to ignore
 std::string get_backtrace(size_t ignore = 0);

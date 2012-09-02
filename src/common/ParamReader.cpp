@@ -1,8 +1,7 @@
+#include "common/ParamReader.h"
 #include <boost/algorithm/string.hpp>
-#include <boost/crc.hpp>
-#include "ParamReader.h"
-#include "Checksum.h"
-#include "util.h"
+#include "common/Checksum.h"
+#include "common/util.h"
 
 ParamReader::ParamReader() {
   logger_ = Logger::getLogger("ParamReader");

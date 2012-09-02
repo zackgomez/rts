@@ -1,11 +1,11 @@
-#include "Actor.h"
-#include "ParamReader.h"
-#include "MessageHub.h"
-#include "Unit.h"
-#include "Projectile.h"
-#include "Weapon.h"
-#include "Building.h"
-#include "util.h"
+#include "rts/Actor.h"
+#include "common/ParamReader.h"
+#include "common/util.h"
+#include "rts/Building.h"
+#include "rts/MessageHub.h"
+#include "rts/Projectile.h"
+#include "rts/Unit.h"
+#include "rts/Weapon.h"
 
 namespace rts {
 

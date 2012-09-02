@@ -1,7 +1,7 @@
 #ifndef SRC_COMMON_UTIL_H_
 #define SRC_COMMON_UTIL_H_
+
 #include <string>
-#include "Exception.h"
 #include <cstdint>
 #include <cmath>
 #include <set>
@@ -10,7 +10,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <json/json.h>
-#include "Types.h"
+#include "common/Exception.h"
+#include "common/Types.h"
 
 /*
  * A variation of assert that throws an exception instead of calling abort.

@@ -1,7 +1,8 @@
-#include "NetPlayer.h"
-#include "Game.h"
-#include "PlayerAction.h"
-#include "util.h"
+#include "rts/NetPlayer.h"
+#include "common/NetConnection.h"
+#include "common/util.h"
+#include "rts/Game.h"
+#include "rts/PlayerAction.h"
 
 namespace rts {
 

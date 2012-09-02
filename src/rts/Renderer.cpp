@@ -1,24 +1,24 @@
 #define GLM_SWIZZLE_XYZW
-#include "Renderer.h"
+#include "rts/Renderer.h"
 #include <SDL/SDL.h>
 #include <iostream>
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <algorithm>
-#include "util.h"
-#include "Engine.h"
-#include "Entity.h"
-#include "Map.h"
-#include "Game.h"
-#include "Unit.h"
-#include "Building.h"
-#include "ResourceManager.h"
-#include "ParamReader.h"
-#include "Projectile.h"
-#include "Player.h"
-#include "MessageHub.h"
-#include "FontManager.h"
+#include "common/ParamReader.h"
+#include "common/util.h"
+#include "rts/Building.h"
+#include "rts/Engine.h"
+#include "rts/Entity.h"
+#include "rts/FontManager.h"
+#include "rts/Game.h"
+#include "rts/Map.h"
+#include "rts/MessageHub.h"
+#include "rts/Projectile.h"
+#include "rts/Player.h"
+#include "rts/ResourceManager.h"
+#include "rts/Unit.h"
 
 namespace rts {
 

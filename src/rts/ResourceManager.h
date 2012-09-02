@@ -1,10 +1,10 @@
 #ifndef SRC_RTS_RESOURCEMANAGER_H_
 #define SRC_RTS_RESOURCEMANAGER_H_
 
-#include <GL/glew.h>
-#include "Engine.h"
 #include <map>
-#include "Logger.h"
+#include <GL/glew.h>
+#include "common/Logger.h"
+#include "rts/Engine.h"
 
 class ResourceManager {
  public:

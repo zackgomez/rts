@@ -1,9 +1,9 @@
+#include "rts/Building.h"
 #include <string>
 #include <iostream>
-#include "Building.h"
-#include "ParamReader.h"
-#include "MessageHub.h"
-#include "Unit.h"
+#include "common/ParamReader.h"
+#include "rts/MessageHub.h"
+#include "rts/Unit.h"
 
 namespace rts {
 

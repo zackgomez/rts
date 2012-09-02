@@ -1,5 +1,5 @@
-#include "MatrixStack.h"
-#include "util.h"
+#include "rts/MatrixStack.h"
+#include "common/util.h"
 
 MatrixStack::MatrixStack()
   : current_(1.f) {

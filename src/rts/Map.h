@@ -2,6 +2,7 @@
 #define SRC_RTS_MAP_H_
 
 #include <string>
+#include <vector>
 #include <glm/glm.hpp>
 
 namespace rts {

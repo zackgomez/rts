@@ -1,15 +1,12 @@
 #ifndef SRC_RTS_ENTITY_H_
 #define SRC_RTS_ENTITY_H_
 
-#include <cstdint>
 #include <string>
-#include <set>
-#include <string>
-#include <math.h>
-#include <json/json.h>
 #include <glm/glm.hpp>
-#include "Message.h"
-#include "Types.h"
+#include "common/Types.h"
+#include "rts/Message.h"
+
+class Checksum;
 
 namespace rts {
 
@@ -68,7 +65,6 @@ class Entity {
   virtual void update(float dt) = 0;
 
   float distanceBetweenEntities(const Entity *e) const;
-
 
  protected:
   static const glm::vec3 getDirection(float angle);

@@ -1,8 +1,8 @@
-#include "Weapon.h"
-#include "Entity.h"
-#include "MessageHub.h"
-#include "Projectile.h"
-#include "ParamReader.h"
+#include "rts/Weapon.h"
+#include "common/ParamReader.h"
+#include "rts/Entity.h"
+#include "rts/MessageHub.h"
+#include "rts/Projectile.h"
 
 namespace rts {
 

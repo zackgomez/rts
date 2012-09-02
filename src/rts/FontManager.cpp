@@ -1,5 +1,4 @@
-#include "FontManager.h"
-#include "Engine.h"
+#include "rts/FontManager.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <sstream>
@@ -7,9 +6,10 @@
 #include <fstream>
 #define STB_TRUETYPE_IMPLEMENTATION
 #include <stb_truetype.h>
-#include "util.h"
-#include "Logger.h"
-#include "ParamReader.h"
+#include "common/Logger.h"
+#include "common/ParamReader.h"
+#include "common/util.h"
+#include "rts/Engine.h"
 
 const float widthRatio = 0.75f;
 

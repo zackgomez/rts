@@ -1,10 +1,8 @@
 #ifndef SRC_RTS_BUILDING_H_
 #define SRC_RTS_BUILDING_H_
 
-#include "Actor.h"
-#include "Entity.h"
-#include <glm/glm.hpp>
-#include "Logger.h"
+#include "rts/Actor.h"
+#include "common/Logger.h"
 
 namespace rts {
 

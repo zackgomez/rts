@@ -6,9 +6,9 @@
 #include <vector>
 #include <mutex>
 #include <queue>
-#include "PlayerAction.h"
-#include "Logger.h"
-#include "Entity.h"
+#include "common/Logger.h"
+#include "rts/Entity.h"
+#include "rts/PlayerAction.h"
 
 namespace rts {
 

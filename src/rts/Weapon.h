@@ -3,8 +3,8 @@
 
 #include <string>
 #include <glm/glm.hpp>
-#include "Message.h"
-#include "Types.h"
+#include "common/Types.h"
+#include "rts/Message.h"
 
 namespace rts {
 

@@ -1,11 +1,11 @@
-#include "Player.h"
+#include "rts/Player.h"
 #include <SDL/SDL.h>
-#include "Renderer.h"
-#include "ParamReader.h"
-#include "Entity.h"
-#include "Building.h"
-#include "Game.h"
-#include "MessageHub.h"
+#include "common/ParamReader.h"
+#include "rts/Building.h"
+#include "rts/Entity.h"
+#include "rts/Game.h"
+#include "rts/MessageHub.h"
+#include "rts/Renderer.h"
 
 namespace rts {
 

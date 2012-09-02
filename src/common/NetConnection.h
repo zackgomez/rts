@@ -4,7 +4,7 @@
 #include <mutex>
 #include <queue>
 #include <json/json.h>
-#include "kissnet.h"
+#include "common/kissnet.h"
 
 class NetConnection {
  public:

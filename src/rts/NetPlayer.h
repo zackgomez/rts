@@ -1,8 +1,10 @@
 #ifndef SRC_RTS_NETPLAYER_H_
 #define SRC_RTS_NETPLAYER_H_
 
-#include "Player.h"
-#include "NetConnection.h"
+#include "rts/Player.h"
+#include <mutex>
+
+class NetConnection;
 
 namespace rts {
 

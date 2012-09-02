@@ -1,13 +1,13 @@
-#include "Engine.h"
+#include "rts/Engine.h"
 #include <SDL/SDL.h>
 #include <GL/glew.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "Logger.h"
-#include "ParamReader.h"
+#include "common/Exception.h"
+#include "common/Logger.h"
+#include "common/ParamReader.h"
+#include "rts/ResourceManager.h"
 #include "stb_image.c"
-#include "Exception.h"
-#include "ResourceManager.h"
 
 static bool initialized = false;
 static LoggerPtr logger;

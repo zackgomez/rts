@@ -6,7 +6,7 @@
 #include <sstream>
 #include <json/json.h>
 #include <glm/glm.hpp>
-#include "Logger.h"
+#include "common/Logger.h"
 
 // Global convenience methods
 float fltParam(const std::string &param);

@@ -4,8 +4,8 @@
 #include <queue>
 #include <string>
 #include <vector>
-#include "Entity.h"
-#include "Logger.h"
+#include "rts/Entity.h"
+#include "common/Logger.h"
 
 namespace rts {
 

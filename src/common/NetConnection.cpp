@@ -1,6 +1,6 @@
-#include "NetConnection.h"
-#include "Logger.h"
+#include "common/NetConnection.h"
 #include <cassert>
+#include "common/Logger.h"
 
 struct net_msg {
   uint32_t sz;

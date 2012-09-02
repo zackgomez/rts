@@ -1,10 +1,10 @@
+#include "rts/Map.h"
 #include <vector>
-#include "Map.h"
-#include "Player.h"
-#include "MessageHub.h"
-#include "Unit.h"
-#include "Building.h"
-#include "ParamReader.h"
+#include "common/ParamReader.h"
+#include "rts/Building.h"
+#include "rts/MessageHub.h"
+#include "rts/Player.h"
+#include "rts/Unit.h"
 
 namespace rts {
 

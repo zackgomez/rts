@@ -1,8 +1,8 @@
 #ifndef SRC_RTS_PROJECTILE_H_
 #define SRC_RTS_PROJECTILE_H_
 
-#include "Entity.h"
-#include "Logger.h"
+#include "rts/Entity.h"
+#include "common/Logger.h"
 
 namespace rts {
 

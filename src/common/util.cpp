@@ -1,4 +1,4 @@
-#include "util.h"
+#include "common/util.h"
 #include <cstdlib>
 
 void __invariant(bool condition, const std::string &message) {

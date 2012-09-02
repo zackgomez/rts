@@ -1,8 +1,8 @@
-#include "Entity.h"
-#include "ParamReader.h"
-#include "MessageHub.h"
-#include "util.h"
-#include "Player.h"
+#include "rts/Entity.h"
+#include "common/ParamReader.h"
+#include "common/util.h"
+#include "rts/MessageHub.h"
+#include "rts/Player.h"
 
 namespace rts {
 

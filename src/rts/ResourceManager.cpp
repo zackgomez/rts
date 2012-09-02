@@ -1,6 +1,6 @@
-#include "ResourceManager.h"
-#include "ParamReader.h"
-#include "util.h"
+#include "rts/ResourceManager.h"
+#include "common/ParamReader.h"
+#include "common/util.h"
 
 ResourceManager::ResourceManager() {
   logger_ = Logger::getLogger("ResourceManager");

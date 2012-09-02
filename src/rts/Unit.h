@@ -1,9 +1,8 @@
 #ifndef SRC_RTS_UNIT_H_
 #define SRC_RTS_UNIT_H_
 
-#include <glm/glm.hpp>
-#include "Actor.h"
-#include "Logger.h"
+#include "rts/Actor.h"
+#include "common/Logger.h"
 
 namespace rts {
 

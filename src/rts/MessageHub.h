@@ -1,11 +1,11 @@
 #ifndef SRC_RTS_MESSAGEHUB_H_
 #define SRC_RTS_MESSAGEHUB_H_
 
-#include "Logger.h"
-#include "Entity.h"
-#include "Message.h"
-#include "Game.h"
-#include "util.h"
+#include "common/Logger.h"
+#include "common/util.h"
+#include "rts/Entity.h"
+#include "rts/Message.h"
+#include "rts/Game.h"
 
 namespace rts {
 

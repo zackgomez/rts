@@ -2,11 +2,11 @@
 #define SRC_RTS_RENDERER_H_
 
 #include <map>
+#include <set>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
-#include "Logger.h"
-#include "Entity.h"
-#include "Engine.h"
+#include "common/Logger.h"
+#include "rts/Entity.h"
 
 namespace rts {
 

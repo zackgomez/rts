@@ -1,6 +1,6 @@
-#include "Projectile.h"
-#include "MessageHub.h"
-#include "ParamReader.h"
+#include "rts/Projectile.h"
+#include "common/ParamReader.h"
+#include "rts/MessageHub.h"
 
 namespace rts {
 

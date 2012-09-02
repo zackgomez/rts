@@ -1,14 +1,15 @@
 #ifndef SRC_RTS_PLAYER_H_
 #define SRC_RTS_PLAYER_H_
 
-#include <queue>
-#include <SDL/SDL.h>
-#include <json/json.h>
-#include <glm/glm.hpp>
+#include <set>
 #include <string>
-#include "PlayerAction.h"
-#include "Entity.h"
-#include "Logger.h"
+#include <queue>
+#include <glm/glm.hpp>
+#include <json/json.h>
+#include <SDL/SDL.h>
+#include "common/Logger.h"
+#include "common/Types.h"
+#include "rts/PlayerAction.h"
 
 namespace rts {
 
