@@ -1,6 +1,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/crc.hpp>
 #include "ParamReader.h"
+#include "Checksum.h"
 #include "util.h"
 
 ParamReader::ParamReader() {
@@ -27,17 +28,11 @@ void ParamReader::loadFile(const char *filename) {
     return;
   }
 
-  // Checksum file
-  const size_t kFileBufSize = 1024;
-  char buf[kFileBufSize];
-  boost::crc_32_type checksum;
+  // Checksum entire file
   file.seekg(std::ios::beg);
-  while (file.read(buf, kFileBufSize)) {
-    checksum.process_bytes(buf, file.gcount());
-  }
-  fileChecksum_ = checksum.checksum();
+  fileChecksum_ = Checksum().process(file).getChecksum();
   LOG(INFO) << "Params file '" << filename << "' checksum: "
-    << std::hex << fileChecksum_ << '\n' << std::dec;
+    << Checksum::checksumToString(fileChecksum_) << '\n';
 
   // Read in includes from header comment
   // format is '// @include param file'
