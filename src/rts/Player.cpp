@@ -76,13 +76,13 @@ void LocalPlayer::renderUpdate(float dt) {
     dir.x = -2 * ((res.x - x) - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
   }
   if (y <= CAMERA_PAN_THRESHOLD) {
-    dir.y = 2 * (y - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
+    dir.y = -2 * (y - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
   } else if (y > res.y - CAMERA_PAN_THRESHOLD) {
-    dir.y = -2 * ((res.y - y) - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
+    dir.y = 2 * ((res.y - y) - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
   }
 
   const float CAMERA_PAN_SPEED = fltParam("camera.panspeed");
-  glm::vec3 delta = CAMERA_PAN_SPEED * dt * glm::vec3(dir.x, 0.f, dir.y);
+  glm::vec3 delta = CAMERA_PAN_SPEED * dt * glm::vec3(dir.x, dir.y, 0.f);
   renderer_->updateCamera(delta);
 
   // Deselect dead entities
@@ -177,7 +177,7 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button) {
           && !selection_.empty()) {
         // Visual feedback
         // TODO(zack) highlight the target not the ground
-        renderer_->highlight(glm::vec2(loc.x, loc.z));
+        renderer_->highlight(glm::vec2(loc.x, loc.y));
 
         // Queue up action
         if (entity->getType() == Building::TYPE) {
@@ -193,9 +193,9 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button) {
       // If we have a selection, and they didn't click on the current
       // selection, move them to target
       } else if (!selection_.empty() && (!entity || !selection_.count(eid))) {
-        if (loc.x != HUGE_VAL && loc.z != HUGE_VAL) {
+        if (loc.x != HUGE_VAL && loc.y != HUGE_VAL) {
           // Visual feedback
-          renderer_->highlight(glm::vec2(loc.x, loc.z));
+          renderer_->highlight(glm::vec2(loc.x, loc.y));
 
           // Queue up action
           action["type"] = ActionTypes::MOVE;
@@ -254,9 +254,9 @@ void LocalPlayer::keyPress(SDL_keysym keysym) {
     game_->addAction(playerID_, action);
   // Camera panning
   } else if (key == SDLK_UP) {
-    cameraPanDir_.y = -1.f;
-  } else if (key == SDLK_DOWN) {
     cameraPanDir_.y = 1.f;
+  } else if (key == SDLK_DOWN) {
+    cameraPanDir_.y = -1.f;
   } else if (key == SDLK_RIGHT) {
     cameraPanDir_.x = 1.f;
   } else if (key == SDLK_LEFT) {

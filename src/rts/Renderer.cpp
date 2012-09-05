@@ -27,7 +27,7 @@ LoggerPtr Renderer::logger_;
 Renderer::Renderer()
   : game_(NULL),
     player_(NULL),
-    cameraPos_(0.f, 5.f, 0.f),
+    cameraPos_(0.f, 0.f, 5.f),
     resolution_(vec2Param("local.resolution")),
     dragStart_(HUGE_VAL),
     dragEnd_(HUGE_VAL),
@@ -81,10 +81,10 @@ void Renderer::renderEntity(const Entity *entity) {
   glm::mat4 transform =
       glm::scale(
         glm::rotate(
-          glm::translate(glm::mat4(1.f), pos),
-          // TODO(zack) why does rotAngle need to be negative here?
-          // I think openGL may use a "left handed" coordinate system...
-          -rotAngle, glm::vec3(0, 1, 0)),
+          glm::rotate(
+            glm::translate(glm::mat4(1.f), pos),
+            rotAngle, glm::vec3(0, 0, 1)),
+          90.f, glm::vec3(1, 0, 0)),
         glm::vec3(entity->getRadius() / 0.5f));
 
   if (type == Unit::TYPE || type == Building::TYPE) {
@@ -116,7 +116,8 @@ glm::vec2 Renderer::worldToMinimap(const glm::vec3 &mapPos) {
   const glm::vec2 &mapSize = game_->getMap()->getSize();
   const glm::vec2 minimapSize = vec2Param("ui.minimap.dim");
   const glm::vec2 minimapPos = convertUIPos(vec2Param("ui.minimap.pos"));
-  glm::vec2 pos = mapPos.xz;
+  glm::vec2 pos = mapPos.xy;
+  pos.y *= -1;
   pos += mapSize / 2.f;
   pos *= minimapSize / mapSize;
   pos += minimapPos;
@@ -229,8 +230,8 @@ void Renderer::renderMinimap() {
       glm::vec3 terrainCoord = screenToTerrain(screenCoord);
       if (terrainCoord.x == HUGE_VAL) terrainCoord.x = mapSize.x / 2;
       if (terrainCoord.x == -HUGE_VAL) terrainCoord.x = -mapSize.x / 2;
-      if (terrainCoord.z == HUGE_VAL) terrainCoord.z = mapSize.y / 2;
-      if (terrainCoord.z == -HUGE_VAL) terrainCoord.z = -mapSize.y / 2;
+      if (terrainCoord.y == HUGE_VAL) terrainCoord.y = mapSize.y / 2;
+      if (terrainCoord.y == -HUGE_VAL) terrainCoord.y = -mapSize.y / 2;
       minimapCoord[x][y] = worldToMinimap(terrainCoord);
     }
   }
@@ -269,11 +270,9 @@ void Renderer::renderMap(const Map *map) {
   glUniform2fv(mapSizeUniform, 1, glm::value_ptr(mapSize));
 
   glm::mat4 transform =
-      glm::rotate(
-        glm::scale(
-          glm::mat4(1.f),
-          glm::vec3(mapSize.x, 1.f, mapSize.y)),
-        90.f, glm::vec3(1, 0, 0));
+    glm::scale(
+        glm::mat4(1.f),
+        glm::vec3(mapSize.x, mapSize.y, 1.f));
   renderRectangleProgram(transform);
 
   // Render each of the highlights
@@ -281,10 +280,8 @@ void Renderer::renderMap(const Map *map) {
     hl.remaining -= renderdt_;
     glm::mat4 transform =
       glm::scale(
-        glm::rotate(
           glm::translate(glm::mat4(1.f),
-                         glm::vec3(hl.pos.x, 0.01f, hl.pos.y)),
-          90.f, glm::vec3(1, 0, 0)),
+                         glm::vec3(hl.pos.x, hl.pos.y, 0.01f)),
         glm::vec3(0.33f));
     renderRectangleColor(transform, glm::vec4(1, 0, 0, 1));
   }
@@ -326,11 +323,11 @@ void Renderer::startRender(float dt) {
   getViewStack().clear();
   getViewStack().current() =
     glm::lookAt(cameraPos_,
-                glm::vec3(cameraPos_.x, 0, cameraPos_.z - 0.5f),
-                glm::vec3(0, 0, -1));
+                glm::vec3(cameraPos_.x, cameraPos_.y + 0.5f, 0),
+                glm::vec3(0, 1, 0));
 
   // Set up lights
-  lightPos_ = applyMatrix(getViewStack().current(), glm::vec3(-5, 10, -5));
+  lightPos_ = applyMatrix(getViewStack().current(), glm::vec3(-5, -5, 10));
 
   // Display effects
   for (size_t i = 0; i < effects_.size(); i++) {
@@ -476,8 +473,8 @@ void Renderer::updateCamera(const glm::vec3 &delta) {
   glm::vec2 mapSize = game_->getMap()->getSize() / 2.f;
   cameraPos_ = glm::clamp(
                  cameraPos_,
-                 glm::vec3(-mapSize.x, 0.f, -mapSize.y),
-                 glm::vec3(mapSize.x, 20.f, mapSize.y));
+                 glm::vec3(-mapSize.x, -mapSize.y, 0.f),
+                 glm::vec3(mapSize.x, mapSize.y, 20.f));
 }
 
 void Renderer::minimapUpdateCamera(const glm::vec2 &screenCoord) {
@@ -488,9 +485,10 @@ void Renderer::minimapUpdateCamera(const glm::vec2 &screenCoord) {
   mapCoord -= minimapPos;
   mapCoord -= glm::vec2(minimapDim.x / 2, minimapDim.y / 2);
   mapCoord *= mapSize / minimapDim;
+  mapCoord.y *= -1;
   glm::vec3 camCoord = cameraPos_;
   glm::vec3 cameraDelta =
-      glm::vec3(mapCoord.x - camCoord.x, 0, mapCoord.y - camCoord.z);
+      glm::vec3(mapCoord.x - camCoord.x, mapCoord.y - camCoord.y, 0);
   updateCamera(cameraDelta);
 }
 
@@ -566,7 +564,7 @@ glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
 
   glm::vec3 dir = glm::normalize(glm::vec3(ndc) - cameraPos_);
 
-  glm::vec3 terrain = glm::vec3(ndc) - dir * ndc.y / dir.y;
+  glm::vec3 terrain = glm::vec3(ndc) - dir * ndc.z / dir.z;
 
   const glm::vec2 mapSize = game_->getMap()->getSize() / 2.f;
   // Don't return a non terrain coordinate
@@ -575,10 +573,10 @@ glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
   } else if (terrain.x > mapSize.x) {
      terrain.x = HUGE_VAL;
   }
-  if (terrain.z < -mapSize.y) {
-      terrain.z = -HUGE_VAL;
-  } else if (terrain.z > mapSize.y) {
-      terrain.z = HUGE_VAL;
+  if (terrain.y < -mapSize.y) {
+      terrain.y = -HUGE_VAL;
+  } else if (terrain.y > mapSize.y) {
+      terrain.y = HUGE_VAL;
   }
 
   return glm::vec3(terrain);
@@ -616,18 +614,15 @@ void BloodEffect::render(float dt) {
     return;
   }
 
-  glm::vec3 pos = a->getPosition() + glm::vec3(0.f, a->getHeight(), 0.f);
+  glm::vec3 pos = a->getPosition() + glm::vec3(0.f, 0.f, a->getHeight());
   float size = a->getRadius() / 2.5f;
   glm::mat4 transform =
-    glm::rotate(
       glm::rotate(
         glm::scale(
           glm::translate(glm::mat4(1.f), pos),
           glm::vec3(size)),
         rad2deg(M_PI * t_),
-        glm::vec3(0, 1, 0)),
-      90.f,
-      glm::vec3(1.f, 0.f, 0.f));
+        glm::vec3(0, 0, 1));
 
   renderRectangleColor(transform, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 }

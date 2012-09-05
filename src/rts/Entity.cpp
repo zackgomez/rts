@@ -87,7 +87,7 @@ float Entity::getAngle(float dt) const {
 
 const glm::vec3 Entity::getDirection(float angle) {
   float rad = deg2rad(angle);
-  return glm::vec3(cosf(rad), 0, sinf(rad));
+  return glm::vec3(cosf(rad), sinf(rad), 0);
 }
 
 const glm::vec3 Entity::getDirection() const {
@@ -96,7 +96,7 @@ const glm::vec3 Entity::getDirection() const {
 
 float Entity::angleToTarget(const glm::vec3 &target) const {
   glm::vec3 delta = target - pos_;
-  return rad2deg(atan2(delta.z , delta.x));
+  return rad2deg(atan2(delta.y , delta.x));
 }
 
 float Entity::distanceBetweenEntities(const Entity *e) const {

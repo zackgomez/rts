@@ -33,10 +33,10 @@ void Map::init(const std::vector<Player *> &players) {
     glm::vec3 pos = toVec3(getParam(name_ + ".startingPositions")[ind]);
     glm::vec3 dir = glm::normalize(
       toVec3(getParam(name_ + ".startingDirections")[ind]));
-    glm::vec3 tangent = glm::cross(glm::vec3(0, 1, 0), dir);
+    glm::vec3 tangent = glm::cross(glm::vec3(0, 0, 1), dir);
     float angle = rad2deg(acosf(glm::dot(glm::vec3(1, 0, 0), dir)));
     float sign =
-      glm::dot(glm::cross(glm::vec3(1, 0, 0), glm::vec3(0, 1, 0)), dir);
+      glm::dot(glm::cross(glm::vec3(0, 0, 1), glm::vec3(1, 0, 0)), dir);
     if (sign < 0) {
       angle = -angle;
     }

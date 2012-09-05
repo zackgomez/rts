@@ -281,8 +281,8 @@ UnitState * MoveState::stop(UnitState *next) {
 }
 
 UnitState * MoveState::next() {
-  glm::vec2 pos = unit_->Entity::getPosition().xz;
-  glm::vec2 target = target_.xz;
+  glm::vec2 pos = unit_->Entity::getPosition().xy;
+  glm::vec2 target = target_.xy;
   float dist = glm::distance(target, pos);
 
   // If we've reached destination point
@@ -375,8 +375,8 @@ void AttackMoveState::update(float dt) {
 }
 
 UnitState * AttackMoveState::next() {
-  glm::vec2 pos = unit_->Entity::getPosition().xz;
-  glm::vec2 target = targetPos_.xz;
+  glm::vec2 pos = unit_->Entity::getPosition().xy;
+  glm::vec2 target = targetPos_.xy;
   // If we've reached destination point
   float dist = glm::distance(target, pos);
   if (dist < unit_->getRadius() / 2.f) {
