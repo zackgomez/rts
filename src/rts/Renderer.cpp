@@ -73,7 +73,7 @@ void Renderer::renderMessages(const std::set<Message> &messages) {
 }
 
 void Renderer::renderEntity(const Entity *entity) {
-  glm::vec3 pos = entity->getPosition(simdt_);
+  glm::vec3 pos = glm::vec3(entity->getPosition(simdt_), 0);
   float rotAngle = entity->getAngle(simdt_);
   const std::string &type = entity->getType();
 
@@ -620,7 +620,8 @@ void BloodEffect::render(float dt) {
     return;
   }
 
-  glm::vec3 pos = a->getPosition() + glm::vec3(0.f, 0.f, a->getHeight());
+  glm::vec3 pos = glm::vec3(a->getPosition(), 0)
+    + glm::vec3(0.f, 0.f, a->getHeight());
   float size = a->getRadius() / 2.5f;
   glm::mat4 transform =
       glm::rotate(

@@ -104,8 +104,8 @@ void Weapon::interrupt() {
 }
 
 bool Weapon::canAttack(const Entity *target) const {
-  glm::vec3 targetPos = target->getPosition();
-  glm::vec3 delta = targetPos - owner_->getPosition();
+  glm::vec2 targetPos = target->getPosition();
+  glm::vec2 delta = targetPos - owner_->getPosition();
   float targetAngle = rad2deg(atan2(delta.y , delta.x));
   // difference between facing and target
   float arc = addAngles(targetAngle, -owner_->getAngle());

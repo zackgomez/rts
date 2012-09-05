@@ -28,7 +28,7 @@ void Projectile::update(float dt) {
     return;
   }
   // Always go directly towards target
-  const glm::vec3 &targetPos = targetEnt->getPosition();
+  const glm::vec2 &targetPos = targetEnt->getPosition();
   angle_ = angleToTarget(targetPos);
 
   float dist = glm::length(targetPos - pos_);

@@ -30,9 +30,10 @@ void Map::init(const std::vector<Player *> &players) {
     id_t pid = p->getPlayerID();
     int ind = pid - STARTING_PID;
 
-    glm::vec3 pos = toVec3(getParam(name_ + ".startingPositions")[ind]);
-    glm::vec3 dir = glm::normalize(
-      toVec3(getParam(name_ + ".startingDirections")[ind]));
+    glm::vec3 pos = glm::vec3(
+        toVec2(getParam(name_ + ".startingPositions")[ind]), 0);
+    glm::vec3 dir = glm::vec3(glm::normalize(
+      toVec2(getParam(name_ + ".startingDirections")[ind])), 0);
     glm::vec3 tangent = glm::cross(glm::vec3(0, 0, 1), dir);
     float angle = rad2deg(acosf(glm::dot(glm::vec3(1, 0, 0), dir)));
     float sign =
@@ -72,7 +73,7 @@ void Map::init(const std::vector<Player *> &players) {
 
   Json::Value victoryPoints = getParam(name_ + ".victoryPoints");
   for (int i = 0; i < victoryPoints.size(); i++) {
-    glm::vec3 pos = toVec3(victoryPoints[i]);
+    glm::vec2 pos = toVec2(victoryPoints[i]);
     Json::Value params;
     params["entity_pid"] = toJson(NO_PLAYER);
     params["entity_pos"] = toJson(pos);
@@ -84,7 +85,7 @@ void Map::init(const std::vector<Player *> &players) {
   }
   Json::Value reqPoints = getParam(name_ + ".reqPoints");
   for (int i = 0; i < reqPoints.size(); i++) {
-    glm::vec3 pos = toVec3(reqPoints[i]);
+    glm::vec2 pos = toVec2(reqPoints[i]);
     Json::Value params;
     params["entity_pid"] = toJson(NO_PLAYER);
     params["entity_pos"] = toJson(pos);

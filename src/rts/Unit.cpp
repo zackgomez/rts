@@ -44,14 +44,14 @@ void Unit::handleOrder(const Message &order) {
   UnitState *next = NULL;
   if (order["order_type"] == OrderTypes::MOVE) {
     // TODO(zack) add following a unit here
-    next = new MoveState(toVec3(order["target"]), this);
+    next = new MoveState(toVec2(order["target"]), this);
   } else if (order["order_type"] == OrderTypes::ATTACK) {
     invariant(order.isMember("enemy_id") || order.isMember("target"),
               "attack order missing target: " + order.toStyledString());
     if (order.isMember("enemy_id")) {
       next = new AttackState(toID(order["enemy_id"]), this);
     } else if (order.isMember("target")) {
-      next = new AttackMoveState(toVec3(order["target"]), this);
+      next = new AttackMoveState(toVec2(order["target"]), this);
     }
   } else if (order["order_type"] == OrderTypes::CAPTURE) {
     invariant(order.isMember("enemy_id"), "capture order missing target: " +
@@ -112,12 +112,12 @@ bool Unit::canCapture(const Building *e) const {
 }
 
 bool Unit::withinRange(const Entity *e) const {
-  glm::vec3 targetPos = e->getPosition();
+  glm::vec2 targetPos = e->getPosition();
   float dist = glm::distance(pos_, targetPos);
   return dist < weapon_->getMaxRange();
 }
 
-void Unit::turnTowards(const glm::vec3 &targetPos, float dt) {
+void Unit::turnTowards(const glm::vec2 &targetPos, float dt) {
   float desired_angle = angleToTarget(targetPos);
   float delAngle = addAngles(desired_angle, -angle_);
   float turnRate = param("turnRate");
@@ -133,7 +133,7 @@ void Unit::turnTowards(const glm::vec3 &targetPos, float dt) {
   speed_ = 0.f;
 }
 
-void Unit::moveTowards(const glm::vec3 &targetPos, float dt) {
+void Unit::moveTowards(const glm::vec2 &targetPos, float dt) {
   float dist = glm::length(targetPos - pos_);
   float speed = param("speed");
   // rotate
@@ -247,7 +247,7 @@ UnitState * IdleState::stop(UnitState *next) {
   return next;
 }
 
-MoveState::MoveState(const glm::vec3 &target, Unit *unit)
+MoveState::MoveState(const glm::vec2 &target, Unit *unit)
   : UnitState(unit),
     targetID_(NO_ENTITY),
     target_(target) {
@@ -281,8 +281,8 @@ UnitState * MoveState::stop(UnitState *next) {
 }
 
 UnitState * MoveState::next() {
-  glm::vec2 pos = unit_->Entity::getPosition().xy;
-  glm::vec2 target = target_.xy;
+  glm::vec2 pos = unit_->Entity::getPosition();
+  glm::vec2 target = target_;
   float dist = glm::distance(target, pos);
 
   // If we've reached destination point
@@ -342,7 +342,7 @@ UnitState * AttackState::stop(UnitState *next) {
   return next;
 }
 
-AttackMoveState::AttackMoveState(const glm::vec3 &target, Unit *unit)
+AttackMoveState::AttackMoveState(const glm::vec2 &target, Unit *unit)
   : UnitState(unit),
     targetPos_(target),
     targetID_(NO_ENTITY) {

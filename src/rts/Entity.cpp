@@ -26,7 +26,7 @@ Entity::Entity(const std::string &name,
     playerID_ = toID(params["entity_pid"]);
   }
   if (params.isMember("entity_pos")) {
-    pos_ = toVec3(params["entity_pos"]);
+    pos_ = toVec2(params["entity_pos"]);
   }
   if (params.isMember("entity_angle")) {
     angle_ = params["entity_angle"].asFloat();
@@ -64,17 +64,17 @@ void Entity::update(float dt) {
     }
 
     // move
-    glm::vec3 vel = speed_ * getDirection(angle_);
+    glm::vec2 vel = speed_ * getDirection(angle_);
     pos_ += vel * dt;
   }
 }
 
-glm::vec3 Entity::getPosition(float dt) const {
+glm::vec2 Entity::getPosition(float dt) const {
   if (!mobile_) {
     return getPosition();
   }
 
-glm::vec3 vel = speed_ * getDirection(getAngle(dt));
+glm::vec2 vel = speed_ * getDirection(getAngle(dt));
   return pos_ + vel * dt;
 }
 
@@ -85,22 +85,22 @@ float Entity::getAngle(float dt) const {
   return angle_ + turnSpeed_ * dt;
 }
 
-const glm::vec3 Entity::getDirection(float angle) {
+const glm::vec2 Entity::getDirection(float angle) {
   float rad = deg2rad(angle);
-  return glm::vec3(cosf(rad), sinf(rad), 0);
+  return glm::vec2(cosf(rad), sinf(rad));
 }
 
-const glm::vec3 Entity::getDirection() const {
+const glm::vec2 Entity::getDirection() const {
   return getDirection(angle_);
 }
 
-float Entity::angleToTarget(const glm::vec3 &target) const {
-  glm::vec3 delta = target - pos_;
+float Entity::angleToTarget(const glm::vec2 &target) const {
+  glm::vec2 delta = target - pos_;
   return rad2deg(atan2(delta.y , delta.x));
 }
 
 float Entity::distanceBetweenEntities(const Entity *e) const {
-  glm::vec3 targetPos = e->getPosition();
+  glm::vec2 targetPos = e->getPosition();
   return glm::length(targetPos - pos_);
 }
 

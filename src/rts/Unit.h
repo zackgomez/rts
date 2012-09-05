@@ -37,9 +37,9 @@ class Unit : public Actor {
   // If this the target is within firing range
   bool withinRange(const Entity *target) const;
   // Rotates to face position
-  void turnTowards(const glm::vec3 &pos, float dt);
+  void turnTowards(const glm::vec2 &pos, float dt);
   // Moves towards position as fast as possible (probably rotates)
-  void moveTowards(const glm::vec3 &pos, float dt);
+  void moveTowards(const glm::vec2 &pos, float dt);
   // Don't move or rotate
   void remainStationary();
   // Attacks target if possible (within range, arc, cd available)
@@ -90,7 +90,7 @@ class IdleState : public UnitState {
 
 class MoveState : public UnitState {
  public:
-  explicit MoveState(const glm::vec3 &target, Unit *unit);
+  explicit MoveState(const glm::vec2 &target, Unit *unit);
   explicit MoveState(id_t targetID, Unit *unit);
   virtual ~MoveState() { }
 
@@ -102,7 +102,7 @@ class MoveState : public UnitState {
   void updateTarget();
 
   id_t targetID_;
-  glm::vec3 target_;
+  glm::vec2 target_;
 };
 
 class AttackState : public UnitState {
@@ -120,7 +120,7 @@ class AttackState : public UnitState {
 
 class AttackMoveState : public UnitState {
  public:
-  explicit AttackMoveState(const glm::vec3 &target, Unit *unit);
+  explicit AttackMoveState(const glm::vec2 &target, Unit *unit);
   virtual ~AttackMoveState();
 
   virtual void update(float dt);
@@ -128,7 +128,7 @@ class AttackMoveState : public UnitState {
   virtual UnitState * next();
 
  protected:
-  glm::vec3 targetPos_;
+  glm::vec2 targetPos_;
   id_t targetID_;
 };
 

@@ -41,7 +41,7 @@ class Entity {
   virtual const std::string getType() const = 0;
 
   // This unit's position
-  const glm::vec3 getPosition() const {
+  const glm::vec2 getPosition() const {
     return pos_;
   }
   // This unit's facing angle (relative to +x axis)
@@ -58,7 +58,7 @@ class Entity {
   }
 
   // Interpolation functions
-  virtual glm::vec3 getPosition(float dt) const;
+  virtual glm::vec2 getPosition(float dt) const;
   virtual float getAngle(float dt) const;
 
   virtual void handleMessage(const Message& msg) = 0;
@@ -67,9 +67,9 @@ class Entity {
   float distanceBetweenEntities(const Entity *e) const;
 
  protected:
-  static const glm::vec3 getDirection(float angle);
-  const glm::vec3 getDirection() const;
-  float angleToTarget(const glm::vec3 &pos) const;
+  static const glm::vec2 getDirection(float angle);
+  const glm::vec2 getDirection() const;
+  float angleToTarget(const glm::vec2 &pos) const;
 
   float param(const std::string &p) const;
   std::string strParam(const std::string &p) const;
@@ -81,7 +81,7 @@ class Entity {
     playerID_ = pid;
   }
 
-  glm::vec3 pos_;
+  glm::vec2 pos_;
   float angle_;
   float radius_;
   float height_;
