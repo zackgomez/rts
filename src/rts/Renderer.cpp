@@ -153,11 +153,17 @@ void Renderer::renderUI() {
   height = fltParam("ui.vicdisplay.fontHeight");
   // TODO(connor) this should probably iterate over teams, not players, but we
   // dont have teams yet..
-  for (const Player *player : game_->getPlayers()) {
+  for (id_t tid : game_->getTeams())
+  {
+    // background in team color
+    int col_idx = tid - STARTING_TID;
+    glm::vec3 tcol = toVec3(getParam("colors.team")[col_idx]);
+    drawRect(pos, size, glm::vec4(tcol, 1.f));
+
     ss.str("");
-    ss << (int)game_->getResources(player->getPlayerID()).victory_points;
-    drawRect(pos, size, glm::vec4(player->getColor(), 1));
+    ss << (int)game_->getVictoryPoints(tid);
     FontManager::get()->drawString(ss.str(), pos, height);
+
     pos.x += size.x * 2.0;
   }
 

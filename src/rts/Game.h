@@ -59,7 +59,10 @@ class Game {
   const Entity * getEntity(id_t eid) const;
   const Player * getPlayer(id_t pid) const;
   const std::vector<Player *>& getPlayers() const { return players_; }
+  const std::set<id_t> getTeams() const { return teams_; }
+
   const PlayerResources& getResources(id_t pid) const;
+  float getVictoryPoints(id_t tid) const;
 
   // Has to be inline, that sucks
   template <class T>
@@ -93,8 +96,13 @@ class Game {
   Map *map_;
   std::vector<Player *> players_;
   std::map<id_t, Entity *> entities_;
+  std::set<id_t> teams_;
   Renderer *renderer_;
+  // pid => float
   std::map<id_t, PlayerResources> resources_;
+  // tid => float
+  std::map<id_t, float> victoryPoints_;
+  // pid => floa
   std::map<id_t, std::queue<PlayerAction>> actions_;
   tick_t tick_;
   tick_t tickOffset_;
@@ -115,7 +123,6 @@ class Game {
 
 struct PlayerResources {
   float requisition;
-  float victory_points;
 };
 };  // namespace rts
 

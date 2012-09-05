@@ -80,6 +80,7 @@ void MessageHub::sendRemovalMessage(const Entity *e) {
 
   sendMessage(msg);
 }
+
 void MessageHub::sendResourceMessage(
     id_t from,
     id_t pid,
@@ -91,6 +92,21 @@ void MessageHub::sendResourceMessage(
   msg["type"] = MessageTypes::ADD_RESOURCE;
   msg["pid"] = toJson(pid);
   msg["resource"] = resource;
+  msg["amount"] = amount;
+
+  sendMessage(msg);
+}
+
+void MessageHub::sendVPMessage(
+    id_t from, 
+    id_t tid, 
+    float amount)
+{
+  Message msg;
+  msg["to"] = toJson(GAME_ID);
+  msg["from"] = toJson(from);
+  msg["type"] = MessageTypes::ADD_VP;
+  msg["tid"] = toJson(tid);
   msg["amount"] = amount;
 
   sendMessage(msg);

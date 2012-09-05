@@ -213,7 +213,11 @@
   "colors" :
   {
     "selected" : [0.1, 0.8, 0.1],
-    "dummyPlayer" : [0.2, 0.2, 0.2]
+    "dummyPlayer" : [0.2, 0.2, 0.2],
+    "team" : [
+      [0.1, 0.1, 0.8],
+      [0.8, 0.1, 0.1]
+    ]
   },
 
   // GRAPHICS PARAMS

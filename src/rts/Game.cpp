@@ -35,14 +35,21 @@ Game::Game(Map *map, const std::vector<Player *> &players,
 
   for (auto player : players) {
     player->setGame(this);
+    teams_.insert(player->getTeamID());
     // Add resources
     PlayerResources res;
     res.requisition = 0.f;
-    res.victory_points = 0.f;
     resources_[player->getPlayerID()] = res;
   }
   // sort players to ensure consistency
   std::sort(players_.begin(), players_.end(), comparePlayerID);
+
+  // Team init
+  invariant(teams_.size() == 2, "game only supports exactly 2 teams");
+  for (id_t tid : teams_) {
+    assertTid(tid);
+    victoryPoints_[tid] = 0.f;
+  }
 
   renderer_->setGame(this);
 
@@ -122,7 +129,7 @@ void Game::update(float dt) {
   // Do actions
   // It MUST be true that all players have added exactly one action of type
   // none targetting this frame
-for (auto &player : players_) {
+  for (auto &player : players_) {
     id_t pid = player->getPlayerID();
     assertPid(pid);
     std::queue<PlayerAction> &pacts = actions_[pid];
@@ -142,36 +149,40 @@ for (auto &player : players_) {
 
       handleAction(pid, act);
     }
-
-    // Check to see if this player has won
-    if (resources_[pid].victory_points >= intParam("global.pointsToWin")) {
-      logger_->info() << "Player " << pid << " has won the game!\n";
-      // TODO(connor) do something cooler than exit here, like give them candy.
-      // TODO(connor) also, send a message to game.
-      running_ = false;
-    }
   }
   // Allow more actions
   actionLock.unlock();
 
   // Update entities
   std::vector<id_t> deadEnts;
-for (auto &it : entities_) {
+  for (auto &it : entities_) {
     Entity *entity = it.second;
     entity->update(dt);
   }
   // Remove deadEnts
-for (auto eid : deadEntities_) {
+  for (auto eid : deadEntities_) {
     Entity *e = entities_[eid];
     entities_.erase(eid);
     delete e;
   }
   deadEntities_.clear();
-  // unlock entities automatically when lock goes out of scope
+
+  // Check to see if this player has won
+  for (auto it : victoryPoints_) {
+    if (it.second > intParam("global.pointsToWin")) {
+      // TODO(zack): print out each player on that team at least...
+      LOG(INFO) << "Team " << it.first << " has won the game!\n";
+      // TODO(connor) do something cooler than exit here, like give them candy.
+      // TODO(connor) also, send a message to game
+      running_ = false;
+    }
+  }
 
   // Next tick
   tick_++;
   sync_tick_ = SDL_GetTicks();
+
+  // unlock game automatically when lock goes out of scope
 }
 
 void Game::render(float dt) {
@@ -231,17 +242,22 @@ void Game::handleMessage(const Message &msg) {
     invariant(msg.isMember("eid"), "malformed DESTROY_ENTITY message");
     deadEntities_.push_back(toID(msg["eid"]));
   } else if (msg["type"] == MessageTypes::ADD_RESOURCE) {
-    invariant(msg.isMember("pid"), "malformed ADD_RESOURCE message");
     invariant(msg.isMember("amount"), "malformed ADD_RESOURCE message");
     invariant(msg.isMember("resource"), "malformed ADD_RESOURCE message");
-    id_t pid = toID(msg["pid"]);
+    invariant(msg.isMember("pid"), "malformed ADD_RESOURCE message");
+    id_t pid = assertPid(toID(msg["pid"]));
     invariant(getPlayer(pid), "unknown player for ADD_RESOURCE message");
     float amount = msg["amount"].asFloat();
     if (msg["resource"] == ResourceTypes::REQUISITION) {
       resources_[pid].requisition += amount;
-    } else if (msg["resource"] == ResourceTypes::VICTORY) {
-      resources_[pid].victory_points += amount;
     }
+  } else if (msg["type"] == MessageTypes::ADD_VP) {
+    invariant(msg.isMember("tid"), "malformed ADD_RESOURCE message");
+    id_t tid = assertTid(toID(msg["tid"]));
+    invariant(victoryPoints_.count(tid), "unknown team for ADD_RESOURCE message");
+    invariant(msg.isMember("amount"), "malformed ADD_RESOURCE message");
+    float amount = msg["amount"].asFloat();
+    victoryPoints_[tid] += amount;
   } else {
     logger_->warning() << "Game received unknown message type: " << msg;
     // No other work, if unknown message
@@ -301,6 +317,13 @@ const PlayerResources& Game::getResources(id_t pid) const {
   auto it = resources_.find(pid);
   invariant(it != resources_.end(),
       "Unknown playerID to get resources for");
+  return it->second;
+}
+
+float Game::getVictoryPoints(id_t tid) const {
+  auto it = victoryPoints_.find(assertTid(tid));
+  invariant(it != victoryPoints_.end(),
+      "Unknown teamID to get victory points for");
   return it->second;
 }
 

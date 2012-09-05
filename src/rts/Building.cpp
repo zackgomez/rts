@@ -82,13 +82,11 @@ void Building::update(float dt) {
       ResourceTypes::REQUISITION,
       param("reqGen") * dt);
   }
-  if (hasParam("victoryGen")) {
-    MessageHub::get()->sendResourceMessage(
+  if (hasParam("victoryGen"))
+    MessageHub::get()->sendVPMessage(
       getID(),
-      getPlayerID(),
-      ResourceTypes::VICTORY,
+      getTeamID(),
       param("victoryGen") * dt);
-  }
 }
 
 bool Building::canCapture(id_t eid) const {

@@ -42,7 +42,6 @@ const glm::vec3 NO_POSITION = glm::vec3(HUGE_VAL);
 
 namespace ResourceTypes {
 const std::string REQUISITION = "REQUISITION";
-const std::string VICTORY     = "VICTORY";
 };
 };  // rts
 

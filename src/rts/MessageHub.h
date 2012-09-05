@@ -23,7 +23,8 @@ class MessageHub {
                         const std::string &ename, const Json::Value &eparams);
   void sendRemovalMessage(const Entity *e);
   void sendResourceMessage(id_t from, id_t pid, const std::string &resource,
-                           float amount);
+      float amount);
+  void sendVPMessage(id_t from, id_t tid, float amount);
 
   // Returns the entity that scores the LOWEST with the given scoring function.
   // Scoring function should have signature float scorer(const Entity *);
