@@ -113,3 +113,17 @@ float addAngles(float a, float b) {
 
   return ret;
 }
+
+bool pointInBox(
+    const glm::vec2 &p,
+    const glm::vec2 &boxPos,
+    const glm::vec2 &boxSize,
+    float angle) {
+  // get the point relative to the entity
+  glm::vec2 pt = p - boxPos;
+  pt = glm::vec2(
+      glm::dot(glm::vec2(glm::cos(angle), -glm::sin(angle)), pt),
+      glm::dot(glm::vec2(glm::sin(angle), glm::cos(angle)), pt));
+  return pt.x >= -boxSize.x / 2 && pt.x < boxSize.x / 2 &&
+         pt.y >= -boxSize.y / 2 && pt.y < boxSize.y / 2;
+}

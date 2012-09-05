@@ -18,7 +18,7 @@ Entity::Entity(const std::string &name,
     targetable_(targetable),
     pos_(HUGE_VAL),
     angle_(0.f),
-    radius_(0.f),
+    size_(glm::vec2(0.f)),
     height_(0.f),
     speed_(0.f),
     turnSpeed_(0.f) {
@@ -31,7 +31,7 @@ Entity::Entity(const std::string &name,
   if (params.isMember("entity_angle")) {
     angle_ = params["entity_angle"].asFloat();
   }
-  radius_ = param("radius");
+  size_ = vec2Param("size");
   height_ = param("height");
 
   // Make sure we did it right
@@ -104,12 +104,20 @@ float Entity::distanceBetweenEntities(const Entity *e) const {
   return glm::length(targetPos - pos_);
 }
 
+bool Entity::pointInEntity(const glm::vec2 &p) {
+  return pointInBox(p, pos_, size_, angle_);
+}
+
 float Entity::param(const std::string &p) const {
   return fltParam(name_ + "." + p);
 }
 
 std::string Entity::strParam(const std::string &p) const {
   return ::strParam(name_ + "." + p);
+}
+
+glm::vec2 Entity::vec2Param(const std::string &p) const {
+  return ::vec2Param(name_ + "." + p);
 }
 
 bool Entity::hasParam(const std::string &p) const {

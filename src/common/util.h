@@ -69,4 +69,11 @@ float frand();
 
 float addAngles(float a, float b);
 
+bool pointInBox(
+    const glm::vec2 &p,
+    // boxPos is the center of the box
+    const glm::vec2 &boxPos,
+    const glm::vec2 &boxSize,
+    float angle);
+
 #endif  // SRC_COMMON_UTIL_H_

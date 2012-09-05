@@ -76,6 +76,7 @@ void Renderer::renderEntity(const Entity *entity) {
   glm::vec3 pos = glm::vec3(entity->getPosition(simdt_), 0);
   float rotAngle = entity->getAngle(simdt_);
   const std::string &type = entity->getType();
+  float modelSize = fltParam(entity->getName() + ".modelSize");
 
   // Interpolate if they move
   glm::mat4 transform =
@@ -85,7 +86,7 @@ void Renderer::renderEntity(const Entity *entity) {
             glm::translate(glm::mat4(1.f), pos),
             rotAngle, glm::vec3(0, 0, 1)),
           90.f, glm::vec3(1, 0, 0)),
-        glm::vec3(entity->getRadius() / 0.5f));
+        glm::vec3(modelSize));
 
   if (type == Unit::TYPE || type == Building::TYPE) {
     renderActor((const Actor *) entity, transform);
@@ -99,7 +100,8 @@ void Renderer::renderEntity(const Entity *entity) {
     GLuint lightPosUniform = glGetUniformLocation(meshProgram, "lightPos");
     glUniform4fv(colorUniform, 1, glm::value_ptr(color));
     glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
-    Mesh * mesh = ResourceManager::get()->getMesh(entity->getName());
+    Mesh * mesh =
+      ResourceManager::get()->getMesh(strParam(entity->getName() + ".model"));
     renderMesh(transform, mesh);
   } else {
     LOG(WARNING) << "Unable to render entity " << entity->getName() << '\n';
@@ -153,8 +155,7 @@ void Renderer::renderUI() {
   height = fltParam("ui.vicdisplay.fontHeight");
   // TODO(connor) this should probably iterate over teams, not players, but we
   // dont have teams yet..
-  for (id_t tid : game_->getTeams())
-  {
+  for (id_t tid : game_->getTeams()) {
     // background in team color
     int col_idx = tid - STARTING_TID;
     glm::vec3 tcol = toVec3(getParam("colors.team")[col_idx]);
@@ -622,7 +623,8 @@ void BloodEffect::render(float dt) {
 
   glm::vec3 pos = glm::vec3(a->getPosition(), 0)
     + glm::vec3(0.f, 0.f, a->getHeight());
-  float size = a->getRadius() / 2.5f;
+  float modelSize = fltParam(a->getName() + ".modelSize");
+  float size = modelSize / 5.0f;
   glm::mat4 transform =
       glm::rotate(
         glm::scale(

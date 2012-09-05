@@ -48,9 +48,9 @@ class Entity {
   const float getAngle() const {
     return angle_;
   }
-  // This unit's rough bounding radius
-  const float getRadius() const {
-    return radius_;
+  // This unit's bounding box
+  const glm::vec2 getSize() const {
+    return size_;
   }
   // Returns this entities height
   const float getHeight() const {
@@ -66,6 +66,8 @@ class Entity {
 
   float distanceBetweenEntities(const Entity *e) const;
 
+  bool pointInEntity(const glm::vec2 &p);
+
  protected:
   static const glm::vec2 getDirection(float angle);
   const glm::vec2 getDirection() const;
@@ -73,6 +75,7 @@ class Entity {
 
   float param(const std::string &p) const;
   std::string strParam(const std::string &p) const;
+  glm::vec2 vec2Param(const std::string &p) const;
   bool hasParam(const std::string &p) const;
   bool hasStrParam(const std::string &p) const;
 
@@ -83,7 +86,7 @@ class Entity {
 
   glm::vec2 pos_;
   float angle_;
-  float radius_;
+  glm::vec2 size_;
   float height_;
 
   float speed_;
