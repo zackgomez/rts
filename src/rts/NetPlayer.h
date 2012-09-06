@@ -14,7 +14,7 @@ class NetPlayer : public Player {
             const glm::vec3 &color, NetConnection *conn);
   virtual ~NetPlayer();
 
-  virtual bool update(tick_t tick);
+  virtual bool update(tick_t tick, tick_t actionTick);
   virtual void playerAction(id_t playerID, const PlayerAction &action);
 
   void setLocalPlayer(id_t playerID) {

@@ -13,7 +13,6 @@ LocalPlayer::LocalPlayer(id_t playerID, id_t teamID, const std::string &name,
     const glm::vec3 &color, Renderer *renderer)
   : Player(playerID, teamID, name, color),
     renderer_(renderer),
-    targetTick_(0),
     doneTick_(-1e6),  // no done ticks
     selection_(),
     cameraPanDir_(0.f),
@@ -29,23 +28,22 @@ LocalPlayer::LocalPlayer(id_t playerID, id_t teamID, const std::string &name,
 LocalPlayer::~LocalPlayer() {
 }
 
-bool LocalPlayer::update(tick_t tick) {
-  // Don't do anything if we're already done
+bool LocalPlayer::update(tick_t tick, tick_t targetTick) {
+  // Don't do anything if we're already done with this frame
+  // NOTE don't use targetTick here as it has the wrong sync behavior
   if (tick <= doneTick_) {
     return true;
   }
 
-  // Finish the last frame by sending the NONE action
+  // Finish the last frame by sending the DONE action
   PlayerAction a;
   a["type"] = ActionTypes::DONE;
-  a["pid"] = (Json::Value::Int64) playerID_;
-  a["tick"] = (Json::Value::Int64) targetTick_;
+  a["pid"] = toJson(playerID_);
+  a["tick"] = toJson(tick);
   game_->addAction(playerID_, a);
 
   // We've generated for this tick
   doneTick_ = tick;
-  // Now generate input for the next + offset
-  targetTick_ = tick + game_->getTickOffset();
 
   // We've completed input for the previous target frame
   return true;
@@ -158,7 +156,7 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button) {
           action["enemy_id"] = toJson(entity->getID());
         }
         action["pid"] = toJson(playerID_);
-        action["tick"] = toJson(targetTick_);
+        action["tick"] = toJson(doneTick_ + 1);
 
         // Clear order
         order_.clear();
@@ -189,7 +187,7 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button) {
         action["entity"] = toJson(selection_);
         action["enemy_id"] = toJson(eid);
         action["pid"] = toJson(playerID_);
-        action["tick"] = toJson(targetTick_);
+        action["tick"] = toJson(doneTick_ + 1);
       // If we have a selection, and they didn't click on the current
       // selection, move them to target
       } else if (!selection_.empty() && (!entity || !selection_.count(eid))) {
@@ -202,7 +200,7 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button) {
           action["entity"] = toJson(selection_);
           action["target"] = toJson(loc);
           action["pid"] = toJson(playerID_);
-          action["tick"] = toJson(targetTick_);
+          action["tick"] = toJson(doneTick_ + 1);
         }
       }
     }
@@ -243,7 +241,6 @@ void LocalPlayer::mouseUp(const glm::vec2 &screenCoord, int button) {
 
 void LocalPlayer::keyPress(SDL_keysym keysym) {
   static const SDLKey MAIN_KEYS[] = {SDLK_q, SDLK_w, SDLK_e, SDLK_r};
-  static const SDLKey UPGRADE_KEYS[] = {SDLK_t, SDLK_g, SDLK_b};
   SDLKey key = keysym.sym;
   // TODO(zack) watch out for pausing here
   PlayerAction action;
@@ -290,7 +287,7 @@ void LocalPlayer::keyPress(SDL_keysym keysym) {
         action["type"] = ActionTypes::STOP;
         action["entity"] = toJson(selection_);
         action["pid"] = toJson(playerID_);
-        action["tick"] = toJson(targetTick_);
+        action["tick"] = toJson(doneTick_ + 1);
         game_->addAction(playerID_, action);
       } else {
         for (unsigned int i = 0; i < 4; i++) {
@@ -313,7 +310,7 @@ void LocalPlayer::keyPress(SDL_keysym keysym) {
                   action["entity"] = toJson(*sel);
                   action["pid"] = toJson(playerID_);
                   action["prod"] = prod[i];
-                  action["tick"] = toJson(targetTick_);
+                  action["tick"] = toJson(doneTick_ + 1);
                   game_->addAction(playerID_, action);
                 }
                 // TODO(zack): else send a message telling the player they
@@ -336,7 +333,7 @@ void LocalPlayer::keyPress(SDL_keysym keysym) {
         action["pid"] = toJson(playerID_);
         action["type"] = ActionTypes::CHAT;
         action["chat"] = message_;
-        action["tick"] = toJson(targetTick_);
+        action["tick"] = toJson(doneTick_ + 1);
         game_->addAction(playerID_, action);
       }
       message_.clear();
@@ -392,35 +389,11 @@ DummyPlayer::DummyPlayer(id_t playerID, id_t teamID)
   : Player(playerID, teamID, "DummyPlayer", vec3Param("colors.dummyPlayer")) {
 }
 
-bool DummyPlayer::update(tick_t tick) {
-  if (tick < 0) {
-    return true;
-  }
-
+bool DummyPlayer::update(tick_t tick, tick_t targetTick) {
   PlayerAction a;
   a["type"] = ActionTypes::DONE;
-  a["tick"] = (Json::Value::Int64) tick;
-  a["pid"] = (Json::Value::Int64) playerID_;
-  game_->addAction(playerID_, a);
-  return true;
-}
-
-bool
-SlowPlayer::update(tick_t tick) {
-  // Just blast through the sync frames, for now
-  if (tick < 0) {
-    return true;
-  }
-
-  if (frand() < fltParam("slowPlayer.dropChance")) {
-    Logger::getLogger("SlowPlayer")->info() << "I strike again!\n";
-    return false;
-  }
-
-  PlayerAction a;
-  a["type"] = ActionTypes::DONE;
-  a["tick"] = (Json::Value::Int64) tick;
-  a["pid"] = (Json::Value::Int64) playerID_;
+  a["tick"] = toJson(tick);
+  a["pid"] = toJson(playerID_);
   game_->addAction(playerID_, a);
   return true;
 }

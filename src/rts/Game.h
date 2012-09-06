@@ -39,10 +39,6 @@ class Game {
   tick_t getTick() const {
     return tick_;
   }
-  // Returns the player action tick delay
-  tick_t getTickOffset() const {
-    return tickOffset_;
-  }
   bool isPaused() const {
     return paused_;
   }

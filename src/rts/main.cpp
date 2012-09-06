@@ -21,7 +21,6 @@
 
 using rts::Player;
 using rts::LocalPlayer;
-using rts::SlowPlayer;
 using rts::DummyPlayer;
 using rts::NetPlayer;
 using rts::Game;
@@ -212,8 +211,6 @@ std::vector<Player *> getPlayers(const std::vector<std::string> &args) {
     }
     opp->setLocalPlayer(playerID);
     players.push_back(opp);
-  } else if (!args.empty() && args[0] == "--slowp") {
-    players.push_back(new SlowPlayer(playerID + 1, teamID + 1));
   } else {
     players.push_back(new DummyPlayer(playerID + 1, teamID + 1));
   }

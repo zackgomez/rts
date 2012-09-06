@@ -66,7 +66,7 @@ Game::~Game() {
 bool Game::updatePlayers() {
   bool allInput = true;
   for (Player *player : players_) {
-    allInput &= player->update(tick_);
+    allInput &= player->update(tick_, tick_ - tickOffset_);
   }
   return allInput;
 }
@@ -77,7 +77,7 @@ void Game::start(float period) {
   // Initially all players are targetting tick 0, we need to get them targetting
   // tickOffset_, so when we run frame 0, they're generating input for frame
   // tickOffset_
-  for (tick_ = -tickOffset_+1; tick_ < 0; ) {
+  for (tick_ = -tickOffset_; tick_ < 0; ) {
     // Fix for quiting
     if (!running_) {
       return;
@@ -140,7 +140,7 @@ void Game::update(float dt) {
       act = pacts.front();
       pacts.pop();
       invariant(
-        act["tick"] == toJson(tick_),
+        act["tick"] == toJson(tick_ - tickOffset_),
         "Bad action tick " + act.toStyledString());
 
       if (act["type"] == ActionTypes::DONE) {
@@ -252,10 +252,10 @@ void Game::handleMessage(const Message &msg) {
       resources_[pid].requisition += amount;
     }
   } else if (msg["type"] == MessageTypes::ADD_VP) {
-    invariant(msg.isMember("tid"), "malformed ADD_RESOURCE message");
+    invariant(msg.isMember("tid"), "malformed ADD_VP message");
     id_t tid = assertTid(toID(msg["tid"]));
-    invariant(victoryPoints_.count(tid), "unknown team for ADD_RESOURCE message");
-    invariant(msg.isMember("amount"), "malformed ADD_RESOURCE message");
+    invariant(victoryPoints_.count(tid), "unknown team for ADD_VP message");
+    invariant(msg.isMember("amount"), "malformed ADD_VP message");
     float amount = msg["amount"].asFloat();
     victoryPoints_[tid] += amount;
   } else {

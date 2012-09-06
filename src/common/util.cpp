@@ -86,6 +86,10 @@ rts::id_t toID(const Json::Value &v) {
   return v.asUInt64();
 }
 
+rts::tick_t toTick(const Json::Value &v) {
+  return v.asInt64();
+}
+
 glm::vec3 applyMatrix(const glm::mat4 &mat, const glm::vec3 &pt, bool homo) {
   glm::vec4 p = mat * glm::vec4(pt, homo ? 1.f : 0.f);
   if (homo) {

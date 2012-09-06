@@ -36,7 +36,8 @@ Json::Value toJson(const glm::vec3 &v);
 Json::Value toJson(const glm::vec4 &v);
 Json::Value toJson(uint64_t n);
 Json::Value toJson(int64_t n);
-rts::id_t toID(const Json::Value &v);
+rts::id_t   toID(const Json::Value &v);
+rts::tick_t toTick(const Json::Value &v);
 
 template <class T>
 Json::Value toJson(const std::set<T> &entities) {
