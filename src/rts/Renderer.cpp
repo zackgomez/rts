@@ -61,6 +61,14 @@ Renderer::~Renderer() {
   }
 }
 
+void Renderer::addChatMessage(id_t from, const std::string &message) {
+  std::stringstream ss;
+  ss << Game::get()->getPlayer(from)->getName() << ": " << message;
+  chats_.push_back(ss.str());
+
+  displayChatBoxTimer_ = fltParam("hud.messages.chatDisplayTime");
+}
+
 void Renderer::renderMessages(const std::set<Message> &messages) {
   for (const Message &msg : messages) {
     if (msg["type"] == MessageTypes::ATTACK) {
@@ -194,11 +202,10 @@ void Renderer::renderUI() {
     if (player_->getState() == PlayerState::CHATTING) height += messageHeight;
     size = glm::vec2(fltParam("hud.messages.backgroundWidth"), height);
     drawRect(startPos, size, vec4Param("hud.messages.backgroundColor"));
-    const std::vector<std::string> &messages = player_->getChatMessages();
     int numMessages = std::min(intParam("hud.messages.max"),
-        (int)messages.size());
+        (int)chats_.size());
     for (int i = 1; i <= numMessages; i++) {
-      std::string message = messages[messages.size() - i];
+      const std::string &message = chats_[chats_.size() - i];
       glm::vec2 messagePos = pos;
       messagePos.y -= i * messageHeight;
       FontManager::get()->drawString(message, messagePos, fontHeight);

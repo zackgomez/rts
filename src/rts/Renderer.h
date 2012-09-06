@@ -1,6 +1,5 @@
 #ifndef SRC_RTS_RENDERER_H_
 #define SRC_RTS_RENDERER_H_
-
 #include <map>
 #include <set>
 #include <GL/glew.h>
@@ -36,6 +35,8 @@ class Renderer {
   void renderMinimap();
   void renderMap(const Map *map);
 
+  void addChatMessage(id_t from, const std::string &message);
+
   void startRender(float dt);
   void endRender();
 
@@ -62,8 +63,6 @@ class Renderer {
   void highlight(const glm::vec2 &mapCoord);
   void setDragRect(const glm::vec3 &start, const glm::vec3 &end);
 
-  void displayChatBox(float time) { displayChatBoxTimer_ = time; }
-
   glm::vec2 convertUIPos(const glm::vec2 &pos);
 
  private:
@@ -85,6 +84,7 @@ class Renderer {
   uint32_t lastRender_;
   float renderdt_;
 
+  std::vector<std::string> chats_;
   float displayChatBoxTimer_;
 
   std::map<const Entity *, glm::vec3> ndcCoords_;

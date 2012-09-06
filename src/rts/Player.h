@@ -66,9 +66,6 @@ class Player {
    */
   virtual void playerAction(id_t playerID, const PlayerAction &action) = 0;
 
-  virtual void addChatMessage(const std::string &chat) {}
-  virtual void displayChatWindow() {}
-
   /* Returns this player's color. */
   glm::vec3 getColor() const {
     return color_;
@@ -110,13 +107,6 @@ class LocalPlayer : public Player {
   // Returns the message the player is currently typing
   const std::string& getLocalMessage() const { return message_; }
 
-  virtual void addChatMessage(const std::string &chat);
-  const std::vector<std::string>& getChatMessages() const {
-    return chatMessages_;
-  }
-
-  virtual void displayChatWindow();
-
   const std::string& getState() const { return state_; }
 
  private:
@@ -131,7 +121,6 @@ class LocalPlayer : public Player {
   bool shift_;
   bool chatting_;
   std::string message_;
-  std::vector<std::string> chatMessages_;
   bool leftDrag_;
   glm::vec3 leftStart_;
   bool leftDragMinimap_;

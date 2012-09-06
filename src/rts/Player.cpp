@@ -343,8 +343,6 @@ void LocalPlayer::keyPress(SDL_keysym keysym) {
       SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
       state_ = PlayerState::DEFAULT;
       message_.clear();
-      // Hides chat window
-      renderer_->displayChatBox(0.f);
     } else if (key == SDLK_BACKSPACE) {
       if (!message_.empty())
         message_.erase(message_.end() - 1);
@@ -368,15 +366,6 @@ void LocalPlayer::keyRelease(SDL_keysym keysym) {
   } else if (key == SDLK_LSHIFT || key == SDLK_RSHIFT) {
     shift_ = false;
   }
-}
-
-void LocalPlayer::addChatMessage(const std::string &chat) {
-  chatMessages_.push_back(chat);
-}
-
-void LocalPlayer::displayChatWindow() {
-  logger_->debug() << "displaying chat window\n";
-  renderer_->displayChatBox(fltParam("hud.messages.chatDisplayTime"));
 }
 
 void

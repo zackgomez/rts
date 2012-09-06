@@ -331,16 +331,11 @@ void Game::handleAction(id_t playerID, const PlayerAction &action) {
   if (action["type"] == ActionTypes::CHAT) {
     invariant(action.isMember("chat"), "malformed CHAT action");
     std::stringstream ss;
-    ss << getPlayer(playerID)->getName() << ": ";
-    ss << action["chat"].asString();
+    ss << getPlayer(playerID)->getName() << ": " << action["chat"].asString();
 
-    // Tell all players that we are chatting..
-    // TODO(connor) iterate over only a target set of players so we can do team
-    // chat, whispers, etc. Define this target set as a member of msg.
-    for (Player *player : players_) {
-      player->addChatMessage(ss.str());
-      player->displayChatWindow();
-    }
+    // TODO(zack) perhaps color message if to team, and only display messages
+    // meant for the local player
+    renderer_->addChatMessage(playerID, action["chat"].asString());
   } else {
     Message msg;
     msg["to"] = action["entity"];
