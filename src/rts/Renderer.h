@@ -74,6 +74,7 @@ class Renderer {
   std::set<Message> messages_;
   const Game *game_;
   const LocalPlayer *player_;
+  const Map* map_;
 
   glm::vec3 cameraPos_;
   glm::vec3 lightPos_;

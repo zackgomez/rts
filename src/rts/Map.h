@@ -20,6 +20,11 @@ class Map {
   const glm::vec4 &getMinimapColor() const {
     return color_;
   }
+
+  // Returns the height of the map at the passed position.  This is currently
+  // only used for cosmetic purposes
+  float getMapHeight(const glm::vec2 &pos) const;
+
   // Initializes the map and any start entities/etc
   void init(const std::vector<Player *> &players);
 

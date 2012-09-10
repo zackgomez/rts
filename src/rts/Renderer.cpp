@@ -81,7 +81,8 @@ void Renderer::renderMessages(const std::set<Message> &messages) {
 }
 
 void Renderer::renderEntity(const Entity *entity) {
-  glm::vec3 pos = glm::vec3(entity->getPosition(simdt_), 0);
+  glm::vec2 pos2 = entity->getPosition(simdt_);
+  glm::vec3 pos = glm::vec3(pos2, map_->getMapHeight(pos2));
   float rotAngle = entity->getAngle(simdt_);
   const std::string &type = entity->getType();
   float modelSize = fltParam(entity->getName() + ".modelSize");
@@ -273,7 +274,6 @@ void Renderer::renderMinimap() {
 
 void Renderer::renderMap(const Map *map) {
   const glm::vec2 &mapSize = map->getSize();
-
   const glm::vec4 &mapColor = map->getMinimapColor();
 
   GLuint mapProgram = ResourceManager::get()->getShader("map");
@@ -283,6 +283,7 @@ void Renderer::renderMap(const Map *map) {
   glUniform4fv(colorUniform, 1, glm::value_ptr(mapColor));
   glUniform2fv(mapSizeUniform, 1, glm::value_ptr(mapSize));
 
+  // TODO(zack): render map with height/terrain map
   glm::mat4 transform =
     glm::scale(
         glm::mat4(1.f),
@@ -308,6 +309,9 @@ void Renderer::renderMap(const Map *map) {
       i++;
     }
   }
+
+  // cache map
+  map_ = map;
 }
 
 void Renderer::startRender(float dt) {

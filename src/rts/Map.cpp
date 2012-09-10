@@ -14,13 +14,16 @@ Map::Map(const std::string &mapName)
     color_(vec4Param(name_ + ".minimapColor")) {
 }
 
+float Map::getMapHeight(const glm::vec2 &pos) const {
+  // TODO(zack): maps that have dynamic terrian will need to override this
+  // to return the height at the passed in position
+  return fltParam(name_ + ".height");
+}
+
 void Map::init(const std::vector<Player *> &players) {
   // TODO(zack) have it read this from a map file
   // we should also create a "base" macro that expands into a headquarters
   // building and starting hero/unit/base defenses unicorns etc
-
-  // TODO(zack): currently these message are from the game to the game.
-  // Perhaps we should create a map id
 
   invariant(players.size() <= intParam(name_ + ".players"),
       "too many players for map");

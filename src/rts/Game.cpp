@@ -188,6 +188,8 @@ void Game::update(float dt) {
   }
   deadEntities_.clear();
 
+  // TODO(zack/connor): Collision detection
+
   // Check to see if this player has won
   for (auto it : victoryPoints_) {
     if (it.second > intParam("global.pointsToWin")) {
