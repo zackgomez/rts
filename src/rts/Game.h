@@ -7,6 +7,7 @@
 #include <mutex>
 #include <queue>
 #include "common/Logger.h"
+#include "common/Checksum.h"
 #include "rts/Entity.h"
 #include "rts/PlayerAction.h"
 
@@ -21,7 +22,7 @@ struct PlayerResources;
 class Game {
  public:
   explicit Game(Map *map, const std::vector<Player *> &players,
-                Renderer *renderer);
+      Renderer *renderer);
   ~Game();
 
   static const Game* get() { return instance_; }
@@ -44,6 +45,9 @@ class Game {
   }
   bool isRunning() const {
     return running_;
+  }
+  checksum_t getChecksum() const {
+    return checksums_.back();
   }
 
   // Does not block, should only be called from Game thread
@@ -83,6 +87,7 @@ class Game {
   void handleAction(id_t playerID, const PlayerAction &action);
   // Returns true if all the players have submitted input for the current tick_
   bool updatePlayers();
+  checksum_t checksum();
 
   LoggerPtr logger_;
 
@@ -103,6 +108,10 @@ class Game {
   tick_t tick_;
   tick_t tickOffset_;
   tick_t sync_tick_;
+
+  // holds checksums before the tick specified by the index
+  // checksums_[3] == checksum at the end of tick 2/beginning of tick 3
+  std::vector<checksum_t> checksums_;
 
   // Entities that need removal at the end of a tick
   std::vector<id_t> deadEntities_;

@@ -1,4 +1,5 @@
 #include "rts/Entity.h"
+#include "common/Checksum.h"
 #include "common/ParamReader.h"
 #include "common/util.h"
 #include "rts/MessageHub.h"
@@ -69,12 +70,26 @@ void Entity::update(float dt) {
   }
 }
 
+void Entity::checksum(Checksum &chksum) const {
+  chksum.process(&id_, sizeof(id_))
+      .process(&playerID_, sizeof(playerID_))
+      .process(&name_[0], name_.length())
+      .process(&mobile_, sizeof(mobile_))
+      .process(&targetable_, sizeof(targetable_))
+      .process(&pos_, sizeof(pos_))
+      .process(&angle_, sizeof(angle_))
+      .process(&size_, sizeof(size_))
+      .process(&height_, sizeof(height_))
+      .process(&speed_, sizeof(speed_))
+      .process(&turnSpeed_, sizeof(turnSpeed_));
+}
+
 glm::vec2 Entity::getPosition(float dt) const {
   if (!mobile_) {
     return getPosition();
   }
 
-glm::vec2 vel = speed_ * getDirection(getAngle(dt));
+  glm::vec2 vel = speed_ * getDirection(getAngle(dt));
   return pos_ + vel * dt;
 }
 

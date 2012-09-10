@@ -64,6 +64,8 @@ class Entity {
   virtual void handleMessage(const Message& msg) = 0;
   virtual void update(float dt) = 0;
 
+  virtual void checksum(Checksum &chksum) const;
+
   float distanceBetweenEntities(const Entity *e) const;
 
   bool pointInEntity(const glm::vec2 &p);

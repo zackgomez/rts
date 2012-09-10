@@ -1,6 +1,7 @@
 #include "rts/Game.h"
-#include "common/util.h"
+#include "common/Checksum.h"
 #include "common/ParamReader.h"
+#include "common/util.h"
 #include "rts/Building.h"
 #include "rts/Entity.h"
 #include "rts/EntityFactory.h"
@@ -71,8 +72,29 @@ bool Game::updatePlayers() {
   return allInput;
 }
 
+checksum_t Game::checksum() {
+  Checksum chksum;
+  for (auto it : entities_) {
+    it.second->checksum(chksum);
+  }
+
+  return chksum.getChecksum();
+}
+
 void Game::start(float period) {
   paused_ = true;
+
+  // Starting resources
+  float startingReq = fltParam("global.startingRequisition");
+  for (auto &player : players_) {
+    resources_[player->getPlayerID()].requisition += startingReq;
+  }
+
+  // Initialize map
+  map_->init(players_);
+
+  checksums_.push_back(checksum());
+
   // Synch up at start of game
   // Initially all players are targetting tick 0, we need to get them targetting
   // tickOffset_, so when we run frame 0, they're generating input for frame
@@ -95,15 +117,6 @@ void Game::start(float period) {
       SDL_Delay(int(1000*period));
     }
   }
-
-  // Starting resources
-  float startingReq = fltParam("global.startingRequisition");
-  for (auto &player : players_) {
-    resources_[player->getPlayerID()].requisition += startingReq;
-  }
-
-  // Initialize map
-  map_->init(players_);
 
   // Game is ready to go!
   paused_ = false;
@@ -144,6 +157,14 @@ void Game::update(float dt) {
         "Bad action tick " + act.toStyledString());
 
       if (act["type"] == ActionTypes::DONE) {
+        // Check for sync error
+        // Index into checksum array, [0, n]
+        tick_t idx = std::max(toTick(act["checksum"][0]), (tick_t) 0);
+        invariant(idx <= tick_, "checksum in done for bad tick");
+        std::string strChecksum = act["checksum"][1].asString();
+        // TODO(zack): make this dump out a log so we can debug the reason why
+        invariant(strChecksum == Checksum::checksumToString(checksums_[idx]),
+            "SYNC ERROR");
         break;
       }
 
@@ -178,6 +199,10 @@ void Game::update(float dt) {
     }
   }
 
+  // Checksum the tick
+  checksums_.push_back(checksum());
+
+  // unlock entities automatically when lock goes out of scope
   // Next tick
   tick_++;
   sync_tick_ = SDL_GetTicks();
@@ -342,7 +367,7 @@ void Game::handleAction(id_t playerID, const PlayerAction &action) {
     msg["from"] = toJson(playerID);
     msg["type"] = MessageTypes::ORDER;
     if (action["type"] == ActionTypes::MOVE) {
-      // Generate a message to target entity with move order
+      // Generate a message to target entity with move ordervi
       msg["order_type"] = OrderTypes::MOVE;
       msg["target"] = action["target"];
 

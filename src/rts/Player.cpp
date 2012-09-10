@@ -1,5 +1,6 @@
 #include "rts/Player.h"
 #include <SDL/SDL.h>
+#include "common/Checksum.h"
 #include "common/ParamReader.h"
 #include "rts/Building.h"
 #include "rts/Entity.h"
@@ -36,10 +37,14 @@ bool LocalPlayer::update(tick_t tick, tick_t targetTick) {
   }
 
   // Finish the last frame by sending the DONE action
+  Json::Value checksum;
+  checksum.append(toJson(tick));
+  checksum.append(Checksum::checksumToString(game_->getChecksum()));
   PlayerAction a;
   a["type"] = ActionTypes::DONE;
   a["pid"] = toJson(playerID_);
   a["tick"] = toJson(tick);
+  a["checksum"] = checksum;
   game_->addAction(playerID_, a);
 
   // We've generated for this tick
@@ -379,10 +384,15 @@ DummyPlayer::DummyPlayer(id_t playerID, id_t teamID)
 }
 
 bool DummyPlayer::update(tick_t tick, tick_t targetTick) {
+  Json::Value checksum;
+  checksum.append(toJson(tick));
+  checksum.append(Checksum::checksumToString(game_->getChecksum()));
+
   PlayerAction a;
   a["type"] = ActionTypes::DONE;
   a["tick"] = toJson(tick);
   a["pid"] = toJson(playerID_);
+  a["checksum"] = checksum;
   game_->addAction(playerID_, a);
   return true;
 }
