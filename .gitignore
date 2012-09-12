@@ -1,7 +1,8 @@
-obj
+/obj
 /rts
 /matchmaker
-*.dll
+/tests
+/*.dll
 rts.exe
 lib/**/*.o
 tags
