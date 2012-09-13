@@ -6,7 +6,7 @@
 
 class exception_with_trace : public std::exception {
  public:
-  explicit exception_with_trace(const std::string &msg);
+  explicit exception_with_trace(const std::string &msg = "");
   virtual const char *what() const throw();
  private:
   std::string msg_;
@@ -32,6 +32,16 @@ class engine_exception : public exception_with_trace {
   explicit engine_exception(const std::string &msg) :
     exception_with_trace(msg) {
   }
+};
+
+class network_exception : public exception_with_trace {
+ public:
+  explicit network_exception(const std::string &msg) :
+    exception_with_trace(msg) {
+  }
+};
+
+class timeout_exception : public exception_with_trace {
 };
 
 #endif  // SRC_COMMON_EXCEPTION_H_

@@ -7,7 +7,7 @@
 namespace rts {
 
 NetPlayer::NetPlayer(id_t playerID, id_t teamID, const std::string &name,
-    const glm::vec3 &color, NetConnection *conn)
+    const glm::vec3 &color, NetConnectionPtr conn)
   : Player(playerID, teamID, name, color),
     connection_(conn),
     doneTick_(-1e6),
@@ -17,8 +17,7 @@ NetPlayer::NetPlayer(id_t playerID, id_t teamID, const std::string &name,
 }
 
 NetPlayer::~NetPlayer() {
-  connection_->stop();
-  delete connection_;
+  // conn goes out of scope and is automatically stopped/deleted
 }
 
 bool NetPlayer::update(tick_t tick, tick_t targetTick) {

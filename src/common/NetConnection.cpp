@@ -1,6 +1,8 @@
 #include "common/NetConnection.h"
 #include <cassert>
+#include "common/Exception.h"
 #include "common/Logger.h"
+#include "common/util.h"
 
 struct net_msg {
   uint32_t sz;
@@ -33,10 +35,15 @@ throw(kissnet::socket_exception) {
   return ret;
 }
 
-void netThreadFunc(kissnet::tcp_socket_ptr sock, std::queue<Json::Value> *queue,
-                   std::mutex *queueMutex, bool *running) {
+void netThreadFunc(
+    kissnet::tcp_socket_ptr sock,
+    std::queue<Json::Value> &queue,
+    std::mutex &queueMutex,
+    std::condition_variable &condVar,
+    bool &running) {
+
   Json::Reader reader;
-  while (*running) {
+  while (running) {
     // Each loop, push exactly one message onto queue
     Json::Value msg;
     try {
@@ -50,12 +57,16 @@ void netThreadFunc(kissnet::tcp_socket_ptr sock, std::queue<Json::Value> *queue,
       LOG(ERROR) << "Caught socket exception '" << e.what()
                       << "'... terminating thread.\n";
       // On exception, quit thread
-      *running = false;
+      running = false;
     }
 
     // Lock and queue
-    std::unique_lock<std::mutex> lock(*queueMutex);
-    queue->push(msg);
+    std::unique_lock<std::mutex> lock(queueMutex);
+    if (running) {
+      queue.push(msg);
+    }
+    // Wake waiting thread, if applicable
+    condVar.notify_one();
     // automatically unlocks when lock goes out of scope
   }
 
@@ -65,7 +76,13 @@ void netThreadFunc(kissnet::tcp_socket_ptr sock, std::queue<Json::Value> *queue,
 NetConnection::NetConnection(kissnet::tcp_socket_ptr sock)
   : running_(true),
   sock_(sock) {
-  netThread_ = std::thread(netThreadFunc, sock_, &queue_, &mutex_, &running_);
+  netThread_ = std::thread(
+    netThreadFunc,
+    sock_,
+    std::ref(queue_),
+    std::ref(mutex_),
+    std::ref(condVar_),
+    std::ref(running_));
 }
 
 NetConnection::~NetConnection() {
@@ -86,4 +103,45 @@ void NetConnection::sendPacket(const Json::Value &message) {
 
   // Just send out the message
   sock_->send(msg);
+}
+
+Json::Value NetConnection::readNext() {
+  std::unique_lock<std::mutex> lock(mutex_);
+  // Wait until queue has value, or thread stopped
+  condVar_.wait(lock, [this]() {return !running_ || !queue_.empty();});
+
+  if (!running_) {
+    throw network_exception("network thread died");
+  }
+
+  invariant(!queue_.empty(), "queue shouldn't be empty");
+  Json::Value ret = queue_.front();
+  queue_.pop();
+
+  // Lock automatically goes out of scope
+  return ret;
+}
+
+Json::Value NetConnection::readNext(size_t millis) {
+  std::unique_lock<std::mutex> lock(mutex_);
+  LOG(INFO) << "timeout is " << millis << " ms.\n";
+  // Wait until queue has value, thread stopped, or timeout
+  bool success = condVar_.wait_for(
+    lock,
+    std::chrono::milliseconds(millis),
+    [this]() {return !running_ || !queue_.empty();});
+
+  if (!success) {
+    throw timeout_exception();
+  }
+  if (!running_) {
+    throw network_exception("network thread died");
+  }
+
+  invariant(!queue_.empty(), "queue should not be empty!");
+  Json::Value ret = queue_.front();
+  queue_.pop();
+
+  // Lock automatically goes out of scope
+  return ret;
 }

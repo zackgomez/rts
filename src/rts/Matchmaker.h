@@ -8,9 +8,8 @@
 #include <glm/glm.hpp>
 #include <json/json.h>
 #include "common/Exception.h"
+#include "common/NetConnection.h"
 #include "common/Types.h"
-
-class NetConnection;
 
 namespace rts {
 
@@ -61,7 +60,7 @@ class Matchmaker {
   // requires name, color, pid, and tid be set
   void makeLocalPlayer();
   // Throws exception on error
-  NetPlayer * handshake(NetConnection *conn) const;
+  NetPlayer * handshake(NetConnectionPtr conn) const;
   // Thread worker functions
   void connectToPlayer(const std::string &ip, const std::string &port);
   void acceptConnections(const std::string &port, int numConnections);
@@ -71,7 +70,7 @@ class Matchmaker {
   id_t pid_;
   id_t tid_;
 
-  int numPlayers_;
+  size_t numPlayers_;
 
   Renderer *renderer_;
 

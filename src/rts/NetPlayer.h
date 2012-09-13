@@ -3,15 +3,14 @@
 
 #include "rts/Player.h"
 #include <mutex>
-
-class NetConnection;
+#include "common/NetConnection.h"
 
 namespace rts {
 
 class NetPlayer : public Player {
  public:
   NetPlayer(id_t playerID, id_t teamID, const std::string &name,
-            const glm::vec3 &color, NetConnection *conn);
+            const glm::vec3 &color, NetConnectionPtr conn);
   virtual ~NetPlayer();
 
   virtual bool update(tick_t tick, tick_t actionTick);
@@ -23,7 +22,7 @@ class NetPlayer : public Player {
 
  private:
   LoggerPtr logger_;
-  NetConnection *connection_;
+  NetConnectionPtr connection_;
   std::mutex mutex_;
   // last tick that is fully received
   tick_t doneTick_;

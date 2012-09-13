@@ -16,8 +16,7 @@
     "dropChance"      : 0.05,
 
     "handshake" : {
-      "maxWait" : 2.0,
-      "checkInterval" : 0.1
+      "timeout" : 1.0
     }
   },
 

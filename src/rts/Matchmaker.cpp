@@ -105,41 +105,45 @@ void Matchmaker::connectToPlayer(
     const std::string &port) {
   try {
     auto sock = attemptConnection(ip, port);
-    NetConnection *conn = new NetConnection(sock);
+    NetConnectionPtr conn = NetConnectionPtr(new NetConnection(sock));
     NetPlayer *np = handshake(conn);
     np->setLocalPlayer(localPlayer_->getPlayerID());
 
     std::unique_lock<std::mutex> lock(playerMutex_);
     players_.push_back(np);
-    doneCondVar_.notify_one();
     // lock release @ end of scope
   } catch (const matchmaker_exception &e) {
+    LOG(ERROR) << "error connecting to remote player: '" << e.what() << "'\n";
     error_ = true;
   }
+  doneCondVar_.notify_one();
 }
 
 void Matchmaker::acceptConnections(
     const std::string &port,
     int numConnections) {
-  auto serv_sock = kissnet::tcp_socket::create();
-  serv_sock->listen(port, 11);
-  for (int i = 0; i < numConnections; i++) {
-    auto sock = serv_sock->accept();
-    NetConnection *conn = new NetConnection(sock);
-    NetPlayer *np = handshake(conn);
-    np->setLocalPlayer(localPlayer_->getPlayerID());
+  try {
+    auto serv_sock = kissnet::tcp_socket::create();
+    serv_sock->listen(port, 11);
+    for (int i = 0; i < numConnections; i++) {
+      auto sock = serv_sock->accept();
+      NetConnectionPtr conn = NetConnectionPtr(new NetConnection(sock));
+      NetPlayer *np = handshake(conn);
+      np->setLocalPlayer(localPlayer_->getPlayerID());
 
-    std::unique_lock<std::mutex> lock(playerMutex_);
-    players_.push_back(np);
-    doneCondVar_.notify_one();
+      std::unique_lock<std::mutex> lock(playerMutex_);
+      players_.push_back(np);
+    }
+  } catch (const std::exception &e) {
+    LOG(ERROR) << "error accepting connection: '" << e.what() << "'\n";
+    error_ = true;
   }
+  doneCondVar_.notify_one();
 }
 
-NetPlayer * Matchmaker::handshake(NetConnection *conn) const {
+NetPlayer * Matchmaker::handshake(NetConnectionPtr conn) const {
   // Some cached params
   const std::string version = strParam("game.version");
-  const float maxT = fltParam("network.handshake.maxWait");
-  const float interval = fltParam("network.handshake.checkInterval");
   const uint32_t paramChecksum = ParamReader::get()->getFileChecksum();
 
   // First send our message
@@ -153,78 +157,51 @@ NetPlayer * Matchmaker::handshake(NetConnection *conn) const {
   v["param_checksum"] = paramChecksum;
   conn->sendPacket(v);
 
-  // TODO(zack): use a blocking NetConnection method here
-  std::queue<Json::Value> &queue = conn->getQueue();
-  for (float t = 0.f; t <= maxT; t += interval) {
-    if (!queue.empty()) {
-      Json::Value msg = queue.front();
-      queue.pop();
+  // throws on timeout
+  size_t timeout = 1000 * fltParam("network.handshake.timeout");
+  Json::Value msg = conn->readNext(timeout);
+  LOG(INFO) << "Received handshake message " << msg << '\n';
 
-      LOG(INFO) << "Received handshake message " << msg << '\n';
-
-      if (!msg.isMember("type") || msg["type"] != "HANDSHAKE") {
-        LOG(FATAL) << "Received unexpected message during handshake\n";
-        // Fail
-        break;
-      }
-
-      if (!msg.isMember("version") || msg["version"] != version) {
-        LOG(FATAL) << "Mismatched game version from connection "
-          << "(theirs: " << msg["version"] << " ours: " << version << ")\n";
-        // Fail
-        break;
-      }
-
-      if (!msg.isMember("param_checksum")
-          || msg["param_checksum"].asUInt() != paramChecksum) {
-        LOG(FATAL) << "Mismatched params file checksum (theirs: " << std::hex
-          << msg["param_checksum"].asUInt() << " ours: " << paramChecksum
-          << std::dec << ")\n";
-        // fail
-        break;
-      }
-
-      rts::id_t pid;
-      if (!msg.isMember("pid") || !(pid = rts::assertPid(toID(msg["pid"])))) {
-        LOG(FATAL) << "Missing pid from handshake message.\n";
-        // fail
-        break;
-      }
-
-      rts::id_t tid;
-      if (!msg.isMember("tid") || !(tid = rts::assertTid(toID(msg["tid"])))) {
-        LOG(FATAL) << "Missing tid from handshake message.\n";
-        // fail
-        break;
-      }
-
-      glm::vec3 color;
-      // TODO(zack): or isn't vec3/valid color
-      if (!msg.isMember("color")) {
-        LOG(FATAL) << "Missing color in handshake message.\n";
-        // fail
-        break;
-      }
-      color = toVec3(msg["color"]);
-
-      std::string name;
-      if (!msg.isMember("name")) {
-        LOG(FATAL) << "Missing name in handshake message.\n";
-        // fail
-        break;
-      }
-      name = msg["name"].asString();
-
-      // Success, make a new player
-      return new NetPlayer(pid, tid, name, color, conn);
-    }
-
-    // No message, wait and check again
-    SDL_Delay(1000 * interval);
+  // TODO(zack): clean up this error checking code...
+  if (!msg.isMember("type") || msg["type"] != "HANDSHAKE") {
+    LOG(FATAL) << "Received unexpected message during handshake\n";
+    throw matchmaker_exception("failed handshake");
+  }
+  if (!msg.isMember("version") || msg["version"] != version) {
+    LOG(FATAL) << "Mismatched game version from connection "
+        << "(theirs: " << msg["version"] << " ours: " << version << ")\n";
+    throw matchmaker_exception("failed handshake");
+  }
+  if (!msg.isMember("param_checksum")
+      || msg["param_checksum"].asUInt() != paramChecksum) {
+    LOG(FATAL) << "Mismatched params file checksum (theirs: " << std::hex
+        << msg["param_checksum"].asUInt() << " ours: " << paramChecksum
+        << std::dec << ")\n";
+    throw matchmaker_exception("failed handshake");
+  }
+  rts::id_t pid;
+  if (!msg.isMember("pid") || !(pid = rts::assertPid(toID(msg["pid"])))) {
+    LOG(FATAL) << "Missing pid from handshake message.\n";
+    throw matchmaker_exception("failed handshake");
+  }
+  rts::id_t tid;
+  if (!msg.isMember("tid") || !(tid = rts::assertTid(toID(msg["tid"])))) {
+    LOG(FATAL) << "Missing tid from handshake message.\n";
+    throw matchmaker_exception("failed handshake");
+  }
+  // TODO(zack): or isn't vec3/valid color
+  if (!msg.isMember("color")) {
+    LOG(FATAL) << "Missing color in handshake message.\n";
+    throw matchmaker_exception("failed handshake");
+  }
+  if (!msg.isMember("name")) {
+    LOG(FATAL) << "Missing name in handshake message.\n";
+    throw matchmaker_exception("failed handshake");
   }
 
-  // Didn't get the handshake message
-  conn->stop();
-  throw matchmaker_exception("Error while handshaking");
+  // Success, make a new player
+  glm::vec3 color = toVec3(msg["color"]);
+  std::string name = msg["name"].asString();
+  return new NetPlayer(pid, tid, name, color, conn);
 }
 }  // rts

@@ -1,7 +1,9 @@
 #ifndef SRC_COMMON_NETCONNECTION_H_
 #define SRC_COMMON_NETCONNECTION_H_
-#include <thread>
+
+#include <condition_variable>
 #include <mutex>
+#include <thread>
 #include <queue>
 #include <json/json.h>
 #include "common/kissnet.h"
@@ -29,6 +31,12 @@ class NetConnection {
     return running_;
   }
 
+  // Blocks until next message becomes available.
+  // throws an exception if the socket is closed unexpectedly
+  // throws an exception on timeout (arg version)
+  Json::Value readNext();
+  Json::Value readNext(size_t millis);
+
   void sendPacket(const Json::Value &msg);
 
  private:
@@ -36,10 +44,13 @@ class NetConnection {
   kissnet::tcp_socket_ptr sock_;
   std::queue<Json::Value> queue_;
   std::mutex mutex_;
+  std::condition_variable condVar_;
   std::thread netThread_;
 
   // JSON writers
   Json::FastWriter writer_;
 };
+
+typedef std::shared_ptr<NetConnection> NetConnectionPtr;
 
 #endif  // SRC_COMMON_NETCONNECTION_H_
