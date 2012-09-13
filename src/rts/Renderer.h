@@ -24,6 +24,9 @@ class Renderer {
   void setLocalPlayer(const LocalPlayer *p) {
     player_ = p;
   }
+  LocalPlayer * getLocalPlayer() const {
+    return (LocalPlayer*) player_;
+  }
 
   void setGame(const Game *game) {
     game_ = game;
