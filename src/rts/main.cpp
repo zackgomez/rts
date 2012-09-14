@@ -39,8 +39,7 @@ void cleanup();
 Game *game;
 Renderer *renderer;
 
-// TODO(zack) take this in as an argument!
-const std::string port = "27465";
+// Matchmaker port
 const std::string mmport = "7788";
 
 void gameThread() {
@@ -144,7 +143,9 @@ int main(int argc, char **argv) {
 
   if (args.size() > 0 && args[0] == "--2p") {
     std::string ip = args.size() > 1 ? args[1] : "";
-    players = matchmaker.doDirectSetup(ip, port);
+    players = matchmaker.doDirectSetup(ip);
+  } else if (args.size() > 1 && args[0] == "--mm") {
+    players = matchmaker.doServerSetup(args[1], mmport);
   } else {
     players = matchmaker.doDebugSetup();
   }

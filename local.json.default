@@ -2,7 +2,8 @@
   // Player Configuration
   "player" : {
     "name" : "DefaultPlayer",
-    "color" : [0.1, 0.1, 0.8]
+    "color" : [0.1, 0.1, 0.8],
+    "port" : "10111"
   },
 
   // Game Preferences

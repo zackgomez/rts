@@ -110,7 +110,8 @@ Json::Value NetConnection::readNext() {
   // Wait until queue has value, or thread stopped
   condVar_.wait(lock, [this]() {return !running_ || !queue_.empty();});
 
-  if (!running_) {
+  // if there is a message, lets return it first
+  if (!running_ && queue_.empty()) {
     throw network_exception("network thread died");
   }
 
@@ -134,7 +135,7 @@ Json::Value NetConnection::readNext(size_t millis) {
   if (!success) {
     throw timeout_exception();
   }
-  if (!running_) {
+  if (!running_ && queue_.empty()) {
     throw network_exception("network thread died");
   }
 

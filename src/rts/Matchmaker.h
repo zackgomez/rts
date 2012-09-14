@@ -41,9 +41,7 @@ class Matchmaker {
    * Sets up a 2 player game with host/client
    * @param ip the IP to connect to, or empty string or hosting
    */
-  std::vector<Player *> doDirectSetup(
-      const std::string &ip,
-      const std::string &port);
+  std::vector<Player *> doDirectSetup(const std::string &ip);
 
   /*
    * Connects to the matchmaker at the given ip/port and uses that to
@@ -67,6 +65,8 @@ class Matchmaker {
 
   std::string name_;
   glm::vec3 color_;
+  std::string listenPort_;
+
   id_t pid_;
   id_t tid_;
 

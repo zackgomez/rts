@@ -1,4 +1,5 @@
 #include "rts/Matchmaker.h"
+#include <boost/algorithm/string.hpp>
 #include "rts/Player.h"
 #include "rts/NetPlayer.h"
 #include "rts/Renderer.h"
@@ -10,7 +11,7 @@
 namespace rts {
 
 // Tries a connection with some retries as per config
-kissnet::tcp_socket_ptr attemptConnection(
+NetConnection* attemptConnection(
     const std::string &ip,
     const std::string &port) {
   auto sock = kissnet::tcp_socket::create();
@@ -19,7 +20,7 @@ kissnet::tcp_socket_ptr attemptConnection(
     try {
       LOG(DEBUG) << "Trying connection to " << ip << ":" << port << '\n';
       sock->connect(ip, port);
-      return sock;
+      return new NetConnection(sock);
     } catch (const kissnet::socket_exception &e) {
       // Ignore exception, just try again
     }
@@ -33,6 +34,7 @@ kissnet::tcp_socket_ptr attemptConnection(
 Matchmaker::Matchmaker(const Json::Value &player, Renderer *renderer)
   : name_(player["name"].asString()),
     color_(toVec3(player["color"])),
+    listenPort_(player["port"].asString()),
     pid_(NO_PLAYER),
     tid_(NO_TEAM),
     renderer_(renderer),
@@ -52,9 +54,7 @@ std::vector<Player *> Matchmaker::doDebugSetup() {
   return players_;
 }
 
-std::vector<Player *> Matchmaker::doDirectSetup(
-    const std::string &ip,
-    const std::string &port) {
+std::vector<Player *> Matchmaker::doDirectSetup(const std::string &ip) {
   pid_ = ip.empty() ? STARTING_PID : STARTING_PID + 1;
   tid_ = ip.empty() ? STARTING_TID : STARTING_TID + 1;
   numPlayers_ = 2;
@@ -69,10 +69,10 @@ std::vector<Player *> Matchmaker::doDirectSetup(
   // Hosting?
   if (ip.empty()) {
     worker = std::thread(
-      std::bind(&Matchmaker::acceptConnections, this, port, 1));
+      std::bind(&Matchmaker::acceptConnections, this, listenPort_, 1));
   } else {
     worker = std::thread(
-      std::bind(&Matchmaker::connectToPlayer, this, ip, port));
+      std::bind(&Matchmaker::connectToPlayer, this, ip, listenPort_));
   }
 
   // wait until we're well and truly ready
@@ -85,6 +85,92 @@ std::vector<Player *> Matchmaker::doDirectSetup(
 
   worker.join();
 
+  return players_;
+}
+
+std::vector<Player *> Matchmaker::doServerSetup(
+    const std::string &ip,
+    const std::string &port) {
+  // First connect to matchmaker
+  NetConnection *server = attemptConnection(ip, port);
+
+  LOG(INFO) << "Sending information to matchmaker\n";
+  // Send out local matchmaking data
+  Json::Value mmdata;
+  mmdata["name"] = name_;
+  mmdata["port"] = listenPort_;
+  server->sendPacket(mmdata);
+
+  LOG(INFO) << "waiting for matchmaker responses...\n";
+  Json::Value ips;
+  // Wait for responses until we're ready
+  while (pid_ == NO_PLAYER) {
+    Json::Value msg = server->readNext();
+    LOG(DEBUG) << "received from matchmaking server: " << msg;
+
+    invariant(msg.isMember("type"), "Missing type from matchmaker message");
+    if (msg["type"] == "game_setup") {
+      invariant(msg.isMember("pid"), "Expected pid in game setup message");
+      invariant(msg.isMember("tid"), "Expected tid in game setup message");
+      invariant(msg.isMember("numPlayers"),
+          "Expected numPlayers in game setup message");
+      invariant(msg.isMember("ips"), "Expected ips in game setup message");
+      invariant(msg.isMember("mapName"),
+          "Expected mapName in game setup message");
+
+      pid_ = toID(msg["pid"]);
+      tid_ = toID(msg["tid"]);
+      mapName_ = msg["mapName"].asString();
+      numPlayers_ = msg["numPlayers"].asLargestUInt();
+      ips = msg["ips"];
+    }
+  }
+  // Server no longer needed
+  delete server;
+
+  // Use server assigned pid/tid to create local player
+  makeLocalPlayer();
+
+  // Get remaining players
+  std::unique_lock<std::mutex> lock(playerMutex_);
+  std::vector<std::thread> workers;
+  // connects
+  for (const Json::Value& ipval : ips) {
+    std::string ipstr = ipval.asString();
+    std::vector<std::string> addrparts;
+    boost::split(addrparts, ipstr, boost::is_any_of(":"));
+    invariant(addrparts.size() == 2, "expected ip:port");
+    LOG(INFO) << "Trying to " << addrparts[0] << ":" << addrparts[1] << '\n';
+    workers.push_back(std::thread(std::bind(
+      &Matchmaker::connectToPlayer,
+      this,
+      addrparts[0],
+      addrparts[1])));
+  }
+
+  // listens
+  int listens = numPlayers_ - ips.size() - 1;
+  if (listens > 0) {
+    LOG(INFO) << "Listening for " << listens << " connections\n";
+    workers.push_back(std::thread(
+      std::bind(&Matchmaker::acceptConnections, this, listenPort_, listens)));
+  }
+
+
+  // Wait...
+  while (players_.size() < numPlayers_) {
+    doneCondVar_.wait(lock);
+    if (error_) {
+      throw matchmaker_exception("Error in server setup");
+    }
+  }
+
+  // clean up
+  for (auto &worker : workers) {
+    worker.join();
+  }
+
+  // Done!
   return players_;
 }
 
@@ -104,8 +190,7 @@ void Matchmaker::connectToPlayer(
     const std::string &ip,
     const std::string &port) {
   try {
-    auto sock = attemptConnection(ip, port);
-    NetConnectionPtr conn = NetConnectionPtr(new NetConnection(sock));
+    NetConnection *conn = attemptConnection(ip, port);
     NetPlayer *np = handshake(conn);
     np->setLocalPlayer(localPlayer_->getPlayerID());
 
