@@ -11,7 +11,7 @@
 namespace rts {
 
 // Tries a connection with some retries as per config
-NetConnection* attemptConnection(
+NetConnectionPtr attemptConnection(
     const std::string &ip,
     const std::string &port) {
   auto sock = kissnet::tcp_socket::create();
@@ -20,7 +20,7 @@ NetConnection* attemptConnection(
     try {
       LOG(DEBUG) << "Trying connection to " << ip << ":" << port << '\n';
       sock->connect(ip, port);
-      return new NetConnection(sock);
+      return NetConnectionPtr(new NetConnection(sock));
     } catch (const kissnet::socket_exception &e) {
       // Ignore exception, just try again
     }
@@ -92,7 +92,7 @@ std::vector<Player *> Matchmaker::doServerSetup(
     const std::string &ip,
     const std::string &port) {
   // First connect to matchmaker
-  NetConnection *server = attemptConnection(ip, port);
+  NetConnectionPtr server = attemptConnection(ip, port);
 
   LOG(INFO) << "Sending information to matchmaker\n";
   // Send out local matchmaking data
@@ -126,7 +126,7 @@ std::vector<Player *> Matchmaker::doServerSetup(
     }
   }
   // Server no longer needed
-  delete server;
+  server->stop();
 
   // Use server assigned pid/tid to create local player
   makeLocalPlayer();
@@ -190,7 +190,7 @@ void Matchmaker::connectToPlayer(
     const std::string &ip,
     const std::string &port) {
   try {
-    NetConnection *conn = attemptConnection(ip, port);
+    NetConnectionPtr conn = attemptConnection(ip, port);
     NetPlayer *np = handshake(conn);
     np->setLocalPlayer(localPlayer_->getPlayerID());
 

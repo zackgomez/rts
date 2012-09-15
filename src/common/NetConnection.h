@@ -51,6 +51,6 @@ class NetConnection {
   Json::FastWriter writer_;
 };
 
-typedef std::unique_ptr<NetConnection> NetConnectionPtr;
+typedef std::shared_ptr<NetConnection> NetConnectionPtr;
 
 #endif  // SRC_COMMON_NETCONNECTION_H_
