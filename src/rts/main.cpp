@@ -6,6 +6,7 @@
 #include <vector>
 #include <SDL/SDL.h>
 #include <GL/glew.h>
+#include "common/Clock.h"
 #include "common/kissnet.h"
 #include "common/Logger.h"
 #include "common/ParamReader.h"
@@ -71,12 +72,10 @@ void mainloop() {
   std::thread gamet(gameThread);
   // render loop
   while (game->isRunning()) {
-    auto start = hi_res_clock::now();
+    auto clock = Clock().start();
     handleInput(fps);
     game->render(fps);
-    auto end = hi_res_clock::now();
-    auto elapsed = std::chrono::duration_cast<microseconds>(end - start);
-    LOG(INFO) << "Render time: " << elapsed.count() / 1000.f << "ms\n";
+    LOG(INFO) << "Render time: " << clock.milliseconds() << "ms\n";
     // Regulate frame rate
     SDL_Delay(int(1000*fps));
   }
