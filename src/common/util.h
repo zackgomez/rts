@@ -2,6 +2,7 @@
 #define SRC_COMMON_UTIL_H_
 
 #include <string>
+#include <chrono>
 #include <cstdint>
 #include <cmath>
 #include <set>
@@ -12,6 +13,10 @@
 #include <json/json.h>
 #include "common/Exception.h"
 #include "common/Types.h"
+
+typedef std::chrono::high_resolution_clock hi_res_clock;
+typedef std::chrono::milliseconds milliseconds;
+typedef std::chrono::microseconds microseconds;
 
 /*
  * A variation of assert that throws an exception instead of calling abort.

@@ -12,8 +12,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\lib\jsoncpp\jsoncpp.cpp" />
-    <ClCompile Include="..\..\lib\kissnet\kissnet.cpp" />
+    <ClCompile Include="..\..\src\common\Checksum.cpp" />
     <ClCompile Include="..\..\src\common\Exception.cpp" />
+    <ClCompile Include="..\..\src\common\kissnet.cpp" />
+    <ClCompile Include="..\..\src\common\NetConnection.cpp" />
     <ClCompile Include="..\..\src\common\ParamReader.cpp" />
     <ClCompile Include="..\..\src\common\Types.cpp" />
     <ClCompile Include="..\..\src\common\util.cpp" />
@@ -26,9 +28,9 @@
     <ClCompile Include="..\..\src\rts\Game.cpp" />
     <ClCompile Include="..\..\src\rts\main.cpp" />
     <ClCompile Include="..\..\src\rts\Map.cpp" />
+    <ClCompile Include="..\..\src\rts\Matchmaker.cpp" />
     <ClCompile Include="..\..\src\rts\MatrixStack.cpp" />
     <ClCompile Include="..\..\src\rts\MessageHub.cpp" />
-    <ClCompile Include="..\..\src\rts\NetConnection.cpp" />
     <ClCompile Include="..\..\src\rts\NetPlayer.cpp" />
     <ClCompile Include="..\..\src\rts\Player.cpp" />
     <ClCompile Include="..\..\src\rts\Projectile.cpp" />
@@ -38,9 +40,11 @@
     <ClCompile Include="..\..\src\rts\Weapon.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\lib\kissnet\kissnet.h" />
+    <ClInclude Include="..\..\src\common\Checksum.h" />
     <ClInclude Include="..\..\src\common\Exception.h" />
+    <ClInclude Include="..\..\src\common\kissnet.h" />
     <ClInclude Include="..\..\src\common\Logger.h" />
+    <ClInclude Include="..\..\src\common\NetConnection.h" />
     <ClInclude Include="..\..\src\common\ParamReader.h" />
     <ClInclude Include="..\..\src\common\Types.h" />
     <ClInclude Include="..\..\src\common\util.h" />
@@ -52,17 +56,16 @@
     <ClInclude Include="..\..\src\rts\FontManager.h" />
     <ClInclude Include="..\..\src\rts\Game.h" />
     <ClInclude Include="..\..\src\rts\Map.h" />
+    <ClInclude Include="..\..\src\rts\Matchmaker.h" />
     <ClInclude Include="..\..\src\rts\MatrixStack.h" />
     <ClInclude Include="..\..\src\rts\Message.h" />
     <ClInclude Include="..\..\src\rts\MessageHub.h" />
-    <ClInclude Include="..\..\src\rts\NetConnection.h" />
     <ClInclude Include="..\..\src\rts\NetPlayer.h" />
     <ClInclude Include="..\..\src\rts\Player.h" />
     <ClInclude Include="..\..\src\rts\PlayerAction.h" />
     <ClInclude Include="..\..\src\rts\Projectile.h" />
     <ClInclude Include="..\..\src\rts\Renderer.h" />
     <ClInclude Include="..\..\src\rts\ResourceManager.h" />
-    <ClInclude Include="..\..\src\rts\Semaphore.h" />
     <ClInclude Include="..\..\src\rts\Unit.h" />
     <ClInclude Include="..\..\src\rts\Weapon.h" />
   </ItemGroup>
@@ -98,12 +101,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\src\common;..\..\lib\stb_truetype;..\..\lib\boost_1_50_0;..\..\lib\kissnet;..\..\lib\glew-1.7.0\include;..\..\lib\SDL-1.2.15\include;..\..\lib\glm-0.9.2.7;..\..\lib\jsoncpp;..\..\lib\glew-1.7.0\include\GL;..\..\lib\stbi;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\src;..\..\lib\stb_truetype;..\..\lib\boost_1_50_0;..\..\lib\kissnet;..\..\lib\glew-1.7.0\include;..\..\lib\SDL-1.2.15\include;..\..\lib\glm-0.9.2.7;..\..\lib\jsoncpp;..\..\lib\glew-1.7.0\include\GL;..\..\lib\stbi;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\lib\jsoncpp;..\..\lib\SDL-1.2.15\lib\x86;..\..\lib\glew-1.7.0\lib;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\src\common;..\..\lib\stb_truetype;..\..\lib\boost_1_50_0;..\..\lib\kissnet;..\..\lib\glew-1.7.0\include;..\..\lib\SDL-1.2.15\include;..\..\lib\glm-0.9.2.7;..\..\lib\jsoncpp;..\..\lib\glew-1.7.0\include\GL;..\..\lib\stbi;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\src;..\..\lib\stb_truetype;..\..\lib\boost_1_50_0;..\..\lib\glew-1.7.0\include;..\..\lib\SDL-1.2.15\include;..\..\lib\glm-0.9.2.7;..\..\lib\jsoncpp;..\..\lib\glew-1.7.0\include\GL;..\..\lib\stbi;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\lib\jsoncpp;..\..\lib\SDL-1.2.15\lib\x86;..\..\lib\glew-1.7.0\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

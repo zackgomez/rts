@@ -273,6 +273,9 @@ void Renderer::renderMinimap() {
 }
 
 void Renderer::renderMap(const Map *map) {
+  // cache map
+  map_ = map;
+
   const glm::vec2 &mapSize = map->getSize();
   const glm::vec4 &mapColor = map->getMinimapColor();
 
@@ -309,9 +312,6 @@ void Renderer::renderMap(const Map *map) {
       i++;
     }
   }
-
-  // cache map
-  map_ = map;
 }
 
 void Renderer::startRender(float dt) {
@@ -480,7 +480,7 @@ void Renderer::endRender() {
     dragStart_ = glm::vec3(HUGE_VAL);
   }
 
-  renderUI();
+  //renderUI();
 
   SDL_GL_SwapBuffers();
 }
