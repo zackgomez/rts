@@ -29,7 +29,8 @@ class Actor : public Entity {
   };
 
   Actor(const std::string &name, const Json::Value &params,
-        bool mobile = false, bool targetable = true);
+        bool mobile = false, bool targetable = true,
+        bool collidable = true);
   virtual ~Actor();
 
   virtual void handleMessage(const Message &msg);

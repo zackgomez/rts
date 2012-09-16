@@ -11,12 +11,14 @@ id_t Entity::lastID_ = STARTING_EID;
 
 Entity::Entity(const std::string &name,
                const Json::Value &params,
-               bool mobile, bool targetable)
+               bool mobile, bool targetable,
+               bool collidable)
   : id_(lastID_++),
     playerID_(NO_PLAYER),
     name_(name),
     mobile_(mobile),
     targetable_(targetable),
+    collidable_(collidable),
     pos_(HUGE_VAL),
     angle_(0.f),
     size_(glm::vec2(0.f)),
@@ -29,11 +31,16 @@ Entity::Entity(const std::string &name,
   if (params.isMember("entity_pos")) {
     pos_ = toVec2(params["entity_pos"]);
   }
+  if (params.isMember("entity_size")) {
+    size_ = toVec2(params["entity_size"]);
+  } else {
+    size_ = vec2Param("size");
+  }
   if (params.isMember("entity_angle")) {
     angle_ = params["entity_angle"].asFloat();
   }
-  size_ = vec2Param("size");
-  height_ = param("height");
+  if (hasParam("height"))
+    height_ = param("height");
 
   // Make sure we did it right
   assertEid(id_);

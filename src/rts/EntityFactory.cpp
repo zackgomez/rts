@@ -1,7 +1,8 @@
-#include "EntityFactory.h"
-#include "Unit.h"
-#include "Projectile.h"
-#include "Building.h"
+#include "rts/EntityFactory.h"
+#include "rts/Unit.h"
+#include "rts/Projectile.h"
+#include "rts/Building.h"
+#include "rts/CollisionObject.h"
 
 namespace rts {
 
@@ -26,6 +27,8 @@ Entity * EntityFactory::construct(const std::string &cl,
     return new Projectile(name, params);
   } else if (cl == Building::TYPE) {
     return new Building(name, params);
+  } else if (cl == CollisionObject::TYPE) {
+    return new CollisionObject(name, params);
   } else {
     logger_->warning() << "Trying to spawn unknown class " << cl <<
                        " named " << name << " params: " << params << '\n';

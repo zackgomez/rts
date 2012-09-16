@@ -12,8 +12,9 @@ namespace rts {
 LoggerPtr Actor::logger_;
 
 Actor::Actor(const std::string &name, const Json::Value &params,
-             bool mobile, bool targetable) :
-  Entity(name, params, mobile, targetable),
+             bool mobile, bool targetable,
+             bool collidable) :
+  Entity(name, params, mobile, targetable, collidable),
   melee_timer_(0.f),
   meleeWeapon_(NULL),
   rangedWeapon_(NULL) {

@@ -13,7 +13,8 @@ namespace rts {
 class Entity {
  public:
   explicit Entity(const std::string &name, const Json::Value &params,
-                  bool mobile = false, bool targetable = false);
+                  bool mobile = false, bool targetable = false,
+                  bool collidable = false);
   virtual ~Entity();
 
   bool isTargetable() const {
@@ -21,6 +22,9 @@ class Entity {
   }
   bool isMobile() const {
     return mobile_;
+  }
+  bool isCollidable() const {
+    return collidable_;
   }
 
   // This entity's unique id
@@ -103,6 +107,7 @@ class Entity {
 
   bool mobile_;
   bool targetable_;
+  bool collidable_;
 };
 };  // namespace rts
 

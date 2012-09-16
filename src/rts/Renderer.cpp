@@ -9,6 +9,7 @@
 #include "common/ParamReader.h"
 #include "common/util.h"
 #include "rts/Building.h"
+#include "rts/CollisionObject.h"
 #include "rts/Engine.h"
 #include "rts/Entity.h"
 #include "rts/FontManager.h"
@@ -85,7 +86,39 @@ void Renderer::renderEntity(const Entity *entity) {
   glm::vec3 pos = glm::vec3(pos2, map_->getMapHeight(pos2));
   float rotAngle = entity->getAngle(simdt_);
   const std::string &type = entity->getType();
-  float modelSize = fltParam(entity->getName() + ".modelSize");
+
+  if (entity->isCollidable()) {
+    // render collision rect
+    glm::mat4 transform =
+      glm::scale(
+          glm::rotate(
+            glm::translate(glm::mat4(1.f),
+              glm::vec3(pos.xy, 0.005f)),
+            rotAngle, glm::vec3(0, 0, 1)),
+          glm::vec3(entity->getSize(), 1.f));
+    glm::vec4 color(0, 0, 0, 1);
+    for (auto &pair : game_->getEntities()) {
+      if (pair.first != entity->getID() &&
+          pair.second->isCollidable() &&
+          boxInBox(pair.second->getPosition(simdt_),
+            pair.second->getSize(),
+            glm::radians(pair.second->getAngle(simdt_)),
+            pos.xy,
+            entity->getSize(),
+            glm::radians(rotAngle))) {
+        color = glm::vec4(1, 0.25, 0, 1);
+        break;
+      }
+    }
+    renderRectangleColor(transform, color);
+  }
+
+  // Collision objects only need to render their collision rectangle, so we
+  // can return after we do that.
+  if (type == CollisionObject::TYPE) return;
+
+  float modelSize = 1.f;
+  modelSize = fltParam(entity->getName() + ".modelSize");
 
   // Interpolate if they move
   glm::mat4 transform =

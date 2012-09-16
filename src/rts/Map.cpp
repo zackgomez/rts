@@ -2,6 +2,7 @@
 #include <vector>
 #include "common/ParamReader.h"
 #include "rts/Building.h"
+#include "rts/CollisionObject.h"
 #include "rts/MessageHub.h"
 #include "rts/Player.h"
 #include "rts/Unit.h"
@@ -96,6 +97,20 @@ void Map::init(const std::vector<Player *> &players) {
         MAP_ID,
         Building::TYPE,
         "req_point",
+        params);
+  }
+  Json::Value collisionObjects = getParam(name_ + ".collisionObjects");
+  for (int i = 0; i < collisionObjects.size(); i++) {
+    Json::Value cobj = collisionObjects[i];
+    Json::Value params;
+    params["entity_pid"] = toJson(NO_PLAYER);
+    params["entity_pos"] = cobj["pos"];
+    params["entity_size"] = cobj["size"];
+    params["entity_angle"] = cobj["angle"];
+    MessageHub::get()->sendSpawnMessage(
+        MAP_ID,
+        CollisionObject::TYPE,
+        "collisionObject",
         params);
   }
 }

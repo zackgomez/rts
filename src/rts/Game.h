@@ -57,6 +57,7 @@ class Game {
   void addAction(id_t pid, const PlayerAction &act);
 
   const Entity * getEntity(id_t eid) const;
+  const std::map<id_t, Entity *> getEntities() const { return entities_; }
   const Player * getPlayer(id_t pid) const;
   const std::vector<Player *>& getPlayers() const { return players_; }
   const std::set<id_t> getTeams() const { return teams_; }
