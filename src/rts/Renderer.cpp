@@ -480,7 +480,7 @@ void Renderer::endRender() {
     dragStart_ = glm::vec3(HUGE_VAL);
   }
 
-  //renderUI();
+  renderUI();
 
   SDL_GL_SwapBuffers();
 }
