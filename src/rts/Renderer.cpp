@@ -1,7 +1,7 @@
 #define GLM_SWIZZLE_XYZW
 #include "rts/Renderer.h"
+#include <sstream>
 #include <SDL/SDL.h>
-#include <iostream>
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>

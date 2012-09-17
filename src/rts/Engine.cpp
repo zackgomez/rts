@@ -1,4 +1,6 @@
 #include "rts/Engine.h"
+#include <fstream>
+#include <sstream>
 #include <SDL/SDL.h>
 #include <GL/glew.h>
 #include <glm/gtc/type_ptr.hpp>

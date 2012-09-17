@@ -13,7 +13,7 @@ Weapon::Weapon(const std::string &name, const Entity *owner)
     t_(0.f),
     target_(NO_ENTITY) {
   if (strParam("type") == "ranged") {
-    invariant(hasStrParam("projectile"), "ranged weapon missing projectile");
+    invariant(hasParam("projectile"), "ranged weapon missing projectile");
   }
 }
 
@@ -118,15 +118,12 @@ bool Weapon::canAttack(const Entity *target) const {
 float Weapon::param(const std::string &p) const {
   return fltParam(name_ + "." + p);
 }
+
 std::string Weapon::strParam(const std::string &p) const {
   return ::strParam(name_ + "." + p);
 }
 
 bool Weapon::hasParam(const std::string &p) const {
-  return ParamReader::get()->hasFloat(name_ + "." + p);
-}
-
-bool Weapon::hasStrParam(const std::string &p) const {
-  return ParamReader::get()->hasString(name_ + "." + p);
+  return ::hasParam(name_ + "." + p);
 }
 }  // rts

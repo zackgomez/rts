@@ -22,10 +22,10 @@ Actor::Actor(const std::string &name, const Json::Value &params,
     logger_ = Logger::getLogger("Actor");
   }
 
-  if (hasStrParam("meleeWeapon")) {
+  if (hasParam("meleeWeapon")) {
     meleeWeapon_ = new Weapon(strParam("meleeWeapon"), this);
   }
-  if (hasStrParam("rangedWeapon")) {
+  if (hasParam("rangedWeapon")) {
     rangedWeapon_ = new Weapon(strParam("rangedWeapon"), this);
   }
 

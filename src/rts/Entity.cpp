@@ -143,10 +143,6 @@ glm::vec2 Entity::vec2Param(const std::string &p) const {
 }
 
 bool Entity::hasParam(const std::string &p) const {
-  return ParamReader::get()->hasFloat(name_ + "." + p);
-}
-
-bool Entity::hasStrParam(const std::string &p) const {
-  return ParamReader::get()->hasString(name_ + "." + p);
+  return ::hasParam(name_ + "." + p);
 }
 };  // rts

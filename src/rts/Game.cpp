@@ -1,4 +1,5 @@
 #include "rts/Game.h"
+#include <sstream>
 #include "common/Checksum.h"
 #include "common/ParamReader.h"
 #include "common/util.h"

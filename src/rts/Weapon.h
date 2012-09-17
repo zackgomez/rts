@@ -55,7 +55,6 @@ class Weapon {
   float param(const std::string &p) const;
   std::string strParam(const std::string &p) const;
   bool hasParam(const std::string &p) const;
-  bool hasStrParam(const std::string &p) const;
 
   void sendMessage();
 

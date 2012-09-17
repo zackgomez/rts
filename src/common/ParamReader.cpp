@@ -1,10 +1,11 @@
 #include "common/ParamReader.h"
+#include <fstream>
+#include <sstream>
 #include <boost/algorithm/string.hpp>
 #include "common/Checksum.h"
 #include "common/util.h"
 
 ParamReader::ParamReader() {
-  logger_ = Logger::getLogger("ParamReader");
 }
 
 ParamReader * ParamReader::get() {
@@ -15,16 +16,13 @@ ParamReader * ParamReader::get() {
 void ParamReader::loadFile(const char *filename) {
   std::ifstream file(filename);
   if (!file) {
-    logger_->fatal() << "Unable to read file " << filename << '\n';
-    assert(false);
-    return;
+    throw file_exception(std::string("Unable to read file ") + filename);
   }
+  Json::Value root;
   Json::Reader reader;
-  if (!reader.parse(file, root_)) {
-    logger_->fatal() << "Cannot load param file " << filename << "\n"
-                     << reader.getFormattedErrorMessages();
-    assert(false);
-    return;
+  if (!reader.parse(file, root)) {
+    throw file_exception(std::string("Cannot parse param file ") + filename
+        + " : " + reader.getFormattedErrorMessages());
   }
 
   // Checksum entire file
@@ -35,7 +33,7 @@ void ParamReader::loadFile(const char *filename) {
 
   // Read in includes from header comment
   // format is '// @include param file'
-  std::stringstream commentstream(root_.getComment(Json::commentBefore));
+  std::stringstream commentstream(root.getComment(Json::commentBefore));
   std::string comment;
   while (std::getline(commentstream, comment)) {
     if (comment.empty()) {
@@ -49,7 +47,7 @@ void ParamReader::loadFile(const char *filename) {
       const std::string &paramname = commentsplit[2];
 
       // Param must not already exist
-      if (root_.isMember(paramname)) {
+      if (root.isMember(paramname)) {
         throw exception_with_trace(
           "asked to include param to already existing name");
       }
@@ -65,7 +63,7 @@ void ParamReader::loadFile(const char *filename) {
             ": " + reader.getFormattedErrorMessages());
       }
 
-      root_[paramname] = param;
+      root[paramname] = param;
 
       LOG(INFO) << "Included file " << filename << " as param " <<
         paramname << '\n';
@@ -73,39 +71,50 @@ void ParamReader::loadFile(const char *filename) {
       LOG(WARNING) << "unknown include comment: " << comment << '\n';
     }
   }
+
+  flattenValue(root);
 }
 
-void ParamReader::printParams() const {
-  logger_->info() << root_.toStyledString() << "\n";
-}
-
-bool ParamReader::hasFloat(const std::string &param) const {
-  Json::Value val = getParamHelper(param);
-  return !val.isNull() && val.isNumeric();
-}
-
-bool ParamReader::hasString(const std::string &param) const {
-  Json::Value val = getParamHelper(param);
-  return !val.isNull() && val.isString();
-}
-
-Json::Value ParamReader::getParamHelper(const std::string &param) const {
-  Json::Value val = root_;
-  std::vector<std::string> param_split;
-  boost::split(param_split, param, boost::is_any_of("."));
-  for (const auto& child : param_split) {
-    val = val.get(child, Json::Value());
-    if (val.isNull()) {
-      break;
+void ParamReader::flattenValue(
+    const Json::Value &root,
+    const std::string &prefix) {
+  for (auto it = root.begin(); it != root.end(); it++) {
+    std::string name = prefix;
+    if (!name.empty()) {
+      name += '.';
     }
+    name += it.memberName();
+
+    if ((*it).isObject()) {
+      flattenValue(*it, name);
+    }
+    // always save param, so people can access object params too
+    params_[name] = *it;
   }
-  return val;
+}
+
+bool ParamReader::hasParam(const std::string &param) const {
+  return params_.find(param) != params_.end();
 }
 
 Json::Value ParamReader::getParam(const std::string &param) const {
-  Json::Value val = getParamHelper(param);
-  invariant(!val.isNull(), "param not found: " + param);
+  auto it = params_.find(param);
+  if (it == params_.end()) {
+    throw param_exception("Param " + param + " not found.\n");
+  }
+
+  return it->second;
+}
+
+// Global helpers
+
+Json::Value getParam(const std::string &param) {
+  Json::Value val = ParamReader::get()->getParam(param);
   return val;
+}
+
+bool hasParam(const std::string &param) {
+  return ParamReader::get()->hasParam(param);
 }
 
 std::string strParam(const std::string &param) {
@@ -155,9 +164,4 @@ glm::vec4 vec4Param(const std::string &param) {
   invariant(arr.isArray() && arr.size() == 4,
       "vec4 param not found or not correctly sized array");
   return toVec4(arr);
-}
-
-Json::Value getParam(const std::string &param) {
-  Json::Value val = ParamReader::get()->getParam(param);
-  return val;
 }

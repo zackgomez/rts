@@ -83,7 +83,6 @@ class Entity {
   std::string strParam(const std::string &p) const;
   glm::vec2 vec2Param(const std::string &p) const;
   bool hasParam(const std::string &p) const;
-  bool hasStrParam(const std::string &p) const;
 
   // Used to change owners, e.g. for a capture
   void setPlayerID(id_t pid) {
