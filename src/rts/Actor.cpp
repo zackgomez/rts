@@ -16,8 +16,8 @@ Actor::Actor(const std::string &name, const Json::Value &params,
              bool collidable) :
   Entity(name, params, mobile, targetable, collidable),
   melee_timer_(0.f),
-  meleeWeapon_(NULL),
-  rangedWeapon_(NULL) {
+  meleeWeapon_(nullptr),
+  rangedWeapon_(nullptr) {
   if (!logger_.get()) {
     logger_ = Logger::getLogger("Actor");
   }

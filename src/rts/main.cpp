@@ -112,7 +112,7 @@ void handleInput(float dt) {
 }
 
 int initLibs() {
-  seedRandom(time(NULL));
+  seedRandom(time(nullptr));
   kissnet::init_networking();
 
   atexit(cleanup);

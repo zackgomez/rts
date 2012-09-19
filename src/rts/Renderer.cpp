@@ -26,8 +26,8 @@ namespace rts {
 LoggerPtr Renderer::logger_;
 
 Renderer::Renderer()
-  : game_(NULL),
-    player_(NULL),
+  : game_(nullptr),
+    player_(nullptr),
     cameraPos_(0.f, 0.f, 5.f),
     resolution_(vec2Param("local.resolution")),
     dragStart_(HUGE_VAL),

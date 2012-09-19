@@ -76,7 +76,7 @@ tcp_socket::~tcp_socket() {
 }
 
 void tcp_socket::connect(const std::string &addr, const std::string& port) {
-  struct addrinfo *res = NULL, hints;
+  struct addrinfo *res = nullptr, hints;
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_STREAM;
@@ -116,7 +116,7 @@ void tcp_socket::listen(const std::string &port, int backlog) {
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_flags = AI_PASSIVE;
 
-  if (::getaddrinfo(NULL, port.c_str(), &hints, &res) < 0) {
+  if (::getaddrinfo(nullptr, port.c_str(), &hints, &res) < 0) {
     throw socket_exception("Unable to getaddrinfo", false);
   }
 
@@ -133,7 +133,7 @@ void tcp_socket::listen(const std::string &port, int backlog) {
 
 tcp_socket_ptr tcp_socket::accept() {
   int newsock;
-  if ((newsock = ::accept(sock, NULL, NULL)) < 0)
+  if ((newsock = ::accept(sock, nullptr, nullptr)) < 0)
     throw socket_exception("Unable to accept", true);
 
   tcp_socket_ptr ret = create(newsock);
@@ -239,7 +239,7 @@ std::vector<tcp_socket*> socket_set::poll_sockets() {
       maxfd = curfd;
   }
 
-  ::select(maxfd + 1, &rset, NULL, NULL, NULL);
+  ::select(maxfd + 1, &rset, nullptr, nullptr, nullptr);
 
   std::vector<tcp_socket*> ret;
   for (auto it = socks.begin(); it != socks.end(); it++) {

@@ -1,10 +1,10 @@
-#include "MessageHub.h"
+#include "rts/MessageHub.h"
 #include <cassert>
-#include "Game.h"
+#include "rts/Game.h"
 
 namespace rts {
 
-MessageHub * MessageHub::instance = NULL;
+MessageHub * MessageHub::instance = nullptr;
 
 MessageHub * MessageHub::get() {
   if (!instance) {
@@ -14,7 +14,7 @@ MessageHub * MessageHub::get() {
 }
 
 MessageHub::MessageHub()
-  : game_(NULL) {
+  : game_(nullptr) {
   logger_ = Logger::getLogger("MessageHub");
 }
 
@@ -98,10 +98,9 @@ void MessageHub::sendResourceMessage(
 }
 
 void MessageHub::sendVPMessage(
-    id_t from, 
-    id_t tid, 
-    float amount)
-{
+    id_t from,
+    id_t tid,
+    float amount) {
   Message msg;
   msg["to"] = toJson(GAME_ID);
   msg["from"] = toJson(from);

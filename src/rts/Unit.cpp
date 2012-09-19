@@ -15,7 +15,7 @@ const std::string Unit::TYPE = "UNIT";
 
 Unit::Unit(const std::string &name, const Json::Value &params)
   : Actor(name, params, true),
-    weapon_(NULL),
+    weapon_(nullptr),
     state_(new IdleState(this)) {
   if (!logger_.get()) {
     logger_ = Logger::getLogger("Unit");
@@ -41,7 +41,7 @@ void Unit::handleMessage(const Message &msg) {
 void Unit::handleOrder(const Message &order) {
   invariant(order["type"] == MessageTypes::ORDER, "unexpected message type");
   invariant(order.isMember("order_type"), "malformed order message");
-  UnitState *next = NULL;
+  UnitState *next = nullptr;
   if (order["order_type"] == OrderTypes::MOVE) {
     // TODO(zack) add following a unit here
     next = new MoveState(toVec2(order["target"]), this);
@@ -181,13 +181,13 @@ void Unit::captureTarget(const Building *e, float cap) {
 }
 
 const Entity * Unit::getTarget(id_t lastTargetID) const {
-  const Entity *target = NULL;
+  const Entity *target = nullptr;
   // Default to last target
   if (lastTargetID != NO_ENTITY
       && (target = Game::get()->getEntity(lastTargetID))) {
     // Can't attack them if they're too far away
     if (!withinRange(target)) {
-      target = NULL;
+      target = nullptr;
     }
   }
   // Last target doesn't exist or isn't viable, find a new one
@@ -240,7 +240,7 @@ void IdleState::update(float dt) {
 }
 
 UnitState * IdleState::next() {
-  return NULL;
+  return nullptr;
 }
 
 UnitState * IdleState::stop(UnitState *next) {
@@ -291,12 +291,12 @@ UnitState * MoveState::next() {
 
   // Or target entity has died
   if (targetID_ != NO_ENTITY
-      && Game::get()->getEntity(targetID_) == NULL) {
+      && Game::get()->getEntity(targetID_) == nullptr) {
     return new IdleState(unit_);
   }
 
   // Keep on movin'
-  return NULL;
+  return nullptr;
 }
 
 
@@ -334,7 +334,7 @@ UnitState * AttackState::next() {
   if (!target)
     return new IdleState(unit_);
 
-  return NULL;
+  return nullptr;
 }
 
 UnitState * AttackState::stop(UnitState *next) {
@@ -381,7 +381,7 @@ UnitState * AttackMoveState::next() {
     return new IdleState(unit_);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 UnitState * AttackMoveState::stop(UnitState *next) {
@@ -425,7 +425,7 @@ UnitState * CaptureState::next() {
     return new IdleState(unit_);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 UnitState * CaptureState::stop(UnitState *next) {

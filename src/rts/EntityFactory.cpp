@@ -32,7 +32,7 @@ Entity * EntityFactory::construct(const std::string &cl,
   } else {
     logger_->warning() << "Trying to spawn unknown class " << cl <<
                        " named " << name << " params: " << params << '\n';
-    return NULL;
+    return nullptr;
   }
 }
 };  // namespace rts

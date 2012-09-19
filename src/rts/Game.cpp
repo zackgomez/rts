@@ -20,7 +20,7 @@ bool comparePlayerID(Player *p1, Player *p2) {
   return p1->getPlayerID() < p2->getPlayerID();
 }
 
-Game* Game::instance_ = NULL;
+Game* Game::instance_ = nullptr;
 
 Game::Game(Map *map, const std::vector<Player *> &players,
     Renderer *renderer)
@@ -60,9 +60,9 @@ Game::Game(Map *map, const std::vector<Player *> &players,
 }
 
 Game::~Game() {
-  MessageHub::get()->setGame(NULL);
+  MessageHub::get()->setGame(nullptr);
   delete map_;
-  instance_ = NULL;
+  instance_ = nullptr;
 }
 
 bool Game::updatePlayers() {
@@ -322,12 +322,12 @@ void Game::addAction(id_t pid, const PlayerAction &act) {
 
 const Entity * Game::getEntity(id_t eid) const {
   auto it = entities_.find(eid);
-  return it == entities_.end() ? NULL : it->second;
+  return it == entities_.end() ? nullptr : it->second;
 }
 
 const Player * Game::getPlayer(id_t pid) const {
   if (pid == NO_PLAYER) {
-    return NULL;
+    return nullptr;
   }
 
   assertPid(pid);
@@ -338,7 +338,7 @@ const Player * Game::getPlayer(id_t pid) const {
   }
 
   invariant(false, "Asked to find unknown pid!");
-  return NULL;
+  return nullptr;
 }
 
 const PlayerResources& Game::getResources(id_t pid) const {

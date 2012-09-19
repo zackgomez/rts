@@ -64,7 +64,7 @@ void initEngine(const glm::vec2 &resolution) {
 
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_Surface *screen = SDL_SetVideoMode(resolution.x, resolution.y, 32, flags);
-  if (screen == NULL) {
+  if (screen == nullptr) {
     std::stringstream ss; ss << "Couldn't set video mode: " << SDL_GetError()
       << '\n';
     throw engine_exception(ss.str());
@@ -341,9 +341,9 @@ GLuint loadShader(GLenum type, const std::string &filename) {
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLength);
 
     GLchar *strInfoLog = new GLchar[infoLogLength + 1];
-    glGetShaderInfoLog(shader, infoLogLength, NULL, strInfoLog);
+    glGetShaderInfoLog(shader, infoLogLength, nullptr, strInfoLog);
 
-    const char *strShaderType = NULL;
+    const char *strShaderType = nullptr;
     switch (type) {
     case GL_VERTEX_SHADER:
       strShaderType = "vertex";
@@ -381,7 +381,7 @@ GLuint linkProgram(GLuint vert, GLuint frag) {
     glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
 
     GLchar *strInfoLog = new GLchar[infoLogLength + 1];
-    glGetProgramInfoLog(program, infoLogLength, NULL, strInfoLog);
+    glGetProgramInfoLog(program, infoLogLength, nullptr, strInfoLog);
     fprintf(stderr, "Linker failure: %s\n", strInfoLog);
     std::stringstream ss;
     ss << "Linker Failure: " << strInfoLog << '\n';
@@ -532,7 +532,7 @@ static int loadVerts(const std::string &filename,
     }
 
     char *cmd = strtok(buf, " ");
-    char *arg = strtok(NULL, " ");
+    char *arg = strtok(nullptr, " ");
     if (strcmp(cmd, "v") == 0) {
       nverts++;
     }
@@ -581,25 +581,25 @@ static int loadVerts(const std::string &filename,
 
     if (strcmp(cmd, "v") == 0) {
       // read the 3 floats, and pad with a fourth 1
-      verts[verti][0] = atof(strtok(NULL, " "));
-      verts[verti][1] = atof(strtok(NULL, " "));
-      verts[verti][2] = atof(strtok(NULL, " "));
+      verts[verti][0] = atof(strtok(nullptr, " "));
+      verts[verti][1] = atof(strtok(nullptr, " "));
+      verts[verti][2] = atof(strtok(nullptr, " "));
       verts[verti][3] = 1.f;  // homogenous coords
       ++verti;
     } else if (strcmp(cmd, "f") == 0) {
       // This assumes the faces are triangles
-      ffaces[facei].fverts[0] = parseFaceVert(strtok(NULL, " "));
-      ffaces[facei].fverts[1] = parseFaceVert(strtok(NULL, " "));
-      ffaces[facei].fverts[2] = parseFaceVert(strtok(NULL, " "));
+      ffaces[facei].fverts[0] = parseFaceVert(strtok(nullptr, " "));
+      ffaces[facei].fverts[1] = parseFaceVert(strtok(nullptr, " "));
+      ffaces[facei].fverts[2] = parseFaceVert(strtok(nullptr, " "));
       ++facei;
     } else if (strcmp(cmd, "vn") == 0) {
-      norms[normi][0] = atof(strtok(NULL, " "));
-      norms[normi][1] = atof(strtok(NULL, " "));
-      norms[normi][2] = atof(strtok(NULL, " "));
+      norms[normi][0] = atof(strtok(nullptr, " "));
+      norms[normi][1] = atof(strtok(nullptr, " "));
+      norms[normi][2] = atof(strtok(nullptr, " "));
       ++normi;
     } else if (strcmp(cmd, "vt") == 0) {
-      coords[coordi][0] = atof(strtok(NULL, " "));
-      coords[coordi][1] = atof(strtok(NULL, " "));
+      coords[coordi][0] = atof(strtok(nullptr, " "));
+      coords[coordi][1] = atof(strtok(nullptr, " "));
       ++coordi;
     }
   }

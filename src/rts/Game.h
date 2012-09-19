@@ -69,7 +69,7 @@ class Game {
   template <class T>
   const Entity * findEntity(T scorer) const {
     float bestscore = HUGE_VAL;
-    const Entity *bestentity = NULL;
+    const Entity *bestentity = nullptr;
 
     for (const auto& it : entities_) {
       const Entity *e = it.second;

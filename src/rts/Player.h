@@ -26,7 +26,7 @@ class Player {
   explicit Player(id_t playerID, id_t teamID, const std::string &name,
                   const glm::vec3 &color)
       : playerID_(playerID), teamID_(teamID), name_(name), color_(color),
-        game_(NULL) {
+        game_(nullptr) {
     assertPid(playerID_);
     assertTid(teamID_);
   }
