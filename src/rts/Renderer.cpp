@@ -6,6 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <algorithm>
+#include "common/Clock.h"
 #include "common/ParamReader.h"
 #include "common/util.h"
 #include "rts/Building.h"
@@ -82,12 +83,14 @@ void Renderer::renderMessages(const std::set<Message> &messages) {
 }
 
 void Renderer::renderEntity(const Entity *entity) {
+  record_section("renderEntity");
   glm::vec2 pos2 = entity->getPosition(simdt_);
   glm::vec3 pos = glm::vec3(pos2, map_->getMapHeight(pos2));
   float rotAngle = entity->getAngle(simdt_);
   const std::string &type = entity->getType();
 
   if (entity->isCollidable()) {
+    record_section("collidable");
     // render collision rect
     glm::mat4 transform =
       glm::scale(
@@ -133,6 +136,7 @@ void Renderer::renderEntity(const Entity *entity) {
   if (type == Unit::TYPE || type == Building::TYPE) {
     renderActor((const Actor *) entity, transform);
   } else if (type == Projectile::TYPE) {
+    record_section("proj render");
     // TODO(zack): move to renderProjectile
     // TODO(zack): make this color to a param in Projectile
     glm::vec4 color = glm::vec4(0.5, 0.7, 0.5, 1);
@@ -169,18 +173,24 @@ glm::vec2 Renderer::worldToMinimap(const glm::vec3 &mapPos) {
 }
 
 void Renderer::renderUI() {
+  record_section("renderUI");
   glDisable(GL_DEPTH_TEST);
 
   // TODO(connor) there may be a better way to do this
   // perhaps store the names of all the UI elements in an array
   // and iterate over it?
 
+  glm::vec2 pos, size;
+  GLuint tex;
+
   // top bar:
-  glm::vec2 pos = convertUIPos(vec2Param("ui.topbar.pos"));
-  glm::vec2 size = vec2Param("ui.topbar.dim");
-  GLuint tex =
-    ResourceManager::get()->getTexture(strParam("ui.topbar.texture"));
-  drawTexture(pos, size, tex);
+  {
+    record_section("topBar");
+    pos = convertUIPos(vec2Param("ui.topbar.pos"));
+    size = vec2Param("ui.topbar.dim");
+    tex = ResourceManager::get()->getTexture(strParam("ui.topbar.texture"));
+    drawTexture(pos, size, tex);
+  }
 
   // Requestion display
   pos = convertUIPos(vec2Param("ui.reqdisplay.pos"));
@@ -306,6 +316,7 @@ void Renderer::renderMinimap() {
 }
 
 void Renderer::renderMap(const Map *map) {
+  record_section("renderMap");
   // cache map
   map_ = map;
 
@@ -401,6 +412,7 @@ void Renderer::startRender(float dt) {
 }
 
 void Renderer::renderActor(const Actor *actor, glm::mat4 transform) {
+  record_section("renderActor");
   const Player *player = game_->getPlayer(actor->getPlayerID());
   glm::vec3 pcolor = player ? player->getColor() :
     vec3Param("global.defaultColor");
@@ -412,14 +424,17 @@ void Renderer::renderActor(const Actor *actor, glm::mat4 transform) {
   const std::string &name = actor->getName();
 
   // TODO(zack) parameterize shaders on name
-  GLuint meshProgram = ResourceManager::get()->getShader("unit");
-  glUseProgram(meshProgram);
-  GLuint colorUniform = glGetUniformLocation(meshProgram, "color");
-  GLuint lightPosUniform = glGetUniformLocation(meshProgram, "lightPos");
-  glUniform4fv(colorUniform, 1, glm::value_ptr(color));
-  glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
-  Mesh * mesh = ResourceManager::get()->getMesh(name);
-  renderMesh(transform, mesh);
+  {
+    record_section("mesh");
+    GLuint meshProgram = ResourceManager::get()->getShader("unit");
+    glUseProgram(meshProgram);
+    GLuint colorUniform = glGetUniformLocation(meshProgram, "color");
+    GLuint lightPosUniform = glGetUniformLocation(meshProgram, "lightPos");
+    glUniform4fv(colorUniform, 1, glm::value_ptr(color));
+    glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
+    Mesh * mesh = ResourceManager::get()->getMesh(name);
+    renderMesh(transform, mesh);
+  }
 
   glm::vec4 ndc = getProjectionStack().current() * getViewStack().current() *
                   transform * glm::vec4(0, 0, 0, 1);

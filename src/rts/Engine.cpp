@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "common/Clock.h"
 #include "common/Exception.h"
 #include "common/Logger.h"
 #include "common/ParamReader.h"
@@ -104,6 +105,7 @@ void teardownEngine() {
 void renderRectangleColor(
     const glm::mat4 &modelMatrix,
     const glm::vec4 &color) {
+  record_section("renderRectangleColor");
   GLuint program = resources.colorProgram;
   GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
   GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
@@ -131,6 +133,7 @@ void renderRectangleColor(
 }
 
 void renderRectangleProgram(const glm::mat4 &modelMatrix) {
+  record_section("renderRectangleProgram");
   GLuint program;
   glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*) &program);
   if (!program) {
@@ -163,6 +166,7 @@ void renderRectangleProgram(const glm::mat4 &modelMatrix) {
 }
 
 void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m) {
+  record_section("renderMesh");
   GLuint program;
   glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*) &program);
   if (!program) {
@@ -251,6 +255,7 @@ void drawTextureCenter(
   const glm::vec2 &size,  // width/height
   const GLuint texture,
   const glm::vec4 &texcoord) {
+  record_section("drawTexture");
   glm::mat4 transform =
     glm::scale(
       glm::translate(glm::mat4(1.f), glm::vec3(pos, 0.f)),

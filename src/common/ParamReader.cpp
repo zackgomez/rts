@@ -3,6 +3,7 @@
 #include <sstream>
 #include <boost/algorithm/string.hpp>
 #include "common/Checksum.h"
+#include "common/Clock.h"
 #include "common/util.h"
 
 ParamReader::ParamReader() {
@@ -109,6 +110,7 @@ Json::Value ParamReader::getParam(const std::string &param) const {
 // Global helpers
 
 Json::Value getParam(const std::string &param) {
+  record_section("getParam");
   Json::Value val = ParamReader::get()->getParam(param);
   return val;
 }

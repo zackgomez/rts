@@ -13,6 +13,7 @@ TESTDIR=$(SRCDIR)/tests
 GTESTDIR=lib/gtest-1.6.0
 GTESTLIB=lib/gtest-1.6.0/libgtest.a
 CXXFLAGS=-g -O0 -Wall -I$(GLM) -std=c++0x -I$(JSON) -I$(STBI) -Wno-reorder -I$(STBTT) -I$(SRCDIR) -I$(GTESTDIR)/include
+#CXXFLAGS+=-DSECTION_RECORDING
 
 TESTOBJ = $(patsubst $(TESTDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(TESTDIR)/*.cpp)))
 COMMONOBJ = $(patsubst $(COMMONDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(COMMONDIR)/*.cpp))) $(JSON)/jsoncpp.o
