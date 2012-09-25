@@ -66,7 +66,10 @@ class Entity {
   virtual float getAngle(float dt) const;
 
   virtual void handleMessage(const Message& msg) = 0;
+  // Sets 'intention' like velocity, etc
   virtual void update(float dt) = 0;
+  // Integrates position using velocities and timestep
+  void integrate(float dt);
 
   virtual void checksum(Checksum &chksum) const;
 

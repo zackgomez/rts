@@ -191,6 +191,11 @@ void Game::update(float dt) {
 
   // TODO(zack/connor): Collision detection
 
+  // Finally, integrate positions
+  for (auto &it : entities_) {
+    it.second->integrate(dt);
+  }
+
   // Check to see if this player has won
   for (auto it : victoryPoints_) {
     if (it.second > intParam("global.pointsToWin")) {

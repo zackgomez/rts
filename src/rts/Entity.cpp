@@ -61,21 +61,33 @@ id_t Entity::getTeamID() const {
 }
 
 void Entity::update(float dt) {
-  if (mobile_) {
-    // rotate
-    angle_ += turnSpeed_ * dt;
-    // clamp to [0, 360]
-    while (angle_ > 360.f) {
-      angle_ -= 360.f;
-    }
-    while (angle_ < 0.f) {
-      angle_ += 360.f;
-    }
+  turnSpeed_ = 0.f;
+  speed_ = 0.f;
+}
 
-    // move
-    glm::vec2 vel = speed_ * getDirection(angle_);
-    pos_ += vel * dt;
+void Entity::integrate(float dt) {
+  // for immobile entities, just check that they are stationary
+  if (!mobile_) {
+    invariant(
+      turnSpeed_ == 0.f && speed_ == 0.f,
+      "Immobile Entities shouldn't have motion");
+    return;
   }
+
+  // TODO(zack): upgrade to a better integrator (runge-kutta)
+  // rotate
+  angle_ += turnSpeed_ * dt;
+  // clamp to [0, 360]
+  while (angle_ > 360.f) {
+    angle_ -= 360.f;
+  }
+  while (angle_ < 0.f) {
+    angle_ += 360.f;
+  }
+
+  // move
+  glm::vec2 vel = speed_ * getDirection(angle_);
+  pos_ += vel * dt;
 }
 
 void Entity::checksum(Checksum &chksum) const {

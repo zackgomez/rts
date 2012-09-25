@@ -21,6 +21,8 @@ Projectile::Projectile(const std::string &name, const Json::Value &params)
 }
 
 void Projectile::update(float dt) {
+  Entity::update(dt);
+
   const Entity *targetEnt = Game::get()->getEntity(targetID_);
   // If target doesn't exist for whatever reason, then I guess we're done
   if (!targetEnt) {
@@ -47,9 +49,6 @@ void Projectile::update(float dt) {
     MessageHub::get()->sendMessage(msg);
     MessageHub::get()->sendRemovalMessage(this);
   }
-
-  // Move/rotate/etc
-  Entity::update(dt);
 }
 
 void Projectile::handleMessage(const Message &msg) {

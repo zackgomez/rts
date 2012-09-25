@@ -102,6 +102,8 @@ void Actor::produce(const std::string &prod_name) {
 }
 
 void Actor::update(float dt) {
+  Entity::update(dt);
+
   melee_timer_ -= dt;
 
   // Update production
@@ -112,8 +114,5 @@ void Actor::update(float dt) {
       production_queue_.pop();
     }
   }
-
-  // Move etc
-  Entity::update(dt);
 }
 };  // rts

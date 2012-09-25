@@ -75,6 +75,8 @@ void Unit::handleOrder(const Message &order) {
 }
 
 void Unit::update(float dt) {
+  Actor::update(dt);
+
   if (melee_timer_ <= 0.f) {
     weapon_ = rangedWeapon_ ? rangedWeapon_ : meleeWeapon_;
   } else {
@@ -93,8 +95,6 @@ void Unit::update(float dt) {
   if (weapon_) {
     weapon_->update(dt);
   }
-
-  Actor::update(dt);
 }
 
 bool Unit::canAttack(const Entity *e) const {
