@@ -1,5 +1,6 @@
 #include "rts/Entity.h"
 #include "common/Checksum.h"
+#include "common/Collision.h"
 #include "common/ParamReader.h"
 #include "common/util.h"
 #include "rts/MessageHub.h"

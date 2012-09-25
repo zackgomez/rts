@@ -75,20 +75,4 @@ float frand();
 
 float addAngles(float a, float b);
 
-bool pointInBox(
-    const glm::vec2 &p,
-    // boxPos is the center of the box
-    const glm::vec2 &boxPos,
-    const glm::vec2 &boxSize,
-    float angle);
-
-// TODO(connor) maybe make a box struct to store position, size, and angle
-bool boxInBox(
-    const glm::vec2 &pos1,
-    const glm::vec2 &size1,
-    float angle1,
-    const glm::vec2 &pos2,
-    const glm::vec2 &size2,
-    float angle2);
-
 #endif  // SRC_COMMON_UTIL_H_

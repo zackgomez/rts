@@ -29,7 +29,7 @@ matchmaker: $(MMOBJ) $(COMMONOBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 tests: $(TESTOBJ) $(GTESTLIB)
-	$(CXX) $(CXXFLAGS) -o $@ $(TESTOBJ) $(GTESTLIB) -lpthread
+	$(CXX) $(CXXFLAGS) -o $@ $(TESTOBJ) $(COMMONOBJ) $(GTESTLIB) -lpthread
 
 $(OBJDIR)/%.o: $(RTSDIR)/%.cpp
 	$(CXX) -c $(CXXFLAGS) -o $(OBJDIR)/$*.o $<

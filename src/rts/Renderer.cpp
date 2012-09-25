@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <algorithm>
 #include "common/Clock.h"
+#include "common/Collision.h"
 #include "common/ParamReader.h"
 #include "common/util.h"
 #include "rts/Building.h"
