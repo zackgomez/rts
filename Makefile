@@ -28,7 +28,7 @@ rts: $(RTSOBJ) $(COMMONOBJ) local.json
 matchmaker: $(MMOBJ) $(COMMONOBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
-tests: $(TESTOBJ) $(GTESTLIB)
+tests: $(TESTOBJ) $(GTESTLIB) $(COMMONOBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $(TESTOBJ) $(COMMONOBJ) $(GTESTLIB) -lpthread
 
 $(OBJDIR)/%.o: $(RTSDIR)/%.cpp

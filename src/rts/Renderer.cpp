@@ -104,12 +104,15 @@ void Renderer::renderEntity(const Entity *entity) {
     for (auto &pair : game_->getEntities()) {
       if (pair.first != entity->getID() &&
           pair.second->isCollidable() &&
-          boxInBox(pair.second->getPosition(simdt_),
-            pair.second->getSize(),
-            glm::radians(pair.second->getAngle(simdt_)),
-            pos.xy,
-            entity->getSize(),
-            glm::radians(rotAngle))) {
+          boxInBox(
+            Rect(
+              pair.second->getPosition(simdt_),
+              pair.second->getSize(),
+              glm::radians(pair.second->getAngle(simdt_))),
+            Rect(
+              pos.xy,
+              entity->getSize(),
+              glm::radians(rotAngle)))) {
         color = glm::vec4(1, 0.25, 0, 1);
         break;
       }

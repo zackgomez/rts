@@ -3,6 +3,20 @@
 
 #include <glm/glm.hpp>
 
+struct Circle {
+  glm::vec2 center;
+  float radius;
+};
+
+struct Rect {
+  Rect(const glm::vec2 &p, const glm::vec2 &s, float a) :
+      pos(p), size(s), angle(a)
+  { }
+  glm::vec2 pos;
+  glm::vec2 size;
+  float angle;
+};
+
 bool pointInBox(
     const glm::vec2 &p,
     // boxPos is the center of the box
@@ -11,19 +25,17 @@ bool pointInBox(
     float angle);
 
 bool boxInBox(
-    const glm::vec2 &pos1,
-    glm::vec2 size1,
-    float angle1,
-    const glm::vec2 &pos2,
-    glm::vec2 size2,
-    float angle2);
+    const Rect &r1,
+    const Rect &r2);
 
-bool boxInBoxOld(
-    const glm::vec2 &pos1,
-    const glm::vec2 &size1,
-    float angle1,
-    const glm::vec2 &pos2,
-    const glm::vec2 &size2,
-    float angle2);
+const float NO_INTERSECTION = -1.f;
+
+// Returns the time of intersection in [0, dt] or -1 if no intersection
+float boxBoxCollision(
+    const Rect &r1,
+    const glm::vec2 &v1,
+    const Rect &r2,
+    const glm::vec2 &v2,
+    float dt);
 
 #endif  // SRC_COMMON_COLLISION_H_

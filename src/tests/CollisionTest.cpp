@@ -29,7 +29,9 @@ TEST(CollisionTest, BoxInBoxRotation) {
   glm::vec2 size(4, 3);
 
   for (float a = 0; a < 360.f; a++) {
-    ASSERT_TRUE(boxInBox(box1, size, 0, box2, size, a));
+    ASSERT_TRUE(boxInBox(
+      Rect(box1, size, 0),
+      Rect(box2, size, a)));
   }
 }
 
@@ -41,10 +43,12 @@ glm::vec2 randomVec(float min, float max) {
   return glm::vec2(randomFloat(min, max), randomFloat(min, max));
 }
 
-std::vector<std::tuple<glm::vec2, glm::vec2, float>> generateBoxes(size_t n) {
-  // generate some data
-  std::vector<std::tuple<glm::vec2, glm::vec2, float>> boxes;
+// Generates n random boxes for testing
+std::vector<Rect> generateBoxes(size_t n) {
+  std::vector<Rect> boxes;
   for (auto i = 0; i < 500; i++) {
+    // Emplace back directly calls the constructor with the passed arguments,
+    // avoiding a copy/move operation and involving less typing
     boxes.emplace_back(
       randomVec(-1, 1),
       randomVec(-1, 1),
@@ -53,71 +57,71 @@ std::vector<std::tuple<glm::vec2, glm::vec2, float>> generateBoxes(size_t n) {
   return boxes;
 }
 
-// Tests that the new boxInBox is faster than the old BoxInBox
-TEST(CollisionTest, SpeedImprovement) {
-  auto boxes = generateBoxes(1000);
+TEST(CollisionTest, BoxBoxCollision) {
+  glm::vec2 boxp(1, 3);
+  glm::vec2 boxs(1, 1);
+  float angle = glm::radians(212.f);
 
-  Clock timer;
+  glm::vec2 boxp2(3, 3);
+  float angle2 = glm::radians(43.f);
 
-  timer = Clock().start();
-  for (auto i = 0; i < boxes.size(); i++) {
-    for (auto j = i; j < boxes.size(); j++) {
-      boxInBox(
-        std::get<0>(boxes[i]),
-        std::get<1>(boxes[i]),
-        std::get<2>(boxes[i]),
-        std::get<0>(boxes[j]),
-        std::get<1>(boxes[j]),
-        std::get<2>(boxes[j]));
-    }
-  }
-  auto newT = timer.microseconds();
 
-  timer = Clock().start();
-  for (auto i = 0; i < boxes.size(); i++) {
-    for (auto j = i; j < boxes.size(); j++) {
-      boxInBoxOld(
-        std::get<0>(boxes[i]),
-        std::get<1>(boxes[i]),
-        std::get<2>(boxes[i]),
-        std::get<0>(boxes[j]),
-        std::get<1>(boxes[j]),
-        std::get<2>(boxes[j]));
-    }
-  }
-  auto oldT = timer.microseconds();
-  ASSERT_TRUE(newT < oldT);
-}
+  // Sanity, no motion, no overlap checks
+  ASSERT_FALSE(boxInBox(Rect(boxp, boxs, angle), Rect(boxp2, boxs, angle2)));
+  ASSERT_FALSE(boxBoxCollision(
+        Rect(boxp, boxs, angle), glm::vec2(0.f),
+        Rect(boxp2, boxs, angle2), glm::vec2(0.f),
+        10.f) != NO_INTERSECTION);
 
-// tests connor vs zack's box implementation
-TEST(CollisionTest, BoxInBoxSameness) {
-  // for repeatability
-  srand(28420);
+  // Move towards, with enough time
+  ASSERT_TRUE(boxBoxCollision(
+        Rect(boxp, boxs, angle), glm::vec2(3, 0),
+        Rect(boxp2, boxs, angle2), glm::vec2(0.f),
+        10.f) != NO_INTERSECTION);
 
-  auto boxes = generateBoxes(500);
+  // Move towards, would hit, not enough time
+  ASSERT_FALSE(boxBoxCollision(
+        Rect(boxp, boxs, angle), glm::vec2(3, 0),
+        Rect(boxp2, boxs, angle2), glm::vec2(0.f),
+        0.1f) != NO_INTERSECTION);
 
-  auto count = 0;
-  auto n = 0;
-  for (auto i = 0; i < boxes.size(); i++) {
-    for (auto j = i; j < boxes.size(); j++) {
-      n++;
-      count +=
-        boxInBoxOld(
-          std::get<0>(boxes[i]),
-          std::get<1>(boxes[i]),
-          std::get<2>(boxes[i]),
-          std::get<0>(boxes[j]),
-          std::get<1>(boxes[j]),
-          std::get<2>(boxes[j])) !=
-        boxInBox(
-          std::get<0>(boxes[i]),
-          std::get<1>(boxes[i]),
-          std::get<2>(boxes[i]),
-          std::get<0>(boxes[j]),
-          std::get<1>(boxes[j]),
-          std::get<2>(boxes[j]));
-    }
-  }
+  // Move different directions
+  ASSERT_FALSE(boxBoxCollision(
+        Rect(boxp, boxs, angle), glm::vec2(-3, 0),
+        Rect(boxp2, boxs, angle2), glm::vec2(0.f),
+        10.f) != NO_INTERSECTION);
+  ASSERT_FALSE(boxBoxCollision(
+        Rect(boxp, boxs, angle), glm::vec2(-3, 3),
+        Rect(boxp2, boxs, angle2), glm::vec2(0.f),
+        10.f) != NO_INTERSECTION);
+  ASSERT_FALSE(boxBoxCollision(
+        Rect(boxp, boxs, angle), glm::vec2(0, -3),
+        Rect(boxp2, boxs, angle2), glm::vec2(0.f),
+        10.f) != NO_INTERSECTION);
+  ASSERT_FALSE(boxBoxCollision(
+        Rect(boxp, boxs, angle), glm::vec2(3, -5),
+        Rect(boxp2, boxs, angle2), glm::vec2(0.f),
+        10.f) != NO_INTERSECTION);
+  ASSERT_FALSE(boxBoxCollision(
+        Rect(boxp, boxs, angle), glm::vec2(3, 5),
+        Rect(boxp2, boxs, angle2), glm::vec2(0.f),
+        10.f) != NO_INTERSECTION);
 
-  ASSERT_EQ(0.f, ((float) count) / n);
+  // Make sure velocites are combined correctly
+  ASSERT_TRUE(boxBoxCollision(
+        Rect(boxp, boxs, angle), glm::vec2(0.f),
+        Rect(boxp2, boxs, angle2), glm::vec2(-3, 0),
+        10) != NO_INTERSECTION);
+  ASSERT_TRUE(boxBoxCollision(
+        Rect(boxp, boxs, angle), glm::vec2(-1, 0),
+        Rect(boxp2, boxs, angle2), glm::vec2(-3, 0),
+        10) != NO_INTERSECTION);
+
+  // simple time return check
+  ASSERT_EQ(
+    1.f,
+    boxBoxCollision(
+      Rect(boxp, boxs, 0.f), glm::vec2(1, 0),
+      Rect(boxp2, boxs, 0.f), glm::vec2(0.f),
+      10.f));
 }
