@@ -1,5 +1,6 @@
 #include "rts/Map.h"
 #include <vector>
+#include "common/Collision.h"
 #include "common/ParamReader.h"
 #include "rts/Building.h"
 #include "rts/CollisionObject.h"
