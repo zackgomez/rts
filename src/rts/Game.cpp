@@ -175,6 +175,9 @@ void Game::update(float dt) {
   // Allow more actions
   actionLock.unlock();
 
+  // Update pathing
+  map_->update(dt);
+
   // Update entities
   std::vector<id_t> deadEnts;
   for (auto &it : entities_) {

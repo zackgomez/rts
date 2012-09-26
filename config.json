@@ -72,6 +72,7 @@
     "debugMap" :
     {
       "size" : [25, 25],
+      "pathGridDim" : [75, 75],
       "players" : 2,
       "height" : 0.0,
       "minimapColor" : [0.25, 0.2, 0.15, 1.0],

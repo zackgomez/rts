@@ -188,13 +188,11 @@ void Renderer::renderUI() {
   GLuint tex;
 
   // top bar:
-  {
-    record_section("topBar");
-    pos = convertUIPos(vec2Param("ui.topbar.pos"));
-    size = vec2Param("ui.topbar.dim");
-    tex = ResourceManager::get()->getTexture(strParam("ui.topbar.texture"));
-    drawTexture(pos, size, tex);
-  }
+  record_section("topBar");
+  pos = convertUIPos(vec2Param("ui.topbar.pos"));
+  size = vec2Param("ui.topbar.dim");
+  tex = ResourceManager::get()->getTexture(strParam("ui.topbar.texture"));
+  drawTexture(pos, size, tex);
 
   // Requestion display
   pos = convertUIPos(vec2Param("ui.reqdisplay.pos"));
@@ -324,15 +322,18 @@ void Renderer::renderMap(const Map *map) {
   // cache map
   map_ = map;
 
-  const glm::vec2 &mapSize = map->getSize();
-  const glm::vec4 &mapColor = map->getMinimapColor();
+  auto gridDim = map->getPathingGridDim();
+  auto mapSize = map->getSize();
+  auto mapColor = map->getMinimapColor();
 
   GLuint mapProgram = ResourceManager::get()->getShader("map");
   glUseProgram(mapProgram);
   GLuint colorUniform = glGetUniformLocation(mapProgram, "color");
   GLuint mapSizeUniform = glGetUniformLocation(mapProgram, "mapSize");
+  GLuint gridDimUniform = glGetUniformLocation(mapProgram, "gridDim");
   glUniform4fv(colorUniform, 1, glm::value_ptr(mapColor));
   glUniform2fv(mapSizeUniform, 1, glm::value_ptr(mapSize));
+  glUniform2fv(gridDimUniform, 1, glm::value_ptr(gridDim));
 
   // TODO(zack): render map with height/terrain map
   glm::mat4 transform =
