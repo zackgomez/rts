@@ -192,7 +192,30 @@ void Game::update(float dt) {
   }
   deadEntities_.clear();
 
-  // TODO(zack/connor): Collision detection
+  // Collision detection
+  for (auto it = entities_.begin(); it != entities_.end(); it++) {
+    const Entity *e1 = it->second;
+    if (!e1->isCollidable()) {
+      continue;
+    }
+    auto it2 = it;
+    for (it2++; it2 != entities_.end(); it2++) {
+      const Entity *e2 = it2->second;
+      if (!e2->isCollidable()) {
+        continue;
+      }
+      if (boxBoxCollision(
+            e1->getRect(),
+            e1->getVelocity(),
+            e2->getRect(),
+            e2->getVelocity(),
+            dt) != NO_INTERSECTION) {
+        // TODO(zack): include time of intersection in message
+        MessageHub::get()->sendCollisionMessage(it->first, it2->first);
+        MessageHub::get()->sendCollisionMessage(it2->first, it->first);
+      }
+    }
+  }
 
   // Finally, integrate positions
   for (auto &it : entities_) {

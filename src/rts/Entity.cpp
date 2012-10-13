@@ -25,7 +25,8 @@ Entity::Entity(const std::string &name,
     size_(glm::vec2(0.f)),
     height_(0.f),
     speed_(0.f),
-    turnSpeed_(0.f) {
+    turnSpeed_(0.f),
+    collided_(false) {
   if (params.isMember("entity_pid")) {
     playerID_ = toID(params["entity_pid"]);
   }
@@ -63,6 +64,7 @@ id_t Entity::getTeamID() const {
 void Entity::update(float dt) {
   turnSpeed_ = 0.f;
   speed_ = 0.f;
+  collided_ = false;
 }
 
 void Entity::integrate(float dt) {
@@ -88,6 +90,16 @@ void Entity::integrate(float dt) {
   // move
   glm::vec2 vel = speed_ * getDirection(angle_);
   pos_ += vel * dt;
+}
+
+void Entity::handleMessage(const Message &msg) {
+  if (msg["type"] == MessageTypes::COLLISION) {
+    invariant(collidable_, "Got collision for noncollidable object!");
+    collided_ = true;
+  } else {
+    LOG(INFO) << "Entity of type " << getType()
+      << " received unknown message type: " << msg["type"] << '\n';
+  }
 }
 
 void Entity::checksum(Checksum &chksum) const {

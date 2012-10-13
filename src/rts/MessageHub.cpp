@@ -110,4 +110,13 @@ void MessageHub::sendVPMessage(
 
   sendMessage(msg);
 }
+
+void MessageHub::sendCollisionMessage(id_t from, id_t to) {
+  Message msg;
+  msg["to"] = toJson(to);
+  msg["from"] = toJson(from);
+  msg["type"] = MessageTypes::COLLISION;
+
+  sendMessage(msg);
+}
 };  // rts

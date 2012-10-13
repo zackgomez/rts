@@ -85,101 +85,87 @@ float boxBoxCollision(
   const glm::mat2 C = glm::transpose(A) * B;
   // NOTE: GLM uses column major, be careful! C[j][i] = c_ij, C[j] = column j
 
-  float t, v;
   // Bit of a misnomer, the maximum, earliest intersection time
   float minT = -HUGE_VAL;
   // minimum last intersection time
   float maxT = HUGE_VAL;
   // collision if minT < maxT
 
+#define check_axis(R0, R1, L) do { \
+  /* Projection of velocity onto axis */ \
+  float v = glm::dot(L, W); \
+  float rstart = glm::dot(L, D0); \
+  /* If there is no movement on this axis */ \
+  if (glm::abs(v) < 0.001f) { \
+    /* Just check for overlap at the beginning */ \
+    if (glm::abs(rstart) > r0 + r1) { \
+      return NO_INTERSECTION; \
+    } else { \
+    /* otherwise earliest and latest overlap at t=0 */ \
+      minT = std::max(minT, 0.f); \
+      maxT = std::min(maxT, dt); \
+      break; \
+    }\
+  } \
+  float rend = glm::dot(L, D1); \
+  /* check for non overlap in the beginning and end. */ \
+  if (glm::abs(rstart) > r0 + r1 && \
+      glm::abs(rend) > r0 + r1) { \
+    /* If the box remains on the same side, no global intersection */ \
+    if (glm::sign(rstart) == glm::sign(rend)) { \
+      return NO_INTERSECTION; \
+    /* If the box is on a different side, find times of collision. */ \
+    } else { \
+      minT = std::max( \
+          minT, \
+          glm::abs((glm::abs(rstart) - (r0 + r1)) / v)); \
+      maxT = std::min( \
+          maxT, \
+          glm::abs((glm::abs(rstart) + (r0 + r1)) / v)); \
+      break; \
+    } \
+  } else { \
+    /* deal with overlap at beginning or end. */ \
+    minT = std::max( \
+      minT, \
+      std::max(0.f, (glm::abs(rstart) - (r0 + r1)) / glm::abs(v))); \
+    maxT = std::min( \
+      maxT, \
+      std::min(dt, (glm::abs(rstart) + (r0 + r1)) / glm::abs(v))); \
+  } \
+} while (0);
+
   // General test R > R_0 + R_1 implies separating axis
   // one of them is an extent (size/2) and the other is a projection
   // Wl is the projection of W on the current axis L
-  float rstart, rend, r0, r1;
+  float r0, r1;
+  glm::vec2 L;
   // For motion, also project the relative velocity vector W onto the axis
   r0 = size1[0];
   r1 = glm::dot(size2, glm::abs(glm::vec2(C[0][0], C[1][0])));
-  rstart = glm::dot(A[0], D0);
-  rend = glm::dot(A[0], D1);
-  // If separated at both endpoints, and moving same direction relative to
-  // other box, no collision
-  if (glm::abs(rstart) > r0 + r1 &&
-      glm::abs(rend) > r0 + r1 &&
-      glm::sign(rstart) == glm::sign(rend)) {
-    return NO_INTERSECTION;
-  } else {
-    // Projection of velocity onto axis
-    v = glm::dot(A[0], W);
-    // always overlapping
-    if (v != 0) {
-      // Otherwise calculate collision time as (starting_dist / speed)
-      // could be negative, if there is a collision at time 0, just take
-      // intersection time as 0 in that case
-      t = (glm::abs(rstart) - r0 - r1) / v;
-      // Then the minT is the earliest intersection
-      minT = std::max(minT, std::max(t, 0.f));
-      t = (r0 + r1 - glm::abs(rend)) / v;
-      maxT = std::min(maxT, t);
-    }
-  }
+  L = A[0];
+  check_axis(r0, r1, L);
 
   r0 = size1[1];
   r1 = glm::dot(size2, glm::abs(glm::vec2(C[0][1], C[1][1])));
-  rstart = glm::dot(A[1], D0);
-  rend = glm::dot(A[1], D1);
-  if (glm::abs(rstart) > r0 + r1 &&
-      glm::abs(rend) > r0 + r1 &&
-      glm::sign(rstart) == glm::sign(rend)) {
-    return NO_INTERSECTION;
-  } else {
-    v = glm::dot(A[1], W);
-    if (v != 0) {
-      t = (r0 + r1 - glm::abs(rstart)) / v;
-      minT = std::max(minT, std::max(t, 0.f));
-      t = (r0 + r1 - glm::abs(rend)) / v;
-      maxT = std::min(maxT, t);
-    }
-  }
+  L = A[1];
+  check_axis(r0, r1, L);
 
   r0 = glm::dot(size1, glm::abs(C[0]));
   r1 = size2[0];
-  rstart = glm::dot(B[0], D0);
-  rend = glm::dot(B[0], D1);
-  if (glm::abs(rstart) > r0 + r1 &&
-      glm::abs(rend) > r0 + r1 &&
-      glm::sign(rstart) == glm::sign(rend)) {
-    return NO_INTERSECTION;
-  } else {
-    v = glm::dot(B[0], W);
-    if (v != 0) {
-      t = (r0 + r1 - glm::abs(rstart)) / v;
-      minT = std::max(minT, std::max(t, 0.f));
-      t = (r0 + r1 - glm::abs(rend)) / v;
-      maxT = std::min(maxT, t);
-    }
-  }
+  L = B[0];
+  check_axis(r0, r1, L);
 
   r0 = glm::dot(size1, glm::abs(C[1]));
   r1 = size2[1];
-  rstart = glm::dot(B[1], D0);
-  rend = glm::dot(B[1], D1);
-  if (glm::abs(rstart) > r0 + r1 &&
-      glm::abs(rend) > r0 + r1 &&
-      glm::sign(rstart) == glm::sign(rend)) {
+  L = B[1];
+  check_axis(r0, r1, L);
+
+  // max(Earliest intersection time) is AFTER the min(Latest intersection time)
+  if (minT > maxT || minT > dt) {
     return NO_INTERSECTION;
   } else {
-    v = glm::dot(B[1], W);
-    if (v != 0) {
-      t = (r0 + r1 - glm::abs(rstart)) / v;
-      minT = std::max(minT, std::max(t, 0.f));
-      t = (r0 + r1 - glm::abs(rend)) / v;
-      maxT = std::min(maxT, t);
-    }
+    invariant(minT >= 0.f && minT <= dt, "bad intersection time");
+    return minT;
   }
-
-  if (minT > maxT) {
-    return false;
-  }
-  invariant(minT >= 0.f && minT <= dt, "bad intersection time");
-  return minT;
 }

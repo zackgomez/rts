@@ -17,9 +17,11 @@ CollisionObject::CollisionObject(
 }
 
 void CollisionObject::handleMessage(const Message &msg) {
+  Entity::handleMessage(msg);
 }
 
 void CollisionObject::update(float dt) {
+  Entity::update(dt);
 }
 
 bool CollisionObject::needsRemoval() const {

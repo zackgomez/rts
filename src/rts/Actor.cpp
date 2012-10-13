@@ -58,8 +58,7 @@ void Actor::handleMessage(const Message &msg) {
   } else if (msg["type"] == MessageTypes::ORDER) {
     handleOrder(msg);
   } else {
-    logger_->warning() << "Actor got unknown message: "
-                       << msg.toStyledString() << '\n';
+    Entity::handleMessage(msg);
   }
 }
 void Actor::handleOrder(const Message &order) {

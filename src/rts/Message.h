@@ -15,6 +15,7 @@ const std::string SPAWN_ENTITY   = "SPAWN";
 const std::string DESTROY_ENTITY = "DESTROY";
 const std::string ADD_RESOURCE   = "RESOURCE";
 const std::string ADD_VP         = "VP";
+const std::string COLLISION      = "COLLISION";
 };  // MessageTypes
 };  // rts
 

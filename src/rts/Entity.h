@@ -3,6 +3,7 @@
 
 #include <string>
 #include <glm/glm.hpp>
+#include "common/Collision.h"
 #include "common/Types.h"
 #include "rts/Message.h"
 
@@ -61,11 +62,19 @@ class Entity {
     return height_;
   }
 
+  const Rect getRect() const {
+    return Rect(pos_, size_, glm::radians(angle_));
+  }
+
+  const glm::vec2 getVelocity() const {
+    return getDirection() * speed_;
+  }
+
   // Interpolation functions
   virtual glm::vec2 getPosition(float dt) const;
   virtual float getAngle(float dt) const;
 
-  virtual void handleMessage(const Message& msg) = 0;
+  virtual void handleMessage(const Message& msg);
   // Sets 'intention' like velocity, etc
   virtual void update(float dt) = 0;
   // Integrates position using velocities and timestep
@@ -76,6 +85,9 @@ class Entity {
   float distanceBetweenEntities(const Entity *e) const;
 
   bool pointInEntity(const glm::vec2 &p);
+
+  // TEMPORARY, TODO(zack) REMOVE
+  bool collided_;
 
  protected:
   static const glm::vec2 getDirection(float angle);

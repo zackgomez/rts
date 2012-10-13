@@ -103,21 +103,8 @@ void Renderer::renderEntity(const Entity *entity) {
             rotAngle, glm::vec3(0, 0, 1)),
           glm::vec3(entity->getSize(), 1.f));
     glm::vec4 color(0, 0, 0, 1);
-    for (auto &pair : game_->getEntities()) {
-      if (pair.first != entity->getID() &&
-          pair.second->isCollidable() &&
-          boxInBox(
-            Rect(
-              pair.second->getPosition(simdt_),
-              pair.second->getSize(),
-              glm::radians(pair.second->getAngle(simdt_))),
-            Rect(
-              pos.xy,
-              entity->getSize(),
-              glm::radians(rotAngle)))) {
-        color = glm::vec4(1, 0.25, 0, 1);
-        break;
-      }
+    if (entity->collided_) {
+      color = glm::vec4(1, 0.25, 0, 1);
     }
     renderRectangleColor(transform, color);
   }

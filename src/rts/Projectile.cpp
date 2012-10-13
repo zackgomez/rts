@@ -52,6 +52,6 @@ void Projectile::update(float dt) {
 }
 
 void Projectile::handleMessage(const Message &msg) {
-  logger_->warning() << "Projectile ignoring message: " << msg << '\n';
+  Entity::handleMessage(msg);
 }
 };  // rts
