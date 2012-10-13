@@ -49,7 +49,9 @@ Renderer::Renderer()
   setMeshTransform(ResourceManager::get()->getMesh("unit"), unitMeshTrans);
   setMeshTransform(
     ResourceManager::get()->getMesh("melee_unit"),
-    glm::scale(unitMeshTrans, glm::vec3(2.f)));
+    glm::rotate(
+      glm::scale(unitMeshTrans, glm::vec3(2.f)),
+      90.f, glm::vec3(0, 1, 0)));
 
   glm::mat4 projMeshTrans =
     glm::rotate(glm::mat4(1.f), 90.f, glm::vec3(1, 0, 0));
