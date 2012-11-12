@@ -3,6 +3,7 @@ package main
 import (
 	"net"
 	"log"
+	"bytes"
 	"encoding/json"
 	"encoding/binary"
 )
@@ -12,52 +13,121 @@ const port = ":7788"
 type Player struct {
 	Name string
   Port string
-	Conn net.Conn
+	Conn *net.TCPConn
 }
 
+type GameInfo map[string]interface{}
+
 func main() {
-	ln, err := net.Listen("tcp", port)
+	laddr, err := net.ResolveTCPAddr("tcp", port)
+	if (err != nil) {
+		log.Println("error resolving tcp addr", port);
+	}
+	ln, err := net.ListenTCP("tcp", laddr)
 	if (err != nil) {
 		log.Println("Unable to listen on ", port)
 		return;
 	}
 
+	log.Println("Listening on port", port);
+
 	playerChan := make(chan Player)
+	gameChan := make(chan GameInfo)
+	go makeMatch(2, playerChan, gameChan)
 	for {
-		conn, err := ln.Accept()
+		conn, err := ln.AcceptTCP()
 		if err != nil {
 			continue;
 		}
 
-		go handleConnection(conn, playerChan)
+		go handleConnection(conn, playerChan, gameChan)
 	}
 }
 
-func handleConnection(conn net.Conn, playerChan chan Player) {
+func makeMatch(numPlayers int, playerChan chan Player, gameChan chan GameInfo) {
+	players := make([]Player, 0, numPlayers)
+
+	// Loop forever
+	for len(players) < numPlayers {
+		player := <-playerChan
+		players = append(players, player)
+	}
+
+
+
+	for i, player := range(players){
+		// Fill up game info message
+		var gameInfo = GameInfo {
+			"type": "game_setup",
+			"numPlayers": numPlayers,
+			"mapName": "debugMap",
+			"pid": uint64(100 + i),
+			"tid": uint64(200 + i),
+		}
+		ips := make([]string, 0, numPlayers - 1)
+		for j := 0; j < numPlayers; j++ {
+			if j != i {
+				log.Println(player.Conn.RemoteAddr().IP.String())
+				ips = append(ips, player.Conn.RemoteAddr().IP.String())
+			}
+		}
+		gameInfo["ips"] = ips
+
+		msg, err := json.Marshal(gameInfo)
+		if err != nil {
+			log.Println("Well fuck json encoding error", err)
+			return
+		}
+		sendMessage(player.Conn, msg)
+	}
+}
+
+func handleConnection(conn *net.TCPConn, playerChan chan Player, gameChan chan GameInfo) {
 	log.Println("Got connection from", conn.RemoteAddr())
 
-  var size uint32
-  err := binary.Read(conn, binary.LittleEndian, &size)
-  if err != nil {
-    log.Println("Error reading header from", conn.RemoteAddr(), ":", err)
-    return
-  }
-  buf := make([]byte, size)
-  _, err = conn.Read(buf)
-  if err != nil {
-    log.Println("error reading payload of size", size, "from", conn.RemoteAddr())
-  }
+	buf, err := readMessage(conn)
+	if err != nil {
+		log.Println("unable to read message from", conn.RemoteAddr(), err);
+	}
   log.Println("read buf", buf)
 
   // Parse message
 	var player Player
 	err = json.Unmarshal(buf, &player)
 	if err != nil {
-		log.Println("Unable to read message from", conn.RemoteAddr(), "reason", err)
+		log.Println("Unable to parse message from", conn.RemoteAddr(), "reason", err)
 	}
 
   log.Println("read player info", player.Name, player.Port, conn.RemoteAddr())
   player.Conn = conn
 
   playerChan <- player
+
+	gameInfo := <-gameChan
+	log.Println("Got game info", gameInfo);
+}
+
+func readMessage(conn net.Conn) (buf []byte, err error) {
+  var size uint32
+  err = binary.Read(conn, binary.LittleEndian, &size)
+  if err != nil {
+    log.Println("Error reading header from", conn.RemoteAddr(), ":", err)
+    return
+  }
+  buf = make([]byte, size)
+	// TODO(zack) make this read the entire message...
+  _, err = conn.Read(buf)
+  if err != nil {
+    log.Println("error reading payload of size", size, "from", conn.RemoteAddr())
+  }
+
+	return
+}
+
+func sendMessage(conn net.Conn, msg []byte) error {
+	buf := new(bytes.Buffer)
+  binary.Write(buf, binary.LittleEndian, uint32(len(msg)))
+	buf.Write(msg)
+	_, err := buf.WriteTo(conn)
+	return err
 }
