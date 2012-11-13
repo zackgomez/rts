@@ -55,7 +55,7 @@ func makeMatch(numPlayers int, playerChan chan Player, gameChan chan GameInfo) {
 
 
 
-	for i, player := range(players){
+	for i, player := range(players) {
 		// Fill up game info message
 		var gameInfo = GameInfo {
 			"type": "game_setup",
@@ -65,11 +65,10 @@ func makeMatch(numPlayers int, playerChan chan Player, gameChan chan GameInfo) {
 			"tid": uint64(200 + i),
 		}
 		ips := make([]string, 0, numPlayers - 1)
-		for j := 0; j < numPlayers; j++ {
-			if j != i {
-				log.Println(player.Conn.RemoteAddr().IP.String())
-				ips = append(ips, player.Conn.RemoteAddr().IP.String())
-			}
+		for j := i + 1; j < numPlayers; j++ {
+			ipstr := players[j].Conn.RemoteAddr().(*net.TCPAddr).IP.String() + ":" + players[j].Port
+			log.Println(ipstr)
+			ips = append(ips, ipstr)
 		}
 		gameInfo["ips"] = ips
 
@@ -79,6 +78,10 @@ func makeMatch(numPlayers int, playerChan chan Player, gameChan chan GameInfo) {
 			return
 		}
 		sendMessage(player.Conn, msg)
+	}
+
+	for _, player := range(players) {
+		player.Conn.Close();
 	}
 }
 

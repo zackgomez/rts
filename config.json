@@ -10,7 +10,7 @@
 
   "network" :
   {
-    "connectAttempts" : 20,
+    "connectAttempts" : 5,
     "connectInterval" : 1.00,
     // DEBUG PARAMS
     "dropChance"      : 0.05,
