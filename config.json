@@ -118,6 +118,60 @@
           "angle" : 145.0
         }
       ]
+    },
+    "bigMap" :
+    {
+      "size" : [50, 50],
+      "pathGridDim" : [200, 200],
+      "players" : 4,
+      "height" : 0.0,
+      "minimapColor" : [0.25, 0.2, 0.15, 1.0],
+      "startingPositions" : [
+        [-22, 22],
+        [-22, -22],
+        [22, 22],
+        [22, -22]
+      ],
+      "startingDirections" : [
+        [1, -1],
+        [1, 1],
+        [-1, -1],
+        [1, -1]
+      ],
+
+      "victoryPoints" : [
+        [-8, 0],
+        [0, 0],
+        [8, 0]
+      ],
+      "reqPoints" : [
+        [-4, -4],
+        [-4, 4],
+        [4, 4],
+        [4, -4]
+      ],
+      "collisionObjects" : [
+        {
+          "pos"   : [6, 6],
+          "size"  : [1, 4],
+          "angle" : 45.0
+        },
+        {
+          "pos"   : [8, -8],
+          "size"  : [4, 7],
+          "angle" : 5.0
+        },
+        {
+          "pos"   : [-9, 6],
+          "size"  : [6, 6],
+          "angle" : 60.0
+        },
+        {
+          "pos"   : [-8, -9],
+          "size"  : [8, 2],
+          "angle" : 145.0
+        }
+      ]
     }
   },
 

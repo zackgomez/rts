@@ -4,11 +4,10 @@ import (
 	"net"
 	"log"
 	"bytes"
+	"flag"
 	"encoding/json"
 	"encoding/binary"
 )
-
-const port = ":7788"
 
 type Player struct {
 	Name string
@@ -19,6 +18,20 @@ type Player struct {
 type GameInfo map[string]interface{}
 
 func main() {
+	var numPlayers int
+	var mapName, port string
+	flag.IntVar(&numPlayers, "n", 2, "number of players (2 - 4)")
+	flag.StringVar(&port, "port", "11100", "port to listen on")
+	flag.StringVar(&mapName, "map", "debugMap", "name of the map to create a match on")
+	flag.Parse()
+
+	if numPlayers < 2 || numPlayers > 4 {
+		log.Println("Players must be between 2 and 4, value given", numPlayers)
+		return
+	}
+
+
+	port = ":" + port
 	laddr, err := net.ResolveTCPAddr("tcp", port)
 	if (err != nil) {
 		log.Println("error resolving tcp addr", port);
@@ -26,25 +39,25 @@ func main() {
 	ln, err := net.ListenTCP("tcp", laddr)
 	if (err != nil) {
 		log.Println("Unable to listen on ", port)
-		return;
+		return
 	}
 
 	log.Println("Listening on port", port);
 
 	playerChan := make(chan Player)
 	gameChan := make(chan GameInfo)
-	go makeMatch(2, playerChan, gameChan)
+	go makeMatch(numPlayers, mapName, playerChan, gameChan)
 	for {
 		conn, err := ln.AcceptTCP()
 		if err != nil {
-			continue;
+			continue
 		}
 
 		go handleConnection(conn, playerChan, gameChan)
 	}
 }
 
-func makeMatch(numPlayers int, playerChan chan Player, gameChan chan GameInfo) {
+func makeMatch(numPlayers int, mapName string, playerChan chan Player, gameChan chan GameInfo) {
 	players := make([]Player, 0, numPlayers)
 
 	// Loop forever
@@ -61,14 +74,13 @@ func makeMatch(numPlayers int, playerChan chan Player, gameChan chan GameInfo) {
 			var gameInfo = GameInfo {
 				"type": "game_setup",
 				"numPlayers": numPlayers,
-				"mapName": "debugMap",
+				"mapName": mapName,
 				"pid": uint64(100 + i),
 				"tid": uint64(200 + i % 2), // alternate teams
 			}
 			ips := make([]string, 0, numPlayers - 1)
 			for j := i + 1; j < numPlayers; j++ {
 				ipstr := players[j].Conn.RemoteAddr().(*net.TCPAddr).IP.String() + ":" + players[j].Port
-				log.Println(ipstr)
 				ips = append(ips, ipstr)
 			}
 			gameInfo["ips"] = ips
@@ -78,6 +90,7 @@ func makeMatch(numPlayers int, playerChan chan Player, gameChan chan GameInfo) {
 				log.Println("Well fuck json encoding error", err)
 				return
 			}
+			log.Println("Sending", string(msg), "to", player.Conn.RemoteAddr())
 			sendMessage(player.Conn, msg)
 		}
 

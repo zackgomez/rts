@@ -328,7 +328,7 @@ void Game::handleMessage(const Message &msg) {
 
 void Game::addAction(id_t pid, const PlayerAction &act) {
   // CAREFUL: this function is called from different threads
-  invariant(act.isMember("type"), "malformed player action");
+  invariant(act.isMember("type"), "malformed player action" + act.toStyledString());
   assertPid(pid);
   invariant(getPlayer(pid), "action from unknown player");
 

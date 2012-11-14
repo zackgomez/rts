@@ -41,7 +41,7 @@ Game *game;
 Renderer *renderer;
 
 // Matchmaker port
-const std::string mmport = "7788";
+const std::string mmport = "11100";
 
 void gameThread() {
   const float simrate = fltParam("game.simrate");
