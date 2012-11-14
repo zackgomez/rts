@@ -116,6 +116,7 @@ void Game::start(float period) {
       // unlock before delay
       lock.unlock();
       SDL_Delay(int(1000*period));
+      lock.lock();
     }
   }
 
