@@ -83,6 +83,8 @@ checksum_t Game::checksum() {
 }
 
 void Game::start(float period) {
+  // Lock the player update
+  std::unique_lock<std::mutex> lock(mutex_);
   paused_ = true;
 
   // Starting resources
@@ -107,8 +109,6 @@ void Game::start(float period) {
     }
     logger_->info() << "Running synch frame " << tick_ << '\n';
 
-    // Lock the player update
-    std::unique_lock<std::mutex> lock(mutex_);
     // See if everyone is ready to go
     if (updatePlayers()) {
       tick_++;

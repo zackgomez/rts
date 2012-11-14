@@ -48,40 +48,43 @@ func makeMatch(numPlayers int, playerChan chan Player, gameChan chan GameInfo) {
 	players := make([]Player, 0, numPlayers)
 
 	// Loop forever
-	for len(players) < numPlayers {
-		player := <-playerChan
-		players = append(players, player)
-	}
-
-
-
-	for i, player := range(players) {
-		// Fill up game info message
-		var gameInfo = GameInfo {
-			"type": "game_setup",
-			"numPlayers": numPlayers,
-			"mapName": "debugMap",
-			"pid": uint64(100 + i),
-			"tid": uint64(200 + i),
+	for {
+		// Wait for enough players to join
+		for len(players) < numPlayers {
+			player := <-playerChan
+			players = append(players, player)
 		}
-		ips := make([]string, 0, numPlayers - 1)
-		for j := i + 1; j < numPlayers; j++ {
-			ipstr := players[j].Conn.RemoteAddr().(*net.TCPAddr).IP.String() + ":" + players[j].Port
-			log.Println(ipstr)
-			ips = append(ips, ipstr)
-		}
-		gameInfo["ips"] = ips
 
-		msg, err := json.Marshal(gameInfo)
-		if err != nil {
-			log.Println("Well fuck json encoding error", err)
-			return
-		}
-		sendMessage(player.Conn, msg)
-	}
+		// Send match info
+		for i, player := range(players) {
+			// Fill up game info message
+			var gameInfo = GameInfo {
+				"type": "game_setup",
+				"numPlayers": numPlayers,
+				"mapName": "debugMap",
+				"pid": uint64(100 + i),
+				"tid": uint64(200 + i % 2), // alternate teams
+			}
+			ips := make([]string, 0, numPlayers - 1)
+			for j := i + 1; j < numPlayers; j++ {
+				ipstr := players[j].Conn.RemoteAddr().(*net.TCPAddr).IP.String() + ":" + players[j].Port
+				log.Println(ipstr)
+				ips = append(ips, ipstr)
+			}
+			gameInfo["ips"] = ips
 
-	for _, player := range(players) {
-		player.Conn.Close();
+			msg, err := json.Marshal(gameInfo)
+			if err != nil {
+				log.Println("Well fuck json encoding error", err)
+				return
+			}
+			sendMessage(player.Conn, msg)
+		}
+
+		for _, player := range(players) {
+			player.Conn.Close();
+		}
+		players = players[:0]
 	}
 }
 
