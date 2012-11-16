@@ -434,8 +434,9 @@ void Game::handleAction(id_t playerID, const PlayerAction &action) {
       msg["prod"] = action["prod"];
 
       float cost = fltParam(msg["prod"].asString() + ".cost.requisition");
-      invariant(cost <= resources_[playerID].requisition,
-          "insufficient requsition to enqueue");
+      if (cost > resources_[playerID].requisition) {
+        return;
+      }
       resources_[playerID].requisition -= cost;
 
       MessageHub::get()->sendMessage(msg);
