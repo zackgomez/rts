@@ -13,6 +13,8 @@
   <ItemGroup>
     <ClCompile Include="..\..\lib\jsoncpp\jsoncpp.cpp" />
     <ClCompile Include="..\..\src\common\Checksum.cpp" />
+    <ClCompile Include="..\..\src\common\Clock.cpp" />
+    <ClCompile Include="..\..\src\common\Collision.cpp" />
     <ClCompile Include="..\..\src\common\Exception.cpp" />
     <ClCompile Include="..\..\src\common\kissnet.cpp" />
     <ClCompile Include="..\..\src\common\NetConnection.cpp" />
@@ -21,6 +23,7 @@
     <ClCompile Include="..\..\src\common\util.cpp" />
     <ClCompile Include="..\..\src\rts\Actor.cpp" />
     <ClCompile Include="..\..\src\rts\Building.cpp" />
+    <ClCompile Include="..\..\src\rts\CollisionObject.cpp" />
     <ClCompile Include="..\..\src\rts\Engine.cpp" />
     <ClCompile Include="..\..\src\rts\Entity.cpp" />
     <ClCompile Include="..\..\src\rts\EntityFactory.cpp" />
@@ -41,6 +44,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\common\Checksum.h" />
+    <ClInclude Include="..\..\src\common\Clock.h" />
+    <ClInclude Include="..\..\src\common\Collision.h" />
     <ClInclude Include="..\..\src\common\Exception.h" />
     <ClInclude Include="..\..\src\common\kissnet.h" />
     <ClInclude Include="..\..\src\common\Logger.h" />
@@ -50,6 +55,7 @@
     <ClInclude Include="..\..\src\common\util.h" />
     <ClInclude Include="..\..\src\rts\Actor.h" />
     <ClInclude Include="..\..\src\rts\Building.h" />
+    <ClInclude Include="..\..\src\rts\CollisionObject.h" />
     <ClInclude Include="..\..\src\rts\Engine.h" />
     <ClInclude Include="..\..\src\rts\Entity.h" />
     <ClInclude Include="..\..\src\rts\EntityFactory.h" />
