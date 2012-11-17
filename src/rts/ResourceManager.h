@@ -22,6 +22,7 @@ class ResourceManager {
 
  private:
   ResourceManager();
+  static ResourceManager *instance_;
 
   std::map<std::string, Mesh*> meshes_;
   std::map<std::string, GLuint> textures_;
