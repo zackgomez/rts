@@ -165,8 +165,10 @@ void Game::update(float dt) {
         invariant(idx <= tick_, "checksum in done for bad tick");
         std::string strChecksum = act["checksum"][1].asString();
         // TODO(zack): make this dump out a log so we can debug the reason why
-        invariant(strChecksum == Checksum::checksumToString(checksums_[idx]),
-            "SYNC ERROR");
+        if (strChecksum != Checksum::checksumToString(checksums_[idx])) {
+          LOG(ERROR) << "checksum mismatch (theirs): " << strChecksum <<
+              " vs (ours): " << checksums_[idx] << '\n';
+        }
         break;
       }
 
@@ -262,10 +264,10 @@ void Game::render(float dt) {
     renderer_->renderEntity(it.second);
   }
 
+  renderer_->endRender();
+
   // unlock
   lock.unlock();
-
-  renderer_->endRender();
 }
 
 void Game::sendMessage(id_t to, const Message &msg) {
