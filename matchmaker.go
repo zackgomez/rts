@@ -11,7 +11,7 @@ import (
 
 type Player struct {
 	Name string
-  Port string
+  LocalAddr string
 	Conn *net.TCPConn
 }
 
@@ -79,8 +79,15 @@ func makeMatch(numPlayers int, mapName string, playerChan chan Player, gameChan 
 				"tid": uint64(200 + i % 2), // alternate teams
 			}
 			ips := make([]string, 0, numPlayers - 1)
-			for j := i + 1; j < numPlayers; j++ {
-				ipstr := players[j].Conn.RemoteAddr().(*net.TCPAddr).IP.String() + ":" + players[j].Port
+			for j := 0; j < numPlayers; j++ {
+        if j == i {
+          continue
+        }
+        prefix := "L:"
+        if (j < i) {
+          prefix = "C:";
+        }
+        ipstr := prefix + players[j].Conn.RemoteAddr().String() + ":" + players[j].LocalAddr
 				ips = append(ips, ipstr)
 			}
 			gameInfo["ips"] = ips
@@ -117,7 +124,7 @@ func handleConnection(conn *net.TCPConn, playerChan chan Player, gameChan chan G
 		log.Println("Unable to parse message from", conn.RemoteAddr(), "reason", err)
 	}
 
-  log.Println("read player info", player.Name, player.Port, conn.RemoteAddr())
+  log.Println("read player info", player.Name, player.LocalAddr, conn.RemoteAddr())
   player.Conn = conn
 
   playerChan <- player

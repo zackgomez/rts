@@ -13,22 +13,48 @@ namespace rts {
 // Tries a connection with some retries as per config
 NetConnectionPtr attemptConnection(
     const std::string &ip,
-    const std::string &port) {
+    const std::string &port,
+    const std::string &bindPort = "") {
   auto sock = kissnet::tcp_socket::create();
+  if (!bindPort.empty()) {
+    sock->bind(bindPort);
+  }
+  sock->nonblockingConnect(ip, port);
+  kissnet::socket_set sockset;
+  sockset.add_write_socket(sock);
 
-  for (int i = 0; i < intParam("network.connectAttempts"); i++) {
-    try {
-      LOG(DEBUG) << "Trying connection to " << ip << ":" << port << '\n';
-      sock->connect(ip, port);
-      return NetConnectionPtr(new NetConnection(sock));
-    } catch (const kissnet::socket_exception &e) {
-      // Ignore exception, just try again
+  double timeout = intParam("network.connectAttempts")
+      * fltParam("network.connectInterval");
+  while (timeout > 0) {
+    LOG(INFO) << "time to connect remaining: " << timeout << '\n';
+    auto socks = sockset.poll_sockets(timeout);
+    if (socks.empty()) {
+      break;
+    }
+    int sockerr = sock->getError();
+    if (!sockerr) {
+      break;
     }
 
-    SDL_Delay(1000 * fltParam("network.connectInterval"));
-  }
+    LOG(INFO) << "SOCK ERROR: " << strerror(sockerr) << '\n';
+    sockset.remove_socket(sock);
+    sock = kissnet::tcp_socket::create();
+    if (!bindPort.empty()) {
+      sock->bind(bindPort);
+    }
+    sock->nonblockingConnect(ip, port);
+    sockset.add_write_socket(sock);
 
-  throw matchmaker_exception("Unable to connect to remote host @ "+ip+":"+port);
+    timeout -= 0.5;
+    SDL_Delay(500);
+  }
+  if (timeout <= 0) {
+    throw matchmaker_exception(
+        "Unable to connect to remote host @ "+ip+":"+port);
+  }
+  sock->setBlocking();
+
+  return NetConnectionPtr(new NetConnection(sock));
 }
 
 Matchmaker::Matchmaker(const Json::Value &player, Renderer *renderer)
@@ -44,6 +70,7 @@ Matchmaker::Matchmaker(const Json::Value &player, Renderer *renderer)
 std::vector<Player *> Matchmaker::doDebugSetup() {
   pid_ = STARTING_PID;
   tid_ = STARTING_TID;
+
   mapName_ = "debugMap";
 
   makeLocalPlayer();
@@ -92,13 +119,16 @@ std::vector<Player *> Matchmaker::doServerSetup(
     const std::string &ip,
     const std::string &port) {
   // First connect to matchmaker
-  NetConnectionPtr server = attemptConnection(ip, port);
+  NetConnectionPtr server = attemptConnection(ip, port, listenPort_);
+  std::string localAddr = server->getSocket()->getLocalAddr();
+  std::string localPort = server->getSocket()->getLocalPort();
 
   LOG(INFO) << "Sending information to matchmaker\n";
   // Send out local matchmaking data
   Json::Value mmdata;
   mmdata["name"] = name_;
-  mmdata["port"] = listenPort_;
+  mmdata["version"] = strParam("game.version");
+  mmdata["localAddr"] = localAddr + ":" + localPort;
   server->sendPacket(mmdata);
 
   LOG(INFO) << "waiting for matchmaker responses...\n";
@@ -134,28 +164,27 @@ std::vector<Player *> Matchmaker::doServerSetup(
   // Get remaining players
   std::unique_lock<std::mutex> lock(playerMutex_);
   std::vector<std::thread> workers;
-  // connects
+  // connect P2P to every peer
   for (const Json::Value& ipval : ips) {
     std::string ipstr = ipval.asString();
-    std::vector<std::string> addrparts;
-    boost::split(addrparts, ipstr, boost::is_any_of(":"));
-    invariant(addrparts.size() == 2, "expected ip:port");
-    LOG(INFO) << "Trying to " << addrparts[0] << ":" << addrparts[1] << '\n';
+    std::vector<std::string> msgparts, publicaddr, privateaddr;
+    boost::split(msgparts, ipstr, boost::is_any_of(":"));
+    invariant(msgparts.size() == 5, "expected {L,C}:ip:port:privip:privport");
+    bool connect = msgparts[0] == "C";
+    publicaddr.assign(msgparts.begin() + 1, msgparts.begin() + 3);
+    privateaddr.assign(msgparts.begin() + 3, msgparts.begin() + 5);
+    LOG(INFO) << "Trying " << publicaddr[0] << ":" << publicaddr[1]
+        << "//" << privateaddr[0] << ":" << privateaddr[1] << '\n';
+        double timeout = intParam("network.connectAttempts")
+          * fltParam("network.connectInterval");
     workers.push_back(std::thread(std::bind(
-      &Matchmaker::connectToPlayer,
+      &Matchmaker::connectP2P,
       this,
-      addrparts[0],
-      addrparts[1])));
+      publicaddr,
+      privateaddr,
+      connect,
+      timeout)));
   }
-
-  // listens
-  int listens = numPlayers_ - ips.size() - 1;
-  if (listens > 0) {
-    LOG(INFO) << "Listening for " << listens << " connections\n";
-    workers.push_back(std::thread(
-      std::bind(&Matchmaker::acceptConnections, this, listenPort_, listens)));
-  }
-
 
   // Wait...
   while (players_.size() < numPlayers_) {
@@ -192,7 +221,6 @@ void Matchmaker::connectToPlayer(
   try {
     NetConnectionPtr conn = attemptConnection(ip, port);
     NetPlayer *np = handshake(conn);
-    np->setLocalPlayer(localPlayer_->getPlayerID());
 
     std::unique_lock<std::mutex> lock(playerMutex_);
     players_.push_back(np);
@@ -214,13 +242,112 @@ void Matchmaker::acceptConnections(
       auto sock = serv_sock->accept();
       NetConnectionPtr conn = NetConnectionPtr(new NetConnection(sock));
       NetPlayer *np = handshake(conn);
-      np->setLocalPlayer(localPlayer_->getPlayerID());
 
       std::unique_lock<std::mutex> lock(playerMutex_);
       players_.push_back(np);
     }
   } catch (const std::exception &e) {
     LOG(ERROR) << "error accepting connection: '" << e.what() << "'\n";
+    error_ = true;
+  }
+  doneCondVar_.notify_one();
+}
+
+void Matchmaker::connectP2P(
+    const std::vector<std::string> &publicAddr,
+    const std::vector<std::string> &privateAddr,
+    bool connect,
+    double timeout) {
+  invariant(publicAddr.size() == 2, "expected ip:port");
+  invariant(privateAddr.size() == 2, "expected ip:port");
+  kissnet::socket_set sockset;
+
+  // TODO(zack): don't keep these as variables, just let the sockset keep track
+  auto public_connect_sock = kissnet::tcp_socket::create();
+  public_connect_sock = kissnet::tcp_socket::create();
+  public_connect_sock->bind(listenPort_);
+  public_connect_sock->nonblockingConnect(publicAddr[0], publicAddr[1]);
+  sockset.add_write_socket(public_connect_sock);
+
+  // TODO(zack): don't connect if public and private are the same
+  auto private_connect_sock = kissnet::tcp_socket::create();
+  private_connect_sock = kissnet::tcp_socket::create();
+  private_connect_sock->bind(listenPort_);
+  private_connect_sock->nonblockingConnect(privateAddr[0], privateAddr[1]);
+  sockset.add_write_socket(private_connect_sock);
+
+  auto listen_sock = kissnet::tcp_socket::create();
+  listen_sock->listen(listenPort_, 11);
+  sockset.add_read_socket(listen_sock);
+
+  kissnet::tcp_socket_ptr ret;
+  while (!ret && timeout > 0) {
+    auto socks = sockset.poll_sockets(timeout);
+    bool delay = false;
+    for (auto sock : socks) {
+      if (sock == listen_sock) {
+        ret = listen_sock->accept();
+        break;
+        // TODO(zack): error checking
+      } else {
+        int sockerr = sock->getError();
+        if (!sockerr) {
+          ret = sock;
+          break;
+        } else {
+          LOG(DEBUG) << "SOCK ERROR: " << strerror(sockerr) << " || public " <<
+              (sock == public_connect_sock) << '\n';
+          sockset.remove_socket(sock);
+          // If just listening, don't retry to connect
+          if (!connect) {
+            continue;
+          }
+          // A connect error occured, retry connect after short timeout
+          delay = true;
+          if (sock == public_connect_sock) {
+            try {
+              public_connect_sock = kissnet::tcp_socket::create();
+              public_connect_sock->bind(listenPort_);
+              public_connect_sock->nonblockingConnect(
+                  publicAddr[0],
+                  publicAddr[1]);
+              sockset.add_write_socket(public_connect_sock);
+            } catch (kissnet::socket_exception &e) {
+              sockset.remove_socket(public_connect_sock);
+              LOG(DEBUG) << "Unable to retry connection: " << e.what();
+            }
+          } else if (sock == private_connect_sock) {
+            try {
+              private_connect_sock = kissnet::tcp_socket::create();
+              private_connect_sock->bind(listenPort_);
+              private_connect_sock->nonblockingConnect(
+                  privateAddr[0],
+                  privateAddr[1]);
+              sockset.add_write_socket(private_connect_sock);
+            } catch (kissnet::socket_exception &e) {
+              sockset.remove_socket(private_connect_sock);
+              LOG(DEBUG) << "Unable to retry connection: " << e.what();
+            }
+          }
+        }
+      }
+    }
+    if (delay && !ret) {
+      SDL_Delay(500);
+      timeout -= 0.5;
+      sockset.remove_socket(listen_sock);
+      listen_sock->close();
+    }
+  }
+  if (ret) {
+    std::unique_lock<std::mutex> lock(playerMutex_);
+    ret->setBlocking();
+    LOG(INFO) << "Connected p2p to " << ret->getHostname() << ":"
+        << ret->getPort() << '\n';
+    auto conn = NetConnectionPtr(new NetConnection(ret));
+    NetPlayer *np = handshake(conn);
+    players_.push_back(np);
+  } else {
     error_ = true;
   }
   doneCondVar_.notify_one();
@@ -287,6 +414,8 @@ NetPlayer * Matchmaker::handshake(NetConnectionPtr conn) const {
   // Success, make a new player
   glm::vec3 color = toVec3(msg["color"]);
   std::string name = msg["name"].asString();
-  return new NetPlayer(pid, tid, name, color, conn);
+  NetPlayer *ret = new NetPlayer(pid, tid, name, color, conn);
+  ret->setLocalPlayer(localPlayer_->getPlayerID());
+  return ret;
 }
 }  // rts

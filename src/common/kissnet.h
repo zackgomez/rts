@@ -17,9 +17,11 @@ class socket_exception : public std::exception {
   ~socket_exception() throw();
 
   const char * what() const throw();
+  int getErrno() const throw();
 
  private:
-  std::string msg;
+  std::string msg_;
+  int errno_;
 };
 
 class tcp_socket;
@@ -32,7 +34,12 @@ class tcp_socket {
 
   ~tcp_socket();
 
+  void bind(const std::string &port);
+
   void connect(const std::string& addr, const std::string& port);
+  void nonblockingConnect(const std::string& addr, const std::string& port);
+  // returns this
+  tcp_socket* setBlocking();
   void close();
 
   void listen(const std::string& port, int backlog);
@@ -41,8 +48,11 @@ class tcp_socket {
   int send(const std::string& data);
   int recv(char* buffer, size_t buffer_len);
 
+  int getError() const;
   std::string getHostname() const;
   std::string getPort() const;
+  std::string getLocalPort() const;
+  std::string getLocalAddr() const;
 
   bool operator==(const tcp_socket& rhs) const;
 
@@ -54,12 +64,13 @@ class tcp_socket {
   tcp_socket();
   explicit tcp_socket(int sockfd);
 
-  void fillAddr();
+  void fillAddr() const;
+  void setReuseAddr();
 
   int sock;
 
-  std::string ipaddr;
-  std::string portStr;
+  mutable std::string ipaddr;
+  mutable std::string portStr;
 };
 
 class socket_set {
@@ -67,12 +78,15 @@ class socket_set {
   socket_set();
   ~socket_set();
 
-  void add_socket(tcp_socket* sock);
-  void remove_socket(tcp_socket* sock);
+  void add_read_socket(tcp_socket_ptr sock);
+  void add_write_socket(tcp_socket_ptr sock);
+  void remove_socket(tcp_socket_ptr sock);
 
-  std::vector<tcp_socket*> poll_sockets();
+  // timeout is filled with remaining time
+  std::vector<tcp_socket_ptr> poll_sockets(double &timeout);
  private:
-  std::list<tcp_socket*> socks;
+  std::list<tcp_socket_ptr> rsocks_, wsocks_;
+  int maxfd_;
 };
 };  // kissnet
 

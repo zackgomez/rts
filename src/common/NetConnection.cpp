@@ -11,7 +11,7 @@ struct net_msg {
 
 // TODO(zack): don't require reading header/payload in one shot
 net_msg readPacket(kissnet::tcp_socket_ptr sock)
-throw(kissnet::socket_exception) {
+    throw (kissnet::socket_exception) {
   net_msg ret;
 
   int bytes_read;

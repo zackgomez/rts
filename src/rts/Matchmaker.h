@@ -62,6 +62,11 @@ class Matchmaker {
   // Thread worker functions
   void connectToPlayer(const std::string &ip, const std::string &port);
   void acceptConnections(const std::string &port, int numConnections);
+  void connectP2P(
+      const std::vector<std::string> &publicIP,
+      const std::vector<std::string> &privateIP,
+      bool connect,
+      double timeout);
 
   std::string name_;
   glm::vec3 color_;

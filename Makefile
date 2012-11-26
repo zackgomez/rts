@@ -8,7 +8,6 @@ OBJDIR=obj
 SRCDIR=src
 RTSDIR=$(SRCDIR)/rts
 COMMONDIR=$(SRCDIR)/common
-MMDIR=$(SRCDIR)/matchmaker
 TESTDIR=$(SRCDIR)/tests
 GTESTDIR=lib/gtest-1.6.0
 GTESTLIB=lib/gtest-1.6.0/libgtest.a
@@ -18,15 +17,11 @@ CXXFLAGS=-g -O0 -Wall -I$(GLM) -std=c++0x -I$(JSON) -I$(STBI) -Wno-reorder -I$(S
 TESTOBJ = $(patsubst $(TESTDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(TESTDIR)/*.cpp)))
 COMMONOBJ = $(patsubst $(COMMONDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(COMMONDIR)/*.cpp))) $(JSON)/jsoncpp.o
 RTSOBJ = $(patsubst $(RTSDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(RTSDIR)/*.cpp)))
-MMOBJ = $(patsubst $(MMDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(MMDIR)/*.cpp)))
 
-all: obj rts matchmaker tests
+all: obj rts tests
 
 rts: $(RTSOBJ) $(COMMONOBJ) local.json
 	$(CXX) $(CXXFLAGS) -o $@ $(RTSOBJ) $(COMMONOBJ) $(LDFLAGS)
-
-matchmaker: $(MMOBJ) $(COMMONOBJ)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 tests: $(TESTOBJ) $(GTESTLIB) $(COMMONOBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $(TESTOBJ) $(COMMONOBJ) $(GTESTLIB) -lpthread
