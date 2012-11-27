@@ -124,7 +124,7 @@ void tcp_socket::nonblockingConnect(
     const std::string& addr,
     const std::string& port) {
 #ifdef _MSC_VER
-  unsigned int val = 1;
+  unsigned long val = 1;
   ioctlsocket(sock, FIONBIO, &val);
 #else
   fcntl(sock, F_SETFL, O_NONBLOCK);
