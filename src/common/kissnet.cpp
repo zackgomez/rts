@@ -158,7 +158,7 @@ int tcp_socket::getError() const {
 
 tcp_socket* tcp_socket::setBlocking() {
 #ifdef _MSC_VER
-  unsigned int val = 0;
+  unsigned long val = 0;
   ioctlsocket(sock, FIONBIO, &val);
 #else
   fcntl(sock, F_SETFL, 0);
