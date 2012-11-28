@@ -10,9 +10,20 @@ struct net_msg {
 };
 
 // TODO(zack): don't require reading header/payload in one shot
-net_msg readPacket(kissnet::tcp_socket_ptr sock)
+net_msg readPacket(kissnet::tcp_socket_ptr sock, double timeout)
     throw (kissnet::socket_exception) {
   net_msg ret;
+
+  kissnet::socket_set set;
+  set.add_read_socket(sock);
+
+  auto socks = set.poll_sockets(timeout);
+  if (socks.empty()) {
+    ret.sz = 0;
+    return ret;
+  }
+
+  // TODO(zack): check for socket error
 
   int bytes_read;
   // First read header
@@ -42,14 +53,20 @@ void netThreadFunc(
     std::condition_variable &condVar,
     bool &running) {
 
+  sock->setNonBlocking();
+
   Json::Reader reader;
   while (running) {
-    // Each loop, push exactly one message onto queue
     Json::Value msg;
     try {
       // TODO(zack): add maybe 100ms timeout to this so the game/thread joins
       // more readily
-      net_msg packet = readPacket(sock);
+      net_msg packet = readPacket(sock, 0.1);
+
+      // It was a timeout, just try again
+      if (packet.sz == 0) {
+        continue;
+      }
 
       // Parse
       reader.parse(packet.msg, msg);

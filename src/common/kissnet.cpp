@@ -166,6 +166,16 @@ tcp_socket* tcp_socket::setBlocking() {
   return this;
 }
 
+tcp_socket* tcp_socket::setNonBlocking() {
+#ifdef _MSC_VER
+  unsigned long val = 1;
+  ioctlsocket(sock, FIONBIO, &val);
+#else
+  fcntl(sock, F_SETFL, O_NONBLOCK);
+#endif
+  return this;
+}
+
 void tcp_socket::connect(const std::string &addr, const std::string& port) {
   struct addrinfo *res = nullptr, hints;
   memset(&hints, 0, sizeof(hints));

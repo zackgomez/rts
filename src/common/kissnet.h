@@ -40,6 +40,7 @@ class tcp_socket {
   void nonblockingConnect(const std::string& addr, const std::string& port);
   // returns this
   tcp_socket* setBlocking();
+  tcp_socket* setNonBlocking();
   void close();
 
   void listen(const std::string& port, int backlog);
