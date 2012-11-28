@@ -3,7 +3,7 @@
   "conduit_uri" : "http://phabricator.zackgomez.com/",
   "lint.engine" : "ArcanistSingleLintEngine",
   "lint.engine.single.linter" : "ArcanistScriptAndRegexLinter",
-  "linter.scriptandregex.script" : "scripts/lint",
+  "linter.scriptandregex.script" : "sh scripts/lint",
   "linter.scriptandregex.regex" :
     "/^(?P<file>.+):(?P<line>\\d+): (?P<message>.*)  \\[(?P<name>.*)\\] \\[\\d\\]$/m"
 }

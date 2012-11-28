@@ -269,25 +269,32 @@ void Renderer::renderMinimap() {
 
   // Render viewport
   glm::vec2 res = vec2Param("local.resolution");
-  glm::vec2 minimapCoord[2][2];
   glm::vec4 lineColor = vec4Param("ui.minimap.viewportLineColor");
 
+  // NOTE(zack): this is a hack to get the viewport to render correctly in
+  // windows.  If offset is 0, the coordinates get wonky.
+  float offset = 1;
+  glm::vec2 screenCoords[] = {
+    glm::vec2(offset, offset),
+    glm::vec2(offset, res.y - offset),
+    glm::vec2(res.x - offset, offset),
+    glm::vec2(res.x - offset, res.y - offset),
+  };
   // Iterates over the four corners of the current viewport
-  for (int x = 0; x <= 1; x++) {
-    for (int y = 0; y <= 1; y++) {
-      glm::vec2 screenCoord(glm::vec2(x * res.x, y * res.y));
-      glm::vec3 terrainCoord = screenToTerrain(screenCoord);
-      if (terrainCoord.x == HUGE_VAL) terrainCoord.x = mapSize.x / 2;
-      if (terrainCoord.x == -HUGE_VAL) terrainCoord.x = -mapSize.x / 2;
-      if (terrainCoord.y == HUGE_VAL) terrainCoord.y = mapSize.y / 2;
-      if (terrainCoord.y == -HUGE_VAL) terrainCoord.y = -mapSize.y / 2;
-      minimapCoord[x][y] = worldToMinimap(terrainCoord);
-    }
+  glm::vec2 minimapCoord[4];
+  for (int i = 0; i < 4; i++) {
+    glm::vec2 screenCoord = screenCoords[i];
+    glm::vec3 terrainCoord = screenToTerrain(screenCoord);
+    if (terrainCoord.x == HUGE_VAL) terrainCoord.x = mapSize.x / 2;
+    if (terrainCoord.x == -HUGE_VAL) terrainCoord.x = -mapSize.x / 2;
+    if (terrainCoord.y == HUGE_VAL) terrainCoord.y = mapSize.y / 2;
+    if (terrainCoord.y == -HUGE_VAL) terrainCoord.y = -mapSize.y / 2;
+    minimapCoord[i] = worldToMinimap(terrainCoord);
   }
-  drawLine(minimapCoord[0][0], minimapCoord[0][1], lineColor);
-  drawLine(minimapCoord[0][1], minimapCoord[1][1], lineColor);
-  drawLine(minimapCoord[1][1], minimapCoord[1][0], lineColor);
-  drawLine(minimapCoord[1][0], minimapCoord[0][0], lineColor);
+  drawLine(minimapCoord[0], minimapCoord[1], lineColor);
+  drawLine(minimapCoord[1], minimapCoord[3], lineColor);
+  drawLine(minimapCoord[3], minimapCoord[2], lineColor);
+  drawLine(minimapCoord[2], minimapCoord[0], lineColor);
 
   // render actors
   for (const auto &pair : mapCoords_) {
