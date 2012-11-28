@@ -61,9 +61,6 @@ Renderer::Renderer()
 }
 
 Renderer::~Renderer() {
-  for (Effect *effect : effects_) {
-    delete effect;
-  }
 }
 
 void Renderer::addChatMessage(id_t from, const std::string &message) {
@@ -75,14 +72,8 @@ void Renderer::addChatMessage(id_t from, const std::string &message) {
 }
 
 void Renderer::renderMessages(const std::set<Message> &messages) {
-  for (const Message &msg : messages) {
-    if (msg["type"] == MessageTypes::ATTACK) {
-      for (Json::Value _victim : msg["to"]) {
-        id_t victim = toID(_victim);
-        effects_.push_back(new BloodEffect(victim));
-      }
-    }
-  }
+  // TODO use the damage messages to display some kind of visual indication of
+  // damage taken
 }
 
 void Renderer::renderEntity(const Entity *entity) {
@@ -390,20 +381,6 @@ void Renderer::startRender(float dt) {
   // Set up lights
   lightPos_ = applyMatrix(getViewStack().current(), glm::vec3(-5, -5, 10));
 
-  // Display effects
-  for (size_t i = 0; i < effects_.size(); i++) {
-    Effect *effect = effects_[i];
-
-    effect->render(renderdt_);
-
-    if (effect->needsRemoval()) {
-      delete effect;
-      // Swap trick
-      std::swap(effects_[i], effects_[effects_.size() - 1]);
-      effects_.pop_back();
-    }
-  }
-
   // Clear coordinates
   ndcCoords_.clear();
   mapCoords_.clear();
@@ -655,46 +632,5 @@ glm::vec3 Renderer::screenToNDC(const glm::vec2 &screen) const {
       2.f * (screen.x / resolution_.x) - 1.f,
       2.f * (1.f - (screen.y / resolution_.y)) - 1.f,
       z);
-}
-
-BloodEffect::BloodEffect(id_t aid)
-  : aid_(aid),
-    t_(0.f) {
-  assertEid(aid);
-}
-
-BloodEffect::~BloodEffect() {
-  // nop
-}
-
-void BloodEffect::render(float dt) {
-  // TODO(zack) replace this with a cool blood effect and or damage text
-  t_ += dt;
-
-  Actor *a = (Actor *) Game::get()->getEntity(aid_);
-  // TODO(zack): assert that this entity IS an actor
-  if (!a) {
-    // If entity died, no more effect
-    t_ = HUGE_VAL;
-    return;
-  }
-
-  glm::vec3 pos = glm::vec3(a->getPosition(), 0)
-    + glm::vec3(0.f, 0.f, a->getHeight());
-  float modelSize = fltParam(a->getName() + ".modelSize");
-  float size = modelSize / 5.0f;
-  glm::mat4 transform =
-      glm::rotate(
-        glm::scale(
-          glm::translate(glm::mat4(1.f), pos),
-          glm::vec3(size)),
-        rad2deg(M_PI * t_),
-        glm::vec3(0, 0, 1));
-
-  renderRectangleColor(transform, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-}
-
-bool BloodEffect::needsRemoval() const {
-  return t_ >= fltParam("effects.damageRenderDuration");
 }
 };  // rts
