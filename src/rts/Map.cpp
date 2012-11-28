@@ -13,9 +13,7 @@ namespace rts {
 Map::Map(const std::string &mapName)
   : name_("maps." + mapName),
     size_(vec2Param(name_ + ".size")),
-    color_(vec4Param(name_ + ".minimapColor")),
-    gridDim_(vec2Param(name_ + ".pathGridDim")) {
-  pathingGrid_.assign(gridDim_.x * gridDim_.y, 0);
+    color_(vec4Param(name_ + ".minimapColor")) {
 }
 
 float Map::getMapHeight(const glm::vec2 &pos) const {
@@ -26,43 +24,6 @@ float Map::getMapHeight(const glm::vec2 &pos) const {
 
 void Map::update(float dt) {
   // nop
-}
-
-void Map::calculatePathingGrid() {
-  // Reset grid
-  std::fill(pathingGrid_.begin(), pathingGrid_.end(), 0);
-
-  auto n = 0;
-  for (int i = 0; i < pathingGrid_.size(); i++) {
-    const glm::vec2 gridPos(i % (int)gridDim_.x, i / (int)gridDim_.x);
-    glm::vec2 pos = ((gridPos / gridDim_) - 0.5f) * size_;
-
-    for (const auto it : Game::get()->getEntities()) {
-      auto e = it.second;
-      if (e->isMobile()) {
-        continue;
-      }
-      if (pointInBox(pos, e->getPosition(), e->getSize(), e->getAngle())) {
-        pathingGrid_[i] = 255;
-        n++;
-        break;
-      }
-    }
-  }
-
-  LOG(INFO) << n << " pathing cells filled out of " << pathingGrid_.size()
-      << " total\n";
-}
-
-void Map::dumpPathingGrid() {
-  for (int i = 0; i < pathingGrid_.size(); i++) {
-    const glm::vec2 gridPos(i % (int)gridDim_.x, i / (int)gridDim_.x);
-    if (i % (int)gridDim_.x == 0 && i != 0) {
-      std::cout << '\n';
-    }
-    std::cout << (pathingGrid_[i] ? 'x' : ' ');
-  }
-  std::cout << '\n';
 }
 
 void Map::init(const std::vector<Player *> &players) {
@@ -157,7 +118,5 @@ void Map::init(const std::vector<Player *> &players) {
         "collisionObject",
         params);
   }
-
-  calculatePathingGrid();
 }
 };  // rts

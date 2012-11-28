@@ -154,7 +154,7 @@ glm::vec2 Renderer::convertUIPos(const glm::vec2 &pos) {
 }
 
 glm::vec2 Renderer::worldToMinimap(const glm::vec3 &mapPos) {
-  const glm::vec2 &mapSize = game_->getMap()->getSize();
+  const glm::vec2 &mapSize = map_->getSize();
   const glm::vec2 minimapSize = vec2Param("ui.minimap.dim");
   const glm::vec2 minimapPos = convertUIPos(vec2Param("ui.minimap.pos"));
   glm::vec2 pos = mapPos.xy;
@@ -196,8 +196,6 @@ void Renderer::renderUI() {
   pos = convertUIPos(vec2Param("ui.vicdisplay.pos"));
   size = vec2Param("ui.vicdisplay.size");
   height = fltParam("ui.vicdisplay.fontHeight");
-  // TODO(connor) this should probably iterate over teams, not players, but we
-  // dont have teams yet..
   for (id_t tid : game_->getTeams()) {
     // background in team color
     int col_idx = tid - STARTING_TID;
@@ -255,8 +253,8 @@ void Renderer::renderUI() {
 }
 
 void Renderer::renderMinimap() {
-  const glm::vec2 &mapSize = game_->getMap()->getSize();
-  const glm::vec4 &mapColor = game_->getMap()->getMinimapColor();
+  const glm::vec2 &mapSize = map_->getSize();
+  const glm::vec4 &mapColor = map_->getMinimapColor();
   // TODO(connor) we probably want some small buffer around the sides of the
   // minimap so we can see the underlay image..
   const glm::vec2 minimapSize = vec2Param("ui.minimap.dim");
@@ -318,7 +316,7 @@ void Renderer::renderMap(const Map *map) {
   // cache map
   map_ = map;
 
-  auto gridDim = map->getPathingGridDim();
+  auto gridDim = map->getSize() * 2.f;
   auto mapSize = map->getSize();
   auto mapColor = map->getMinimapColor();
 
@@ -547,7 +545,7 @@ void Renderer::updateCamera(const glm::vec3 &delta) {
 void Renderer::minimapUpdateCamera(const glm::vec2 &screenCoord) {
   glm::vec2 minimapPos = convertUIPos(vec2Param("ui.minimap.pos"));
   glm::vec2 minimapDim = vec2Param("ui.minimap.dim");
-  glm::vec2 mapSize = game_->getMap()->getSize();
+  glm::vec2 mapSize = map_->getSize();
   glm::vec2 mapCoord = screenCoord;
   mapCoord -= minimapPos;
   mapCoord -= glm::vec2(minimapDim.x / 2, minimapDim.y / 2);
@@ -633,7 +631,7 @@ glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
 
   glm::vec3 terrain = glm::vec3(ndc) - dir * ndc.z / dir.z;
 
-  const glm::vec2 mapSize = game_->getMap()->getSize() / 2.f;
+  const glm::vec2 mapSize = map_->getSize() / 2.f;
   // Don't return a non terrain coordinate
   if (terrain.x < -mapSize.x) {
     terrain.x = -HUGE_VAL;

@@ -29,24 +29,11 @@ class Map {
   void init(const std::vector<Player *> &players);
   void update(float dt);
 
-  const glm::vec2 &getPathingGridDim() const {
-    return gridDim_;
-  }
-  const std::vector<char>& getPathingGrid() const {
-    return pathingGrid_;
-  }
-
  private:
-  void calculatePathingGrid();
-  void dumpPathingGrid();
-
   std::string name_;
   glm::vec2 size_;
   // TODO(connor) replace this with an image
   glm::vec4 color_;
-
-  glm::vec2 gridDim_;
-  std::vector<char> pathingGrid_;
 };
 };  // rts
 

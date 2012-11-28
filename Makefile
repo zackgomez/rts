@@ -6,6 +6,7 @@ STBTT=lib/stb_truetype
 LDFLAGS=-lSDL -lGL -lGLEW -rdynamic -lGLU
 OBJDIR=obj
 SRCDIR=src
+EXECDIR=$(SRCDIR)/exec
 RTSDIR=$(SRCDIR)/rts
 COMMONDIR=$(SRCDIR)/common
 TESTDIR=$(SRCDIR)/tests
@@ -16,12 +17,16 @@ CXXFLAGS=-g -O0 -Wall -I$(GLM) -std=c++0x -I$(JSON) -I$(STBI) -Wno-reorder -I$(S
 
 TESTOBJ = $(patsubst $(TESTDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(TESTDIR)/*.cpp)))
 COMMONOBJ = $(patsubst $(COMMONDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(COMMONDIR)/*.cpp))) $(JSON)/jsoncpp.o
-RTSOBJ = $(patsubst $(RTSDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(RTSDIR)/*.cpp)))
+RTSOBJ = $(patsubst $(RTSDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(RTSDIR)/*.cpp))) obj/rts-main.o
+RTSEDOBJ = $(patsubst $(RTSDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(RTSDIR)/*.cpp))) obj/rtsed-main.o
 
-all: obj rts tests
+all: obj rts rtsed tests
 
 rts: $(RTSOBJ) $(COMMONOBJ) local.json
 	$(CXX) $(CXXFLAGS) -o $@ $(RTSOBJ) $(COMMONOBJ) $(LDFLAGS)
+
+rtsed: $(RTSEDOBJ) $(COMMONOBJ) local.json
+	$(CXX) $(CXXFLAGS) -o $@ $(RTSEDOBJ) $(COMMONOBJ) $(LDFLAGS)
 
 tests: $(TESTOBJ) $(GTESTLIB) $(COMMONOBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $(TESTOBJ) $(COMMONOBJ) $(GTESTLIB) -lpthread
@@ -30,7 +35,7 @@ $(OBJDIR)/%.o: $(RTSDIR)/%.cpp
 	$(CXX) -c $(CXXFLAGS) -o $(OBJDIR)/$*.o $<
 $(OBJDIR)/%.o: $(COMMONDIR)/%.cpp
 	$(CXX) -c $(CXXFLAGS) -o $(OBJDIR)/$*.o $<
-$(OBJDIR)/%.o: $(MMDIR)/%.cpp
+$(OBJDIR)/%.o: $(EXECDIR)/%.cpp
 	$(CXX) -c $(CXXFLAGS) -o $(OBJDIR)/$*.o $<
 $(OBJDIR)/%.o: $(TESTDIR)/%.cpp
 	$(CXX) -c $(CXXFLAGS) -o $(OBJDIR)/$*.o $<
