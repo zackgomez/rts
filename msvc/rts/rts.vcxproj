@@ -21,6 +21,7 @@
     <ClCompile Include="..\..\src\common\ParamReader.cpp" />
     <ClCompile Include="..\..\src\common\Types.cpp" />
     <ClCompile Include="..\..\src\common\util.cpp" />
+    <ClCompile Include="..\..\src\exec\rts-main.cpp" />
     <ClCompile Include="..\..\src\rts\Actor.cpp" />
     <ClCompile Include="..\..\src\rts\Building.cpp" />
     <ClCompile Include="..\..\src\rts\CollisionObject.cpp" />
@@ -29,7 +30,6 @@
     <ClCompile Include="..\..\src\rts\EntityFactory.cpp" />
     <ClCompile Include="..\..\src\rts\FontManager.cpp" />
     <ClCompile Include="..\..\src\rts\Game.cpp" />
-    <ClCompile Include="..\..\src\rts\main.cpp" />
     <ClCompile Include="..\..\src\rts\Map.cpp" />
     <ClCompile Include="..\..\src\rts\Matchmaker.cpp" />
     <ClCompile Include="..\..\src\rts\MatrixStack.cpp" />
