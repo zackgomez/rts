@@ -271,10 +271,12 @@ void Matchmaker::connectP2P(
 
   // TODO(zack): don't connect if public and private are the same
   auto private_connect_sock = kissnet::tcp_socket::create();
-  private_connect_sock = kissnet::tcp_socket::create();
-  private_connect_sock->bind(listenPort_);
-  private_connect_sock->nonblockingConnect(privateAddr[0], privateAddr[1]);
-  sockset.add_write_socket(private_connect_sock);
+  if (publicAddr[0] != privateAddr[0]) {
+    private_connect_sock = kissnet::tcp_socket::create();
+    private_connect_sock->bind(listenPort_);
+    private_connect_sock->nonblockingConnect(privateAddr[0], privateAddr[1]);
+    sockset.add_write_socket(private_connect_sock);
+  }
 
   auto listen_sock = kissnet::tcp_socket::create();
   listen_sock->listen(listenPort_, 11);
