@@ -4,6 +4,7 @@
 #include <set>
 #include <string>
 #include <queue>
+#include <mutex>
 #include <glm/glm.hpp>
 #include <json/json.h>
 #include <SDL/SDL.h>
@@ -48,16 +49,20 @@ class Player {
     return name_;
   }
 
-  /* Called at the start of each tick, should finalize the previous frame
-   * and begin preparing input for the next frame.
-   * NOTE: this may be called multiple times per tick, if some players aren't
-   * ready.
+  virtual void startTick(tick_t tick) = 0;
+
+  // Returns true if the player has the actions for the current tick.
+  // May be called multiple times per tick
+  virtual bool isReady() const = 0;
+
+  /*
+   * Called when all players are ready, returns the actions to be executed.
    *
-   * @param tick is the tick being simulated
-   * @param actionTick the tick from which actions will be executed
-   * @return true, if this player has submitted all input for the given frame
+   * @return list of player actions for the current tick.  Will always
+   * contain at least a DONE or LEAVE_GAME action
    */
-  virtual bool update(tick_t tick, tick_t actionTick) = 0;
+  virtual std::vector<PlayerAction> getActions() = 0;
+
   /* Called each time any player performs an action (including this player).
    * This function should execute quickly (i.e. not perform blocking
    * operations).
@@ -86,11 +91,13 @@ class LocalPlayer : public Player {
               const glm::vec3 &color, Renderer *renderer);
   virtual ~LocalPlayer();
 
-  virtual bool update(tick_t tick, tick_t actionTick);
+  virtual std::vector<PlayerAction> getActions();
   virtual void setGame(Game *game);
 
   virtual void playerAction(id_t playerID, const PlayerAction &action);
 
+  virtual void startTick(tick_t tick);
+  virtual bool isReady() const;
   // Called once per frame with render dt
   virtual void renderUpdate(float dt);
 
@@ -111,9 +118,12 @@ class LocalPlayer : public Player {
 
  private:
   void setSelection(const std::set<id_t> &new_selection);
+  void addAction(const PlayerAction &a);
+
+  std::queue<PlayerAction> actions_;
+  std::mutex actionMutex_;
 
   Renderer *renderer_;
-  tick_t doneTick_;
   std::set<id_t> selection_;
 
   glm::vec2 cameraPanDir_;
@@ -133,8 +143,13 @@ class LocalPlayer : public Player {
 class DummyPlayer : public Player {
  public:
   DummyPlayer(id_t playerID, id_t teamID);
-  virtual bool update(tick_t tick, tick_t actionTick);
+  virtual std::vector<PlayerAction> getActions();
+  virtual void startTick(tick_t tick);
+  virtual bool isReady() const { return true; }
   virtual void playerAction(id_t playerID, const PlayerAction &action) { }
+
+ private:
+  std::queue<PlayerAction> actions_;
 };
 };  // rts
 

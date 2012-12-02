@@ -79,7 +79,7 @@ void mainloop() {
     Clock::endSection("render");
     Clock::dumpTimes();
     // Regulate frame rate
-    SDL_Delay(int(1000*fps));
+    //SDL_Delay(int(1000*fps));
   }
 
   gamet.join();

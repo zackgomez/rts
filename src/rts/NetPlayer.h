@@ -13,7 +13,9 @@ class NetPlayer : public Player {
             const glm::vec3 &color, NetConnectionPtr conn);
   virtual ~NetPlayer();
 
-  virtual bool update(tick_t tick, tick_t actionTick);
+  virtual void startTick(tick_t tick);
+  virtual bool isReady() const;
+  virtual std::vector<PlayerAction> getActions();
   virtual void playerAction(id_t playerID, const PlayerAction &action);
 
   void setLocalPlayer(id_t playerID) {
@@ -29,6 +31,9 @@ class NetPlayer : public Player {
 
   // The id of the local player who's actions we want to send
   id_t localPlayerID_;
+
+  mutable bool ready_;
+  mutable std::vector<PlayerAction> actionBuffer_;
 };
 };  // rts
 

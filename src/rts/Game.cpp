@@ -66,11 +66,12 @@ Game::~Game() {
 }
 
 bool Game::updatePlayers() {
-  bool allInput = true;
-  for (Player *player : players_) {
-    allInput &= player->update(tick_, tick_ - tickOffset_);
+  for (auto player : players_) {
+    if (!player->isReady()) {
+      return false;
+    }
   }
-  return allInput;
+  return true;
 }
 
 checksum_t Game::checksum() {
@@ -98,25 +99,11 @@ void Game::start(float period) {
 
   checksums_.push_back(checksum());
 
-  // Synch up at start of game
-  // Initially all players are targetting tick 0, we need to get them targetting
-  // tickOffset_, so when we run frame 0, they're generating input for frame
-  // tickOffset_
-  for (tick_ = -tickOffset_; tick_ < 0; ) {
-    // Fix for quiting
-    if (!running_) {
-      return;
-    }
+  // Queue up offset number of 'done' frames
+  for (tick_ = -tickOffset_; tick_ < 0; tick_++) {
     logger_->info() << "Running synch frame " << tick_ << '\n';
-
-    // See if everyone is ready to go
-    if (updatePlayers()) {
-      tick_++;
-    } else {
-      // unlock before delay
-      lock.unlock();
-      SDL_Delay(int(1000*period));
-      lock.lock();
+    for (auto player : players_) {
+      player->startTick(tick_);
     }
   }
 
@@ -129,14 +116,23 @@ void Game::update(float dt) {
   std::unique_lock<std::mutex> lock(mutex_);
 
   // First update players
-  bool playersReady = updatePlayers();
+  // TODO(zack): less hacky dependence on paused_
+  if (!paused_) {
+    for (auto player : players_) {
+      player->startTick(tick_);
+    }
+  }
+
   // If all the players aren't ready, we can't continue
+  bool playersReady = updatePlayers();
   if (!playersReady) {
     logger_->warning() << "Not all players ready for tick " << tick_ << '\n';
     paused_ = true;
     return;
   }
   paused_ = false;
+  LOG(DEBUG) << "Executing tick: " << tick_ << " actions from: "
+      << tick_ - tickOffset_ << '\n';
 
   // Don't allow new actions during this time
   std::unique_lock<std::mutex> actionLock(actionMutex_);
@@ -144,35 +140,34 @@ void Game::update(float dt) {
   // Do actions
   // It MUST be true that all players have added exactly one action of type
   // none targetting this frame
+  tick_t idx = std::max((tick_t) 0, tick_ - tickOffset_);
+  std::string recordedChecksum = Checksum::checksumToString(checksums_[idx]);
   for (auto &player : players_) {
     id_t pid = player->getPlayerID();
-    assertPid(pid);
-    std::queue<PlayerAction> &pacts = actions_[pid];
+    auto actions = player->getActions();
 
-    PlayerAction act;
-    for (;;) {
-      invariant(!pacts.empty(), "unexpected empty player action");
-      act = pacts.front();
-      pacts.pop();
-      invariant(
-        act["tick"] == toJson(tick_ - tickOffset_),
-        "Bad action tick " + act.toStyledString());
-
-      if (act["type"] == ActionTypes::DONE) {
+    std::string checksum;
+    for (const auto &action : actions) {
+      invariant(checksum.empty(), "Action after DONE message??");
+      if (action["type"] == ActionTypes::DONE) {
         // Check for sync error
         // Index into checksum array, [0, n]
-        tick_t idx = std::max(toTick(act["checksum"][0]), (tick_t) 0);
-        invariant(idx <= tick_, "checksum in done for bad tick");
-        std::string strChecksum = act["checksum"][1].asString();
-        // TODO(zack): make this dump out a log so we can debug the reason why
-        if (strChecksum != Checksum::checksumToString(checksums_[idx])) {
-          LOG(ERROR) << "checksum mismatch (theirs): " << strChecksum <<
-              " vs (ours): " << checksums_[idx] << '\n';
-        }
-        break;
+        checksum = action["checksum"].asString();
+        invariant(
+            toTick(action["tick"]) == (tick_ - tickOffset_),
+            "tick mismatch");
+      } else if (action["type"] == ActionTypes::LEAVE_GAME) {
+        running_ = false;
+        return;
+      } else {
+        handleAction(pid, action);
       }
-
-      handleAction(pid, act);
+    }
+    invariant(!checksum.empty(), "missing done action for player");
+    // TODO(zack): make this dump out a log so we can debug the reason why
+    if (checksum != recordedChecksum) {
+      LOG(ERROR) << tick_ << ": checksum mismatch (theirs): " << checksum <<
+          " vs (ours): " << recordedChecksum << '\n';
     }
   }
   // Allow more actions
@@ -331,22 +326,9 @@ void Game::handleMessage(const Message &msg) {
 
 void Game::addAction(id_t pid, const PlayerAction &act) {
   // CAREFUL: this function is called from different threads
-  invariant(act.isMember("type"), "malformed player action" + act.toStyledString());
-  assertPid(pid);
+  invariant(act.isMember("type"),
+      "malformed player action" + act.toStyledString());
   invariant(getPlayer(pid), "action from unknown player");
-
-  // Quit game, no more loops after this, broadcast the message to all other
-  // players too
-  if (act["type"] == ActionTypes::LEAVE_GAME) {
-    running_ = false;
-    logger_->info() << "Player " << pid << " has left the game.\n";
-  } else {
-    // Handle most events by just queueing them
-    invariant(act.isMember("tick"), "missing tick in player action");
-    std::unique_lock<std::mutex> lock(actionMutex_);
-    actions_[pid].push(act);
-    lock.unlock();
-  }
 
   // Broadcast action to all players
   for (auto& player : players_) {

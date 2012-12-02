@@ -1,9 +1,15 @@
 #include "common/util.h"
+#include "common/Logger.h"
 #include <cstdlib>
 
 void __invariant(bool condition, const std::string &message) {
   if (!condition) {
-    throw violation_exception(message);
+    LOG(FATAL) << "invariant error: " << message << '\n';
+    assert(false);
+    // TODO(zack): investigate benefits of using an exception
+    // assert gives stack context in debugger for threads... exceptions
+    // don't always.
+    // throw violation_exception(message);
   }
 }
 
