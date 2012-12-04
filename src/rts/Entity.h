@@ -6,12 +6,13 @@
 #include "common/Collision.h"
 #include "common/Types.h"
 #include "rts/Message.h"
+#include "rts/GameEntityRenderShim.h"
 
 class Checksum;
 
 namespace rts {
 
-class Entity {
+class Entity : public GameEntityRenderShim {
  public:
   explicit Entity(const std::string &name, const Json::Value &params,
                   bool mobile = false, bool targetable = false,
@@ -50,7 +51,7 @@ class Entity {
     return pos_;
   }
   // This unit's facing angle (relative to +x axis)
-  const float getAngle() const {
+  float getAngle() const {
     return angle_;
   }
   // This unit's bounding box

@@ -141,7 +141,8 @@ int main(int argc, char **argv) {
   }
 
   // Set up players and game
-  renderer = new Renderer();
+  // TODO(zack): make renderer a true singleton
+  renderer = Renderer::get();
   Matchmaker matchmaker(getParam("local.player"), renderer);
 
   std::vector<Player *> players;

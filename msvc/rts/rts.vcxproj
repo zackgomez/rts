@@ -30,6 +30,7 @@
     <ClCompile Include="..\..\src\rts\EntityFactory.cpp" />
     <ClCompile Include="..\..\src\rts\FontManager.cpp" />
     <ClCompile Include="..\..\src\rts\Game.cpp" />
+    <ClCompile Include="..\..\src\rts\GameEntityRenderShim.cpp" />
     <ClCompile Include="..\..\src\rts\Map.cpp" />
     <ClCompile Include="..\..\src\rts\Matchmaker.cpp" />
     <ClCompile Include="..\..\src\rts\MatrixStack.cpp" />
@@ -61,6 +62,7 @@
     <ClInclude Include="..\..\src\rts\EntityFactory.h" />
     <ClInclude Include="..\..\src\rts\FontManager.h" />
     <ClInclude Include="..\..\src\rts\Game.h" />
+    <ClInclude Include="..\..\src\rts\GameEntityRenderShim.h" />
     <ClInclude Include="..\..\src\rts\Map.h" />
     <ClInclude Include="..\..\src\rts\Matchmaker.h" />
     <ClInclude Include="..\..\src\rts\MatrixStack.h" />
@@ -70,10 +72,15 @@
     <ClInclude Include="..\..\src\rts\Player.h" />
     <ClInclude Include="..\..\src\rts\PlayerAction.h" />
     <ClInclude Include="..\..\src\rts\Projectile.h" />
+    <ClInclude Include="..\..\src\rts\RenderEntity.h" />
     <ClInclude Include="..\..\src\rts\Renderer.h" />
     <ClInclude Include="..\..\src\rts\ResourceManager.h" />
     <ClInclude Include="..\..\src\rts\Unit.h" />
     <ClInclude Include="..\..\src\rts\Weapon.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\config.json" />
+    <None Include="..\..\local.json.default" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and '$(VisualStudioVersion)' == ''">$(VCTargetsPath11)</VCTargetsPath>

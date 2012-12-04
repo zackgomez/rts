@@ -9,17 +9,20 @@
 
 namespace rts {
 
-class Map;
-class LocalPlayer;
-class Game;
 class Actor;
+class Game;
+class LocalPlayer;
+class Map;
 struct MapHighlight;
+class RenderEntity;
 
 class Renderer {
  public:
-  Renderer();
   ~Renderer();
 
+  static Renderer* get();
+
+  // TODO(zack): remove local player
   void setLocalPlayer(const LocalPlayer *p) {
     player_ = p;
   }
@@ -32,10 +35,11 @@ class Renderer {
   }
 
   void renderMessages(const std::set<Message> &messages);
-  void renderEntity(const Entity *entity);
+  void renderEntity(RenderEntity *entity);
   void renderUI();
   void renderMinimap();
   void renderMap(const Map *map);
+  void renderActorInfo();
 
   void addChatMessage(id_t from, const std::string &message);
 
@@ -53,21 +57,25 @@ class Renderer {
   void minimapUpdateCamera(const glm::vec2 &screenCoord);
 
   // returns 0 if no acceptable entity near click
+  // TODO(zack): move selection to the UI/player
   id_t selectEntity(const glm::vec2 &screenCoord) const;
   std::set<id_t> selectEntities(const glm::vec3 &start,
                                 const glm::vec3 &end, id_t pid) const;
   void setSelection(const std::set<id_t> &selection);
+  bool isSelected(id_t eid) const;
 
   // Returns the terrain location at the given screen coord.  If the coord
   // is not on the map returns glm::vec3(HUGE_VAL).
   glm::vec3 screenToTerrain(const glm::vec2 &screenCoord) const;
 
+  // TODO(zack): move to UI
   void highlight(const glm::vec2 &mapCoord);
   void setDragRect(const glm::vec3 &start, const glm::vec3 &end);
 
   glm::vec2 convertUIPos(const glm::vec2 &pos);
 
  private:
+  Renderer();
   glm::vec3 screenToNDC(const glm::vec2 &screenCoord) const;
   void renderActor(const Actor *actor, glm::mat4 transform);
   glm::vec2 worldToMinimap(const glm::vec3 &mapPos);
@@ -79,7 +87,6 @@ class Renderer {
   const Map* map_;
 
   glm::vec3 cameraPos_;
-  glm::vec3 lightPos_;
   glm::vec2 resolution_;
   // Used to interpolate, last tick seen, and dt since last tick
   float simdt_;
@@ -90,14 +97,12 @@ class Renderer {
   std::vector<std::string> chats_;
   float displayChatBoxTimer_;
 
-  std::map<const Entity *, glm::vec3> ndcCoords_;
-  std::map<const Entity *, glm::vec3> mapCoords_;
+  std::map<const RenderEntity *, glm::vec3> ndcCoords_;
+  std::map<const RenderEntity *, glm::vec3> mapCoords_;
   std::set<id_t> selection_;
 
   std::vector<MapHighlight> highlights_;
   glm::vec3 dragStart_, dragEnd_;
-
-  static LoggerPtr logger_;
 };
 
 

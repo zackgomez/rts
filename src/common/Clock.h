@@ -6,6 +6,8 @@
 #include <string>
 #include <thread>
 
+//#define SECTION_RECORDING
+
 class Clock {
  public:
   Clock();

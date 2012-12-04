@@ -20,6 +20,11 @@ glm::vec4 vec4Param(const std::string &param);
 std::string strParam(const std::string &param);
 std::vector<std::string> arrParam(const std::string &param);
 
+template<class T>
+void setParam(const std::string &param, const T& value) {
+  ParamReader::get()->setParam(param, value);
+}
+
 
 class param_exception : public exception_with_trace {
  public:
@@ -37,6 +42,10 @@ class ParamReader {
 
   bool hasParam(const std::string &param) const;
   Json::Value getParam(const std::string &param) const;
+  template<class T>
+  void setParam(const std::string &param, const T& value) {
+    params_[param] = toJson(value);
+  }
 
   // Returns a checksum of the root file loaded.  Any included files have
   // their inclusion noted, but not the contents.

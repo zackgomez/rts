@@ -20,12 +20,11 @@
 #include "rts/MessageHub.h"
 #include "rts/Projectile.h"
 #include "rts/Player.h"
+#include "rts/RenderEntity.h"
 #include "rts/ResourceManager.h"
 #include "rts/Unit.h"
 
 namespace rts {
-
-LoggerPtr Renderer::logger_;
 
 Renderer::Renderer()
   : game_(nullptr),
@@ -36,14 +35,11 @@ Renderer::Renderer()
     dragEnd_(HUGE_VAL),
     displayChatBoxTimer_(0.f),
     lastRender_(0) {
-  if (!logger_.get()) {
-    logger_ = Logger::getLogger("OGLRenderer");
-  }
-
   initEngine(resolution_);
   // Initialize font manager, if necessary
   FontManager::get();
 
+  // TODO(zack): move to ResourceManager
   // unit model is based at 0, height 1, translate to center of model
   glm::mat4 unitMeshTrans = glm::scale(glm::mat4(1.f), glm::vec3(1, 0.5f, 1));
   setMeshTransform(ResourceManager::get()->getMesh("unit"), unitMeshTrans);
@@ -63,6 +59,11 @@ Renderer::Renderer()
 Renderer::~Renderer() {
 }
 
+Renderer *Renderer::get() {
+  static Renderer instance;
+  return &instance;
+}
+
 void Renderer::addChatMessage(id_t from, const std::string &message) {
   std::stringstream ss;
   ss << Game::get()->getPlayer(from)->getName() << ": " << message;
@@ -76,66 +77,16 @@ void Renderer::renderMessages(const std::set<Message> &messages) {
   // damage taken
 }
 
-void Renderer::renderEntity(const Entity *entity) {
+void Renderer::renderEntity(RenderEntity *entity) {
   record_section("renderEntity");
-  glm::vec2 pos2 = entity->getPosition(simdt_);
-  glm::vec3 pos = glm::vec3(pos2, map_->getMapHeight(pos2));
-  float rotAngle = entity->getAngle(simdt_);
-  const std::string &type = entity->getType();
+  entity->render(simdt_);
+  auto transform = entity->getTransform(simdt_);
 
-  if (entity->isCollidable()) {
-    record_section("collidable");
-    // render collision rect
-    glm::mat4 transform =
-      glm::scale(
-          glm::rotate(
-            glm::translate(glm::mat4(1.f),
-              glm::vec3(pos.xy, 0.005f)),
-            rotAngle, glm::vec3(0, 0, 1)),
-          glm::vec3(entity->getSize(), 1.f));
-    glm::vec4 color(0, 0, 0, 1);
-    if (entity->collided_) {
-      color = glm::vec4(1, 0.25, 0, 1);
-    }
-    renderRectangleColor(transform, color);
-  }
-
-  // Collision objects only need to render their collision rectangle, so we
-  // can return after we do that.
-  if (type == CollisionObject::TYPE) return;
-
-  float modelSize = 1.f;
-  modelSize = fltParam(entity->getName() + ".modelSize");
-
-  // Interpolate if they move
-  glm::mat4 transform =
-      glm::scale(
-        glm::rotate(
-          glm::rotate(
-            glm::translate(glm::mat4(1.f), pos),
-            rotAngle, glm::vec3(0, 0, 1)),
-          90.f, glm::vec3(1, 0, 0)),
-        glm::vec3(modelSize));
-
-  if (type == Unit::TYPE || type == Building::TYPE) {
-    renderActor((const Actor *) entity, transform);
-  } else if (type == Projectile::TYPE) {
-    record_section("proj render");
-    // TODO(zack): move to renderProjectile
-    // TODO(zack): make this color to a param in Projectile
-    glm::vec4 color = glm::vec4(0.5, 0.7, 0.5, 1);
-    GLuint meshProgram = ResourceManager::get()->getShader("unit");
-    glUseProgram(meshProgram);
-    GLuint colorUniform = glGetUniformLocation(meshProgram, "color");
-    GLuint lightPosUniform = glGetUniformLocation(meshProgram, "lightPos");
-    glUniform4fv(colorUniform, 1, glm::value_ptr(color));
-    glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
-    Mesh * mesh =
-      ResourceManager::get()->getMesh(strParam(entity->getName() + ".model"));
-    renderMesh(transform, mesh);
-  } else {
-    LOG(WARNING) << "Unable to render entity " << entity->getName() << '\n';
-  }
+  glm::vec4 ndc = getProjectionStack().current() * getViewStack().current() *
+                  transform * glm::vec4(0, 0, 0, 1);
+  ndc /= ndc.w;
+  ndcCoords_[entity] = glm::vec3(ndc);
+  mapCoords_[entity] = applyMatrix(transform, glm::vec3(0.f));
 }
 
 glm::vec2 Renderer::convertUIPos(const glm::vec2 &pos) {
@@ -159,6 +110,9 @@ glm::vec2 Renderer::worldToMinimap(const glm::vec3 &mapPos) {
 void Renderer::renderUI() {
   record_section("renderUI");
   glDisable(GL_DEPTH_TEST);
+
+  // Actor info health/mana etc for actors on the screen
+  renderActorInfo();
 
   // TODO(connor) there may be a better way to do this
   // perhaps store the names of all the UI elements in an array
@@ -243,6 +197,73 @@ void Renderer::renderUI() {
   glEnable(GL_DEPTH_TEST);
 }
 
+void Renderer::renderActorInfo() {
+  record_section("renderActor");
+  for (auto pair : ndcCoords_) {
+    const Entity *e = (const Entity *)pair.first;
+    auto &ndc = pair.second;
+    auto type = e->getType();
+    // TODO(zack): only render status for actors currently visible
+    if (!(type == Unit::TYPE || type == Building::TYPE)) {
+      continue;
+    }
+    auto actor = (const Actor *)e;
+    if (actor->getType() == Building::TYPE &&
+      ((Building*)actor)->isCappable()) {
+        Building *building = (Building*)actor;
+        if (building->getCap() > 0.f &&
+          building->getCap() < building->getMaxCap()) {
+            // display health bar
+            float capFact = glm::max(0.f, building->getCap() / building->getMaxCap());
+            glm::vec2 size = vec2Param("hud.actor_cap.dim");
+            glm::vec2 offset = vec2Param("hud.actor_cap.pos");
+            glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) *
+              resolution_;
+            pos += offset;
+            // Black underneath
+            drawRectCenter(pos, size, glm::vec4(0, 0, 0, 1));
+            pos.x -= size.x * (1.f - capFact) / 2.f;
+            size.x *= capFact;
+            const glm::vec4 cap_color = vec4Param("hud.actor_cap.color");
+            drawRectCenter(pos, size, cap_color);
+        }
+    } else {
+      // display health bar
+      float healthFact = glm::max(
+        0.f,
+        actor->getHealth() / actor->getMaxHealth());
+      glm::vec2 size = vec2Param("hud.actor_health.dim");
+      glm::vec2 offset = vec2Param("hud.actor_health.pos");
+      glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) *
+        resolution_;
+      pos += offset;
+      // Red underneath for max health
+      drawRectCenter(pos, size, glm::vec4(1, 0, 0, 1));
+      // Green on top for current health
+      pos.x -= size.x * (1.f - healthFact) / 2.f;
+      size.x *= healthFact;
+      drawRectCenter(pos, size, glm::vec4(0, 1, 0, 1));
+    }
+
+    std::queue<Actor::Production> queue = actor->getProductionQueue();
+    if (!queue.empty()) {
+      // display production bar
+      float prodFactor = 1.f - queue.front().time / queue.front().max_time;
+      glm::vec2 size = vec2Param("hud.actor_prod.dim");
+      glm::vec2 offset = vec2Param("hud.actor_prod.pos");
+      glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f))
+        * resolution_;
+      pos += offset;
+      // Purple underneath for max time
+      drawRectCenter(pos, size, glm::vec4(0.5, 0, 1, 1));
+      // Blue on top for time elapsed
+      pos.x -= size.x * (1.f - prodFactor) / 2.f;
+      size.x *= prodFactor;
+      drawRectCenter(pos, size, glm::vec4(0, 0, 1, 1));
+    }
+  }
+}
+
 void Renderer::renderMinimap() {
   const glm::vec2 &mapSize = map_->getSize();
   const glm::vec4 &mapColor = map_->getMinimapColor();
@@ -287,14 +308,17 @@ void Renderer::renderMinimap() {
 
   // render actors
   for (const auto &pair : mapCoords_) {
-    const Entity *e = pair.first;
+    const Entity *e = (const Entity *)pair.first;
+    if (e->getType() != Building::TYPE && e->getType() != Unit::TYPE) {
+      continue;
+    }
     const glm::vec3 &mapCoord = pair.second;
     glm::vec2 pos = worldToMinimap(mapCoord);
     const Player *player = game_->getPlayer(e->getPlayerID());
     glm::vec3 pcolor = player ? player->getColor() :
       vec3Param("global.defaultColor");
     // if selected draw as green
-    glm::vec4 color = selection_.count(e->getID())
+    glm::vec4 color = selection_.count(((Entity *)e)->getID())
       ? glm::vec4(vec3Param("colors.selected"), 1.f)
       : glm::vec4(pcolor, 1.f);
     float actorSize = fltParam("ui.minimap.actorSize");
@@ -379,108 +403,14 @@ void Renderer::startRender(float dt) {
                 glm::vec3(0, 1, 0));
 
   // Set up lights
-  lightPos_ = applyMatrix(getViewStack().current(), glm::vec3(-5, -5, 10));
+  // TODO(zack): read light pos from map config
+  auto lightPos = applyMatrix(getViewStack().current(), glm::vec3(-5, -5, 10));
+  setParam("renderer.lightPos", lightPos);
 
   // Clear coordinates
   ndcCoords_.clear();
   mapCoords_.clear();
   lastRender_ = SDL_GetTicks();
-}
-
-void Renderer::renderActor(const Actor *actor, glm::mat4 transform) {
-  record_section("renderActor");
-  const Player *player = game_->getPlayer(actor->getPlayerID());
-  glm::vec3 pcolor = player ? player->getColor() :
-    vec3Param("global.defaultColor");
-  // if selected draw as green
-  glm::vec4 color = selection_.count(actor->getID())
-                    ? glm::vec4(vec3Param("colors.selected"), 1.f)
-                    : glm::vec4(pcolor, 1.f);
-  // TODO(zack): Flash units white if damage taken
-  const std::string &name = actor->getName();
-
-  // TODO(zack) parameterize shaders on name
-  {
-    record_section("mesh");
-    GLuint meshProgram = ResourceManager::get()->getShader("unit");
-    glUseProgram(meshProgram);
-    GLuint colorUniform = glGetUniformLocation(meshProgram, "color");
-    GLuint lightPosUniform = glGetUniformLocation(meshProgram, "lightPos");
-    glUniform4fv(colorUniform, 1, glm::value_ptr(color));
-    glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos_));
-    Mesh * mesh = ResourceManager::get()->getMesh(name);
-    renderMesh(transform, mesh);
-  }
-
-  glm::vec4 ndc = getProjectionStack().current() * getViewStack().current() *
-                  transform * glm::vec4(0, 0, 0, 1);
-  ndc /= ndc.w;
-  ndcCoords_[actor] = glm::vec3(ndc);
-  mapCoords_[actor] = applyMatrix(transform, glm::vec3(0.f));
-
-  glDisable(GL_DEPTH_TEST);
-
-  if (actor->getType() == Building::TYPE &&
-      ((Building*)actor)->isCappable()) {
-    Building *building = (Building*)actor;
-    if (building->getCap() > 0.f &&
-        building->getCap() < building->getMaxCap()) {
-      // display health bar
-      float capFact = glm::max(0.f, building->getCap() / building->getMaxCap());
-      glm::vec2 size = vec2Param("hud.actor_cap.dim");
-      glm::vec2 offset = vec2Param("hud.actor_cap.pos");
-      glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) *
-        resolution_;
-      pos += offset;
-      // Black underneath
-      drawRectCenter(pos, size, glm::vec4(0, 0, 0, 1));
-      pos.x -= size.x * (1.f - capFact) / 2.f;
-      size.x *= capFact;
-      // Get player color: If it is owned by a player, use that color.
-      // If it it unowned, used the capping player's color.
-      glm::vec3 cap_color = pcolor;
-      if (building->getPlayerID() == NO_PLAYER) {
-        id_t pid = building->getLastCappingPlayerID();
-        cap_color = game_->getPlayer(pid)->getColor();
-      }
-      drawRectCenter(pos, size, glm::vec4(cap_color, 1));
-    }
-  } else {
-    // display health bar
-    float healthFact = glm::max(
-        0.f,
-        actor->getHealth() / actor->getMaxHealth());
-    glm::vec2 size = vec2Param("hud.actor_health.dim");
-    glm::vec2 offset = vec2Param("hud.actor_health.pos");
-    glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) *
-      resolution_;
-    pos += offset;
-    // Red underneath for max health
-    drawRectCenter(pos, size, glm::vec4(1, 0, 0, 1));
-    // Green on top for current health
-    pos.x -= size.x * (1.f - healthFact) / 2.f;
-    size.x *= healthFact;
-    drawRectCenter(pos, size, glm::vec4(0, 1, 0, 1));
-  }
-
-  std::queue<Actor::Production> queue = actor->getProductionQueue();
-  if (!queue.empty()) {
-    // display production bar
-    float prodFactor = 1.f - queue.front().time / queue.front().max_time;
-    glm::vec2 size = vec2Param("hud.actor_prod.dim");
-    glm::vec2 offset = vec2Param("hud.actor_prod.pos");
-    glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f))
-        * resolution_;
-    pos += offset;
-    // Purple underneath for max time
-    drawRectCenter(pos, size, glm::vec4(0.5, 0, 1, 1));
-    // Blue on top for time elapsed
-    pos.x -= size.x * (1.f - prodFactor) / 2.f;
-    size.x *= prodFactor;
-    drawRectCenter(pos, size, glm::vec4(0, 0, 1, 1));
-  }
-
-  glEnable(GL_DEPTH_TEST);
 }
 
 void Renderer::endRender() {
@@ -534,9 +464,12 @@ void Renderer::minimapUpdateCamera(const glm::vec2 &screenCoord) {
   updateCamera(cameraDelta);
 }
 
+bool Renderer::isSelected(id_t eid) const {
+  return selection_.find(eid) != selection_.end();
+}
+
 id_t Renderer::selectEntity(const glm::vec2 &screenCoord) const {
   glm::vec2 pos = glm::vec2(screenToNDC(screenCoord));
-
   id_t eid = NO_ENTITY;
   float bestDist = HUGE_VAL;
   // Find the best entity
@@ -547,7 +480,7 @@ id_t Renderer::selectEntity(const glm::vec2 &screenCoord) const {
     const float thresh = sqrtf(0.009f);
     if (dist < thresh && dist < bestDist) {
       bestDist = dist;
-      eid = pair.first->getID();
+      eid = ((Entity *)pair.first)->getID();
     }
   }
 
@@ -557,6 +490,7 @@ id_t Renderer::selectEntity(const glm::vec2 &screenCoord) const {
 std::set<id_t> Renderer::selectEntities(
   const glm::vec3 &start, const glm::vec3 &end, id_t pid) const {
   assertPid(pid);
+  std::set<id_t> ret;
   glm::mat4 fullMatrix =
     getProjectionStack().current() * getViewStack().current();
   glm::vec2 s = applyMatrix(fullMatrix, start).xy;
@@ -564,17 +498,17 @@ std::set<id_t> Renderer::selectEntities(
   // Defines the rectangle
   glm::vec2 center = (e + s) / 2.f;
   glm::vec2 size = glm::abs(e - s);
-  std::set<id_t> ret;
 
   for (const auto &pair : ndcCoords_) {
     glm::vec2 p = glm::vec2(pair.second);
+    const Entity *e = (Entity *)pair.first;
     // Inside rect and owned by player
     // TODO(zack) make this radius aware, right now the center must be in
     // their.
     if (fabs(p.x - center.x) < size.x / 2.f
         && fabs(p.y - center.y) < size.y / 2.f
-        && pair.first->getPlayerID() == pid) {
-      ret.insert(pair.first->getID());
+        && e->getPlayerID() == pid) {
+      ret.insert(e->getID());
     }
   }
 
