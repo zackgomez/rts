@@ -112,7 +112,8 @@ void NetConnection::stop() {
 }
 
 void NetConnection::sendPacket(const Json::Value &message) {
-  std::string body = writer_.write(message);
+  Json::FastWriter writer;
+  std::string body = writer.write(message);
   uint32_t len = body.size();
   // TODO(zack) endianness issue here?
   std::string msg((char *) &len, 4);

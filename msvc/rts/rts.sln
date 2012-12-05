@@ -5,10 +5,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rts", "rts.vcxproj", "{4BF7
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug Matchmaking|Win32 = Debug Matchmaking|Win32
 		Debug|Win32 = Debug|Win32
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4BF722B5-C7BC-45BA-82EF-641FE5260D39}.Debug Matchmaking|Win32.ActiveCfg = Debug Matchmaking|Win32
+		{4BF722B5-C7BC-45BA-82EF-641FE5260D39}.Debug Matchmaking|Win32.Build.0 = Debug Matchmaking|Win32
 		{4BF722B5-C7BC-45BA-82EF-641FE5260D39}.Debug|Win32.ActiveCfg = Debug|Win32
 		{4BF722B5-C7BC-45BA-82EF-641FE5260D39}.Debug|Win32.Build.0 = Debug|Win32
 		{4BF722B5-C7BC-45BA-82EF-641FE5260D39}.Release|Win32.ActiveCfg = Release|Win32

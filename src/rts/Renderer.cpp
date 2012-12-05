@@ -542,7 +542,7 @@ glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
 
   glm::vec3 terrain = glm::vec3(ndc) - dir * ndc.z / dir.z;
 
-  const glm::vec2 mapSize = map_->getSize() / 2.f;
+  const glm::vec2 mapSize = Game::get()->getMap()->getSize() / 2.f;
   // Don't return a non terrain coordinate
   if (terrain.x < -mapSize.x) {
     terrain.x = -HUGE_VAL;

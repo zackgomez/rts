@@ -46,9 +46,6 @@ class NetConnection {
   std::mutex mutex_;
   std::condition_variable condVar_;
   std::thread netThread_;
-
-  // JSON writers
-  Json::FastWriter writer_;
 };
 
 typedef std::shared_ptr<NetConnection> NetConnectionPtr;

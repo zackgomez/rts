@@ -1,6 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug Matchmaking|Win32">
+      <Configuration>Debug Matchmaking</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
@@ -62,7 +66,6 @@
     <ClInclude Include="..\..\src\rts\EntityFactory.h" />
     <ClInclude Include="..\..\src\rts\FontManager.h" />
     <ClInclude Include="..\..\src\rts\Game.h" />
-    <ClInclude Include="..\..\src\rts\GameEntityRenderShim.h" />
     <ClInclude Include="..\..\src\rts\Map.h" />
     <ClInclude Include="..\..\src\rts\Matchmaker.h" />
     <ClInclude Include="..\..\src\rts\MatrixStack.h" />
@@ -72,15 +75,10 @@
     <ClInclude Include="..\..\src\rts\Player.h" />
     <ClInclude Include="..\..\src\rts\PlayerAction.h" />
     <ClInclude Include="..\..\src\rts\Projectile.h" />
-    <ClInclude Include="..\..\src\rts\RenderEntity.h" />
     <ClInclude Include="..\..\src\rts\Renderer.h" />
     <ClInclude Include="..\..\src\rts\ResourceManager.h" />
     <ClInclude Include="..\..\src\rts\Unit.h" />
     <ClInclude Include="..\..\src\rts\Weapon.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\config.json" />
-    <None Include="..\..\local.json.default" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and '$(VisualStudioVersion)' == ''">$(VCTargetsPath11)</VCTargetsPath>
@@ -91,6 +89,12 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Matchmaking|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
@@ -109,6 +113,9 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug Matchmaking|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -118,11 +125,28 @@
     <LibraryPath>..\..\lib\jsoncpp;..\..\lib\SDL-1.2.15\lib\x86;..\..\lib\glew-1.7.0\lib;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Matchmaking|Win32'">
+    <IncludePath>..\..\src;..\..\lib\stb_truetype;..\..\lib\boost_1_50_0;..\..\lib\kissnet;..\..\lib\glew-1.7.0\include;..\..\lib\SDL-1.2.15\include;..\..\lib\glm-0.9.2.7;..\..\lib\jsoncpp;..\..\lib\glew-1.7.0\include\GL;..\..\lib\stbi;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\lib\jsoncpp;..\..\lib\SDL-1.2.15\lib\x86;..\..\lib\glew-1.7.0\lib;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>$(ExecutablePath)</ExecutablePath>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>..\..\src;..\..\lib\stb_truetype;..\..\lib\boost_1_50_0;..\..\lib\glew-1.7.0\include;..\..\lib\SDL-1.2.15\include;..\..\lib\glm-0.9.2.7;..\..\lib\jsoncpp;..\..\lib\glew-1.7.0\include\GL;..\..\lib\stbi;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\lib\jsoncpp;..\..\lib\SDL-1.2.15\lib\x86;..\..\lib\glew-1.7.0\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_USE_MATH_DEFINES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>glew32.lib;SDL.lib;SDLmain.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Matchmaking|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
