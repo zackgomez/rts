@@ -19,11 +19,8 @@ glm::vec3 vec3Param(const std::string &param);
 glm::vec4 vec4Param(const std::string &param);
 std::string strParam(const std::string &param);
 std::vector<std::string> arrParam(const std::string &param);
-
 template<class T>
-void setParam(const std::string &param, const T& value) {
-  ParamReader::get()->setParam(param, value);
-}
+void setParam(const std::string &param, const T& value);
 
 
 class param_exception : public exception_with_trace {
@@ -60,5 +57,10 @@ class ParamReader {
   std::unordered_map<std::string, Json::Value> params_;
   uint32_t fileChecksum_;
 };
+
+template<class T>
+void setParam(const std::string &param, const T& value) {
+  ParamReader::get()->setParam(param, value);
+}
 
 #endif  // SRC_COMMON_PARAMREADER_H_
