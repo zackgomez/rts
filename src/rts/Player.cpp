@@ -75,19 +75,21 @@ void LocalPlayer::renderUpdate(float dt) {
   SDL_GetMouseState(&x, &y);
   glm::vec2 screenCoord(x, y);
   const glm::vec2 &res = renderer_->getResolution();
-  const int CAMERA_PAN_THRESHOLD = fltParam("camera.panthresh");
+  const int CAMERA_PAN_THRESHOLD = std::max(
+    intParam("local.camera.panthresh"),
+    1); // to prevent division by zero
 
   // Mouse overrides keyboard
   glm::vec2 dir = cameraPanDir_;
 
   if (x <= CAMERA_PAN_THRESHOLD) {
     dir.x = 2 * (x - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
-  } else if (x > res.x - CAMERA_PAN_THRESHOLD) {
+  } else if (x >= res.x - CAMERA_PAN_THRESHOLD) {
     dir.x = -2 * ((res.x - x) - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
   }
   if (y <= CAMERA_PAN_THRESHOLD) {
     dir.y = -2 * (y - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
-  } else if (y > res.y - CAMERA_PAN_THRESHOLD) {
+  } else if (y >= res.y - CAMERA_PAN_THRESHOLD) {
     dir.y = 2 * ((res.y - y) - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
   }
 

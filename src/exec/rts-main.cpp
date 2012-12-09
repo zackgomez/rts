@@ -67,19 +67,23 @@ void gameThread() {
 
 void mainloop() {
   Clock::setThread();
-  const float framerate = fltParam("game.framerate");
+  const float framerate = fltParam("local.framerate");
   float fps = 1.f / framerate;
 
   std::thread gamet(gameThread);
   // render loop
   while (game->isRunning()) {
+    uint32_t start = SDL_GetTicks();
     handleInput(fps);
     Clock::startSection("render");
     game->render(fps);
     Clock::endSection("render");
     Clock::dumpTimes();
     // Regulate frame rate
-    //SDL_Delay(int(1000*fps));
+    uint32_t end = SDL_GetTicks();
+    uint32_t delay = std::max(int(1000*fps) - int(end - start), 0);
+    LOG(DEBUG) << "delay: " << delay << '\n';
+    SDL_Delay(delay);
   }
 
   gamet.join();

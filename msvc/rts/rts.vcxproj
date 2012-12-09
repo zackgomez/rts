@@ -80,6 +80,11 @@
     <ClInclude Include="..\..\src\rts\Unit.h" />
     <ClInclude Include="..\..\src\rts\Weapon.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\config.json" />
+    <None Include="..\..\local.json" />
+    <None Include="..\..\local.json.default" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and '$(VisualStudioVersion)' == ''">$(VCTargetsPath11)</VCTargetsPath>
   </PropertyGroup>

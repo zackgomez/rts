@@ -3,7 +3,6 @@
   "game" :
   {
     "name"      : "Ragnarok 0.3",
-    "framerate" : 60.0,
     "simrate"   : 10.0,
     "version"   : "v0.3"
   },
@@ -389,7 +388,6 @@
   "camera" :
   {
     "panspeed"     : 19.0,
-    "panspeed_key" : 0.1,
-    "panthresh"    : 100
+    "panspeed_key" : 0.1
   }
 }
