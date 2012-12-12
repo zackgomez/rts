@@ -13,7 +13,6 @@
 
 namespace rts {
 
-class Renderer;
 class Map;
 class Player;
 struct PlayerResources;
@@ -21,8 +20,7 @@ struct PlayerResources;
 // Handles the game logic and player actions, is very multithread aware.
 class Game {
  public:
-  explicit Game(Map *map, const std::vector<Player *> &players,
-      Renderer *renderer);
+  explicit Game(Map *map, const std::vector<Player *> &players);
   ~Game();
 
   static const Game* get() { return instance_; }
@@ -99,7 +97,6 @@ class Game {
   std::vector<Player *> players_;
   std::map<id_t, Entity *> entities_;
   std::set<id_t> teams_;
-  Renderer *renderer_;
   // pid => float
   std::map<id_t, PlayerResources> resources_;
   // tid => float

@@ -35,6 +35,7 @@ Renderer::Renderer()
     dragEnd_(HUGE_VAL),
     displayChatBoxTimer_(0.f),
     lastRender_(0) {
+  // TODO(zack): move this to a separate initialize function
   initEngine(resolution_);
   // Initialize font manager, if necessary
   FontManager::get();
@@ -73,8 +74,8 @@ void Renderer::addChatMessage(id_t from, const std::string &message) {
 }
 
 void Renderer::renderMessages(const std::set<Message> &messages) {
-  // TODO use the damage messages to display some kind of visual indication of
-  // damage taken
+  // TODO(zack) use the damage messages to display some kind of visual
+  // indication of damage taken
 }
 
 void Renderer::renderEntity(RenderEntity *entity) {
@@ -214,7 +215,9 @@ void Renderer::renderActorInfo() {
         if (building->getCap() > 0.f &&
           building->getCap() < building->getMaxCap()) {
             // display health bar
-            float capFact = glm::max(0.f, building->getCap() / building->getMaxCap());
+            float capFact = glm::max(
+                building->getCap() / building->getMaxCap(),
+                0.f);
             glm::vec2 size = vec2Param("hud.actor_cap.dim");
             glm::vec2 offset = vec2Param("hud.actor_cap.pos");
             glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) *

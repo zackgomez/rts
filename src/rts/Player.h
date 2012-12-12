@@ -14,7 +14,6 @@
 
 namespace rts {
 
-class Renderer;
 class Game;
 
 namespace PlayerState {
@@ -88,7 +87,7 @@ class Player {
 class LocalPlayer : public Player {
  public:
   LocalPlayer(id_t playerID, id_t teamID, const std::string &name,
-              const glm::vec3 &color, Renderer *renderer);
+              const glm::vec3 &color);
   virtual ~LocalPlayer();
 
   virtual std::vector<PlayerAction> getActions();
@@ -123,7 +122,6 @@ class LocalPlayer : public Player {
   std::queue<PlayerAction> actions_;
   std::mutex actionMutex_;
 
-  Renderer *renderer_;
   std::set<id_t> selection_;
 
   glm::vec2 cameraPanDir_;

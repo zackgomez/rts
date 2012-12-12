@@ -57,13 +57,12 @@ NetConnectionPtr attemptConnection(
   return NetConnectionPtr(new NetConnection(sock));
 }
 
-Matchmaker::Matchmaker(const Json::Value &player, Renderer *renderer)
+Matchmaker::Matchmaker(const Json::Value &player)
   : name_(player["name"].asString()),
     color_(toVec3(player["color"])),
     listenPort_(player["port"].asString()),
     pid_(NO_PLAYER),
     tid_(NO_TEAM),
-    renderer_(renderer),
     error_(false) {
 }
 
@@ -210,8 +209,8 @@ std::string Matchmaker::getMapName() const {
 }
 
 void Matchmaker::makeLocalPlayer() {
-  localPlayer_ = new LocalPlayer(pid_, tid_, name_, color_, renderer_);
-  renderer_->setLocalPlayer(localPlayer_);
+  localPlayer_ = new LocalPlayer(pid_, tid_, name_, color_);
+  Renderer::get()->setLocalPlayer(localPlayer_);
   players_.push_back(localPlayer_);
 }
 

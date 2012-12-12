@@ -11,9 +11,8 @@
 namespace rts {
 
 LocalPlayer::LocalPlayer(id_t playerID, id_t teamID, const std::string &name,
-    const glm::vec3 &color, Renderer *renderer)
+    const glm::vec3 &color)
   : Player(playerID, teamID, name, color),
-    renderer_(renderer),
     selection_(),
     cameraPanDir_(0.f),
     shift_(false),
@@ -74,10 +73,10 @@ void LocalPlayer::renderUpdate(float dt) {
   int x, y;
   SDL_GetMouseState(&x, &y);
   glm::vec2 screenCoord(x, y);
-  const glm::vec2 &res = renderer_->getResolution();
+  const glm::vec2 &res = Renderer::get()->getResolution();
   const int CAMERA_PAN_THRESHOLD = std::max(
     intParam("local.camera.panthresh"),
-    1); // to prevent division by zero
+    1);  // to prevent division by zero
 
   // Mouse overrides keyboard
   glm::vec2 dir = cameraPanDir_;
@@ -95,7 +94,7 @@ void LocalPlayer::renderUpdate(float dt) {
 
   const float CAMERA_PAN_SPEED = fltParam("camera.panspeed");
   glm::vec3 delta = CAMERA_PAN_SPEED * dt * glm::vec3(dir.x, dir.y, 0.f);
-  renderer_->updateCamera(delta);
+  Renderer::get()->updateCamera(delta);
 
   // Deselect dead entities
   std::set<id_t> newsel;
@@ -109,12 +108,12 @@ void LocalPlayer::renderUpdate(float dt) {
   setSelection(newsel);
 
   // Draw drag rectangle if over threshold size
-  glm::vec3 loc = renderer_->screenToTerrain(screenCoord);
+  glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
   if (leftDrag_
       && glm::distance(loc, leftStart_) > fltParam("hud.minDragDistance")) {
-    renderer_->setDragRect(leftStart_, loc);
+    Renderer::get()->setDragRect(leftStart_, loc);
   } else if (leftDragMinimap_) {
-    renderer_->minimapUpdateCamera(screenCoord);
+    Renderer::get()->minimapUpdateCamera(screenCoord);
   }
 }
 
@@ -133,13 +132,14 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button) {
   PlayerAction action;
   std::set<id_t> newSelect = selection_;
 
-  glm::vec3 loc = renderer_->screenToTerrain(screenCoord);
+  glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
   // The entity (maybe) under the cursor
-  id_t eid = renderer_->selectEntity(screenCoord);
+  id_t eid = Renderer::get()->selectEntity(screenCoord);
   const Entity *entity = game_->getEntity(eid);
 
   if (button == SDL_BUTTON_LEFT) {
-    glm::vec2 minimapPos = renderer_->convertUIPos(vec2Param("ui.minimap.pos"));
+    glm::vec2 minimapPos = Renderer::get()
+        ->convertUIPos(vec2Param("ui.minimap.pos"));
     glm::vec2 minimapDim = vec2Param("ui.minimap.dim");
     // TODO(connor) perhaps clean this up with some sort of click state?
     if (screenCoord.x >= minimapPos.x &&
@@ -187,7 +187,7 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button) {
           && !selection_.empty()) {
         // Visual feedback
         // TODO(zack) highlight the target not the ground
-        renderer_->highlight(glm::vec2(loc.x, loc.y));
+        Renderer::get()->highlight(glm::vec2(loc.x, loc.y));
 
         // Queue up action
         if (entity->getType() == Building::TYPE) {
@@ -204,7 +204,7 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button) {
       } else if (!selection_.empty() && (!entity || !selection_.count(eid))) {
         if (loc.x != HUGE_VAL && loc.y != HUGE_VAL) {
           // Visual feedback
-          renderer_->highlight(glm::vec2(loc.x, loc.y));
+          Renderer::get()->highlight(glm::vec2(loc.x, loc.y));
 
           // Queue up action
           action["type"] = ActionTypes::MOVE;
@@ -230,11 +230,11 @@ void LocalPlayer::mouseDown(const glm::vec2 &screenCoord, int button) {
 }
 
 void LocalPlayer::mouseUp(const glm::vec2 &screenCoord, int button) {
-  glm::vec3 loc = renderer_->screenToTerrain(screenCoord);
+  glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
   if (button == SDL_BUTTON_LEFT) {
     std::set<id_t> newSelect;
     if (glm::distance(leftStart_, loc) > fltParam("hud.minDragDistance")) {
-      newSelect = renderer_->selectEntities(leftStart_, loc, playerID_);
+      newSelect = Renderer::get()->selectEntities(leftStart_, loc, playerID_);
 
       if (!shift_) {
         selection_.clear();
@@ -378,7 +378,7 @@ void LocalPlayer::keyRelease(SDL_keysym keysym) {
 void
 LocalPlayer::setSelection(const std::set<id_t> &s) {
   selection_ = s;
-  renderer_->setSelection(selection_);
+  Renderer::get()->setSelection(selection_);
 }
 
 DummyPlayer::DummyPlayer(id_t playerID, id_t teamID)

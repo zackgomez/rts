@@ -38,7 +38,6 @@ int initLibs();
 void cleanup();
 
 Game *game;
-Renderer *renderer;
 
 // Matchmaker port
 const std::string mmport = "11100";
@@ -82,7 +81,6 @@ void mainloop() {
     // Regulate frame rate
     uint32_t end = SDL_GetTicks();
     uint32_t delay = std::max(int(1000*fps) - int(end - start), 0);
-    LOG(DEBUG) << "delay: " << delay << '\n';
     SDL_Delay(delay);
   }
 
@@ -90,7 +88,7 @@ void mainloop() {
 }
 
 void handleInput(float dt) {
-  LocalPlayer *player = renderer->getLocalPlayer();
+  LocalPlayer *player = Renderer::get()->getLocalPlayer();
   glm::vec2 screenCoord;
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
@@ -144,10 +142,12 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
+  // Initialize Engine
+  Renderer::get();
+
   // Set up players and game
   // TODO(zack): make renderer a true singleton
-  renderer = Renderer::get();
-  Matchmaker matchmaker(getParam("local.player"), renderer);
+  Matchmaker matchmaker(getParam("local.player"));
 
   std::vector<Player *> players;
 
@@ -161,7 +161,7 @@ int main(int argc, char **argv) {
   }
 
   Map *map = new Map(matchmaker.getMapName());
-  game = new Game(map, players, renderer);
+  game = new Game(map, players);
 
   // RUN IT
   mainloop();

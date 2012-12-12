@@ -16,7 +16,6 @@ namespace rts {
 class Player;
 class LocalPlayer;
 class NetPlayer;
-class Renderer;
 
 class matchmaker_exception : public exception_with_trace {
  public:
@@ -27,9 +26,7 @@ class matchmaker_exception : public exception_with_trace {
 
 class Matchmaker {
  public:
-  Matchmaker(
-      const Json::Value &playerConfig,
-      Renderer *renderer);
+  explicit Matchmaker(const Json::Value &playerConfig);
 
   /*
    * Sets up a debug game with a local and dummy player on the 2 player debug
@@ -76,8 +73,6 @@ class Matchmaker {
   id_t tid_;
 
   size_t numPlayers_;
-
-  Renderer *renderer_;
 
   LocalPlayer *localPlayer_;
   std::vector<Player *> players_;

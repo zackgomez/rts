@@ -22,11 +22,9 @@ bool comparePlayerID(Player *p1, Player *p2) {
 
 Game* Game::instance_ = nullptr;
 
-Game::Game(Map *map, const std::vector<Player *> &players,
-    Renderer *renderer)
+Game::Game(Map *map, const std::vector<Player *> &players)
   : map_(map),
     players_(players),
-    renderer_(renderer),
     tick_(0),
     tickOffset_(2),
     paused_(true),
@@ -53,7 +51,7 @@ Game::Game(Map *map, const std::vector<Player *> &players,
     victoryPoints_[tid] = 0.f;
   }
 
-  renderer_->setGame(this);
+  Renderer::get()->setGame(this);
 
   assert(!instance_);
   instance_ = this;
@@ -242,24 +240,25 @@ void Game::update(float dt) {
   // unlock game automatically when lock goes out of scope
 }
 
+// TODO(zack) remove this from game...
 void Game::render(float dt) {
   // lock
   std::unique_lock<std::mutex> lock(mutex_);
 
   dt = (SDL_GetTicks() - sync_tick_) / 1000.f;
 
-  renderer_->startRender(dt);
+  Renderer::get()->startRender(dt);
 
-  renderer_->renderMessages(messages_);
+  Renderer::get()->renderMessages(messages_);
   messages_.clear();
 
-  renderer_->renderMap(map_);
+  Renderer::get()->renderMap(map_);
 
   for (auto &it : entities_) {
-    renderer_->renderEntity(it.second);
+    Renderer::get()->renderEntity(it.second);
   }
 
-  renderer_->endRender();
+  Renderer::get()->endRender();
 
   // unlock
   lock.unlock();
@@ -379,7 +378,7 @@ void Game::handleAction(id_t playerID, const PlayerAction &action) {
 
     // TODO(zack) perhaps color message if to team, and only display messages
     // meant for the local player
-    renderer_->addChatMessage(playerID, action["chat"].asString());
+    Renderer::get()->addChatMessage(playerID, action["chat"].asString());
   } else {
     Message msg;
     msg["to"] = action["entity"];
