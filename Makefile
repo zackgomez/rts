@@ -53,7 +53,7 @@ local.json: local.json.default
 	cp local.json.default local.json
 
 clean:
-	rm -f rts obj/* $(GTESTLIB)
+	rm -f rts rtsed tests obj/* $(GTESTLIB)
 	rm -rf obj/
 
 force_look:

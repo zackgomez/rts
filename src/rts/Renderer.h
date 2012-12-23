@@ -10,8 +10,8 @@
 namespace rts {
 
 class Actor;
+class Controller;
 class Game;
-class LocalPlayer;
 class Map;
 struct MapHighlight;
 class RenderEntity;
@@ -22,16 +22,13 @@ class Renderer {
 
   static Renderer* get();
 
-  // TODO(zack): remove local player
-  void setLocalPlayer(const LocalPlayer *p) {
-    player_ = p;
-  }
-  LocalPlayer * getLocalPlayer() const {
-    return (LocalPlayer*) player_;
-  }
-
+  void setController(Controller *controller);
   void setGame(const Game *game) {
     game_ = game;
+  }
+
+  Controller *getController() const {
+    return controller_;
   }
 
   void renderMessages(const std::set<Message> &messages);
@@ -83,7 +80,7 @@ class Renderer {
   // cached messages
   std::set<Message> messages_;
   const Game *game_;
-  const LocalPlayer *player_;
+  Controller *controller_;
   const Map* map_;
 
   glm::vec3 cameraPos_;

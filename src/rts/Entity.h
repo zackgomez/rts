@@ -87,9 +87,6 @@ class Entity : public GameEntityRenderShim {
 
   bool pointInEntity(const glm::vec2 &p);
 
-  // TEMPORARY, TODO(zack) REMOVE
-  bool collided_;
-
  protected:
   static const glm::vec2 getDirection(float angle);
   const glm::vec2 getDirection() const;

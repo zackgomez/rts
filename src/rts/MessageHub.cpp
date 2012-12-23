@@ -25,6 +25,14 @@ void MessageHub::setGame(Game *game) {
   game_ = game;
 }
 
+void MessageHub::addAction(const PlayerAction &action) {
+  invariant(game_, "unset game object");
+  invariant(action.isMember("pid"), "missing player id in action");
+  invariant(action.isMember("type"), "missing type in action");
+
+  game_->addAction(toID(action["pid"]), action);
+}
+
 void MessageHub::sendMessage(const Message &msg) {
   invariant(game_, "unset game object");
   invariant(msg.isMember("to"), "missing to field in message");

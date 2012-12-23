@@ -12,23 +12,20 @@
 #include "common/ParamReader.h"
 #include "common/NetConnection.h"
 #include "common/util.h"
+#include "rts/Controller.h"
 #include "rts/Game.h"
 #include "rts/Engine.h"
-#include "rts/NetPlayer.h"
 #include "rts/Map.h"
 #include "rts/Matchmaker.h"
-#include "rts/Player.h"
 #include "rts/Renderer.h"
+#include "rts/Player.h"
 #include "rts/Unit.h"
 
-using rts::Player;
-using rts::LocalPlayer;
-using rts::DummyPlayer;
-using rts::NetPlayer;
 using rts::Game;
 using rts::Renderer;
 using rts::Map;
 using rts::Matchmaker;
+using rts::Player;
 
 void mainloop();
 void render();
@@ -73,7 +70,7 @@ void mainloop() {
   // render loop
   while (game->isRunning()) {
     uint32_t start = SDL_GetTicks();
-    handleInput(fps);
+    Renderer::get()->getController()->processInput(fps);
     Clock::startSection("render");
     game->render(fps);
     Clock::endSection("render");
@@ -85,34 +82,6 @@ void mainloop() {
   }
 
   gamet.join();
-}
-
-void handleInput(float dt) {
-  LocalPlayer *player = Renderer::get()->getLocalPlayer();
-  glm::vec2 screenCoord;
-  SDL_Event event;
-  while (SDL_PollEvent(&event)) {
-    switch (event.type) {
-    case SDL_KEYDOWN:
-      player->keyPress(event.key.keysym);
-      break;
-    case SDL_KEYUP:
-      player->keyRelease(event.key.keysym);
-      break;
-    case SDL_MOUSEBUTTONDOWN:
-      screenCoord = glm::vec2(event.button.x, event.button.y);
-      player->mouseDown(screenCoord, event.button.button);
-      break;
-    case SDL_MOUSEBUTTONUP:
-      screenCoord = glm::vec2(event.button.x, event.button.y);
-      player->mouseUp(screenCoord, event.button.button);
-      break;
-    case SDL_QUIT:
-      player->quitEvent();
-      break;
-    }
-  }
-  player->renderUpdate(dt);
 }
 
 int initLibs() {

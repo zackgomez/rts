@@ -12,6 +12,7 @@
 #include "common/util.h"
 #include "rts/Building.h"
 #include "rts/CollisionObject.h"
+#include "rts/Controller.h"
 #include "rts/Engine.h"
 #include "rts/Entity.h"
 #include "rts/FontManager.h"
@@ -28,7 +29,7 @@ namespace rts {
 
 Renderer::Renderer()
   : game_(nullptr),
-    player_(nullptr),
+    controller_(nullptr),
     cameraPos_(0.f, 0.f, 5.f),
     resolution_(vec2Param("local.resolution")),
     dragStart_(HUGE_VAL),
@@ -58,11 +59,21 @@ Renderer::Renderer()
 }
 
 Renderer::~Renderer() {
+  if (controller_) {
+    delete controller_;
+  }
 }
 
 Renderer *Renderer::get() {
   static Renderer instance;
   return &instance;
+}
+
+void Renderer::setController(Controller *controller) {
+  if (controller_) {
+    delete controller_;
+  }
+  controller_ = controller;
 }
 
 void Renderer::addChatMessage(id_t from, const std::string &message) {
@@ -121,6 +132,8 @@ void Renderer::renderUI() {
 
   glm::vec2 pos, size;
   GLuint tex;
+  float height;
+  std::stringstream ss;
 
   // top bar:
   record_section("topBar");
@@ -130,13 +143,14 @@ void Renderer::renderUI() {
   drawTexture(pos, size, tex);
 
   // Requestion display
+  /*
   pos = convertUIPos(vec2Param("ui.reqdisplay.pos"));
   size = vec2Param("ui.reqdisplay.size");
-  float height = fltParam("ui.reqdisplay.fontHeight");
-  std::stringstream ss;
+  height = fltParam("ui.reqdisplay.fontHeight");
   ss << "Req: " << (int)game_->getResources(player_->getPlayerID()).requisition;
   drawRect(pos, size, vec4Param("ui.reqdisplay.bgcolor"));
   FontManager::get()->drawString(ss.str(), pos, height);
+  */
 
   // Victory points
   pos = convertUIPos(vec2Param("ui.vicdisplay.pos"));
@@ -171,6 +185,7 @@ void Renderer::renderUI() {
   renderMinimap();
 
   // Render messages
+  /*
   if (displayChatBoxTimer_ > 0.f ||
       player_->getState() == PlayerState::CHATTING) {
     pos = convertUIPos(vec2Param("hud.messages.pos"));
@@ -194,6 +209,7 @@ void Renderer::renderUI() {
       FontManager::get()->drawString(localMessage, pos, fontHeight);
   }
   displayChatBoxTimer_ -= renderdt_;
+  */
 
   glEnable(GL_DEPTH_TEST);
 }

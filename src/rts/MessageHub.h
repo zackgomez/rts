@@ -1,6 +1,7 @@
 #ifndef SRC_RTS_MESSAGEHUB_H_
 #define SRC_RTS_MESSAGEHUB_H_
 
+#include <utility>
 #include "common/Logger.h"
 #include "common/util.h"
 #include "rts/Entity.h"
@@ -15,6 +16,8 @@ class MessageHub {
   ~MessageHub();
 
   void setGame(Game *game);
+
+  void addAction(const PlayerAction &action);
 
   // Immediately dispatches message
   void sendMessage(const Message &msg);
@@ -31,9 +34,9 @@ class MessageHub {
   // Scoring function should have signature float scorer(const Entity *);
   // TODO(zack) REMOVE THIS FUNCTION and just use the Game:: version
   template <class T>
-  const Entity *findEntity(T scorer) const {
+  const Entity *findEntity(T&& scorer) const {
     invariant(game_, "unset game object");
-    return game_->findEntity(scorer);
+    return game_->findEntity(std::forward<T>(scorer));
   }
 
  private:

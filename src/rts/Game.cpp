@@ -1,5 +1,7 @@
 #include "rts/Game.h"
+#include <algorithm>
 #include <sstream>
+#include <SDL/SDL.h>
 #include "common/Checksum.h"
 #include "common/ParamReader.h"
 #include "common/util.h"
@@ -12,7 +14,6 @@
 #include "rts/Projectile.h"
 #include "rts/Renderer.h"
 #include "rts/Unit.h"
-#include <algorithm>
 
 namespace rts {
 

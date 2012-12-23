@@ -1,12 +1,13 @@
 #include "rts/Matchmaker.h"
 #include <boost/algorithm/string.hpp>
-#include "rts/Player.h"
-#include "rts/NetPlayer.h"
-#include "rts/Renderer.h"
 #include "common/kissnet.h"
 #include "common/NetConnection.h"
 #include "common/ParamReader.h"
 #include "common/util.h"
+#include "rts/Controller.h"
+#include "rts/Player.h"
+#include "rts/NetPlayer.h"
+#include "rts/Renderer.h"
 
 namespace rts {
 
@@ -46,7 +47,7 @@ NetConnectionPtr attemptConnection(
     sockset.add_write_socket(sock);
 
     timeout -= 0.5;
-    SDL_Delay(500);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
   if (timeout <= 0) {
     throw matchmaker_exception(
@@ -210,7 +211,8 @@ std::string Matchmaker::getMapName() const {
 
 void Matchmaker::makeLocalPlayer() {
   localPlayer_ = new LocalPlayer(pid_, tid_, name_, color_);
-  Renderer::get()->setLocalPlayer(localPlayer_);
+  auto controller = new Controller(localPlayer_);
+  Renderer::get()->setController(controller);
   players_.push_back(localPlayer_);
 }
 
@@ -288,6 +290,7 @@ void Matchmaker::connectP2P(
     for (auto sock : socks) {
       if (sock == listen_sock) {
         ret = listen_sock->accept();
+        LOG(DEBUG) << "got listen connect\n";
         break;
         // TODO(zack): error checking
       } else {
@@ -334,7 +337,7 @@ void Matchmaker::connectP2P(
       }
     }
     if (delay && !ret) {
-      SDL_Delay(500);
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
       timeout -= 0.5;
       sockset.remove_socket(listen_sock);
       listen_sock->close();
