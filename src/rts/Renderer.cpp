@@ -24,12 +24,12 @@
 #include "rts/RenderEntity.h"
 #include "rts/ResourceManager.h"
 #include "rts/Unit.h"
+#include "rts/UI.h"
 
 namespace rts {
 
 Renderer::Renderer()
-  : game_(nullptr),
-    controller_(nullptr),
+  : controller_(nullptr),
     cameraPos_(0.f, 0.f, 5.f),
     resolution_(vec2Param("local.resolution")),
     dragStart_(HUGE_VAL),
@@ -59,9 +59,8 @@ Renderer::Renderer()
 }
 
 Renderer::~Renderer() {
-  if (controller_) {
-    delete controller_;
-  }
+  delete controller_;
+  delete ui_;
 }
 
 Renderer *Renderer::get() {
@@ -74,6 +73,13 @@ void Renderer::setController(Controller *controller) {
     delete controller_;
   }
   controller_ = controller;
+}
+
+void Renderer::setUI(UI *ui) {
+  if (ui_) {
+    delete ui_;
+  }
+  ui_ = ui;
 }
 
 void Renderer::addChatMessage(id_t from, const std::string &message) {
@@ -101,22 +107,10 @@ void Renderer::renderEntity(RenderEntity *entity) {
   mapCoords_[entity] = applyMatrix(transform, glm::vec3(0.f));
 }
 
-glm::vec2 Renderer::convertUIPos(const glm::vec2 &pos) {
+glm::vec2 Renderer::convertUIPos(const glm::vec2 &pos) const {
   return glm::vec2(
       pos.x < 0 ? pos.x + resolution_.x : pos.x,
       pos.y < 0 ? pos.y + resolution_.y : pos.y);
-}
-
-glm::vec2 Renderer::worldToMinimap(const glm::vec3 &mapPos) {
-  const glm::vec2 &mapSize = map_->getSize();
-  const glm::vec2 minimapSize = vec2Param("ui.minimap.dim");
-  const glm::vec2 minimapPos = convertUIPos(vec2Param("ui.minimap.pos"));
-  glm::vec2 pos = mapPos.xy;
-  pos.y *= -1;
-  pos += mapSize / 2.f;
-  pos *= minimapSize / mapSize;
-  pos += minimapPos;
-  return pos;
 }
 
 void Renderer::renderUI() {
@@ -147,7 +141,7 @@ void Renderer::renderUI() {
   pos = convertUIPos(vec2Param("ui.reqdisplay.pos"));
   size = vec2Param("ui.reqdisplay.size");
   height = fltParam("ui.reqdisplay.fontHeight");
-  ss << "Req: " << (int)game_->getResources(player_->getPlayerID()).requisition;
+  ss << "Req: " << (int)Game::get()->getResources(player_->getPlayerID()).requisition;
   drawRect(pos, size, vec4Param("ui.reqdisplay.bgcolor"));
   FontManager::get()->drawString(ss.str(), pos, height);
   */
@@ -156,33 +150,32 @@ void Renderer::renderUI() {
   pos = convertUIPos(vec2Param("ui.vicdisplay.pos"));
   size = vec2Param("ui.vicdisplay.size");
   height = fltParam("ui.vicdisplay.fontHeight");
-  for (id_t tid : game_->getTeams()) {
+  for (id_t tid : Game::get()->getTeams()) {
     // background in team color
     int col_idx = tid - STARTING_TID;
     glm::vec3 tcol = toVec3(getParam("colors.team")[col_idx]);
     drawRect(pos, size, glm::vec4(tcol, 1.f));
 
     ss.str("");
-    ss << (int)game_->getVictoryPoints(tid);
+    ss << (int)Game::get()->getVictoryPoints(tid);
     FontManager::get()->drawString(ss.str(), pos, height);
 
     pos.x += size.x * 2.0;
   }
 
   // minimap underlay
+  /*
   pos = convertUIPos(vec2Param("ui.minimap.pos"));
   size = vec2Param("ui.minimap.dim");
   tex = ResourceManager::get()->getTexture(strParam("ui.minimap.texture"));
   drawTexture(pos, size, tex);
+  */
 
   // unit info underlay:
   pos = convertUIPos(vec2Param("ui.unitinfo.pos"));
   size = vec2Param("ui.unitinfo.dim");
   tex = ResourceManager::get()->getTexture(strParam("ui.unitinfo.texture"));
   drawTexture(pos, size, tex);
-
-  // minimap
-  renderMinimap();
 
   // Render messages
   /*
@@ -210,6 +203,10 @@ void Renderer::renderUI() {
   }
   displayChatBoxTimer_ -= renderdt_;
   */
+
+  if (ui_) {
+    ui_->render(renderdt_);
+  }
 
   glEnable(GL_DEPTH_TEST);
 }
@@ -283,72 +280,8 @@ void Renderer::renderActorInfo() {
   }
 }
 
-void Renderer::renderMinimap() {
-  const glm::vec2 &mapSize = map_->getSize();
-  const glm::vec4 &mapColor = map_->getMinimapColor();
-  // TODO(connor) we probably want some small buffer around the sides of the
-  // minimap so we can see the underlay image..
-  const glm::vec2 minimapSize = vec2Param("ui.minimap.dim");
-  const glm::vec2 minimapPos = convertUIPos(vec2Param("ui.minimap.pos"));
-
-  // TODO(connor) support other aspect ratios so they don't stretch or distort
-
-  // Render base image
-  drawRect(minimapPos, minimapSize, mapColor);
-
-  // Render viewport
-  glm::vec2 res = vec2Param("local.resolution");
-  glm::vec4 lineColor = vec4Param("ui.minimap.viewportLineColor");
-
-  // NOTE(zack): this is a hack to get the viewport to render correctly in
-  // windows.  If offset is 0, the coordinates get wonky.
-  float offset = 1;
-  glm::vec2 screenCoords[] = {
-    glm::vec2(offset, offset),
-    glm::vec2(offset, res.y - offset),
-    glm::vec2(res.x - offset, offset),
-    glm::vec2(res.x - offset, res.y - offset),
-  };
-  // Iterates over the four corners of the current viewport
-  glm::vec2 minimapCoord[4];
-  for (int i = 0; i < 4; i++) {
-    glm::vec2 screenCoord = screenCoords[i];
-    glm::vec3 terrainCoord = screenToTerrain(screenCoord);
-    if (terrainCoord.x == HUGE_VAL) terrainCoord.x = mapSize.x / 2;
-    if (terrainCoord.x == -HUGE_VAL) terrainCoord.x = -mapSize.x / 2;
-    if (terrainCoord.y == HUGE_VAL) terrainCoord.y = mapSize.y / 2;
-    if (terrainCoord.y == -HUGE_VAL) terrainCoord.y = -mapSize.y / 2;
-    minimapCoord[i] = worldToMinimap(terrainCoord);
-  }
-  drawLine(minimapCoord[0], minimapCoord[1], lineColor);
-  drawLine(minimapCoord[1], minimapCoord[3], lineColor);
-  drawLine(minimapCoord[3], minimapCoord[2], lineColor);
-  drawLine(minimapCoord[2], minimapCoord[0], lineColor);
-
-  // render actors
-  for (const auto &pair : mapCoords_) {
-    const Entity *e = (const Entity *)pair.first;
-    if (e->getType() != Building::TYPE && e->getType() != Unit::TYPE) {
-      continue;
-    }
-    const glm::vec3 &mapCoord = pair.second;
-    glm::vec2 pos = worldToMinimap(mapCoord);
-    const Player *player = game_->getPlayer(e->getPlayerID());
-    glm::vec3 pcolor = player ? player->getColor() :
-      vec3Param("global.defaultColor");
-    // if selected draw as green
-    glm::vec4 color = selection_.count(((Entity *)e)->getID())
-      ? glm::vec4(vec3Param("colors.selected"), 1.f)
-      : glm::vec4(pcolor, 1.f);
-    float actorSize = fltParam("ui.minimap.actorSize");
-    drawRect(pos, glm::vec2(actorSize), color);
-  }
-}
-
 void Renderer::renderMap(const Map *map) {
   record_section("renderMap");
-  // cache map
-  map_ = map;
 
   auto gridDim = map->getSize() * 2.f;
   auto mapSize = map->getSize();
@@ -398,7 +331,7 @@ void Renderer::startRender(float dt) {
   else
     renderdt_ = 0;
 
-  if (game_->isPaused()) {
+  if (Game::get()->isPaused()) {
     simdt_ = renderdt_ = 0.f;
   }
 
@@ -461,7 +394,7 @@ void Renderer::endRender() {
 void Renderer::updateCamera(const glm::vec3 &delta) {
   cameraPos_ += delta;
 
-  glm::vec2 mapSize = game_->getMap()->getSize() / 2.f;
+  glm::vec2 mapSize = Game::get()->getMap()->getSize() / 2.f;
   cameraPos_ = glm::clamp(
                  cameraPos_,
                  glm::vec3(-mapSize.x, -mapSize.y, 0.f),
@@ -469,16 +402,16 @@ void Renderer::updateCamera(const glm::vec3 &delta) {
 }
 
 void Renderer::minimapUpdateCamera(const glm::vec2 &screenCoord) {
-  glm::vec2 minimapPos = convertUIPos(vec2Param("ui.minimap.pos"));
-  glm::vec2 minimapDim = vec2Param("ui.minimap.dim");
-  glm::vec2 mapSize = map_->getSize();
+  const glm::vec2 minimapPos = convertUIPos(vec2Param("ui.minimap.pos"));
+  const glm::vec2 minimapDim = vec2Param("ui.minimap.dim");
+  const glm::vec2 mapSize = Game::get()->getMap()->getSize();
   glm::vec2 mapCoord = screenCoord;
   mapCoord -= minimapPos;
   mapCoord -= glm::vec2(minimapDim.x / 2, minimapDim.y / 2);
   mapCoord *= mapSize / minimapDim;
   mapCoord.y *= -1;
-  glm::vec3 camCoord = cameraPos_;
-  glm::vec3 cameraDelta =
+  const glm::vec3 camCoord = cameraPos_;
+  const glm::vec3 cameraDelta =
       glm::vec3(mapCoord.x - camCoord.x, mapCoord.y - camCoord.y, 0);
   updateCamera(cameraDelta);
 }
@@ -575,6 +508,11 @@ glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
   }
 
   return glm::vec3(terrain);
+}
+
+const std::map<const RenderEntity *, glm::vec3>& 
+Renderer::getEntityWorldPosMap() const {
+  return mapCoords_;
 }
 
 glm::vec3 Renderer::screenToNDC(const glm::vec2 &screen) const {

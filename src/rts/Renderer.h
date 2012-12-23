@@ -15,6 +15,7 @@ class Game;
 class Map;
 struct MapHighlight;
 class RenderEntity;
+class UI;
 
 class Renderer {
  public:
@@ -26,6 +27,7 @@ class Renderer {
   void setGame(const Game *game) {
     game_ = game;
   }
+  void setUI(UI *ui);
 
   Controller *getController() const {
     return controller_;
@@ -60,16 +62,16 @@ class Renderer {
                                 const glm::vec3 &end, id_t pid) const;
   void setSelection(const std::set<id_t> &selection);
   bool isSelected(id_t eid) const;
+  glm::vec2 convertUIPos(const glm::vec2 &pos) const;
 
   // Returns the terrain location at the given screen coord.  If the coord
   // is not on the map returns glm::vec3(HUGE_VAL).
   glm::vec3 screenToTerrain(const glm::vec2 &screenCoord) const;
+  const std::map<const RenderEntity *, glm::vec3>& getEntityWorldPosMap() const;
 
   // TODO(zack): move to UI
   void highlight(const glm::vec2 &mapCoord);
   void setDragRect(const glm::vec3 &start, const glm::vec3 &end);
-
-  glm::vec2 convertUIPos(const glm::vec2 &pos);
 
  private:
   Renderer();
@@ -82,6 +84,7 @@ class Renderer {
   const Game *game_;
   Controller *controller_;
   const Map* map_;
+  UI* ui_;
 
   glm::vec3 cameraPos_;
   glm::vec2 resolution_;

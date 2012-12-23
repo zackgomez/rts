@@ -20,12 +20,14 @@
 #include "rts/Renderer.h"
 #include "rts/Player.h"
 #include "rts/Unit.h"
+#include "rts/UI.h"
 
 using rts::Game;
 using rts::Renderer;
 using rts::Map;
 using rts::Matchmaker;
 using rts::Player;
+using rts::UI;
 
 void mainloop();
 void render();
@@ -131,6 +133,7 @@ int main(int argc, char **argv) {
 
   Map *map = new Map(matchmaker.getMapName());
   game = new Game(map, players);
+  Renderer::get()->setUI(new UI());
 
   // RUN IT
   mainloop();
