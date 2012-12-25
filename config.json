@@ -302,6 +302,7 @@
   "colors" :
   {
     "selected" : [0.1, 0.8, 0.1],
+    "targeted" : [0.8, 0.1, 0.1],
     "dummyPlayer" : [0.2, 0.2, 0.2],
     "team" : [
       [0.1, 0.1, 0.8],
@@ -392,6 +393,10 @@
       "pos"        : [600, 0],
       "size"       : [70, 50],
       "fontHeight" : 32.0
+    },
+    "highlight" :
+    {
+      "duration" : 0.5
     }
   },
 

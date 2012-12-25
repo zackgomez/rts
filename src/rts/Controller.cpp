@@ -175,8 +175,7 @@ void Controller::mouseDown(const glm::vec2 &screenCoord, int button) {
       if (entity && entity->getTeamID() != player_->getTeamID()
           && !selection_.empty()) {
         // Visual feedback
-        // TODO(zack) highlight the target not the ground
-        Renderer::get()->highlight(glm::vec2(loc.x, loc.y));
+        Renderer::get()->getUI()->highlightEntity(entity->getID());
 
         // Queue up action
         if (entity->hasProperty(Entity::P_CAPPABLE)) {
@@ -192,7 +191,7 @@ void Controller::mouseDown(const glm::vec2 &screenCoord, int button) {
       } else if (!selection_.empty() && (!entity || !selection_.count(eid))) {
         if (loc.x != HUGE_VAL && loc.y != HUGE_VAL) {
           // Visual feedback
-          Renderer::get()->highlight(glm::vec2(loc.x, loc.y));
+          Renderer::get()->getUI()->highlight(glm::vec2(loc.x, loc.y));
 
           // Queue up action
           action["type"] = ActionTypes::MOVE;

@@ -249,28 +249,6 @@ void Renderer::renderMap(const Map *map) {
         glm::mat4(1.f),
         glm::vec3(mapSize.x, mapSize.y, 1.f));
   renderRectangleProgram(transform);
-
-  // TODO(zack): move this to UI
-  // Render each of the highlights
-  for (auto& hl : highlights_) {
-    hl.remaining -= renderdt_;
-    glm::mat4 transform =
-      glm::scale(
-          glm::translate(
-            glm::mat4(1.f),
-            glm::vec3(hl.pos.x, hl.pos.y, 0.01f)),
-          glm::vec3(0.33f));
-    renderCircleColor(transform, glm::vec4(1, 0, 0, 1));
-  }
-  // Remove done highlights
-  for (size_t i = 0; i < highlights_.size(); ) {
-    if (highlights_[i].remaining <= 0.f) {
-      std::swap(highlights_[i], highlights_[highlights_.size() - 1]);
-      highlights_.pop_back();
-    } else {
-      i++;
-    }
-  }
 }
 
 void Renderer::startRender(float dt) {
@@ -418,13 +396,6 @@ std::set<id_t> Renderer::selectEntities(
 
 void Renderer::setSelection(const std::set<id_t> &select) {
   selection_ = select;
-}
-
-void Renderer::highlight(const glm::vec2 &mapCoord) {
-  MapHighlight hl;
-  hl.pos = mapCoord;
-  hl.remaining = 0.5f;
-  highlights_.push_back(hl);
 }
 
 void Renderer::setDragRect(const glm::vec3 &s, const glm::vec3 &e) {

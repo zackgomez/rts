@@ -54,6 +54,8 @@ UI::~UI() {
 }
 
 void UI::render(float dt) {
+  renderHighlights(dt);
+
   glDisable(GL_DEPTH_TEST);
 
   for (auto&& widget : widgets_) {
@@ -66,16 +68,33 @@ void UI::render(float dt) {
   glEnable(GL_DEPTH_TEST);
 }
 
+void UI::highlight(const glm::vec2 &mapCoord) {
+  MapHighlight hl;
+  hl.pos = mapCoord;
+  hl.remaining = fltParam("ui.highlight.duration");
+  highlights_.push_back(hl);
+}
+
+void UI::highlightEntity(id_t eid) {
+  entityHighlights_[eid] = fltParam("ui.highlight.duration");
+}
+
 void UI::renderEntity(const RenderEntity *e, const glm::mat4 &transform, float dt) {
-  if (!Renderer::get()->isSelected(e->getID())) {
-    return;
+  if (Renderer::get()->isSelected(e->getID())) {
+    // A bit of a hack here...
+    auto finalTransform = glm::translate(
+        glm::rotate(transform, -90.f, glm::vec3(1, 0, 0)),
+        glm::vec3(0, 0, 0.1));
+    renderCircleColor(finalTransform,
+        glm::vec4(vec3Param("colors.selected"), 1.f));
+  } else if (entityHighlights_.find(e->getID()) != entityHighlights_.end()) {
+    // A bit of a hack here...
+    auto finalTransform = glm::translate(
+        glm::rotate(transform, -90.f, glm::vec3(1, 0, 0)),
+        glm::vec3(0, 0, 0.1));
+    renderCircleColor(finalTransform,
+        glm::vec4(vec3Param("colors.targeted"), 1.f));
   }
-  // A bit of a hack here...
-  auto finalTransform = glm::translate(
-      glm::rotate(transform, -90.f, glm::vec3(1, 0, 0)),
-      glm::vec3(0, 0, 0.1));
-  renderCircleColor(finalTransform,
-      glm::vec4(vec3Param("colors.selected"), 1.f));
 }
 
 void UI::renderChat() {
@@ -163,6 +182,39 @@ void UI::renderMinimap() {
       vec3Param("global.defaultColor");
     float actorSize = fltParam("ui.minimap.actorSize");
     drawRect(pos, glm::vec2(actorSize), glm::vec4(pcolor, 1.f));
+  }
+}
+
+void UI::renderHighlights(float dt) {
+  // Render each of the highlights
+  for (auto& hl : highlights_) {
+    hl.remaining -= dt;
+    glm::mat4 transform =
+      glm::scale(
+          glm::translate(
+            glm::mat4(1.f),
+            glm::vec3(hl.pos.x, hl.pos.y, 0.01f)),
+          glm::vec3(0.33f));
+    renderCircleColor(transform, glm::vec4(1, 0, 0, 1));
+  }
+  // Remove done highlights
+  for (size_t i = 0; i < highlights_.size(); ) {
+    if (highlights_[i].remaining <= 0.f) {
+      std::swap(highlights_[i], highlights_[highlights_.size() - 1]);
+      highlights_.pop_back();
+    } else {
+      i++;
+    }
+  }
+
+  auto it = entityHighlights_.begin();
+  while (it != entityHighlights_.end()) {
+    auto cur = (entityHighlights_[it->first] -= dt);
+    if (cur <= 0.f) {
+      it = entityHighlights_.erase(it);
+    } else {
+      it++;
+    }
   }
 }
 

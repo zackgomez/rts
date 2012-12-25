@@ -33,7 +33,7 @@ class Renderer {
   void setUI(UI *ui);
   UI* getUI() {
     return ui_;
-  };
+  }
 
   Controller *getController() const {
     return controller_;
@@ -79,7 +79,6 @@ class Renderer {
   }
 
   // TODO(zack): move to UI
-  void highlight(const glm::vec2 &mapCoord);
   void setDragRect(const glm::vec3 &start, const glm::vec3 &end);
 
  private:
@@ -109,14 +108,7 @@ class Renderer {
   std::map<const RenderEntity *, glm::vec3> mapCoords_;
   std::set<id_t> selection_;
 
-  std::vector<MapHighlight> highlights_;
   glm::vec3 dragStart_, dragEnd_;
-};
-
-
-struct MapHighlight {
-  glm::vec2 pos;
-  float remaining;
 };
 
 struct ChatMessage {
