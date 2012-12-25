@@ -12,7 +12,7 @@ public:
   virtual id_t getID() const = 0;
 
   //virtual glm::vec2 getPosition(float dt) const = 0;
-  virtual float getAngle() const = 0;
+  virtual float getAngle(float dt) const = 0;
   virtual std::string getShaderName() const = 0;
   virtual std::string getMeshName() const = 0;
   virtual glm::vec4 getColor() const = 0;

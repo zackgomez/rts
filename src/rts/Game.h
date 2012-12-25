@@ -15,7 +15,9 @@ namespace rts {
 
 class Map;
 class Player;
-struct PlayerResources;
+struct PlayerResources {
+  float requisition;
+};
 
 // Handles the game logic and player actions, is very multithread aware.
 class Game {
@@ -122,10 +124,6 @@ class Game {
 
  private:
   static Game *instance_;
-};
-
-struct PlayerResources {
-  float requisition;
 };
 };  // namespace rts
 
