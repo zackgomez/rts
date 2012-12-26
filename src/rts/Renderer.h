@@ -78,9 +78,6 @@ class Renderer {
     return chats_;
   }
 
-  // TODO(zack): move to UI
-  void setDragRect(const glm::vec3 &start, const glm::vec3 &end);
-
  private:
   Renderer();
   glm::vec3 screenToNDC(const glm::vec2 &screenCoord) const;
@@ -107,8 +104,6 @@ class Renderer {
   std::map<const RenderEntity *, glm::vec3> ndcCoords_;
   std::map<const RenderEntity *, glm::vec3> mapCoords_;
   std::set<id_t> selection_;
-
-  glm::vec3 dragStart_, dragEnd_;
 };
 
 struct ChatMessage {

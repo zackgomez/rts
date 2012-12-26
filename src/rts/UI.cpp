@@ -33,9 +33,9 @@ glm::vec2 worldToMinimap(const glm::vec3 &mapPos) {
 }
 
 UI::UI()
-  : chatActive_(false) {
-  // TODO(zack): eventually make this preload some resources
-
+  : chatActive_(false),
+    dragStart_(HUGE_VAL),
+    dragEnd_(HUGE_VAL) {
   const char * texWidgetNames[] = {"ui.unitinfo", "ui.topbar"};
 
   for (std::string name : texWidgetNames) {
@@ -50,7 +50,6 @@ UI::~UI() {
   for (auto widget : widgets_) {
     delete widget;
   }
-  // TODO(zack): eventually make this signal it doesn't need the UI resources
 }
 
 void UI::render(float dt) {
@@ -62,10 +61,16 @@ void UI::render(float dt) {
     widget->render(dt);
   }
 
+  renderDragRect(dt);
   renderMinimap();
   renderChat();
 
   glEnable(GL_DEPTH_TEST);
+}
+
+void UI::setDragRect(const glm::vec3 &s, const glm::vec3 &e) {
+  dragStart_ = s;
+  dragEnd_ = e;
 }
 
 void UI::highlight(const glm::vec2 &mapCoord) {
@@ -215,6 +220,28 @@ void UI::renderHighlights(float dt) {
     } else {
       it++;
     }
+  }
+}
+
+void UI::renderDragRect(float dt) {
+  // Render drag selection if it exists
+  if (dragStart_ != glm::vec3(HUGE_VAL)) {
+    glm::mat4 fullmat =
+      getProjectionStack().current() * getViewStack().current();
+    const auto resolution = vec2Param("local.resolution");
+
+    glm::vec2 start = applyMatrix(fullmat, dragStart_).xy;
+    glm::vec2 end = applyMatrix(fullmat, dragEnd_).xy;
+    start = (glm::vec2(start.x, -start.y) + glm::vec2(1.f))
+        * 0.5f * resolution;
+    end = (glm::vec2(end.x, -end.y) + glm::vec2(1.f))
+        * 0.5f * resolution;
+
+    // TODO(zack): make this color a param
+    drawRectCenter((start + end) / 2.f, end - start,
+        glm::vec4(0.2f, 0.6f, 0.2f, 0.3f));
+    // Reset each frame
+    dragStart_ = glm::vec3(HUGE_VAL);
   }
 }
 

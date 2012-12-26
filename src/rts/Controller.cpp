@@ -103,7 +103,7 @@ void Controller::renderUpdate(float dt) {
   glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
   if (leftDrag_
       && glm::distance(loc, leftStart_) > fltParam("hud.minDragDistance")) {
-    Renderer::get()->setDragRect(leftStart_, loc);
+    Renderer::get()->getUI()->setDragRect(leftStart_, loc);
   } else if (leftDragMinimap_) {
     Renderer::get()->minimapUpdateCamera(screenCoord);
   }

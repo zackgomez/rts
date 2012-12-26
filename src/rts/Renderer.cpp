@@ -32,8 +32,6 @@ Renderer::Renderer()
   : controller_(nullptr),
     cameraPos_(0.f, 0.f, 5.f),
     resolution_(vec2Param("local.resolution")),
-    dragStart_(HUGE_VAL),
-    dragEnd_(HUGE_VAL),
     lastRender_(0) {
   // TODO(zack): move this to a separate initialize function
   initEngine(resolution_);
@@ -293,26 +291,6 @@ void Renderer::startRender(float dt) {
 }
 
 void Renderer::endRender() {
-  glm::mat4 fullmat =
-    getProjectionStack().current() * getViewStack().current();
-  // Render drag selection if it exists
-  if (dragStart_ != glm::vec3(HUGE_VAL)) {
-    glm::vec2 start = applyMatrix(fullmat, dragStart_).xy;
-    glm::vec2 end = applyMatrix(fullmat, dragEnd_).xy;
-    start = (glm::vec2(start.x, -start.y) + glm::vec2(1.f))
-        * 0.5f * resolution_;
-    end = (glm::vec2(end.x, -end.y) + glm::vec2(1.f))
-        * 0.5f * resolution_;
-
-    glDisable(GL_DEPTH_TEST);
-
-    // TODO(zack): make this color a param
-    drawRectCenter((start + end) / 2.f, end - start,
-        glm::vec4(0.2f, 0.6f, 0.2f, 0.3f));
-    // Reset each frame
-    dragStart_ = glm::vec3(HUGE_VAL);
-  }
-
   renderUI();
 
   SDL_GL_SwapBuffers();
@@ -396,11 +374,6 @@ std::set<id_t> Renderer::selectEntities(
 
 void Renderer::setSelection(const std::set<id_t> &select) {
   selection_ = select;
-}
-
-void Renderer::setDragRect(const glm::vec3 &s, const glm::vec3 &e) {
-  dragStart_ = s;
-  dragEnd_ = e;
 }
 
 glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {

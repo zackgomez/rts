@@ -29,19 +29,23 @@ class UI {
   void setChatBuffer(const std::string &buffer) {
     chatBuffer_ = buffer;
   }
+  void setDragRect(const glm::vec3 &start, const glm::vec3 &end);
 
  private:
   void renderChat();
   void renderMinimap();
   void renderHighlights(float dt);
+  void renderDragRect(float dt);
+
+  std::vector<UIWidget *> widgets_;
 
   std::vector<MapHighlight> highlights_;
   std::map<id_t, float> entityHighlights_;
 
-  std::vector<UIWidget *> widgets_;
-
   bool chatActive_;
   std::string chatBuffer_;
+
+  glm::vec3 dragStart_, dragEnd_;
 };
 
 class UIWidget {
