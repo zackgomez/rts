@@ -329,10 +329,6 @@ void Renderer::minimapUpdateCamera(const glm::vec2 &screenCoord) {
   updateCamera(cameraDelta);
 }
 
-bool Renderer::isSelected(id_t eid) const {
-  return selection_.find(eid) != selection_.end();
-}
-
 id_t Renderer::selectEntity(const glm::vec2 &screenCoord) const {
   glm::vec2 pos = glm::vec2(screenToNDC(screenCoord));
   id_t eid = NO_ENTITY;
@@ -378,10 +374,6 @@ std::set<id_t> Renderer::selectEntities(
   }
 
   return ret;
-}
-
-void Renderer::setSelection(const std::set<id_t> &select) {
-  selection_ = select;
 }
 
 glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {

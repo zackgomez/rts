@@ -44,7 +44,6 @@ class UI {
 
   std::vector<MapHighlight> highlights_;
   std::map<id_t, float> entityHighlights_;
-
   bool chatActive_;
   std::string chatBuffer_;
 

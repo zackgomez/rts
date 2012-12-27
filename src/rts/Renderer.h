@@ -79,8 +79,6 @@ class Renderer {
   id_t selectEntity(const glm::vec2 &screenCoord) const;
   std::set<id_t> selectEntities(const glm::vec3 &start,
                                 const glm::vec3 &end, id_t pid) const;
-  void setSelection(const std::set<id_t> &selection);
-  bool isSelected(id_t eid) const;
   glm::vec2 convertUIPos(const glm::vec2 &pos) const;
 
   // Returns the terrain location at the given screen coord.  If the coord

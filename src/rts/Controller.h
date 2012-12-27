@@ -49,10 +49,6 @@ class Controller {
   // TODO(zack): move to renderer/engine as a camera velocity
   glm::vec2 cameraPanDir_;
 
-  // TODO(zack): remove? move to player?
-  void setSelection(const std::set<id_t> &new_selection);
-  std::set<id_t> selection_;
-
   // Called once per frame with render dt
   void renderUpdate(float dt);
 };

@@ -90,11 +90,25 @@ class LocalPlayer : public Player {
   virtual void startTick(tick_t tick);
   virtual bool isReady() const;
 
+  void setSelection(const std::set<id_t> &selection) {
+    selection_ = selection;
+  }
+  void setSelection(std::set<id_t> &&selection) {
+    selection_ = std::move(selection);
+  }
+  bool isSelected(id_t eid) const {
+    return selection_.find(eid) != selection_.end();
+  }
+  const std::set<id_t>& getSelection() const {
+    return selection_;
+  }
+
  private:
   void addAction(const PlayerAction &a);
 
   std::queue<PlayerAction> actions_;
   std::mutex actionMutex_;
+  std::set<id_t> selection_;
 };
 
 class DummyPlayer : public Player {

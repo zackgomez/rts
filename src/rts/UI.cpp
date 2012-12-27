@@ -45,6 +45,9 @@ UI::~UI() {
 }
 
 void UI::initGameWidgets(id_t playerID) {
+  // TODO(zack): remove this, put it in a widget
+  playerID_ = playerID;
+
   const char * texWidgetNames[] = {"ui.unitinfo", "ui.topbar"};
   for (std::string name : texWidgetNames) {
     auto pos = convertUIPos(vec2Param(name + ".pos"));
@@ -124,7 +127,8 @@ void UI::highlightEntity(id_t eid) {
 }
 
 void UI::renderEntity(const ModelEntity *e, const glm::mat4 &transform, float dt) {
-  if (Renderer::get()->isSelected(e->getID())) {
+  auto player = (LocalPlayer*) Game::get()->getPlayer(playerID_);
+  if (player->isSelected(e->getID())) {
     // A bit of a hack here...
     auto finalTransform = glm::translate(
         glm::rotate(transform, -90.f, glm::vec3(1, 0, 0)),

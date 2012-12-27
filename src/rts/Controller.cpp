@@ -90,14 +90,14 @@ void Controller::renderUpdate(float dt) {
 
   // Deselect dead entities
   std::set<id_t> newsel;
-  for (auto eid : selection_) {
+  for (auto eid : player_->getSelection()) {
     assertEid(eid);
     const GameEntity *e = Game::get()->getEntity(eid);
     if (e && e->getPlayerID() == player_->getPlayerID()) {
       newsel.insert(eid);
     }
   }
-  setSelection(newsel);
+  player_->setSelection(newsel);
 
   // Draw drag rectangle if over threshold size
   glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
@@ -119,7 +119,7 @@ void Controller::quitEvent() {
 
 void Controller::mouseDown(const glm::vec2 &screenCoord, int button) {
   PlayerAction action;
-  std::set<id_t> newSelect = selection_;
+  std::set<id_t> newSelect = player_->getSelection();
 
   glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
   // The entity (maybe) under the cursor
@@ -152,7 +152,7 @@ void Controller::mouseDown(const glm::vec2 &screenCoord, int button) {
       } else {
         // If order, then execute it
         action["type"] = order_;
-        action["entity"] = toJson(selection_);
+        action["entity"] = toJson(player_->getSelection());
         action["target"] = toJson(loc);
         if (entity && entity->getTeamID() != player_->getTeamID()) {
           action["enemy_id"] = toJson(entity->getID());
@@ -173,7 +173,7 @@ void Controller::mouseDown(const glm::vec2 &screenCoord, int button) {
       // If right clicked on enemy unit (and we have a selection)
       // go attack them
       if (entity && entity->getTeamID() != player_->getTeamID()
-          && !selection_.empty()) {
+          && !player_->getSelection().empty()) {
         // Visual feedback
         Renderer::get()->getUI()->highlightEntity(entity->getID());
 
@@ -183,19 +183,20 @@ void Controller::mouseDown(const glm::vec2 &screenCoord, int button) {
         } else {
           action["type"] = ActionTypes::ATTACK;
         }
-        action["entity"] = toJson(selection_);
+        action["entity"] = toJson(player_->getSelection());
         action["enemy_id"] = toJson(eid);
         action["pid"] = toJson(player_->getPlayerID());
       // If we have a selection, and they didn't click on the current
       // selection, move them to target
-      } else if (!selection_.empty() && (!entity || !selection_.count(eid))) {
+      } else if (!player_->getSelection().empty()
+          && (!entity || !player_->getSelection().count(eid))) {
         if (loc.x != HUGE_VAL && loc.y != HUGE_VAL) {
           // Visual feedback
           Renderer::get()->getUI()->highlight(glm::vec2(loc.x, loc.y));
 
           // Queue up action
           action["type"] = ActionTypes::MOVE;
-          action["entity"] = toJson(selection_);
+          action["entity"] = toJson(player_->getSelection());
           action["target"] = toJson(loc);
           action["pid"] = toJson(player_->getPlayerID());
         }
@@ -208,7 +209,7 @@ void Controller::mouseDown(const glm::vec2 &screenCoord, int button) {
   }
 
   // Mutate, if game isn't paused
-  setSelection(newSelect);
+  player_->setSelection(newSelect);
   if (action.isMember("type")) {
     MessageHub::get()->addAction(action);
   }
@@ -221,14 +222,14 @@ void Controller::mouseUp(const glm::vec2 &screenCoord, int button) {
   if (button == SDL_BUTTON_LEFT) {
     std::set<id_t> newSelect;
     if (glm::distance(leftStart_, loc) > fltParam("hud.minDragDistance")) {
+      auto selection = player_->getSelection();
       newSelect = Renderer::get()
           ->selectEntities(leftStart_, loc, player_->getPlayerID());
 
-      if (!shift_) {
-        selection_.clear();
+      if (shift_) {
+        newSelect.insert(selection.begin(), selection.end());
       }
-      selection_.insert(newSelect.begin(), newSelect.end());
-      setSelection(selection_);
+      player_->setSelection(std::move(newSelect));
     }
 
     leftDrag_ = false;
@@ -269,14 +270,14 @@ void Controller::keyPress(SDL_keysym keysym) {
       if (!order_.empty()) {
         order_.clear();
       } else {
-        setSelection(std::set<id_t>());
+        player_->setSelection(std::set<id_t>());
       }
     } else if (key == SDLK_LSHIFT || key == SDLK_RSHIFT) {
       shift_ = true;
     } else if (key == SDLK_g) {
       // Debug commands
       SDL_WM_GrabInput(SDL_GRAB_ON);
-    } else if (!selection_.empty()) {
+    } else if (!player_->getSelection().empty()) {
       // Handle unit commands
       // Order types
       if (key == SDLK_a) {
@@ -285,7 +286,7 @@ void Controller::keyPress(SDL_keysym keysym) {
         order_ = ActionTypes::MOVE;
       } else if (key == SDLK_s) {
         action["type"] = ActionTypes::STOP;
-        action["entity"] = toJson(selection_);
+        action["entity"] = toJson(player_->getSelection());
         action["pid"] = toJson(player_->getPlayerID());
         MessageHub::get()->addAction(action);
       } else {
@@ -293,7 +294,7 @@ void Controller::keyPress(SDL_keysym keysym) {
           if (key == MAIN_KEYS[i]) {
             // TODO(zack): this assumption that head of selection is always
             // the unit we're building on is not good
-            auto sel = selection_.begin();
+            auto sel = player_->getSelection().begin();
             const GameEntity *ent = Game::get()->getEntity(*sel);
             // The main action of a building is production
             if (ent->getType() == "BUILDING") {
@@ -368,10 +369,5 @@ void Controller::keyRelease(SDL_keysym keysym) {
   } else if (key == SDLK_LSHIFT || key == SDLK_RSHIFT) {
     shift_ = false;
   }
-}
-
-void Controller::setSelection(const std::set<id_t> &s) {
-  selection_ = s;
-  Renderer::get()->setSelection(selection_);
 }
 };  // rts
