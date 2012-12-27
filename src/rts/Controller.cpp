@@ -7,6 +7,7 @@
 #include "rts/Player.h"
 #include "rts/PlayerAction.h"
 #include "rts/Renderer.h"
+#include "rts/UI.h"
 
 namespace rts {
 
@@ -260,6 +261,8 @@ void Controller::keyPress(SDL_keysym keysym) {
   } else if (state_ == PlayerState::DEFAULT) {
     if (key == SDLK_RETURN) {
       state_ = PlayerState::CHATTING;
+      Renderer::get()->getUI()->setChatActive(true);
+      Renderer::get()->getUI()->setChatBuffer(message_);
       SDL_EnableUNICODE(SDL_ENABLE);
       SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,
           SDL_DEFAULT_REPEAT_INTERVAL);
@@ -334,15 +337,18 @@ void Controller::keyPress(SDL_keysym keysym) {
         MessageHub::get()->addAction(action);
       }
       message_.clear();
+      Renderer::get()->getUI()->setChatActive(false);
     } else if (key == SDLK_ESCAPE) {
       // Clears message and exits chat mode.
       SDL_EnableUNICODE(SDL_DISABLE);
       SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
       state_ = PlayerState::DEFAULT;
       message_.clear();
+      Renderer::get()->getUI()->setChatActive(false);
     } else if (key == SDLK_BACKSPACE) {
       if (!message_.empty())
         message_.erase(message_.end() - 1);
+      Renderer::get()->getUI()->setChatBuffer(message_);
     } else if (unicode != 0 &&
         (keysym.mod == KMOD_NONE   ||
          keysym.mod == KMOD_LSHIFT ||
@@ -350,6 +356,7 @@ void Controller::keyPress(SDL_keysym keysym) {
          keysym.mod == KMOD_CAPS   ||
          keysym.mod == KMOD_NUM)) {
       message_.append(1, unicode);
+      Renderer::get()->getUI()->setChatBuffer(message_);
     }
   }
 }

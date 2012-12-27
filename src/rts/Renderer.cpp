@@ -34,7 +34,6 @@ Renderer::Renderer()
     resolution_(vec2Param("local.resolution")),
     dragStart_(HUGE_VAL),
     dragEnd_(HUGE_VAL),
-    displayChatBoxTimer_(0.f),
     lastRender_(0) {
   // TODO(zack): move this to a separate initialize function
   initEngine(resolution_);
@@ -85,9 +84,7 @@ void Renderer::setUI(UI *ui) {
 void Renderer::addChatMessage(id_t from, const std::string &message) {
   std::stringstream ss;
   ss << Game::get()->getPlayer(from)->getName() << ": " << message;
-  chats_.push_back(ss.str());
-
-  displayChatBoxTimer_ = fltParam("hud.messages.chatDisplayTime");
+  chats_.emplace_back(ss.str(), Clock::now());
 }
 
 void Renderer::renderMessages(const std::set<Message> &messages) {
@@ -163,46 +160,11 @@ void Renderer::renderUI() {
     pos.x += size.x * 2.0;
   }
 
-  // minimap underlay
-  /*
-  pos = convertUIPos(vec2Param("ui.minimap.pos"));
-  size = vec2Param("ui.minimap.dim");
-  tex = ResourceManager::get()->getTexture(strParam("ui.minimap.texture"));
-  drawTexture(pos, size, tex);
-  */
-
   // unit info underlay:
   pos = convertUIPos(vec2Param("ui.unitinfo.pos"));
   size = vec2Param("ui.unitinfo.dim");
   tex = ResourceManager::get()->getTexture(strParam("ui.unitinfo.texture"));
   drawTexture(pos, size, tex);
-
-  // Render messages
-  /*
-  if (displayChatBoxTimer_ > 0.f ||
-      player_->getState() == PlayerState::CHATTING) {
-    pos = convertUIPos(vec2Param("hud.messages.pos"));
-    float fontHeight = fltParam("hud.messages.fontHeight");
-    float messageHeight = fontHeight + fltParam("hud.messages.heightBuffer");
-    height = intParam("hud.messages.max") * messageHeight;
-    glm::vec2 startPos = pos - glm::vec2(0, height);
-    if (player_->getState() == PlayerState::CHATTING) height += messageHeight;
-    size = glm::vec2(fltParam("hud.messages.backgroundWidth"), height);
-    drawRect(startPos, size, vec4Param("hud.messages.backgroundColor"));
-    int numMessages = std::min(intParam("hud.messages.max"),
-        (int)chats_.size());
-    for (int i = 1; i <= numMessages; i++) {
-      const std::string &message = chats_[chats_.size() - i];
-      glm::vec2 messagePos = pos;
-      messagePos.y -= i * messageHeight;
-      FontManager::get()->drawString(message, messagePos, fontHeight);
-    }
-    std::string localMessage = player_->getLocalMessage();
-    if (!localMessage.empty())
-      FontManager::get()->drawString(localMessage, pos, fontHeight);
-  }
-  displayChatBoxTimer_ -= renderdt_;
-  */
 
   if (ui_) {
     ui_->render(renderdt_);
@@ -510,7 +472,7 @@ glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
   return glm::vec3(terrain);
 }
 
-const std::map<const RenderEntity *, glm::vec3>& 
+const std::map<const RenderEntity *, glm::vec3>&
 Renderer::getEntityWorldPosMap() const {
   return mapCoords_;
 }

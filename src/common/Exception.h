@@ -7,6 +7,7 @@
 class exception_with_trace : public std::exception {
  public:
   explicit exception_with_trace(const std::string &msg = "");
+  virtual ~exception_with_trace() throw() { }
   virtual const char *what() const throw();
  private:
   std::string msg_;

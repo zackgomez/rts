@@ -6,7 +6,7 @@
 #include <string>
 #include <thread>
 
-//#define SECTION_RECORDING
+// #define SECTION_RECORDING
 
 class Clock {
  public:
@@ -24,6 +24,10 @@ class Clock {
   size_t microseconds() const;
 
   typedef std::chrono::high_resolution_clock clock;
+  typedef std::chrono::time_point<clock> time_point;
+
+  static time_point now();
+  static float secondsSince(const Clock::time_point &then);
 
  private:
   std::chrono::time_point<clock> start_;

@@ -374,11 +374,7 @@ float Game::getVictoryPoints(id_t tid) const {
 void Game::handleAction(id_t playerID, const PlayerAction &action) {
   if (action["type"] == ActionTypes::CHAT) {
     invariant(action.isMember("chat"), "malformed CHAT action");
-    std::stringstream ss;
-    ss << getPlayer(playerID)->getName() << ": " << action["chat"].asString();
-
-    // TODO(zack) perhaps color message if to team, and only display messages
-    // meant for the local player
+    // TODO(zack) only send message if it's meant for the player
     Renderer::get()->addChatMessage(playerID, action["chat"].asString());
   } else {
     Message msg;

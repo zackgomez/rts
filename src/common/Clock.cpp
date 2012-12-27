@@ -73,8 +73,18 @@ void Clock::dumpTimes() {
 #endif
 }
 
+Clock::time_point Clock::now() {
+  return clock::now();
+}
+
+float Clock::secondsSince(const Clock::time_point &then) {
+  auto end = Clock::now();
+  auto usec = duration_cast<std::chrono::microseconds>(end - then).count();
+  return usec / 1e6f;
+}
+
 Clock& Clock::start() {
-  start_ = clock::now();
+  start_ = Clock::now();
   return *this;
 }
 

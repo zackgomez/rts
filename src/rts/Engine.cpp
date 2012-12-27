@@ -480,9 +480,9 @@ static void loadResources() {
   };
 
   resources.rectBuffer = makeBuffer(
-                           GL_ARRAY_BUFFER,
-                           rectPositions,
-                           sizeof(rectPositions));
+      GL_ARRAY_BUFFER,
+      rectPositions,
+      sizeof(rectPositions));
 
   // Create solid color program for renderRectangleColor
   resources.colorProgram = ResourceManager::get()->getShader("color");

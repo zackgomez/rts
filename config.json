@@ -319,18 +319,7 @@
       "pos" : [0, 50],
       "color" : [0.5, 0.5, 0.5, 1.0]
     },
-    "minDragDistance" : 0.3,
-    "messages" :
-    {
-      // where the local message is drawn
-      "pos"             : [25, -320],
-      "fontHeight"      : 16,
-      "heightBuffer"    : 4,
-      "max"             : 12,
-      "backgroundColor" : [1, 1, 1, 0.25],
-      "backgroundWidth" : 400,
-      "chatDisplayTime" : 5.0
-    }
+    "minDragDistance" : 0.3
   },
 
   "fonts" :
@@ -357,6 +346,18 @@
       "dim"   : [300, 300],
       "viewportLineColor" : [1, 1, 1, 1],
       "actorSize" : 4
+    },
+    "messages" :
+    {
+      // where the local message is drawn
+      "pos"             : [25, -320],
+      "fontHeight"      : 16,
+      "heightBuffer"    : 4,
+      "max"             : 12,
+      "backgroundColor" : [1, 1, 1, 0.25],
+      "inputColor"      : [0.8, 0.8, 0.8, 0.25],
+      "backgroundWidth" : 400,
+      "chatDisplayTime" : 5.0
     },
     "unitinfo" :
     {

@@ -4,6 +4,7 @@
 #include <set>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
+#include "common/Clock.h"
 #include "common/Logger.h"
 #include "rts/Entity.h"
 
@@ -13,9 +14,11 @@ class Actor;
 class Controller;
 class Game;
 class Map;
-struct MapHighlight;
 class RenderEntity;
 class UI;
+
+struct MapHighlight;
+struct ChatMessage;
 
 class Renderer {
  public:
@@ -28,6 +31,9 @@ class Renderer {
     game_ = game;
   }
   void setUI(UI *ui);
+  UI* getUI() {
+    return ui_;
+  };
 
   Controller *getController() const {
     return controller_;
@@ -68,6 +74,9 @@ class Renderer {
   // is not on the map returns glm::vec3(HUGE_VAL).
   glm::vec3 screenToTerrain(const glm::vec2 &screenCoord) const;
   const std::map<const RenderEntity *, glm::vec3>& getEntityWorldPosMap() const;
+  const std::vector<ChatMessage>& getChatMessages() const {
+    return chats_;
+  }
 
   // TODO(zack): move to UI
   void highlight(const glm::vec2 &mapCoord);
@@ -94,8 +103,7 @@ class Renderer {
   uint32_t lastRender_;
   float renderdt_;
 
-  std::vector<std::string> chats_;
-  float displayChatBoxTimer_;
+  std::vector<ChatMessage> chats_;
 
   std::map<const RenderEntity *, glm::vec3> ndcCoords_;
   std::map<const RenderEntity *, glm::vec3> mapCoords_;
@@ -109,6 +117,14 @@ class Renderer {
 struct MapHighlight {
   glm::vec2 pos;
   float remaining;
+};
+
+struct ChatMessage {
+  ChatMessage(const std::string &m, const Clock::time_point &t)
+      : msg(m), time(t) { }
+
+  std::string msg;
+  Clock::time_point time;
 };
 };  // namespace rts
 
