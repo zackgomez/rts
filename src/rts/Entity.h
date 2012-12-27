@@ -19,14 +19,25 @@ class Entity : public GameEntityRenderShim {
                   bool collidable = false);
   virtual ~Entity();
 
-  bool isTargetable() const {
-    return targetable_;
-  }
-  bool isMobile() const {
-    return mobile_;
-  }
-  bool isCollidable() const {
-    return collidable_;
+  static const uint32_t P_TARGETABLE = 463132888;
+  static const uint32_t P_MOBILE = 673066797;
+  static const uint32_t P_CAPPABLE = 815586235;
+  static const uint32_t P_ACTOR = 913794634;
+
+  virtual bool hasProperty(uint32_t property) const {
+    if (property == P_TARGETABLE) {
+      return targetable_;
+    }
+    else if (property == P_MOBILE) {
+      return mobile_;
+    }
+    else if (property == P_COLLIDABLE) {
+      return collidable_;
+    }
+    else if (property == P_RENDERABLE) {
+      return true;
+    }
+    return false;
   }
 
   // This entity's unique id

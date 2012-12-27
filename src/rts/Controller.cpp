@@ -179,9 +179,8 @@ void Controller::mouseDown(const glm::vec2 &screenCoord, int button) {
         Renderer::get()->highlight(glm::vec2(loc.x, loc.y));
 
         // Queue up action
-        if (entity->getType() == Building::TYPE) {
-          action["type"] = ((Building*)entity)->isCappable() ?
-            ActionTypes::CAPTURE : ActionTypes::ATTACK;
+        if (entity->hasProperty(Entity::P_CAPPABLE)) {
+          action["type"] = ActionTypes::CAPTURE;
         } else {
           action["type"] = ActionTypes::ATTACK;
         }

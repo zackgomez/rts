@@ -17,7 +17,6 @@ public:
   virtual const std::string getType() const = 0;
   virtual const std::string& getName() const = 0;
   virtual const glm::vec2 getSize() const = 0;
-  virtual bool isCollidable() const = 0;
 
   // Eventual interface, now just adapters
   virtual glm::mat4 getTransform(float dt) const;

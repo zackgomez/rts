@@ -192,13 +192,13 @@ void Game::update(float dt) {
   // Collision detection
   for (auto it = entities_.begin(); it != entities_.end(); it++) {
     const Entity *e1 = it->second;
-    if (!e1->isCollidable()) {
+    if (!e1->hasProperty(Entity::P_COLLIDABLE)) {
       continue;
     }
     auto it2 = it;
     for (it2++; it2 != entities_.end(); it2++) {
       const Entity *e2 = it2->second;
-      if (!e2->isCollidable()) {
+      if (!e2->hasProperty(Entity::P_COLLIDABLE)) {
         continue;
       }
       if (boxBoxCollision(

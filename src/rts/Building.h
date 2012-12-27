@@ -20,18 +20,21 @@ class Building : public Actor {
   virtual void update(float dt);
   virtual bool needsRemoval() const;
 
+  virtual bool hasProperty(uint32_t property) const {
+    if (property == P_CAPPABLE) {
+      return hasParam("captureTime");
+    }
+    return Actor::hasProperty(property);
+  }
+
   // Returns if unit uid can capture this building
   bool canCapture(id_t uid) const;
-  // Returns if building is capturable at all
-  bool isCappable() const {
-    return hasParam("captureTime");
-  }
 
   float getCap() const {
     return capAmount_;
   }
   float getMaxCap() const {
-    return isCappable() ? param("captureTime") : 0.f;
+    return hasProperty(P_CAPPABLE) ? param("captureTime") : 0.f;
   }
   id_t getCapperID() const {
     return capperID_;

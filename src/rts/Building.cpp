@@ -25,7 +25,7 @@ void Building::handleMessage(const Message &msg) {
     invariant(toID(msg["pid"]) != getPlayerID(),
         "cannot capture own structures");
     invariant(getType() == Building::TYPE, "can only capture structures");
-    invariant(isCappable(), "structure not capturable");
+    invariant(hasProperty(P_CAPPABLE), "structure not capturable");
 
     // Tells us the unit is still capping the point.
     capResetDelay_ = 0;
@@ -92,7 +92,7 @@ void Building::update(float dt) {
 bool Building::canCapture(id_t eid) const {
   const Entity *e = Game::get()->getEntity(eid);
   id_t pid = e->getPlayerID();
-  return isCappable() && pid != getPlayerID() &&
+  return hasProperty(P_CAPPABLE) && pid != getPlayerID() &&
     (capperID_ == NO_ENTITY || eid == capperID_);
 }
 

@@ -59,7 +59,7 @@ glm::vec4 GameEntityRenderShim::getColor() const {
 void GameEntityRenderShim::render(float dt) {
   glm::mat4 transform = getTransform(dt);
 
-  if (isCollidable()) {
+  if (hasProperty(Entity::P_COLLIDABLE)) {
     record_section("collidable");
     // render collision rect
     glm::mat4 transform =

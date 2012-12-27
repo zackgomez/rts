@@ -200,7 +200,7 @@ const Entity * Unit::getTarget(id_t lastTargetID) const {
       [&](const Entity *e) -> float {
         if (e->getPlayerID() != NO_PLAYER
             && e->getTeamID() != getTeamID()
-            && e->isTargetable()) {
+            && e->hasProperty(P_TARGETABLE)) {
           float dist = glm::distance(
             pos_,
             e->getPosition());

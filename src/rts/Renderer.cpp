@@ -94,6 +94,9 @@ void Renderer::renderMessages(const std::set<Message> &messages) {
 
 void Renderer::renderEntity(RenderEntity *entity) {
   record_section("renderEntity");
+  if (!entity->hasProperty(RenderEntity::P_RENDERABLE)) {
+      return;
+  }
   entity->render(simdt_);
   auto transform = entity->getTransform(simdt_);
 
@@ -158,13 +161,13 @@ void Renderer::renderActorInfo() {
     const Entity *e = (const Entity *)pair.first;
     auto &ndc = pair.second;
     auto type = e->getType();
-    // TODO(zack): only render status for actors currently visible
-    if (!(type == Unit::TYPE || type == Building::TYPE)) {
+    // TODO(zack): only render status for actors currently on screen/visible to
+    // player
+    if (!e->hasProperty(Entity::P_ACTOR)) {
       continue;
     }
     auto actor = (const Actor *)e;
-    if (actor->getType() == Building::TYPE &&
-      ((Building*)actor)->isCappable()) {
+    if (actor->hasProperty(Entity::P_CAPPABLE)) {
         Building *building = (Building*)actor;
         if (building->getCap() > 0.f &&
           building->getCap() < building->getMaxCap()) {

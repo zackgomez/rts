@@ -9,7 +9,13 @@ class RenderEntity
 public:
   virtual ~RenderEntity() { }
 
+  static const uint32_t P_RENDERABLE = 565038773;
+  static const uint32_t P_COLLIDABLE = 983556954;
+
   virtual id_t getID() const = 0;
+  virtual bool hasProperty(uint32_t property) const {
+      return false;
+  }
 
   //virtual glm::vec2 getPosition(float dt) const = 0;
   virtual float getAngle(float dt) const = 0;

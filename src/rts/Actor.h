@@ -33,6 +33,13 @@ class Actor : public Entity {
         bool collidable = true);
   virtual ~Actor();
 
+  virtual bool hasProperty(uint32_t property) const {
+    if (property == P_ACTOR) {
+      return true;
+    }
+    return Entity::hasProperty(property);
+  }
+
   virtual void handleMessage(const Message &msg);
   virtual void update(float dt);
   virtual std::queue<Production> getProductionQueue() const {
