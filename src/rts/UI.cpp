@@ -8,6 +8,7 @@
 #include "rts/Map.h"
 #include "rts/Player.h"
 #include "rts/Renderer.h"
+#include "rts/ResourceManager.h"
 #include "rts/Unit.h"
 
 namespace rts {
@@ -34,14 +35,30 @@ glm::vec2 worldToMinimap(const glm::vec3 &mapPos) {
 UI::UI()
   : chatActive_(false) {
   // TODO(zack): eventually make this preload some resources
+
+  const char * texWidgetNames[] = {"ui.unitinfo", "ui.topbar"};
+
+  for (std::string name : texWidgetNames) {
+    auto pos = convertUIPos(vec2Param(name + ".pos"));
+    auto size = vec2Param(name + ".dim");
+    auto tex = strParam(name + ".texture");
+    widgets_.push_back(new TextureWidget(pos, size, tex));
+  }
 }
 
 UI::~UI() {
+  for (auto widget : widgets_) {
+    delete widget;
+  }
   // TODO(zack): eventually make this signal it doesn't need the UI resources
 }
 
 void UI::render(float dt) {
   glDisable(GL_DEPTH_TEST);
+
+  for (auto&& widget : widgets_) {
+    widget->render(dt);
+  }
 
   renderMinimap();
   renderChat();
@@ -135,5 +152,19 @@ void UI::renderMinimap() {
     float actorSize = fltParam("ui.minimap.actorSize");
     drawRect(pos, glm::vec2(actorSize), glm::vec4(pcolor, 1.f));
   }
+}
+
+TextureWidget::TextureWidget(
+    const glm::vec2 &pos,
+    const glm::vec2 &size,
+    const std::string &texName)
+  : pos_(pos),
+    size_(size),
+    texName_(texName) {
+}
+
+void TextureWidget::render(float dt) {
+  auto tex = ResourceManager::get()->getTexture(texName_);
+  drawTexture(pos_, size_, tex);
 }
 };  // rts

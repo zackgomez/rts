@@ -117,21 +117,9 @@ void Renderer::renderUI() {
   // Actor info health/mana etc for actors on the screen
   renderActorInfo();
 
-  // TODO(connor) there may be a better way to do this
-  // perhaps store the names of all the UI elements in an array
-  // and iterate over it?
-
-  glm::vec2 pos, size;
-  GLuint tex;
-  float height;
-  std::stringstream ss;
-
-  // top bar:
-  record_section("topBar");
-  pos = convertUIPos(vec2Param("ui.topbar.pos"));
-  size = vec2Param("ui.topbar.dim");
-  tex = ResourceManager::get()->getTexture(strParam("ui.topbar.texture"));
-  drawTexture(pos, size, tex);
+  if (ui_) {
+    ui_->render(renderdt_);
+  }
 
   // Requestion display
   /*
@@ -144,9 +132,10 @@ void Renderer::renderUI() {
   */
 
   // Victory points
-  pos = convertUIPos(vec2Param("ui.vicdisplay.pos"));
-  size = vec2Param("ui.vicdisplay.size");
-  height = fltParam("ui.vicdisplay.fontHeight");
+  auto pos = convertUIPos(vec2Param("ui.vicdisplay.pos"));
+  auto size = vec2Param("ui.vicdisplay.size");
+  auto height = fltParam("ui.vicdisplay.fontHeight");
+  std::stringstream ss;
   for (id_t tid : Game::get()->getTeams()) {
     // background in team color
     int col_idx = tid - STARTING_TID;
@@ -158,16 +147,6 @@ void Renderer::renderUI() {
     FontManager::get()->drawString(ss.str(), pos, height);
 
     pos.x += size.x * 2.0;
-  }
-
-  // unit info underlay:
-  pos = convertUIPos(vec2Param("ui.unitinfo.pos"));
-  size = vec2Param("ui.unitinfo.dim");
-  tex = ResourceManager::get()->getTexture(strParam("ui.unitinfo.texture"));
-  drawTexture(pos, size, tex);
-
-  if (ui_) {
-    ui_->render(renderdt_);
   }
 
   glEnable(GL_DEPTH_TEST);
