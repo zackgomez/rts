@@ -4,7 +4,7 @@
 #include <GL/glew.h>
 #include <string>
 #include <glm/glm.hpp>
-#include "MatrixStack.h"
+#include "rts/MatrixStack.h"
 
 struct Mesh;
 
@@ -59,6 +59,12 @@ void drawRect(
     const glm::vec2 &pos,  // top left corner
     const glm::vec2 &size,  // width/height
     const glm::vec4 &color);
+void drawShaderCenter(
+    const glm::vec2 &pos,  // center
+    const glm::vec2 &size);  // width/height
+void drawShader(
+    const glm::vec2 &pos,  // top left corner
+    const glm::vec2 &size);  // width/height
 // Draws a texture
 void drawTextureCenter(
     const glm::vec2 &pos,  // center

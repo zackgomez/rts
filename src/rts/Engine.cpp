@@ -138,29 +138,13 @@ void renderRectangleColor(
     const glm::vec4 &color) {
   record_section("renderRectangleColor");
   GLuint program = resources.colorProgram;
-  GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
-  GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
   GLuint colorUniform = glGetUniformLocation(program, "color");
 
   // Enable program and set up values
   glUseProgram(program);
-  glUniformMatrix4fv(projectionUniform, 1, GL_FALSE,
-      glm::value_ptr(projStack.current()));
-  glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE,
-      glm::value_ptr(viewStack.current() * modelMatrix));
   glUniform4fv(colorUniform, 1, glm::value_ptr(color));
 
-  // Bind attributes
-  glBindBuffer(GL_ARRAY_BUFFER, resources.rectBuffer);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-  // RENDER
-  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-  // Clean up
-  glDisableVertexAttribArray(0);
-  glUseProgram(0);
+  renderRectangleProgram(modelMatrix);
 }
 
 void renderRectangleProgram(const glm::mat4 &modelMatrix) {
@@ -281,12 +265,10 @@ void drawRect(
   drawRectCenter(center, size, color);
 }
 
-void drawTextureCenter(
-  const glm::vec2 &pos,  // center
-  const glm::vec2 &size,  // width/height
-  const GLuint texture,
-  const glm::vec4 &texcoord) {
-  record_section("drawTexture");
+void drawShaderCenter(
+  const glm::vec2 &pos,
+  const glm::vec2 &size) {
+  record_section("drawShader");
   glm::mat4 transform =
     glm::scale(
       glm::translate(glm::mat4(1.f), glm::vec3(pos, 0.f)),
@@ -298,6 +280,26 @@ void drawTextureCenter(
   projStack.current() =
     glm::ortho(0.f, screenRes.x, screenRes.y, 0.f);
 
+  renderRectangleProgram(transform);
+
+  viewStack.pop();
+  projStack.pop();
+}
+
+void drawShader(
+  const glm::vec2 &pos,
+  const glm::vec2 &size) {
+  glm::vec2 center = pos + size/2.f;
+  drawShaderCenter(center, size);
+}
+
+void drawTextureCenter(
+  const glm::vec2 &pos,  // center
+  const glm::vec2 &size,  // width/height
+  const GLuint texture,
+  const glm::vec4 &texcoord) {
+  record_section("drawTexture");
+
   glUseProgram(resources.texProgram);
   GLuint textureUniform = glGetUniformLocation(resources.texProgram, "texture");
   GLuint tcUniform = glGetUniformLocation(resources.texProgram, "texcoord");
@@ -308,10 +310,7 @@ void drawTextureCenter(
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, texture);
 
-  renderRectangleProgram(transform);
-
-  viewStack.pop();
-  projStack.pop();
+  drawShaderCenter(pos, size);
 }
 
 void drawTexture(
