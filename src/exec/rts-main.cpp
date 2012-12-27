@@ -133,7 +133,9 @@ int main(int argc, char **argv) {
 
   Map *map = new Map(matchmaker.getMapName());
   game = new Game(map, players);
-  Renderer::get()->setUI(new UI());
+  auto ui = new UI();
+  ui->initGameWidgets(matchmaker.getLocalPlayerID());
+  Renderer::get()->setUI(ui);
 
   // RUN IT
   mainloop();

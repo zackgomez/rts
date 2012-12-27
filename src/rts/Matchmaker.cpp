@@ -208,6 +208,10 @@ std::string Matchmaker::getMapName() const {
     "you must call a setup method before map name is available");
   return mapName_;
 }
+id_t Matchmaker::getLocalPlayerID() const {
+  invariant(localPlayer_, "local player uninitialized");
+  return localPlayer_->getPlayerID();
+}
 
 void Matchmaker::makeLocalPlayer() {
   localPlayer_ = new LocalPlayer(pid_, tid_, name_, color_);

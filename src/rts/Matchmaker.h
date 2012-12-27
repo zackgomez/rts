@@ -51,6 +51,8 @@ class Matchmaker {
   // Returns the name of the map, only valid aver calling a setup method
   std::string getMapName() const;
 
+  id_t getLocalPlayerID() const;
+
  private:
   // requires name, color, pid, and tid be set
   void makeLocalPlayer();

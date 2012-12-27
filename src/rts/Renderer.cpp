@@ -125,34 +125,6 @@ void Renderer::renderUI() {
     ui_->render(renderdt_);
   }
 
-  // Requestion display
-  /*
-  pos = convertUIPos(vec2Param("ui.reqdisplay.pos"));
-  size = vec2Param("ui.reqdisplay.size");
-  height = fltParam("ui.reqdisplay.fontHeight");
-  ss << "Req: " << (int)Game::get()->getResources(player_->getPlayerID()).requisition;
-  drawRect(pos, size, vec4Param("ui.reqdisplay.bgcolor"));
-  FontManager::get()->drawString(ss.str(), pos, height);
-  */
-
-  // Victory points
-  auto pos = convertUIPos(vec2Param("ui.vicdisplay.pos"));
-  auto size = vec2Param("ui.vicdisplay.size");
-  auto height = fltParam("ui.vicdisplay.fontHeight");
-  std::stringstream ss;
-  for (id_t tid : Game::get()->getTeams()) {
-    // background in team color
-    int col_idx = tid - STARTING_TID;
-    glm::vec3 tcol = toVec3(getParam("colors.team")[col_idx]);
-    drawRect(pos, size, glm::vec4(tcol, 1.f));
-
-    ss.str("");
-    ss << (int)Game::get()->getVictoryPoints(tid);
-    FontManager::get()->drawString(ss.str(), pos, height);
-
-    pos.x += size.x * 2.0;
-  }
-
   glEnable(GL_DEPTH_TEST);
 }
 

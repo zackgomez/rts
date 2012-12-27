@@ -383,15 +383,15 @@
     },
     "reqdisplay" :
     {
-      "pos"         : [-150, 0],
-      "size"        : [150, 50],
+      "pos"        : [-150, 0],
+      "dim"        : [150, 50],
       "fontHeight" : 32.0,
       "bgcolor"    : [0.4, 0.4, 0.4, 1.0]
     },
     "vicdisplay" :
     {
       "pos"        : [600, 0],
-      "size"       : [70, 50],
+      "dim"        : [70, 50],
       "fontHeight" : 32.0
     },
     "highlight" :

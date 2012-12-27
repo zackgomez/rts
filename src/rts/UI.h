@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <glm/glm.hpp>
+#include "common/Types.h"
 #include "common/util.h"
 #include "common/Types.h"
 
@@ -22,6 +23,8 @@ class UI {
   void renderEntity(const RenderEntity *e, const glm::mat4 &transform, float dt);
   void highlight(const glm::vec2 &mapCoord);
   void highlightEntity(id_t eid);
+
+  void initGameWidgets(id_t playerID);
 
   void setChatActive(bool active) {
     chatActive_ = active;
@@ -44,6 +47,8 @@ class UI {
 
   bool chatActive_;
   std::string chatBuffer_;
+
+  id_t playerID_;
 
   glm::vec3 dragStart_, dragEnd_;
 };
@@ -68,6 +73,26 @@ class TextureWidget : public UIWidget {
   glm::vec2 pos_;
   glm::vec2 size_;
   std::string texName_;
+};
+
+template<class T>
+class TextWidget : public UIWidget {
+ public:
+  TextWidget(
+      const glm::vec2 &pos,
+      const glm::vec2 &size,
+      float fontHeight,
+      const glm::vec4 &bgcolor,
+      T& textGetter);
+
+  void render(float dt);
+
+ private:
+  glm::vec2 pos_;
+  glm::vec2 size_;
+  float height_;
+  glm::vec4 bgcolor_;
+  T textFunc_;
 };
 
 struct MapHighlight {

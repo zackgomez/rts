@@ -1,5 +1,6 @@
 #define GLM_SWIZZLE_XYZW
 #include "rts/UI.h"
+#include <sstream>
 #include "common/ParamReader.h"
 #include "rts/Building.h"
 #include "rts/Engine.h"
@@ -36,19 +37,58 @@ UI::UI()
   : chatActive_(false),
     dragStart_(HUGE_VAL),
     dragEnd_(HUGE_VAL) {
-  const char * texWidgetNames[] = {"ui.unitinfo", "ui.topbar"};
+}
 
+UI::~UI() {
+  for (auto widget : widgets_) {
+    delete widget;
+  }
+}
+
+void UI::initGameWidgets(id_t playerID) {
+  const char * texWidgetNames[] = {"ui.unitinfo", "ui.topbar"};
   for (std::string name : texWidgetNames) {
     auto pos = convertUIPos(vec2Param(name + ".pos"));
     auto size = vec2Param(name + ".dim");
     auto tex = strParam(name + ".texture");
     widgets_.push_back(new TextureWidget(pos, size, tex));
   }
-}
 
-UI::~UI() {
-  for (auto widget : widgets_) {
-    delete widget;
+  {
+    std::string name = "ui.reqdisplay";
+    auto pos = convertUIPos(vec2Param(name + ".pos"));
+    auto size = vec2Param(name + ".dim");
+    auto fontHeight = fltParam(name + ".fontHeight");
+    auto bgcolor = vec4Param(name + ".bgcolor");
+    auto textFunc = [=]()->std::string {
+      std::stringstream ss;
+      ss << "Req: "
+         << (int)Game::get()->getResources(playerID).requisition;
+      return ss.str();
+    };
+    widgets_.push_back(new TextWidget<decltype(textFunc)>(
+          pos, size, fontHeight, bgcolor, textFunc));
+  }
+
+  {
+    auto pos = convertUIPos(vec2Param("ui.vicdisplay.pos"));
+    auto size = vec2Param("ui.vicdisplay.dim");
+    auto fontHeight = fltParam("ui.vicdisplay.fontHeight");
+    for (id_t tid : Game::get()->getTeams()) {
+      // background in team color
+      int col_idx = tid - STARTING_TID;
+      glm::vec4 bgcolor = glm::vec4(
+          toVec3(getParam("colors.team")[col_idx]), 1.f);
+      auto textFunc = [=]()->std::string {
+        std::stringstream ss;
+        ss << (int)Game::get()->getVictoryPoints(tid);
+        return ss.str();
+      };
+      widgets_.push_back(new TextWidget<decltype(textFunc)>(
+            pos, size, fontHeight, bgcolor, textFunc));
+
+      pos.x += size.x * 2.0;
+    }
   }
 }
 
@@ -257,5 +297,26 @@ TextureWidget::TextureWidget(
 void TextureWidget::render(float dt) {
   auto tex = ResourceManager::get()->getTexture(texName_);
   drawTexture(pos_, size_, tex);
+}
+
+template<class T>
+TextWidget<T>::TextWidget(
+    const glm::vec2 &pos,
+    const glm::vec2 &size,
+    float height,
+    const glm::vec4 &bgcolor,
+    T& textGetter)
+  : pos_(pos),
+    size_(size),
+    height_(height),
+    bgcolor_(bgcolor),
+    textFunc_(textGetter) {
+}
+
+template<class T>
+void TextWidget<T>::render(float dt) {
+  const std::string text = textFunc_();
+  drawRect(pos_, size_, bgcolor_);
+  FontManager::get()->drawString(text, pos_, height_);
 }
 };  // rts
