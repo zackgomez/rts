@@ -175,6 +175,11 @@ void Game::update(float dt) {
   // Update pathing
   map_->update(dt);
 
+  // Finally, integrate positions
+  for (auto &it : entities_) {
+    it.second->integrate(dt);
+  }
+
   // Update entities
   std::vector<id_t> deadEnts;
   for (auto &it : entities_) {
@@ -212,11 +217,6 @@ void Game::update(float dt) {
         MessageHub::get()->sendCollisionMessage(it2->first, it->first);
       }
     }
-  }
-
-  // Finally, integrate positions
-  for (auto &it : entities_) {
-    it.second->integrate(dt);
   }
 
   // Check to see if this player has won
