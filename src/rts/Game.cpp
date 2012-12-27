@@ -175,7 +175,8 @@ void Game::update(float dt) {
   // Update pathing
   map_->update(dt);
 
-  // Finally, integrate positions
+  // Integrate positions after updating entities, to ensure the render displays
+  // extrapolated information.  This is safe and provides a better experience.
   for (auto &it : entities_) {
     it.second->integrate(dt);
   }
