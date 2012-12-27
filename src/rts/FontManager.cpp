@@ -10,6 +10,7 @@
 #include "common/ParamReader.h"
 #include "common/util.h"
 #include "rts/Engine.h"
+#include "rts/ResourceManager.h"
 
 const float widthRatio = 0.75f;
 
@@ -25,14 +26,61 @@ FontManager::~FontManager() {
 
 void FontManager::drawString(const std::string &s, const glm::vec2 &pos,
     float height) {
+  glm::vec4 color(0.f, 0.f, 0.f, 1.f);
+  auto program = ResourceManager::get()->getShader("font");
+  GLuint colorUniform = glGetUniformLocation(program, "color");
+  GLuint textureUniform = glGetUniformLocation(program, "texture");
+  GLuint tcUniform = glGetUniformLocation(program, "texcoord");
+  glUseProgram(program);
+  glUniform4fv(colorUniform, 1, glm::value_ptr(color));
+  glUniform1i(colorUniform, 0);
+
+  glActiveTexture(GL_TEXTURE0);
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, glyphTex_);
+
+
   glm::vec2 p(pos.x, pos.y + height);
   float fact = height / glyphSize_;
-  for (char c : s) {
-    p.x += drawCharacter(c, p, fact);
+  for (size_t i = 0; i < s.length(); i++) {
+    char c = s[i];
+    if (c == COLOR_CNTRL_CH) {
+      color = glm::vec4(parseColor(s, i + 1), 1.f);
+      glUniform4fv(colorUniform, 1, glm::value_ptr(color));
+      LOG(DEBUG) << "HERE: " << color << '\n';
+      // advance past next 3 characters
+      i += 3;
+      continue;
+    }
+    p.x += drawCharacter(c, p, fact, tcUniform);
   }
 }
 
-float FontManager::drawCharacter(char c, const glm::vec2 &pos, float fact) {
+const char * FontManager::makeColorCode(const glm::vec3 &color) {
+  static char buf[4];
+  buf[0] = COLOR_CNTRL_CH;
+  for (int i = 0; i < 3; i++) {
+    buf[i+1] = static_cast<char>(color[i] * 255);
+  }
+
+  return buf;
+}
+
+glm::vec3 FontManager::parseColor(const std::string &s, size_t i) {
+  glm::vec3 color;
+  size_t j = 0;
+  for (; j < 3 && i < s.length(); i++, j++) {
+    color[j] = static_cast<uint8_t>(s[i]) / 255.f;
+  }
+  if (j != 3) {
+    LOG(WARNING) << "String ended while attempting to parse color\n";
+  }
+
+  return color;
+}
+
+float FontManager::drawCharacter(char c, const glm::vec2 &pos, float fact,
+    GLuint tcUniform) {
   invariant(c >= 32 && c < 32 + 96, "invalid character to render");
   stbtt_bakedchar bc = cdata_[c - 32];
 
@@ -41,7 +89,8 @@ float FontManager::drawCharacter(char c, const glm::vec2 &pos, float fact) {
   glm::vec2 offset = fact * glm::vec2(bc.xoff, bc.yoff);
   float advance = fact * bc.xadvance;
 
-  drawTexture(pos + offset, size, glyphTex_, texcoord);
+  glUniform4fv(tcUniform, 1, glm::value_ptr(texcoord));
+  drawShader(pos + offset, size);
 
   return advance;
 }

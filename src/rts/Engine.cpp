@@ -177,7 +177,6 @@ void renderRectangleProgram(const glm::mat4 &modelMatrix) {
 
   // Clean up
   glDisableVertexAttribArray(0);
-  glUseProgram(0);
 }
 
 void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m) {
@@ -230,7 +229,6 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m) {
   glDisableVertexAttribArray(positionAttrib);
   glDisableVertexAttribArray(normalAttrib);
   glDisableVertexAttribArray(texcoordAttrib);
-  glUseProgram(0);
 }
 
 void drawRectCenter(

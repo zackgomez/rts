@@ -10,11 +10,20 @@ class FontManager {
  public:
   static FontManager * get();
 
+  // When present in a string, the color of the remaining text is determined
+  // by the next 3 bytes, encoding RGB as 1 byte values.
+  static const char COLOR_CNTRL_CH = '\1';
+  // THREAD UNSAFE
+  // Returns a static buffer of size 4 containing encoding a color change to
+  // the passed in color.
+  static const char *makeColorCode(const glm::vec3 &color);
+
   // Pos is top left, height top of capital letters to bottom of letters that
   // drop below
   void drawString(const std::string &s,
                   const glm::vec2 &pos, float height);
 
+  // Debug function, draws the glyph texture in the center of the screen
   void drawTex() const;
 
  private:
@@ -22,7 +31,9 @@ class FontManager {
   ~FontManager();
 
   void initialize();
-  float drawCharacter(char c, const glm::vec2 &pos, float height);
+  float drawCharacter(char c, const glm::vec2 &pos, float height,
+      GLuint tcUniform);
+  glm::vec3 parseColor(const std::string &s, size_t i);
 
   float glyphSize_;
   unsigned glyphTexSize_;
