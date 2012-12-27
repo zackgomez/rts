@@ -103,7 +103,7 @@ class Game {
   std::map<id_t, PlayerResources> resources_;
   // tid => float
   std::map<id_t, float> victoryPoints_;
-  // pid => floa
+  // pid => ...
   std::map<id_t, std::queue<PlayerAction>> actions_;
   tick_t tick_;
   tick_t tickOffset_;

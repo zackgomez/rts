@@ -51,6 +51,9 @@ class Renderer {
   void startRender(float dt);
   void endRender();
 
+  float getSimDT() const {
+    return simdt_;
+  }
   const glm::vec2& getResolution() const {
     return resolution_;
   }
@@ -102,7 +105,6 @@ class Renderer {
   std::vector<ChatMessage> chats_;
 
   std::map<const RenderEntity *, glm::vec3> ndcCoords_;
-  std::map<const RenderEntity *, glm::vec3> mapCoords_;
   std::set<id_t> selection_;
 };
 

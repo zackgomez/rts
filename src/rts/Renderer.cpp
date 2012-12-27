@@ -105,7 +105,6 @@ void Renderer::renderEntity(RenderEntity *entity) {
                   transform * glm::vec4(0, 0, 0, 1);
   ndc /= ndc.w;
   ndcCoords_[entity] = glm::vec3(ndc);
-  mapCoords_[entity] = applyMatrix(transform, glm::vec3(0.f));
 }
 
 glm::vec2 Renderer::convertUIPos(const glm::vec2 &pos) const {
@@ -258,7 +257,6 @@ void Renderer::startRender(float dt) {
 
   // Clear coordinates
   ndcCoords_.clear();
-  mapCoords_.clear();
   lastRender_ = SDL_GetTicks();
 }
 
@@ -373,11 +371,6 @@ glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
   }
 
   return glm::vec3(terrain);
-}
-
-const std::map<const RenderEntity *, glm::vec3>&
-Renderer::getEntityWorldPosMap() const {
-  return mapCoords_;
 }
 
 glm::vec3 Renderer::screenToNDC(const glm::vec2 &screen) const {

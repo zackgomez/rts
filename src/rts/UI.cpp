@@ -21,11 +21,10 @@ glm::vec2 convertUIPos(const glm::vec2 &pos) {
       pos.y < 0 ? pos.y + resolution.y : pos.y);
 }
 
-glm::vec2 worldToMinimap(const glm::vec3 &mapPos) {
+glm::vec2 worldToMinimap(glm::vec2 pos) {
   const glm::vec2 &mapSize = Game::get()->getMap()->getSize();
   const glm::vec2 minimapSize = vec2Param("ui.minimap.dim");
   const glm::vec2 minimapPos = convertUIPos(vec2Param("ui.minimap.pos"));
-  glm::vec2 pos = mapPos.xy;
   pos.y *= -1;
   pos += mapSize / 2.f;
   pos *= minimapSize / mapSize;
@@ -207,7 +206,7 @@ void UI::renderMinimap() {
     if (terrainCoord.x == -HUGE_VAL) terrainCoord.x = -mapSize.x / 2;
     if (terrainCoord.y == HUGE_VAL) terrainCoord.y = mapSize.y / 2;
     if (terrainCoord.y == -HUGE_VAL) terrainCoord.y = -mapSize.y / 2;
-    minimapCoord[i] = worldToMinimap(terrainCoord);
+    minimapCoord[i] = worldToMinimap(glm::vec2(terrainCoord));
   }
   drawLine(minimapCoord[0], minimapCoord[1], lineColor);
   drawLine(minimapCoord[1], minimapCoord[3], lineColor);
@@ -215,13 +214,12 @@ void UI::renderMinimap() {
   drawLine(minimapCoord[2], minimapCoord[0], lineColor);
 
   // render actors
-  for (const auto &pair : Renderer::get()->getEntityWorldPosMap()) {
-    const Entity *e = (const Entity *)pair.first;
-    if (e->getType() != Building::TYPE && e->getType() != Unit::TYPE) {
+  for (const auto &pair : Game::get()->getEntities()) {
+    const Entity *e = (const Entity *)pair.second;
+    if (!e->hasProperty(Entity::P_ACTOR)) {
       continue;
     }
-    const glm::vec3 &mapCoord = pair.second;
-    glm::vec2 pos = worldToMinimap(mapCoord);
+    glm::vec2 pos = worldToMinimap(e->getPosition(Renderer::get()->getSimDT()));
     const Player *player = Game::get()->getPlayer(e->getPlayerID());
     glm::vec3 pcolor = player ? player->getColor() :
       vec3Param("global.defaultColor");
