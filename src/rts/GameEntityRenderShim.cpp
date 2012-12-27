@@ -48,12 +48,7 @@ glm::vec4 GameEntityRenderShim::getColor() const {
   const Player *player = Game::get()->getPlayer(getPlayerID());
   glm::vec3 pcolor = player ? player->getColor() :
     vec3Param("global.defaultColor");
-  // if selected draw as green
-  // TODO(zack): Flash units white if damage taken
-  glm::vec4 color = Renderer::get()->isSelected(getID())
-                    ? glm::vec4(vec3Param("colors.selected"), 1.f)
-                    : glm::vec4(pcolor, 1.f);
-  return color;
+  return glm::vec4(pcolor, 1.f);
 }
 
 void GameEntityRenderShim::render(float dt) {
@@ -70,11 +65,6 @@ void GameEntityRenderShim::render(float dt) {
             getAngle(dt), glm::vec3(0, 0, 1)),
           glm::vec3(getSize(), 1.f));
     glm::vec4 color(0, 0, 0, 1);
-    /*
-    if (entity->collided_) {
-      color = glm::vec4(1, 0.25, 0, 1);
-    }
-    */
     renderRectangleColor(transform, color);
   }
 

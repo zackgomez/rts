@@ -99,6 +99,9 @@ void Renderer::renderEntity(RenderEntity *entity) {
   }
   entity->render(simdt_);
   auto transform = entity->getTransform(simdt_);
+  if (ui_) {
+    ui_->renderEntity(entity, transform, renderdt_);
+  }
 
   glm::vec4 ndc = getProjectionStack().current() * getViewStack().current() *
                   transform * glm::vec4(0, 0, 0, 1);
@@ -247,15 +250,17 @@ void Renderer::renderMap(const Map *map) {
         glm::vec3(mapSize.x, mapSize.y, 1.f));
   renderRectangleProgram(transform);
 
+  // TODO(zack): move this to UI
   // Render each of the highlights
   for (auto& hl : highlights_) {
     hl.remaining -= renderdt_;
     glm::mat4 transform =
       glm::scale(
-          glm::translate(glm::mat4(1.f),
-                         glm::vec3(hl.pos.x, hl.pos.y, 0.01f)),
-        glm::vec3(0.33f));
-    renderRectangleColor(transform, glm::vec4(1, 0, 0, 1));
+          glm::translate(
+            glm::mat4(1.f),
+            glm::vec3(hl.pos.x, hl.pos.y, 0.01f)),
+          glm::vec3(0.33f));
+    renderCircleColor(transform, glm::vec4(1, 0, 0, 1));
   }
   // Remove done highlights
   for (size_t i = 0; i < highlights_.size(); ) {

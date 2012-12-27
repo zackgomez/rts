@@ -66,6 +66,18 @@ void UI::render(float dt) {
   glEnable(GL_DEPTH_TEST);
 }
 
+void UI::renderEntity(const RenderEntity *e, const glm::mat4 &transform, float dt) {
+  if (!Renderer::get()->isSelected(e->getID())) {
+    return;
+  }
+  // A bit of a hack here...
+  auto finalTransform = glm::translate(
+      glm::rotate(transform, -90.f, glm::vec3(1, 0, 0)),
+      glm::vec3(0, 0, 0.1));
+  renderCircleColor(finalTransform,
+      glm::vec4(vec3Param("colors.selected"), 1.f));
+}
+
 void UI::renderChat() {
   auto&& messages = Renderer::get()->getChatMessages();
   auto&& displayTime = fltParam("ui.messages.chatDisplayTime");

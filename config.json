@@ -19,6 +19,11 @@
     }
   },
 
+  "engine" :
+  {
+    "circle_segments" : 20
+  },
+
   "resources" :
   {
     "meshes"   :

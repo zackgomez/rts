@@ -32,6 +32,10 @@ void setMeshTransform(Mesh *mesh, const glm::mat4 &transform);
 void renderRectangleColor(
     const glm::mat4 &modelMatrix,
     const glm::vec4 &color);
+// Renders a circle of radius 0.5 with the given color.
+void renderCircleColor(
+    const glm::mat4 &modelMatrix,
+    const glm::vec4 &color);
 // Uses the currently bound program
 void renderRectangleProgram(
     const glm::mat4 &modelMatrix);
@@ -55,6 +59,7 @@ void drawRect(
     const glm::vec2 &pos,  // top left corner
     const glm::vec2 &size,  // width/height
     const glm::vec4 &color);
+// Draws a texture
 void drawTextureCenter(
     const glm::vec2 &pos,  // center
     const glm::vec2 &size,  // width/height
@@ -69,5 +74,8 @@ void drawLine(
     const glm::vec2 &p1,
     const glm::vec2 &p2,
     const glm::vec4 &color);
+// Returns a vertex buffer with a circle centered at the origin, oriented
+// in the x,y plane with radius r and nsegments segments.
+GLuint makeCircleBuffer(float r, uint32_t nsegments);
 
 #endif  // SRC_RTS_ENGINE_H_

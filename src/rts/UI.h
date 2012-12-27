@@ -2,10 +2,12 @@
 #define SRC_RTS_UI_H_
 #include <string>
 #include <vector>
+#include <glm/glm.hpp>
 #include "common/util.h"
 
 namespace rts {
 
+class RenderEntity;
 class UIWidget;
 
 class UI {
@@ -14,6 +16,7 @@ class UI {
   ~UI();
 
   void render(float dt);
+  void renderEntity(const RenderEntity *e, const glm::mat4 &transform, float dt);
 
   void setChatActive(bool active) {
     chatActive_ = active;

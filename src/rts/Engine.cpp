@@ -9,6 +9,7 @@
 #include "common/Exception.h"
 #include "common/Logger.h"
 #include "common/ParamReader.h"
+#include "common/util.h"
 #include "rts/ResourceManager.h"
 #include "stb_image.c"
 
@@ -22,6 +23,7 @@ static glm::vec2 screenRes;
 static struct {
   GLuint colorProgram;
   GLuint rectBuffer;
+  GLuint circleBuffer;
   GLuint texProgram;
 } resources;
 
@@ -100,6 +102,35 @@ void teardownEngine() {
 
   SDL_Quit();
   initialized = false;
+}
+
+void renderCircleColor(
+    const glm::mat4 &modelMatrix,
+    const glm::vec4 &color) {
+  record_section("renderRectangleColor");
+  GLuint program = resources.colorProgram;
+  GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
+  GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
+  GLuint colorUniform = glGetUniformLocation(program, "color");
+
+  // Enable program and set up values
+  glUseProgram(program);
+  glUniformMatrix4fv(projectionUniform, 1, GL_FALSE,
+      glm::value_ptr(projStack.current()));
+  glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE,
+      glm::value_ptr(viewStack.current() * modelMatrix));
+  glUniform4fv(colorUniform, 1, glm::value_ptr(color));
+
+  // Bind attributes
+  glBindBuffer(GL_ARRAY_BUFFER, resources.circleBuffer);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+  // RENDER
+  glDrawArrays(GL_LINE_LOOP, 0, intParam("engine.circle_segments"));
+
+  // Clean up
+  glDisableVertexAttribArray(0);
 }
 
 void renderRectangleColor(
@@ -445,9 +476,9 @@ Mesh * loadMesh(const std::string &objFile) {
   loadVerts(objFile, &ret->verts, &ret->nverts);
 
   ret->buffer = makeBuffer(
-                  GL_ARRAY_BUFFER,
-                  ret->verts,
-                  ret->nverts * sizeof(vert_p4n4t2));
+      GL_ARRAY_BUFFER,
+      ret->verts,
+      ret->nverts * sizeof(vert_p4n4t2));
 
   free(ret->verts);
   ret->verts = 0;
@@ -483,6 +514,9 @@ static void loadResources() {
       GL_ARRAY_BUFFER,
       rectPositions,
       sizeof(rectPositions));
+  resources.circleBuffer = makeCircleBuffer(
+      0.5,
+      intParam("engine.circle_segments"));
 
   // Create solid color program for renderRectangleColor
   resources.colorProgram = ResourceManager::get()->getShader("color");
@@ -650,3 +684,28 @@ static int loadVerts(const std::string &filename,
   return 0;
 }
 
+GLuint makeCircleBuffer(float r, uint32_t nsegments) {
+  // Code from http://slabode.exofire.net/circle_draw.shtml
+  float theta = 2*M_PI / float(nsegments);
+  float c = cosf(theta);  // precalculate the sine and cosine
+  float s = sinf(theta);
+  float t;
+
+  float x = r;  // we start at angle = 0
+  float y = 0;
+
+  glm::vec4 *buf = new glm::vec4[nsegments];
+  invariant(buf, "Unable to allocate circle buffer");
+  for (int ii = 0; ii < nsegments; ii++)
+  {
+    buf[ii] = glm::vec4(x, y, 0, 1);
+    // apply the rotation matrix
+    t = x;
+    x = c * x - s * y;
+    y = s * t + c * y;
+  }
+
+  GLuint ret = makeBuffer(GL_ARRAY_BUFFER, buf, nsegments * sizeof(*buf));
+  delete buf;
+  return ret;
+}
