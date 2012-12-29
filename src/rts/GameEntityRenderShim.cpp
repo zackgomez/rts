@@ -6,7 +6,7 @@
 #include "rts/Actor.h"
 #include "rts/Building.h"
 #include "rts/CollisionObject.h"
-#include "rts/Engine.h"
+#include "rts/Graphics.h"
 #include "rts/Game.h"
 #include "rts/Map.h"
 #include "rts/Player.h"

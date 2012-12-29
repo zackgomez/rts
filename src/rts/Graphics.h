@@ -1,5 +1,5 @@
-#ifndef SRC_RTS_ENGINE_H_
-#define SRC_RTS_ENGINE_H_
+#ifndef SRC_RTS_GRAPHICS_H_
+#define SRC_RTS_GRAPHICS_H_
 
 #include <GL/glew.h>
 #include <string>
@@ -84,4 +84,4 @@ void drawLine(
 // in the x,y plane with radius r and nsegments segments.
 GLuint makeCircleBuffer(float r, uint32_t nsegments);
 
-#endif  // SRC_RTS_ENGINE_H_
+#endif  // SRC_RTS_GRAPHICS_H_

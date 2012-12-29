@@ -4,7 +4,7 @@
 #include <map>
 #include <GL/glew.h>
 #include "common/Logger.h"
-#include "rts/Engine.h"
+#include "rts/Graphics.h"
 
 class ResourceManager {
  public:

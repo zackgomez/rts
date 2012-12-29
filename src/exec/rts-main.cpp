@@ -14,7 +14,7 @@
 #include "common/util.h"
 #include "rts/Controller.h"
 #include "rts/Game.h"
-#include "rts/Engine.h"
+#include "rts/Graphics.h"
 #include "rts/Map.h"
 #include "rts/Matchmaker.h"
 #include "rts/Renderer.h"

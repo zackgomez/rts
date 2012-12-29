@@ -3,7 +3,7 @@
 #include <sstream>
 #include "common/ParamReader.h"
 #include "rts/Building.h"
-#include "rts/Engine.h"
+#include "rts/Graphics.h"
 #include "rts/FontManager.h"
 #include "rts/Game.h"
 #include "rts/Map.h"

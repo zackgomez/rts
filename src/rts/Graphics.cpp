@@ -1,4 +1,4 @@
-#include "rts/Engine.h"
+#include "rts/Graphics.h"
 #include <fstream>
 #include <sstream>
 #include <SDL/SDL.h>

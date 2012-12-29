@@ -13,7 +13,7 @@
 #include "rts/Building.h"
 #include "rts/CollisionObject.h"
 #include "rts/Controller.h"
-#include "rts/Engine.h"
+#include "rts/Graphics.h"
 #include "rts/Entity.h"
 #include "rts/FontManager.h"
 #include "rts/Game.h"

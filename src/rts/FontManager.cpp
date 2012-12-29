@@ -9,7 +9,7 @@
 #include "common/Logger.h"
 #include "common/ParamReader.h"
 #include "common/util.h"
-#include "rts/Engine.h"
+#include "rts/Graphics.h"
 #include "rts/ResourceManager.h"
 
 const float widthRatio = 0.75f;
