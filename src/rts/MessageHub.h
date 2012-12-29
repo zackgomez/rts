@@ -4,7 +4,7 @@
 #include <utility>
 #include "common/Logger.h"
 #include "common/util.h"
-#include "rts/Entity.h"
+#include "rts/GameEntity.h"
 #include "rts/Message.h"
 #include "rts/Game.h"
 
@@ -24,17 +24,17 @@ class MessageHub {
 
   void sendSpawnMessage(id_t from, const std::string &eclass,
                         const std::string &ename, const Json::Value &eparams);
-  void sendRemovalMessage(const Entity *e);
+  void sendRemovalMessage(const GameEntity *e);
   void sendResourceMessage(id_t from, id_t pid, const std::string &resource,
       float amount);
   void sendVPMessage(id_t from, id_t tid, float amount);
   void sendCollisionMessage(id_t from, id_t to);
 
   // Returns the entity that scores the LOWEST with the given scoring function.
-  // Scoring function should have signature float scorer(const Entity *);
+  // Scoring function should have signature float scorer(const GameEntity *);
   // TODO(zack) REMOVE THIS FUNCTION and just use the Game:: version
   template <class T>
-  const Entity *findEntity(T&& scorer) const {
+  const GameEntity *findEntity(T&& scorer) const {
     invariant(game_, "unset game object");
     return game_->findEntity(std::forward<T>(scorer));
   }

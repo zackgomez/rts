@@ -7,13 +7,13 @@
 
 namespace rts {
 
-class Entity;
+class GameEntity;
 
 class EntityFactory {
  public:
   static EntityFactory *get();
 
-  Entity * construct(const std::string &cl,
+  GameEntity * construct(const std::string &cl,
                      const std::string &name, const Json::Value &params);
 
  private:

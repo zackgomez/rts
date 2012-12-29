@@ -11,7 +11,7 @@ public:
 
   virtual void render(float dt);
 
-  // Entity required implements
+  // GameEntity required implements
   virtual glm::vec2 getPosition(float dt) const = 0;
   virtual float getAngle(float dt) const = 0;
   virtual const std::string getType() const = 0;

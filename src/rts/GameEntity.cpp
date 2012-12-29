@@ -1,4 +1,4 @@
-#include "rts/Entity.h"
+#include "rts/GameEntity.h"
 #include "common/Checksum.h"
 #include "common/Collision.h"
 #include "common/ParamReader.h"
@@ -8,12 +8,13 @@
 
 namespace rts {
 
-id_t Entity::lastID_ = STARTING_EID;
+id_t GameEntity::lastID_ = STARTING_EID;
 
-Entity::Entity(const std::string &name,
-               const Json::Value &params,
-               bool mobile, bool targetable,
-               bool collidable)
+GameEntity::GameEntity(
+    const std::string &name,
+    const Json::Value &params,
+    bool mobile, bool targetable,
+    bool collidable)
   : id_(lastID_++),
     playerID_(NO_PLAYER),
     name_(name),
@@ -48,10 +49,10 @@ Entity::Entity(const std::string &name,
   assertPid(playerID_);
 }
 
-Entity::~Entity() {
+GameEntity::~GameEntity() {
 }
 
-id_t Entity::getTeamID() const {
+id_t GameEntity::getTeamID() const {
   // No player, no team
   if (playerID_ == NO_PLAYER) {
     return NO_TEAM;
@@ -60,12 +61,12 @@ id_t Entity::getTeamID() const {
   return Game::get()->getPlayer(playerID_)->getTeamID();
 }
 
-void Entity::update(float dt) {
+void GameEntity::update(float dt) {
   turnSpeed_ = 0.f;
   speed_ = 0.f;
 }
 
-void Entity::integrate(float dt) {
+void GameEntity::integrate(float dt) {
   // for immobile entities, just check that they are stationary
   if (!mobile_) {
     invariant(
@@ -90,7 +91,7 @@ void Entity::integrate(float dt) {
   pos_ += vel * dt;
 }
 
-void Entity::handleMessage(const Message &msg) {
+void GameEntity::handleMessage(const Message &msg) {
   if (msg["type"] == MessageTypes::COLLISION) {
     invariant(collidable_, "Got collision for noncollidable object!");
   } else {
@@ -99,7 +100,7 @@ void Entity::handleMessage(const Message &msg) {
   }
 }
 
-void Entity::checksum(Checksum &chksum) const {
+void GameEntity::checksum(Checksum &chksum) const {
   chksum.process(&id_, sizeof(id_))
       .process(&playerID_, sizeof(playerID_))
       .process(&name_[0], name_.length())
@@ -113,7 +114,7 @@ void Entity::checksum(Checksum &chksum) const {
       .process(&turnSpeed_, sizeof(turnSpeed_));
 }
 
-glm::vec2 Entity::getPosition(float dt) const {
+glm::vec2 GameEntity::getPosition(float dt) const {
   if (!mobile_) {
     return getPosition();
   }
@@ -122,49 +123,49 @@ glm::vec2 Entity::getPosition(float dt) const {
   return pos_ + vel * dt;
 }
 
-float Entity::getAngle(float dt) const {
+float GameEntity::getAngle(float dt) const {
   if (!mobile_) {
     return getAngle();
   }
   return angle_ + turnSpeed_ * dt;
 }
 
-const glm::vec2 Entity::getDirection(float angle) {
+const glm::vec2 GameEntity::getDirection(float angle) {
   float rad = deg2rad(angle);
   return glm::vec2(cosf(rad), sinf(rad));
 }
 
-const glm::vec2 Entity::getDirection() const {
+const glm::vec2 GameEntity::getDirection() const {
   return getDirection(angle_);
 }
 
-float Entity::angleToTarget(const glm::vec2 &target) const {
+float GameEntity::angleToTarget(const glm::vec2 &target) const {
   glm::vec2 delta = target - pos_;
   return rad2deg(atan2(delta.y , delta.x));
 }
 
-float Entity::distanceBetweenEntities(const Entity *e) const {
+float GameEntity::distanceBetweenEntities(const GameEntity *e) const {
   glm::vec2 targetPos = e->getPosition();
   return glm::length(targetPos - pos_);
 }
 
-bool Entity::pointInEntity(const glm::vec2 &p) {
+bool GameEntity::pointInEntity(const glm::vec2 &p) {
   return pointInBox(p, pos_, size_, angle_);
 }
 
-float Entity::param(const std::string &p) const {
+float GameEntity::param(const std::string &p) const {
   return fltParam(name_ + "." + p);
 }
 
-std::string Entity::strParam(const std::string &p) const {
+std::string GameEntity::strParam(const std::string &p) const {
   return ::strParam(name_ + "." + p);
 }
 
-glm::vec2 Entity::vec2Param(const std::string &p) const {
+glm::vec2 GameEntity::vec2Param(const std::string &p) const {
   return ::vec2Param(name_ + "." + p);
 }
 
-bool Entity::hasParam(const std::string &p) const {
+bool GameEntity::hasParam(const std::string &p) const {
   return ::hasParam(name_ + "." + p);
 }
 };  // rts

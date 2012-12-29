@@ -1,12 +1,12 @@
 #ifndef SRC_RTS_PROJECTILE_H_
 #define SRC_RTS_PROJECTILE_H_
 
-#include "rts/Entity.h"
+#include "rts/GameEntity.h"
 #include "common/Logger.h"
 
 namespace rts {
 
-class Projectile : public Entity {
+class Projectile : public GameEntity {
  public:
   Projectile(const std::string &name, const Json::Value &params);
   virtual ~Projectile() {}

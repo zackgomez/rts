@@ -18,7 +18,7 @@ EntityFactory * EntityFactory::get() {
   return &instance;
 }
 
-Entity * EntityFactory::construct(const std::string &cl,
+GameEntity * EntityFactory::construct(const std::string &cl,
     const std::string &name, const Json::Value &params) {
   // TODO(zack) use map
   if (cl == Unit::TYPE) {

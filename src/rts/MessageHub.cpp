@@ -77,7 +77,7 @@ void MessageHub::sendSpawnMessage(id_t from, const std::string &eclass,
   sendMessage(msg);
 }
 
-void MessageHub::sendRemovalMessage(const Entity *e) {
+void MessageHub::sendRemovalMessage(const GameEntity *e) {
   assert(e);
 
   Message msg;

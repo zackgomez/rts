@@ -14,7 +14,7 @@ LoggerPtr Actor::logger_;
 Actor::Actor(const std::string &name, const Json::Value &params,
              bool mobile, bool targetable,
              bool collidable) :
-  Entity(name, params, mobile, targetable, collidable),
+  GameEntity(name, params, mobile, targetable, collidable),
   melee_timer_(0.f),
   meleeWeapon_(nullptr),
   rangedWeapon_(nullptr) {
@@ -58,7 +58,7 @@ void Actor::handleMessage(const Message &msg) {
   } else if (msg["type"] == MessageTypes::ORDER) {
     handleOrder(msg);
   } else {
-    Entity::handleMessage(msg);
+    GameEntity::handleMessage(msg);
   }
 }
 void Actor::handleOrder(const Message &order) {
@@ -101,7 +101,7 @@ void Actor::produce(const std::string &prod_name) {
 }
 
 void Actor::update(float dt) {
-  Entity::update(dt);
+  GameEntity::update(dt);
 
   melee_timer_ -= dt;
 

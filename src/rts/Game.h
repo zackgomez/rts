@@ -8,7 +8,7 @@
 #include <queue>
 #include "common/Logger.h"
 #include "common/Checksum.h"
-#include "rts/Entity.h"
+#include "rts/GameEntity.h"
 #include "rts/PlayerAction.h"
 
 namespace rts {
@@ -56,8 +56,8 @@ class Game {
   // Can possibly block, but should never block long
   void addAction(id_t pid, const PlayerAction &act);
 
-  const Entity * getEntity(id_t eid) const;
-  const std::map<id_t, Entity *> getEntities() const { return entities_; }
+  const GameEntity * getEntity(id_t eid) const;
+  const std::map<id_t, GameEntity *> getEntities() const { return entities_; }
   const Player * getPlayer(id_t pid) const;
   const std::vector<Player *>& getPlayers() const { return players_; }
   const std::set<id_t> getTeams() const { return teams_; }
@@ -67,12 +67,12 @@ class Game {
 
   // Has to be inline, that sucks
   template <class T>
-  const Entity * findEntity(T scorer) const {
+  const GameEntity * findEntity(T scorer) const {
     float bestscore = HUGE_VAL;
-    const Entity *bestentity = nullptr;
+    const GameEntity *bestentity = nullptr;
 
     for (const auto& it : entities_) {
-      const Entity *e = it.second;
+      const GameEntity *e = it.second;
       float score = scorer(e);
       if (score < bestscore) {
         bestscore = score;
@@ -97,7 +97,7 @@ class Game {
 
   Map *map_;
   std::vector<Player *> players_;
-  std::map<id_t, Entity *> entities_;
+  std::map<id_t, GameEntity *> entities_;
   std::set<id_t> teams_;
   // pid => float
   std::map<id_t, PlayerResources> resources_;

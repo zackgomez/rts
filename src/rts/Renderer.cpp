@@ -14,7 +14,7 @@
 #include "rts/CollisionObject.h"
 #include "rts/Controller.h"
 #include "rts/Graphics.h"
-#include "rts/Entity.h"
+#include "rts/GameEntity.h"
 #include "rts/FontManager.h"
 #include "rts/Game.h"
 #include "rts/Map.h"
@@ -130,16 +130,16 @@ void Renderer::renderUI() {
 void Renderer::renderActorInfo() {
   record_section("renderActor");
   for (auto pair : ndcCoords_) {
-    const Entity *e = (const Entity *)pair.first;
+    const GameEntity *e = (const GameEntity *)pair.first;
     auto &ndc = pair.second;
     auto type = e->getType();
     // TODO(zack): only render status for actors currently on screen/visible to
     // player
-    if (!e->hasProperty(Entity::P_ACTOR)) {
+    if (!e->hasProperty(GameEntity::P_ACTOR)) {
       continue;
     }
     auto actor = (const Actor *)e;
-    if (actor->hasProperty(Entity::P_CAPPABLE)) {
+    if (actor->hasProperty(GameEntity::P_CAPPABLE)) {
         Building *building = (Building*)actor;
         if (building->getCap() > 0.f &&
           building->getCap() < building->getMaxCap()) {
@@ -307,7 +307,7 @@ id_t Renderer::selectEntity(const glm::vec2 &screenCoord) const {
     const float thresh = sqrtf(0.009f);
     if (dist < thresh && dist < bestDist) {
       bestDist = dist;
-      eid = ((Entity *)pair.first)->getID();
+      eid = ((GameEntity *)pair.first)->getID();
     }
   }
 
@@ -328,7 +328,7 @@ std::set<id_t> Renderer::selectEntities(
 
   for (const auto &pair : ndcCoords_) {
     glm::vec2 p = glm::vec2(pair.second);
-    const Entity *e = (Entity *)pair.first;
+    const GameEntity *e = (GameEntity *)pair.first;
     // Inside rect and owned by player
     // TODO(zack) make this radius aware, right now the center must be in
     // their.

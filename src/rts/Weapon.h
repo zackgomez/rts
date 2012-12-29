@@ -8,7 +8,7 @@
 
 namespace rts {
 
-class Entity;
+class GameEntity;
 
 /* This class represents a weapon, melee or ranged, and is intended for use in
  * the actor class.  It has methods for querying the capabilities for a weapon
@@ -16,7 +16,7 @@ class Entity;
  */
 class Weapon {
  public:
-  Weapon(const std::string &name, const Entity *owner);
+  Weapon(const std::string &name, const GameEntity *owner);
 
   // State transitions
   // READY -> fire() -> WINDUP -> actually fire -> WINDDOWN -> COOLDOWN
@@ -38,13 +38,13 @@ class Weapon {
 
   // Returns true if the target is in range, and this weapon is capable
   // of firing
-  bool canAttack(const Entity *target) const;
+  bool canAttack(const GameEntity *target) const;
 
   // Should be called once per tick
   void update(float dt);
   // Start a shot, by running through the state transitions that govern weapons
   // firing
-  void fire(const Entity *target);
+  void fire(const GameEntity *target);
   // Interrupt the current action, i.e. if the weapon was winding up, it would
   // cease doing so
   // TODO(zack) use this when a state changes in unit, i.e. a transition from
@@ -59,7 +59,7 @@ class Weapon {
   void sendMessage();
 
   const std::string name_;
-  const Entity *owner_;
+  const GameEntity *owner_;
   WeaponState state_;
   float t_;
   id_t target_;

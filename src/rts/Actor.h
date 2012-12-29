@@ -4,7 +4,7 @@
 #include <queue>
 #include <string>
 #include <vector>
-#include "rts/Entity.h"
+#include "rts/GameEntity.h"
 #include "common/Logger.h"
 
 namespace rts {
@@ -20,7 +20,7 @@ const std::string STOP = "STOP";
 const std::string ENQUEUE = "ENQUEUE";
 };
 
-class Actor : public Entity {
+class Actor : public GameEntity {
  public:
   struct Production {
     std::string name;
@@ -37,7 +37,7 @@ class Actor : public Entity {
     if (property == P_ACTOR) {
       return true;
     }
-    return Entity::hasProperty(property);
+    return GameEntity::hasProperty(property);
   }
 
   virtual void handleMessage(const Message &msg);

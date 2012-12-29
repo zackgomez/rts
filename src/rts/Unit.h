@@ -31,11 +31,11 @@ class Unit : public Actor {
 
   // Unit state functions
   // if the target is in range and within firing arc
-  bool canAttack(const Entity *target) const;
+  bool canAttack(const GameEntity *target) const;
   // if the unit is in range
   bool canCapture(const Building *target) const;
   // If this the target is within firing range
-  bool withinRange(const Entity *target) const;
+  bool withinRange(const GameEntity *target) const;
   // Rotates to face position
   void turnTowards(const glm::vec2 &pos, float dt);
   // Moves towards position as fast as possible (probably rotates)
@@ -43,11 +43,11 @@ class Unit : public Actor {
   // Don't move or rotate
   void remainStationary();
   // Attacks target if possible (within range, arc, cd available)
-  void attackTarget(const Entity *target);
+  void attackTarget(const GameEntity *target);
   // Captures target
   void captureTarget(const Building *target, float cap);
 
-  const Entity *getTarget(id_t lastTargetID) const;
+  const GameEntity *getTarget(id_t lastTargetID) const;
 
  protected:
   virtual void handleOrder(const Message &order);

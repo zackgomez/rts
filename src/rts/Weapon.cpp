@@ -1,12 +1,12 @@
 #include "rts/Weapon.h"
 #include "common/ParamReader.h"
-#include "rts/Entity.h"
+#include "rts/GameEntity.h"
 #include "rts/MessageHub.h"
 #include "rts/Projectile.h"
 
 namespace rts {
 
-Weapon::Weapon(const std::string &name, const Entity *owner)
+Weapon::Weapon(const std::string &name, const GameEntity *owner)
     : name_(name),
     owner_(owner),
     state_(READY),
@@ -93,7 +93,7 @@ void Weapon::sendMessage() {
   }
 }
 
-void Weapon::fire(const Entity *target) {
+void Weapon::fire(const GameEntity *target) {
   state_ = WINDUP;
   t_ = param("windup");
   target_ = target->getID();
@@ -103,7 +103,7 @@ void Weapon::interrupt() {
   target_ = NO_ENTITY;
 }
 
-bool Weapon::canAttack(const Entity *target) const {
+bool Weapon::canAttack(const GameEntity *target) const {
   glm::vec2 targetPos = target->getPosition();
   glm::vec2 delta = targetPos - owner_->getPosition();
   float targetAngle = rad2deg(atan2(delta.y , delta.x));

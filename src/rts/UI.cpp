@@ -215,8 +215,8 @@ void UI::renderMinimap() {
 
   // render actors
   for (const auto &pair : Game::get()->getEntities()) {
-    const Entity *e = (const Entity *)pair.second;
-    if (!e->hasProperty(Entity::P_ACTOR)) {
+    const GameEntity *e = (const GameEntity *)pair.second;
+    if (!e->hasProperty(GameEntity::P_ACTOR)) {
       continue;
     }
     glm::vec2 pos = worldToMinimap(e->getPosition(Renderer::get()->getSimDT()));

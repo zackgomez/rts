@@ -90,7 +90,7 @@ void Building::update(float dt) {
 }
 
 bool Building::canCapture(id_t eid) const {
-  const Entity *e = Game::get()->getEntity(eid);
+  const GameEntity *e = Game::get()->getEntity(eid);
   id_t pid = e->getPlayerID();
   return hasProperty(P_CAPPABLE) && pid != getPlayerID() &&
     (capperID_ == NO_ENTITY || eid == capperID_);

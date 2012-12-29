@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include "common/Clock.h"
 #include "common/Logger.h"
-#include "rts/Entity.h"
+#include "rts/GameEntity.h"
 
 namespace rts {
 

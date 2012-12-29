@@ -8,7 +8,7 @@ LoggerPtr Projectile::logger_;
 const std::string Projectile::TYPE = "PROJECTILE";
 
 Projectile::Projectile(const std::string &name, const Json::Value &params)
-  : Entity(name, params, true, false, false),
+  : GameEntity(name, params, true, false, false),
     targetID_(NO_ENTITY) {
   if (!logger_.get()) {
     logger_ = Logger::getLogger("Projectile");
@@ -21,9 +21,9 @@ Projectile::Projectile(const std::string &name, const Json::Value &params)
 }
 
 void Projectile::update(float dt) {
-  Entity::update(dt);
+  GameEntity::update(dt);
 
-  const Entity *targetEnt = Game::get()->getEntity(targetID_);
+  const GameEntity *targetEnt = Game::get()->getEntity(targetID_);
   // If target doesn't exist for whatever reason, then I guess we're done
   if (!targetEnt) {
     MessageHub::get()->sendRemovalMessage(this);
@@ -52,6 +52,6 @@ void Projectile::update(float dt) {
 }
 
 void Projectile::handleMessage(const Message &msg) {
-  Entity::handleMessage(msg);
+  GameEntity::handleMessage(msg);
 }
 };  // rts

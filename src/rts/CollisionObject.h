@@ -1,12 +1,12 @@
 #ifndef SRC_RTS_COLLISIONOBJECT_H_
 #define SRC_RTS_COLLISIONOBJECT_H_
 
-#include "rts/Entity.h"
+#include "rts/GameEntity.h"
 #include "common/Logger.h"
 
 namespace rts {
 
-class CollisionObject : public Entity {
+class CollisionObject : public GameEntity {
  public:
   explicit CollisionObject(const std::string &name, const Json::Value &params);
   virtual ~CollisionObject() { }

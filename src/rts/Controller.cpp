@@ -92,7 +92,7 @@ void Controller::renderUpdate(float dt) {
   std::set<id_t> newsel;
   for (auto eid : selection_) {
     assertEid(eid);
-    const Entity *e = Game::get()->getEntity(eid);
+    const GameEntity *e = Game::get()->getEntity(eid);
     if (e && e->getPlayerID() == player_->getPlayerID()) {
       newsel.insert(eid);
     }
@@ -124,7 +124,7 @@ void Controller::mouseDown(const glm::vec2 &screenCoord, int button) {
   glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
   // The entity (maybe) under the cursor
   id_t eid = Renderer::get()->selectEntity(screenCoord);
-  const Entity *entity = Game::get()->getEntity(eid);
+  const GameEntity *entity = Game::get()->getEntity(eid);
 
   if (button == SDL_BUTTON_LEFT) {
     glm::vec2 minimapPos = Renderer::get()
@@ -178,7 +178,7 @@ void Controller::mouseDown(const glm::vec2 &screenCoord, int button) {
         Renderer::get()->getUI()->highlightEntity(entity->getID());
 
         // Queue up action
-        if (entity->hasProperty(Entity::P_CAPPABLE)) {
+        if (entity->hasProperty(GameEntity::P_CAPPABLE)) {
           action["type"] = ActionTypes::CAPTURE;
         } else {
           action["type"] = ActionTypes::ATTACK;
@@ -294,7 +294,7 @@ void Controller::keyPress(SDL_keysym keysym) {
             // TODO(zack): this assumption that head of selection is always
             // the unit we're building on is not good
             auto sel = selection_.begin();
-            const Entity *ent = Game::get()->getEntity(*sel);
+            const GameEntity *ent = Game::get()->getEntity(*sel);
             // The main action of a building is production
             if (ent->getType() == "BUILDING") {
               std::vector<std::string> prod = arrParam(ent->getName() +

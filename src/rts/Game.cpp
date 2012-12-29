@@ -6,7 +6,7 @@
 #include "common/ParamReader.h"
 #include "common/util.h"
 #include "rts/Building.h"
-#include "rts/Entity.h"
+#include "rts/GameEntity.h"
 #include "rts/EntityFactory.h"
 #include "rts/Map.h"
 #include "rts/MessageHub.h"
@@ -184,12 +184,12 @@ void Game::update(float dt) {
   // Update entities
   std::vector<id_t> deadEnts;
   for (auto &it : entities_) {
-    Entity *entity = it.second;
+    GameEntity *entity = it.second;
     entity->update(dt);
   }
   // Remove deadEnts
   for (auto eid : deadEntities_) {
-    Entity *e = entities_[eid];
+    GameEntity *e = entities_[eid];
     entities_.erase(eid);
     delete e;
   }
@@ -197,14 +197,14 @@ void Game::update(float dt) {
 
   // Collision detection
   for (auto it = entities_.begin(); it != entities_.end(); it++) {
-    const Entity *e1 = it->second;
-    if (!e1->hasProperty(Entity::P_COLLIDABLE)) {
+    const GameEntity *e1 = it->second;
+    if (!e1->hasProperty(GameEntity::P_COLLIDABLE)) {
       continue;
     }
     auto it2 = it;
     for (it2++; it2 != entities_.end(); it2++) {
-      const Entity *e2 = it2->second;
-      if (!e2->hasProperty(Entity::P_COLLIDABLE)) {
+      const GameEntity *e2 = it2->second;
+      if (!e2->hasProperty(GameEntity::P_COLLIDABLE)) {
         continue;
       }
       if (boxBoxCollision(
@@ -289,7 +289,7 @@ void Game::handleMessage(const Message &msg) {
     invariant(msg.isMember("params"),
               "malformed SPAWN_ENTITY message");
 
-    Entity *ent = EntityFactory::get()->construct(
+    GameEntity *ent = EntityFactory::get()->construct(
                     msg["entity_class"].asString(),
                     msg["entity_name"].asString(),
                     msg["params"]);
@@ -337,7 +337,7 @@ void Game::addAction(id_t pid, const PlayerAction &act) {
   }
 }
 
-const Entity * Game::getEntity(id_t eid) const {
+const GameEntity * Game::getEntity(id_t eid) const {
   auto it = entities_.find(eid);
   return it == entities_.end() ? nullptr : it->second;
 }

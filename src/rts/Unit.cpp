@@ -97,7 +97,7 @@ void Unit::update(float dt) {
   }
 }
 
-bool Unit::canAttack(const Entity *e) const {
+bool Unit::canAttack(const GameEntity *e) const {
   if (e->getType() == Building::TYPE) {
     return !((Building*)e)->canCapture(getID()) && weapon_->canAttack(e);
   } else {
@@ -111,7 +111,7 @@ bool Unit::canCapture(const Building *e) const {
       && dist <= fltParam("global.captureRange");
 }
 
-bool Unit::withinRange(const Entity *e) const {
+bool Unit::withinRange(const GameEntity *e) const {
   glm::vec2 targetPos = e->getPosition();
   float dist = glm::distance(pos_, targetPos);
   return dist < weapon_->getMaxRange();
@@ -151,7 +151,7 @@ void Unit::remainStationary() {
   turnSpeed_ = 0.f;
 }
 
-void Unit::attackTarget(const Entity *e) {
+void Unit::attackTarget(const GameEntity *e) {
   assert(e);
 
   // If we can't attack, don't!
@@ -180,8 +180,8 @@ void Unit::captureTarget(const Building *e, float cap) {
   MessageHub::get()->sendMessage(msg);
 }
 
-const Entity * Unit::getTarget(id_t lastTargetID) const {
-  const Entity *target = nullptr;
+const GameEntity * Unit::getTarget(id_t lastTargetID) const {
+  const GameEntity *target = nullptr;
   // Default to last target
   if (lastTargetID != NO_ENTITY
       && (target = Game::get()->getEntity(lastTargetID))) {
@@ -193,11 +193,11 @@ const Entity * Unit::getTarget(id_t lastTargetID) const {
   // Last target doesn't exist or isn't viable, find a new one
   if (!target) {
     // Explanation: this creates a lambda function, the [&] is so it captures
-    // this, the arg is a const Entity *, and it returns a float
+    // this, the arg is a const GameEntity *, and it returns a float
     // In vim, these {} are marked as errors, that's just because vim doesn't
     // know c++11
     target = MessageHub::get()->findEntity(
-      [&](const Entity *e) -> float {
+      [&](const GameEntity *e) -> float {
         if (e->getPlayerID() != NO_PLAYER
             && e->getTeamID() != getTeamID()
             && e->hasProperty(P_TARGETABLE)) {
@@ -225,7 +225,7 @@ void IdleState::update(float dt) {
   unit_->remainStationary();
 
   // If an enemy is within our firing range, then fuck him up
-  const Entity *target = unit_->getTarget(targetID_);
+  const GameEntity *target = unit_->getTarget(targetID_);
   if (target) {
     // If target is in range, attack
     if (unit_->canAttack(target)) {
@@ -261,7 +261,7 @@ MoveState::MoveState(id_t targetID, Unit *unit)
 
 void MoveState::updateTarget() {
   if (targetID_ != NO_ENTITY) {
-    const Entity *e = Game::get()->getEntity(targetID_);
+    const GameEntity *e = Game::get()->getEntity(targetID_);
     if (!e) {
       targetID_ = NO_ENTITY;
     } else {
@@ -310,7 +310,7 @@ AttackState::~AttackState() {
 void AttackState::update(float dt) {
   // Default to no movement
   unit_->remainStationary();
-  const Entity *target = Game::get()->getEntity(targetID_);
+  const GameEntity *target = Game::get()->getEntity(targetID_);
   // TODO(brooklyn) unit out of global sight (must be accounted for)
   if (!target)
     return;
@@ -326,7 +326,7 @@ void AttackState::update(float dt) {
 
 UnitState * AttackState::next() {
   // We're done pursuing when the target is DEAD
-  const Entity *target = Game::get()->getEntity(targetID_);
+  const GameEntity *target = Game::get()->getEntity(targetID_);
 
   // Checks that distance between units is in sight range
   // TODO(brooklyn) add condition to consider global sight
@@ -350,7 +350,7 @@ AttackMoveState::~AttackMoveState() {
 }
 
 void AttackMoveState::update(float dt) {
-  const Entity *targetEnt = unit_->getTarget(targetID_);
+  const GameEntity *targetEnt = unit_->getTarget(targetID_);
   // If no target, move towards location
   if (!targetEnt) {
     unit_->moveTowards(targetPos_, dt);
@@ -399,7 +399,7 @@ CaptureState::~CaptureState() {
 void CaptureState::update(float dt) {
   // Default to no movement
   unit_->remainStationary();
-  const Entity *target = Game::get()->getEntity(targetID_);
+  const GameEntity *target = Game::get()->getEntity(targetID_);
   if (!target) {
     return;
   }
@@ -418,7 +418,7 @@ void CaptureState::update(float dt) {
 
 UnitState * CaptureState::next() {
   // We're done capping when the building belongs to us.
-  const Entity *target = Game::get()->getEntity(targetID_);
+  const GameEntity *target = Game::get()->getEntity(targetID_);
   if (target->getTeamID() == unit_->getTeamID()) {
     return new IdleState(unit_);
   }
