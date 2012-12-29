@@ -10,7 +10,7 @@
 
 namespace rts {
 
-class RenderEntity;
+class ModelEntity;
 class UIWidget;
 struct MapHighlight;
 
@@ -20,7 +20,7 @@ class UI {
   ~UI();
 
   void render(float dt);
-  void renderEntity(const RenderEntity *e, const glm::mat4 &transform, float dt);
+  void renderEntity(const ModelEntity *e, const glm::mat4 &transform, float dt);
   void highlight(const glm::vec2 &mapCoord);
   void highlightEntity(id_t eid);
 

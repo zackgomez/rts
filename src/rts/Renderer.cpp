@@ -21,7 +21,7 @@
 #include "rts/MessageHub.h"
 #include "rts/Projectile.h"
 #include "rts/Player.h"
-#include "rts/RenderEntity.h"
+#include "rts/ModelEntity.h"
 #include "rts/ResourceManager.h"
 #include "rts/Unit.h"
 #include "rts/UI.h"
@@ -90,9 +90,9 @@ void Renderer::renderMessages(const std::set<Message> &messages) {
   // indication of damage taken
 }
 
-void Renderer::renderEntity(RenderEntity *entity) {
+void Renderer::renderEntity(ModelEntity *entity) {
   record_section("renderEntity");
-  if (!entity->hasProperty(RenderEntity::P_RENDERABLE)) {
+  if (!entity->hasProperty(ModelEntity::P_RENDERABLE)) {
       return;
   }
   entity->render(simdt_);

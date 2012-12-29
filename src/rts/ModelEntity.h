@@ -4,10 +4,10 @@
 
 namespace rts {
 
-class RenderEntity
+class ModelEntity
 {
 public:
-  virtual ~RenderEntity() { }
+  virtual ~ModelEntity() { }
 
   static const uint32_t P_RENDERABLE = 565038773;
   static const uint32_t P_COLLIDABLE = 983556954;

@@ -14,7 +14,7 @@ class Actor;
 class Controller;
 class Game;
 class Map;
-class RenderEntity;
+class ModelEntity;
 class UI;
 
 struct MapHighlight;
@@ -40,7 +40,7 @@ class Renderer {
   }
 
   void renderMessages(const std::set<Message> &messages);
-  void renderEntity(RenderEntity *entity);
+  void renderEntity(ModelEntity *entity);
   void renderUI();
   void renderMinimap();
   void renderMap(const Map *map);
@@ -76,7 +76,7 @@ class Renderer {
   // Returns the terrain location at the given screen coord.  If the coord
   // is not on the map returns glm::vec3(HUGE_VAL).
   glm::vec3 screenToTerrain(const glm::vec2 &screenCoord) const;
-  const std::map<const RenderEntity *, glm::vec3>& getEntityWorldPosMap() const;
+  const std::map<const ModelEntity *, glm::vec3>& getEntityWorldPosMap() const;
   const std::vector<ChatMessage>& getChatMessages() const {
     return chats_;
   }
@@ -104,7 +104,7 @@ class Renderer {
 
   std::vector<ChatMessage> chats_;
 
-  std::map<const RenderEntity *, glm::vec3> ndcCoords_;
+  std::map<const ModelEntity *, glm::vec3> ndcCoords_;
   std::set<id_t> selection_;
 };
 

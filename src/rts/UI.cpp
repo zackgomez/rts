@@ -123,7 +123,7 @@ void UI::highlightEntity(id_t eid) {
   entityHighlights_[eid] = fltParam("ui.highlight.duration");
 }
 
-void UI::renderEntity(const RenderEntity *e, const glm::mat4 &transform, float dt) {
+void UI::renderEntity(const ModelEntity *e, const glm::mat4 &transform, float dt) {
   if (Renderer::get()->isSelected(e->getID())) {
     // A bit of a hack here...
     auto finalTransform = glm::translate(

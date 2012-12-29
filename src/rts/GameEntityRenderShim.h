@@ -1,11 +1,11 @@
 #pragma once
-#include "rts/RenderEntity.h"
+#include "rts/ModelEntity.h"
 #include "common/util.h"
 
 namespace rts {
 
 class GameEntityRenderShim :
-  public RenderEntity {
+  public ModelEntity {
 public:
   virtual ~GameEntityRenderShim(void) { }
 
