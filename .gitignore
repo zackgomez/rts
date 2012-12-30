@@ -18,3 +18,4 @@ msvc/rts/*.suo
 msvc/rts/*.sdf
 msvc/rts/*.opensdf
 msvc/rts/*.user
+/rts.app
