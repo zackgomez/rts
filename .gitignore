@@ -1,4 +1,5 @@
 /obj
+/dist
 /rts
 /rtsed
 /matchmaker
@@ -19,3 +20,4 @@ msvc/rts/*.sdf
 msvc/rts/*.opensdf
 msvc/rts/*.user
 /rts.app
+/rts.dmg

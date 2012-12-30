@@ -331,7 +331,6 @@ int main (int argc, char **argv)
 
     // ----------------------------------------------------------------------------
     // // This makes relative paths work in C++ in Xcode by changing directory to the Resources folder inside the .app bundle
-#ifdef __APPLE__    
     CFBundleRef mainBundle = CFBundleGetMainBundle();
     CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
     char path[PATH_MAX];
@@ -343,7 +342,6 @@ int main (int argc, char **argv)
 
     chdir(path);
     printf("Current Path: %s\n", path);
-#endif
 
     CustomApplicationMain (argc, argv);
     return 0;

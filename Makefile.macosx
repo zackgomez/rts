@@ -27,13 +27,13 @@ RTSEDOBJ = $(patsubst $(RTSDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(
 
 RESOURCES = config.json local.json models scripts shaders images fonts
 
-all: obj rts rtsed
+all: obj $(PROGRAM) rtsed
 
 $(OBJDIR)/SDLMain.o: macosx/SDLMain.m
 	$(CXX) -g -O0 -Wall $^ -c -o $@
 
 
-rts: $(RTSOBJ) $(COMMONOBJ) local.json $(OBJDIR)/SDLMain.o
+$(PROGRAM): $(RTSOBJ) $(COMMONOBJ) local.json $(OBJDIR)/SDLMain.o
 	$(CXX) $(CXXFLAGS) -o $@ $(RTSOBJ) $(COMMONOBJ) $(LDFLAGS) $(OBJDIR)/SDLMain.o
 
 rtsed: $(RTSEDOBJ) $(COMMONOBJ) local.json
@@ -76,7 +76,7 @@ obj:
 tags:
 	ctags -R src
 
-.PHONY: clean force_look config tags
+.PHONY: clean force_look config tags bundle
 
 
 
@@ -94,6 +94,13 @@ MACINFOPLIST=$(BUNDLE)/Contents/Info.plist
 MACRESOURCES=$(patsubst %,$(MACRESOURCEFOLDER)/%,$(RESOURCES))
 
 bundle: $(BUNDLE) $(BUNDLE)/Contents/MacOS/$(PROGRAM) $(MACICON) $(MACPKGINFO) $(MACINFOPLIST) $(MACRESOURCES)
+
+dist:
+	mkdir -p dist
+dist/$(BUNDLE): dist bundle $(BUNDLE)
+	cp -r $(BUNDLE) dist/
+$(PROGRAM).dmg: dist/$(BUNDLE)
+	hdiutil create -ov -srcfolder ./dist $@
 
 #  This builds the bundle's directory structure.
 $(BUNDLE):
