@@ -78,15 +78,14 @@ static NSString *getApplicationName(void)
 {
     if (shouldChdir)
     {
-        char parentdir[MAXPATHLEN];
-        CFURLRef url = CFBundleCopyBundleURL(CFBundleGetMainBundle());
-        CFURLRef url2 = CFURLCreateCopyDeletingLastPathComponent(0, url);
-        if (CFURLGetFileSystemRepresentation(url2, 1, (UInt8 *)parentdir, MAXPATHLEN)) {
-            chdir(parentdir);   /* chdir to the binary app's parent */
+		char resourcedir[MAXPATHLEN];
+		CFBundleRef mainBundle = CFBundleGetMainBundle();
+		CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
+		if (CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8 *)resourcedir, PATH_MAX)) {
+            chdir(resourcedir);   /* chdir to the binary app's parent */
         }
-        CFRelease(url);
-        CFRelease(url2);
-    }
+        CFRelease(resourcesURL);
+	}
 }
 
 static void setApplicationMenu(void)
@@ -328,20 +327,6 @@ int main (int argc, char **argv)
             gArgv[i] = argv[i];
         gFinderLaunch = NO;
     }
-
-    // ----------------------------------------------------------------------------
-    // // This makes relative paths work in C++ in Xcode by changing directory to the Resources folder inside the .app bundle
-    CFBundleRef mainBundle = CFBundleGetMainBundle();
-    CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
-    char path[PATH_MAX];
-    if (!CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8 *)path, PATH_MAX))
-    {
-        // error!
-    }
-    CFRelease(resourcesURL);
-
-    chdir(path);
-    printf("Current Path: %s\n", path);
 
     CustomApplicationMain (argc, argv);
     return 0;
