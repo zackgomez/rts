@@ -25,6 +25,8 @@ COMMONOBJ = $(patsubst $(COMMONDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcar
 RTSOBJ = $(patsubst $(RTSDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(RTSDIR)/*.cpp))) obj/rts-main.o
 RTSEDOBJ = $(patsubst $(RTSDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(RTSDIR)/*.cpp))) obj/rtsed-main.o
 
+RESOURCES = config.json local.json models scripts shaders images fonts
+
 all: obj rts rtsed
 
 $(OBJDIR)/SDLMain.o: macosx/SDLMain.m
@@ -63,7 +65,7 @@ local.json: local.json.default
 
 clean:
 	rm -f rts rtsed tests obj/* $(GTESTLIB)
-	rm -rf obj/
+	rm -rf obj/ rts.app
 
 force_look:
 	true
@@ -84,11 +86,14 @@ BUNDLEPACKAGE=APPL
 BUNDLESIGNATURE=????
 
 BUNDLE=$(PROGRAM).app
+MACRESOURCEFOLDER=$(BUNDLE)/Contents/Resources
 MACICON=$(BUNDLE)/Contents/$(ICONFILE)
 MACPKGINFO=$(BUNDLE)/Contents/PkgInfo
 MACINFOPLIST=$(BUNDLE)/Contents/Info.plist 
 
-dist: $(BUNDLE) $(BUNDLE)/Contents/MacOS/$(PROGRAM) $(MACICON) $(MACPKGINFO) $(MACINFOPLIST)
+MACRESOURCES=$(patsubst %,$(MACRESOURCEFOLDER)/%,$(RESOURCES))
+
+bundle: $(BUNDLE) $(BUNDLE)/Contents/MacOS/$(PROGRAM) $(MACICON) $(MACPKGINFO) $(MACINFOPLIST) $(MACRESOURCES)
 
 #  This builds the bundle's directory structure.
 $(BUNDLE):
@@ -96,6 +101,7 @@ $(BUNDLE):
 	mkdir -p $(BUNDLE)/Contents
 	mkdir -p $(BUNDLE)/Contents/MacOS
 	mkdir -p $(BUNDLE)/Contents/Resources
+	@echo $(MACRESOURCES)
 
 #  This builds the executable right inside the bundle.
 $(BUNDLE)/Contents/MacOS/$(PROGRAM): $(PROGRAM)
@@ -112,6 +118,9 @@ $(MACPKGINFO):
 	@echo "==== Creating PkgInfo ===="
 	touch $(MACPKGINFO)
 	@echo -n "$(BUNDLEPACKAGE)$(BUNDLESIGNATURE)" > $(MACPKGINFO)
+
+$(MACRESOURCEFOLDER)/%: %
+	cp -r $^ $@
 
 #  This creates the Contents/Info.plist file.
 $(MACINFOPLIST):
