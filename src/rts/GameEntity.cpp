@@ -8,15 +8,12 @@
 
 namespace rts {
 
-id_t GameEntity::lastID_ = STARTING_EID;
-
 GameEntity::GameEntity(
     const std::string &name,
     const Json::Value &params,
     bool mobile, bool targetable,
     bool collidable)
-  : id_(lastID_++),
-    playerID_(NO_PLAYER),
+  : playerID_(NO_PLAYER),
     name_(name),
     mobile_(mobile),
     targetable_(targetable),
@@ -45,7 +42,6 @@ GameEntity::GameEntity(
     height_ = param("height");
 
   // Make sure we did it right
-  assertEid(id_);
   assertPid(playerID_);
 }
 
@@ -101,7 +97,8 @@ void GameEntity::handleMessage(const Message &msg) {
 }
 
 void GameEntity::checksum(Checksum &chksum) const {
-  chksum.process(&id_, sizeof(id_))
+  id_t id = getID();
+  chksum.process(&id, sizeof(id))
       .process(&playerID_, sizeof(playerID_))
       .process(&name_[0], name_.length())
       .process(&mobile_, sizeof(mobile_))

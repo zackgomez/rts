@@ -36,10 +36,6 @@ glm::mat4 GameEntityRenderShim::getTransform(float dt) const {
       glm::vec3(modelSize));
 }
 
-std::string GameEntityRenderShim::getShaderName() const {
-  return "unit";
-}
-
 std::string GameEntityRenderShim::getMeshName() const {
   return strParam(getName() + ".model");
 }
@@ -83,15 +79,16 @@ void GameEntityRenderShim::render(float dt) {
 }
 
 void GameEntityRenderShim::renderMesh(const glm::mat4 &transform) {
-    GLuint meshProgram = ResourceManager::get()->getShader(getShaderName());
-    glUseProgram(meshProgram);
-    GLuint colorUniform = glGetUniformLocation(meshProgram, "color");
-    GLuint lightPosUniform = glGetUniformLocation(meshProgram, "lightPos");
-    glUniform4fv(colorUniform, 1, glm::value_ptr(getColor()));
-    auto lightPos = vec3Param("renderer.lightPos");
-    glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos));
-    Mesh * mesh = ResourceManager::get()->getMesh(getMeshName());
-    ::renderMesh(transform, mesh);
+  // TODO(zack): include shader in model description
+  GLuint meshProgram = ResourceManager::get()->getShader("unit");
+  glUseProgram(meshProgram);
+  GLuint colorUniform = glGetUniformLocation(meshProgram, "color");
+  GLuint lightPosUniform = glGetUniformLocation(meshProgram, "lightPos");
+  glUniform4fv(colorUniform, 1, glm::value_ptr(getColor()));
+  auto lightPos = vec3Param("renderer.lightPos");
+  glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos));
+  Mesh * mesh = ResourceManager::get()->getMesh(getMeshName());
+  ::renderMesh(transform, mesh);
 }
 
 }  // namespace rts

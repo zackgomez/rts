@@ -28,6 +28,8 @@
 
 namespace rts {
 
+id_t Entity::lastID_ = STARTING_EID;
+
 Renderer::Renderer()
   : controller_(nullptr),
     cameraPos_(0.f, 0.f, 5.f),

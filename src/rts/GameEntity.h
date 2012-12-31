@@ -40,10 +40,6 @@ class GameEntity : public GameEntityRenderShim {
     return false;
   }
 
-  // This entity's unique id
-  id_t getID() const {
-    return id_;
-  }
   // The player than owns this entity, or NO_PLAYER
   id_t getPlayerID() const {
     return playerID_;
@@ -122,9 +118,6 @@ class GameEntity : public GameEntityRenderShim {
   float turnSpeed_;
 
  private:
-  static id_t lastID_;
-
-  id_t id_;
   id_t playerID_;
   std::string name_;
 
