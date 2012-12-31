@@ -20,7 +20,6 @@ public:
 
   // Eventual interface, now just adapters
   virtual glm::mat4 getTransform(float dt) const;
-  virtual std::string getShaderName() const;
   virtual std::string getMeshName() const;
   virtual glm::vec4 getColor() const;
   virtual id_t getPlayerID() const = 0;

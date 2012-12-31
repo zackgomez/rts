@@ -39,7 +39,6 @@ class Renderer {
     return controller_;
   }
 
-  void renderMessages(const std::set<Message> &messages);
   void renderEntity(ModelEntity *entity);
   void renderUI();
   void renderMinimap();
@@ -87,8 +86,6 @@ class Renderer {
   void renderActor(const Actor *actor, glm::mat4 transform);
   glm::vec2 worldToMinimap(const glm::vec3 &mapPos);
 
-  // cached messages
-  std::set<Message> messages_;
   const Game *game_;
   Controller *controller_;
   const Map* map_;

@@ -87,11 +87,6 @@ void Renderer::addChatMessage(id_t from, const std::string &message) {
   chats_.emplace_back(ss.str(), Clock::now());
 }
 
-void Renderer::renderMessages(const std::set<Message> &messages) {
-  // TODO(zack) use the damage messages to display some kind of visual
-  // indication of damage taken
-}
-
 void Renderer::renderEntity(ModelEntity *entity) {
   record_section("renderEntity");
   if (!entity->hasProperty(ModelEntity::P_RENDERABLE)) {

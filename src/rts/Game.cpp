@@ -251,9 +251,6 @@ void Game::render(float dt) {
 
   Renderer::get()->startRender(dt);
 
-  Renderer::get()->renderMessages(messages_);
-  messages_.clear();
-
   Renderer::get()->renderMap(map_);
 
   for (auto &it : entities_) {
@@ -276,7 +273,6 @@ void Game::sendMessage(id_t to, const Message &msg) {
   }
 
   it->second->handleMessage(msg);
-  messages_.insert(msg);
 }
 
 void Game::handleMessage(const Message &msg) {
@@ -321,8 +317,6 @@ void Game::handleMessage(const Message &msg) {
     // No other work, if unknown message
     return;
   }
-
-  messages_.insert(msg);
 }
 
 void Game::addAction(id_t pid, const PlayerAction &act) {
