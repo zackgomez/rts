@@ -65,7 +65,8 @@ class Game {
   const PlayerResources& getResources(id_t pid) const;
   float getVictoryPoints(id_t tid) const;
 
-  // Has to be inline, that sucks
+  // Returns the entity that scores the LOWEST with the given scoring function.
+  // Scoring function should have signature float scorer(const GameEntity *);
   template <class T>
   const GameEntity * findEntity(T scorer) const {
     float bestscore = HUGE_VAL;

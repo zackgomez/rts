@@ -30,15 +30,6 @@ class MessageHub {
   void sendVPMessage(id_t from, id_t tid, float amount);
   void sendCollisionMessage(id_t from, id_t to);
 
-  // Returns the entity that scores the LOWEST with the given scoring function.
-  // Scoring function should have signature float scorer(const GameEntity *);
-  // TODO(zack) REMOVE THIS FUNCTION and just use the Game:: version
-  template <class T>
-  const GameEntity *findEntity(T&& scorer) const {
-    invariant(game_, "unset game object");
-    return game_->findEntity(std::forward<T>(scorer));
-  }
-
  private:
   // For singleton
   MessageHub();
