@@ -32,6 +32,7 @@ id_t Entity::lastID_ = STARTING_EID;
 
 Renderer::Renderer()
   : controller_(nullptr),
+    running_(true),
     cameraPos_(0.f, 0.f, 5.f),
     resolution_(vec2Param("local.resolution")),
     lastRender_(0) {
@@ -81,10 +82,56 @@ void Renderer::setUI(UI *ui) {
   ui_ = ui;
 }
 
+void Renderer::startMainloop() {
+  Clock::setThread();
+  const float framerate = fltParam("local.framerate");
+  float fps = 1.f / framerate;
+
+  // render loop
+  while (running_) {
+    uint32_t start = SDL_GetTicks();
+    if (controller_) {
+      controller_->processInput(fps);
+    }
+    Renderer::get()->getController()->processInput(fps);
+    Clock::startSection("render");
+    render();
+    Clock::endSection("render");
+    Clock::dumpTimes();
+
+    // Regulate frame rate
+    uint32_t end = SDL_GetTicks();
+    uint32_t delay = std::max(int(1000*fps) - int(end - start), 0);
+    SDL_Delay(delay);
+  }
+}
+
 void Renderer::addChatMessage(id_t from, const std::string &message) {
   std::stringstream ss;
   ss << Game::get()->getPlayer(from)->getName() << ": " << message;
   chats_.emplace_back(ss.str(), Clock::now());
+}
+
+void Renderer::render() {
+  // lock
+  std::unique_lock<std::mutex> lock(mutex_);
+
+  if (Game::get()) {
+    float dt = Clock::secondsSince(Game::get()->getLastTickTime());
+
+    Renderer::get()->startRender(dt);
+
+    Renderer::get()->renderMap();
+
+    for (auto &it : Game::get()->getEntities()) {
+      Renderer::get()->renderEntity(it.second);
+    }
+
+    Renderer::get()->endRender();
+  }
+
+  // unlock
+  lock.unlock();
 }
 
 void Renderer::renderEntity(ModelEntity *entity) {
@@ -193,7 +240,11 @@ void Renderer::renderActorInfo() {
   }
 }
 
-void Renderer::renderMap(const Map *map) {
+void Renderer::renderMap() {
+  const Map *map = nullptr;
+  if (!Game::get() || !(map = Game::get()->getMap())) {
+    return;
+  }
   record_section("renderMap");
 
   auto gridDim = map->getSize() * 2.f;

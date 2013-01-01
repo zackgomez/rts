@@ -29,7 +29,6 @@ using rts::Matchmaker;
 using rts::Player;
 using rts::UI;
 
-void mainloop();
 void render();
 void handleInput(float dt);
 
@@ -61,29 +60,8 @@ void gameThread() {
     invariant(delay >= 0, "cannot have negative delay");
     SDL_Delay(delay);
   }
-}
 
-void mainloop() {
-  Clock::setThread();
-  const float framerate = fltParam("local.framerate");
-  float fps = 1.f / framerate;
-
-  std::thread gamet(gameThread);
-  // render loop
-  while (game->isRunning()) {
-    uint32_t start = SDL_GetTicks();
-    Renderer::get()->getController()->processInput(fps);
-    Clock::startSection("render");
-    game->render(fps);
-    Clock::endSection("render");
-    Clock::dumpTimes();
-    // Regulate frame rate
-    uint32_t end = SDL_GetTicks();
-    uint32_t delay = std::max(int(1000*fps) - int(end - start), 0);
-    SDL_Delay(delay);
-  }
-
-  gamet.join();
+  Renderer::get()->signalShutdown();
 }
 
 int initLibs() {
@@ -138,7 +116,9 @@ int main(int argc, char **argv) {
   Renderer::get()->setUI(ui);
 
   // RUN IT
-  mainloop();
+  std::thread gamet(gameThread);
+  Renderer::get()->startMainloop();
+  gamet.join();
 
   return 0;
 }

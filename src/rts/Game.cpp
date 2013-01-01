@@ -52,8 +52,6 @@ Game::Game(Map *map, const std::vector<Player *> &players)
     victoryPoints_[tid] = 0.f;
   }
 
-  Renderer::get()->setGame(this);
-
   assert(!instance_);
   instance_ = this;
 }
@@ -84,7 +82,7 @@ checksum_t Game::checksum() {
 
 void Game::start(float period) {
   // Lock the player update
-  std::unique_lock<std::mutex> lock(mutex_);
+  auto lock = std::unique_lock<std::mutex>(actionMutex_);
   paused_ = true;
 
   // Starting resources
@@ -111,8 +109,7 @@ void Game::start(float period) {
 }
 
 void Game::update(float dt) {
-  // lock
-  std::unique_lock<std::mutex> lock(mutex_);
+  auto lock = Renderer::get()->lockEntities();
 
   // First update players
   // TODO(zack): less hacky dependence on paused_
@@ -130,8 +127,6 @@ void Game::update(float dt) {
     return;
   }
   paused_ = false;
-  LOG(DEBUG) << "Executing tick: " << tick_ << " actions from: "
-      << tick_ - tickOffset_ << '\n';
 
   // Don't allow new actions during this time
   std::unique_lock<std::mutex> actionLock(actionMutex_);
@@ -237,30 +232,9 @@ void Game::update(float dt) {
   // unlock entities automatically when lock goes out of scope
   // Next tick
   tick_++;
-  sync_tick_ = SDL_GetTicks();
+  lastTickTime_ = Clock::now();
 
   // unlock game automatically when lock goes out of scope
-}
-
-// TODO(zack) remove this from game...
-void Game::render(float dt) {
-  // lock
-  std::unique_lock<std::mutex> lock(mutex_);
-
-  dt = (SDL_GetTicks() - sync_tick_) / 1000.f;
-
-  Renderer::get()->startRender(dt);
-
-  Renderer::get()->renderMap(map_);
-
-  for (auto &it : entities_) {
-    Renderer::get()->renderEntity(it.second);
-  }
-
-  Renderer::get()->endRender();
-
-  // unlock
-  lock.unlock();
 }
 
 void Game::sendMessage(id_t to, const Message &msg) {

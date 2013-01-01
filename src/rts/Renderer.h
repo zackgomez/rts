@@ -27,9 +27,6 @@ class Renderer {
   static Renderer* get();
 
   void setController(Controller *controller);
-  void setGame(const Game *game) {
-    game_ = game;
-  }
   void setUI(UI *ui);
   UI* getUI() {
     return ui_;
@@ -38,17 +35,16 @@ class Renderer {
   Controller *getController() const {
     return controller_;
   }
+  std::unique_lock<std::mutex> lockEntities() {
+    return std::unique_lock<std::mutex>(mutex_);
+  }
+  void signalShutdown() {
+    running_ = false;
+  }
 
-  void renderEntity(ModelEntity *entity);
-  void renderUI();
-  void renderMinimap();
-  void renderMap(const Map *map);
-  void renderActorInfo();
+  void startMainloop();
 
   void addChatMessage(id_t from, const std::string &message);
-
-  void startRender(float dt);
-  void endRender();
 
   float getSimDT() const {
     return simdt_;
@@ -82,14 +78,25 @@ class Renderer {
 
  private:
   Renderer();
+
+  void render();
+  void startRender(float dt);
+  void endRender();
+  void renderMap();
+  void renderEntity(ModelEntity *entity);
+  void renderUI();
+  void renderActorInfo();
+
   glm::vec3 screenToNDC(const glm::vec2 &screenCoord) const;
   void renderActor(const Actor *actor, glm::mat4 transform);
   glm::vec2 worldToMinimap(const glm::vec3 &mapPos);
 
-  const Game *game_;
   Controller *controller_;
-  const Map* map_;
   UI* ui_;
+
+  bool running_;
+
+  std::mutex mutex_;
 
   glm::vec3 cameraPos_;
   glm::vec2 resolution_;

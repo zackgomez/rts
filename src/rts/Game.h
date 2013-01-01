@@ -6,8 +6,9 @@
 #include <vector>
 #include <mutex>
 #include <queue>
-#include "common/Logger.h"
+#include "common/Clock.h"
 #include "common/Checksum.h"
+#include "common/Logger.h"
 #include "rts/GameEntity.h"
 #include "rts/PlayerAction.h"
 
@@ -33,7 +34,6 @@ class Game {
   void start(float period);
 
   void update(float dt);
-  void render(float dt);
   const Map * getMap() const {
     return map_;
   }
@@ -49,6 +49,9 @@ class Game {
   checksum_t getChecksum() const {
     return checksums_.back();
   }
+  Clock::time_point getLastTickTime() const {
+    return lastTickTime_;
+  }
 
   // Does not block, should only be called from Game thread
   void sendMessage(id_t to, const Message &msg);
@@ -57,7 +60,7 @@ class Game {
   void addAction(id_t pid, const PlayerAction &act);
 
   const GameEntity * getEntity(id_t eid) const;
-  const std::map<id_t, GameEntity *> getEntities() const { return entities_; }
+  const std::map<id_t, GameEntity *>& getEntities() const { return entities_; }
   const Player * getPlayer(id_t pid) const;
   const std::vector<Player *>& getPlayers() const { return players_; }
   const std::set<id_t> getTeams() const { return teams_; }
@@ -93,7 +96,6 @@ class Game {
 
   LoggerPtr logger_;
 
-  std::mutex mutex_;
   std::mutex actionMutex_;
 
   Map *map_;
@@ -108,7 +110,8 @@ class Game {
   std::map<id_t, std::queue<PlayerAction>> actions_;
   tick_t tick_;
   tick_t tickOffset_;
-  tick_t sync_tick_;
+
+  Clock::time_point lastTickTime_;
 
   // holds checksums before the tick specified by the index
   // checksums_[3] == checksum at the end of tick 2/beginning of tick 3
