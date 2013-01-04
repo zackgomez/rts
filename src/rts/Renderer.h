@@ -93,7 +93,7 @@ class Renderer {
   Renderer();
 
   void render();
-  void startRender(float dt);
+  void startRender();
   void endRender();
   void renderMap();
   void renderEntity(ModelEntity *entity);

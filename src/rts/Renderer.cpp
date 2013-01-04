@@ -116,20 +116,19 @@ void Renderer::render() {
   // lock
   std::unique_lock<std::mutex> lock(mutex_);
 
-  float dt = Clock::secondsSince(lastTickTime_);
+  simdt_ = Clock::secondsSince(lastTickTime_);
 
-  Renderer::get()->startRender(dt);
+  startRender();
 
-  Renderer::get()->renderMap();
+  renderMap();
 
   for (auto &it : Game::get()->getEntities()) {
-    Renderer::get()->renderEntity(it.second);
+    renderEntity(it.second);
   }
 
-  Renderer::get()->endRender();
+  endRender();
 
-  // unlock
-  lock.unlock();
+  // unlock when lock goes out of scope
 }
 
 void Renderer::renderEntity(ModelEntity *entity) {
@@ -260,8 +259,7 @@ void Renderer::renderMap() {
   renderRectangleProgram(transform);
 }
 
-void Renderer::startRender(float dt) {
-  simdt_ = dt;
+void Renderer::startRender() {
   if (lastRender_)
     renderdt_ = (SDL_GetTicks() - lastRender_) / 1000.f;
   else
