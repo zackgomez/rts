@@ -80,7 +80,7 @@ checksum_t Game::checksum() {
   return chksum.getChecksum();
 }
 
-void Game::start(float period) {
+void Game::start() {
   // Lock the player update
   auto lock = std::unique_lock<std::mutex>(actionMutex_);
   pause();
@@ -128,7 +128,7 @@ void Game::update(float dt) {
     pause();
     return;
   }
-  unpause();
+  paused_ = false;
 
   // Don't allow new actions during this time
   std::unique_lock<std::mutex> actionLock(actionMutex_);

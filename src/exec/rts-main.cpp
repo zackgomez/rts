@@ -44,21 +44,16 @@ void gameThread() {
   const float simrate = fltParam("game.simrate");
   const float simdt = 1.f / simrate;
 
-  game->start(simdt);
-  float delay;
+  game->start();
 
+  Clock::time_point last = Clock::now();
   while (game->isRunning()) {
-    // TODO(zack) tighten this so that EVERY 10 ms this will go
-    uint32_t start = SDL_GetTicks();
-
     game->update(simdt);
-    delay = int(1000*simdt - (SDL_GetTicks() - start));
-    // If we want to delay for zero seconds, we've used our time slice
-    // and are lagging.
-    delay = glm::clamp(delay, 0.0f, 1000.0f * simdt);
-    invariant(delay <= 1000 * simdt, "invalid delay, longer than interval");
-    invariant(delay >= 0, "cannot have negative delay");
-    SDL_Delay(delay);
+
+    float delay = glm::clamp(2 * simdt - Clock::secondsSince(last), 0.f, 0.1f);
+    last = Clock::now();
+    // TODO(zack): convert to c++ std thread delay
+    SDL_Delay(1000 * delay);
   }
 
   Renderer::get()->signalShutdown();
@@ -95,7 +90,6 @@ int main(int argc, char **argv) {
   Renderer::get();
 
   // Set up players and game
-  // TODO(zack): make renderer a true singleton
   Matchmaker matchmaker(getParam("local.player"));
 
   std::vector<Player *> players;

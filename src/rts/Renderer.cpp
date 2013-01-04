@@ -219,7 +219,7 @@ void Renderer::renderActorInfo() {
       drawRectCenter(pos, size, glm::vec4(0, 1, 0, 1));
     }
 
-    std::queue<Actor::Production> queue = actor->getProductionQueue();
+    auto queue = actor->getProductionQueue();
     if (!queue.empty()) {
       // display production bar
       float prodFactor = 1.f - queue.front().time / queue.front().max_time;
@@ -310,9 +310,9 @@ void Renderer::updateCamera(const glm::vec3 &delta) {
 
   auto mapExtent = mapSize_ / 2.f;
   cameraPos_ = glm::clamp(
-                 cameraPos_,
-                 glm::vec3(-mapExtent.x, -mapSize_.y, 0.f),
-                 glm::vec3(mapExtent.x, mapSize_.y, 20.f));
+      cameraPos_,
+      glm::vec3(-mapExtent.x, -mapExtent.y, 0.f),
+      glm::vec3(mapExtent.x, mapExtent.y, 20.f));
 }
 
 void Renderer::minimapUpdateCamera(const glm::vec2 &screenCoord) {

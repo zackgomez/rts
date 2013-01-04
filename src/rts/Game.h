@@ -30,8 +30,7 @@ class Game {
 
   // Synchronizes game between players and does any other initialization
   // required
-  // @arg period the time to wait between each check
-  void start(float period);
+  void start();
 
   void update(float dt);
   const Map * getMap() const {

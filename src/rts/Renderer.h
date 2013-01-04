@@ -128,7 +128,6 @@ class Renderer {
   std::vector<ChatMessage> chats_;
 
   std::map<const ModelEntity *, glm::vec3> ndcCoords_;
-  std::set<id_t> selection_;
 };
 
 struct ChatMessage {
