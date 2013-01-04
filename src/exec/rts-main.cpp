@@ -50,10 +50,10 @@ void gameThread() {
   while (game->isRunning()) {
     game->update(simdt);
 
-    float delay = glm::clamp(2 * simdt - Clock::secondsSince(last), 0.f, 0.1f);
+    float delay = glm::clamp(2 * simdt - Clock::secondsSince(last), 0.f, simdt);
     last = Clock::now();
-    // TODO(zack): convert to c++ std thread delay
-    SDL_Delay(1000 * delay);
+    std::chrono::milliseconds delayms(static_cast<int>(1000 * delay));
+    std::this_thread::sleep_for(delayms);
   }
 
   Renderer::get()->signalShutdown();

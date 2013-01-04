@@ -90,25 +90,25 @@ void Renderer::startMainloop() {
   float fps = 1.f / framerate;
 
   // render loop
+  Clock::time_point last = Clock::now();
   while (running_) {
-    uint32_t start = SDL_GetTicks();
     if (controller_) {
       controller_->processInput(fps);
     }
-    Renderer::get()->getController()->processInput(fps);
-    Clock::startSection("render");
+
     render();
-    Clock::endSection("render");
     Clock::dumpTimes();
 
     // Regulate frame rate
-    uint32_t end = SDL_GetTicks();
-    uint32_t delay = std::max(int(1000*fps) - int(end - start), 0);
-    SDL_Delay(delay);
+    float delay = glm::clamp(2 * fps - Clock::secondsSince(last), 0.f, fps);
+    last = Clock::now();
+    std::chrono::milliseconds delayms(static_cast<int>(1000 * delay));
+    std::this_thread::sleep_for(delayms);
   }
 }
 
 void Renderer::render() {
+  Clock::startSection("render");
   // lock
   std::unique_lock<std::mutex> lock(mutex_);
 
