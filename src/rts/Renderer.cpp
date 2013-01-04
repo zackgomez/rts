@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/norm.hpp>
 #include <algorithm>
 #include "common/Clock.h"
 #include "common/Collision.h"
@@ -301,18 +302,17 @@ void Renderer::setCameraPos(const glm::vec3 &pos) {
 }
 
 id_t Renderer::selectEntity(const glm::vec2 &screenCoord) const {
-  glm::vec2 pos = glm::vec2(screenToNDC(screenCoord));
+  glm::vec2 pos = glm::vec2(screenToTerrain(screenCoord));
   id_t eid = NO_ENTITY;
   float bestDist = HUGE_VAL;
   // Find the best entity
-  for (const auto& pair : ndcCoords_) {
-    float dist = glm::distance(pos, glm::vec2(pair.second));
-    // TODO(zack) transform radius and use it instead of hardcoded number..
-    // Must be inside the entities radius and better than previous
-    const float thresh = sqrtf(0.009f);
-    if (dist < thresh && dist < bestDist) {
+  for (const auto& pair : Game::get()->getEntities()) {
+    auto entity = pair.second;
+    auto rect = entity->getRect(simdt_);
+    float dist = glm::distance2(pos, rect.pos);
+    if (rect.contains(pos) && dist < bestDist) {
       bestDist = dist;
-      eid = ((GameEntity *)pair.first)->getID();
+      eid = entity->getID();
     }
   }
 
@@ -323,23 +323,18 @@ std::set<id_t> Renderer::selectEntities(
   const glm::vec3 &start, const glm::vec3 &end, id_t pid) const {
   assertPid(pid);
   std::set<id_t> ret;
-  glm::mat4 fullMatrix =
-    getProjectionStack().current() * getViewStack().current();
-  glm::vec2 s = applyMatrix(fullMatrix, start).xy;
-  glm::vec2 e = applyMatrix(fullMatrix, end).xy;
   // Defines the rectangle
-  glm::vec2 center = (e + s) / 2.f;
-  glm::vec2 size = glm::abs(e - s);
+  glm::vec2 center = glm::vec2((end + start) / 2.f);
+  glm::vec2 size = glm::abs(glm::vec2(end - start));
+  Rect dragRect(center, size, 0.f);
 
-  for (const auto &pair : ndcCoords_) {
-    glm::vec2 p = glm::vec2(pair.second);
-    const GameEntity *e = (GameEntity *)pair.first;
-    // Inside rect and owned by player
-    // TODO(zack) make this radius aware, right now the center must be in
-    // their.
-    if (fabs(p.x - center.x) < size.x / 2.f
-        && fabs(p.y - center.y) < size.y / 2.f
-        && e->getPlayerID() == pid) {
+  for (const auto &pair : Game::get()->getEntities()) {
+    auto e = pair.second;
+    // Must be an actor owned by the passed player
+    if (!e->hasProperty(GameEntity::P_ACTOR) || e->getPlayerID() != pid) {
+      continue;
+    }
+    if (boxInBox(dragRect, e->getRect(simdt_))) {
       ret.insert(e->getID());
     }
   }
@@ -358,7 +353,7 @@ glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
 
   glm::vec3 terrain = glm::vec3(ndc) - dir * ndc.z / dir.z;
 
-  const glm::vec2 mapExtent = mapSize_ / 2.f;
+  auto mapExtent = mapSize_ / 2.f;
   // Don't return a non terrain coordinate
   if (terrain.x < -mapExtent.x) {
     terrain.x = -HUGE_VAL;

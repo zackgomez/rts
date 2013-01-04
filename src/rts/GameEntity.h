@@ -73,6 +73,9 @@ class GameEntity : public GameEntityRenderShim {
   const Rect getRect() const {
     return Rect(pos_, size_, glm::radians(angle_));
   }
+  const Rect getRect(float dt) {
+    return Rect(getPosition(dt), size_, glm::radians(getAngle(dt)));
+  }
 
   const glm::vec2 getVelocity() const {
     return getDirection() * speed_;

@@ -4,9 +4,8 @@
 
 namespace rts {
 
-class GameEntityRenderShim :
-  public ModelEntity {
-public:
+class GameEntityRenderShim : public ModelEntity {
+ public:
   virtual ~GameEntityRenderShim(void) { }
 
   virtual void render(float dt);
@@ -24,8 +23,7 @@ public:
   virtual glm::vec4 getColor() const;
   virtual id_t getPlayerID() const = 0;
 
-private:
+ private:
   void renderMesh(const glm::mat4 &transform);
-  void renderActor(const glm::vec3 &ndc);
 };
 }  // namespace rts

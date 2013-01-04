@@ -70,12 +70,6 @@ void GameEntityRenderShim::render(float dt) {
   if (type == CollisionObject::TYPE) return;
 
   renderMesh(transform);
-
-  if (type == Unit::TYPE || type == Building::TYPE) {
-    //renderActor(transform);
-  } else if (type != Projectile::TYPE) {
-    LOG(WARNING) << "Unable to render entity " << getName() << '\n';
-  }
 }
 
 void GameEntityRenderShim::renderMesh(const glm::mat4 &transform) {

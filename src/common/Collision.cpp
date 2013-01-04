@@ -3,6 +3,10 @@
 #include "common/Logger.h"
 #include "common/util.h"
 
+bool Rect::contains(const glm::vec2 &p) const {
+  return pointInBox(p, pos, size, angle);
+}
+
 bool pointInBox(
     const glm::vec2 &p,
     const glm::vec2 &boxPos,

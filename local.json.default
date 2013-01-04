@@ -10,5 +10,5 @@
   "resolution" : [1280, 800],
   "camera.panthresh" : 50,
   // Framerate CAP
-  "framerate" : 60.0
+  "framerate" : 80.0
 }

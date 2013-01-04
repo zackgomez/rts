@@ -15,6 +15,8 @@ struct Rect {
   glm::vec2 pos;
   glm::vec2 size;
   float angle;
+
+  bool contains(const glm::vec2 &p) const;
 };
 
 bool pointInBox(
