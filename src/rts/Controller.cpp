@@ -1,4 +1,5 @@
 #include "rts/Controller.h"
+#include <glm/gtx/norm.hpp>
 #include "common/util.h"
 #include "common/ParamReader.h"
 #include "rts/Building.h"
@@ -123,7 +124,7 @@ void Controller::mouseDown(const glm::vec2 &screenCoord, int button) {
 
   glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
   // The entity (maybe) under the cursor
-  id_t eid = Renderer::get()->selectEntity(screenCoord);
+  id_t eid = selectEntity(screenCoord);
   const GameEntity *entity = Game::get()->getEntity(eid);
 
   if (button == SDL_BUTTON_LEFT) {
@@ -222,8 +223,7 @@ void Controller::mouseUp(const glm::vec2 &screenCoord, int button) {
     std::set<id_t> newSelect;
     if (glm::distance(leftStart_, loc) > fltParam("hud.minDragDistance")) {
       auto selection = player_->getSelection();
-      newSelect = Renderer::get()
-          ->selectEntities(leftStart_, loc, player_->getPlayerID());
+      newSelect = selectEntities(leftStart_, loc, player_->getPlayerID());
 
       if (shift_) {
         newSelect.insert(selection.begin(), selection.end());
@@ -380,5 +380,46 @@ void Controller::minimapUpdateCamera(const glm::vec2 &screenCoord) {
   mapCoord.y *= -1;
   glm::vec3 finalPos(mapCoord, Renderer::get()->getCameraPos().z);
   Renderer::get()->setCameraPos(finalPos);
+}
+
+id_t Controller::selectEntity(const glm::vec2 &screenCoord) const {
+  glm::vec2 pos = glm::vec2(Renderer::get()->screenToTerrain(screenCoord));
+  id_t eid = NO_ENTITY;
+  float bestDist = HUGE_VAL;
+  // Find the best entity
+  for (const auto& pair : Game::get()->getEntities()) {
+    auto entity = pair.second;
+    auto rect = entity->getRect(Renderer::get()->getSimDT());
+    float dist = glm::distance2(pos, rect.pos);
+    if (rect.contains(pos) && dist < bestDist) {
+      bestDist = dist;
+      eid = entity->getID();
+    }
+  }
+
+  return eid;
+}
+
+std::set<id_t> Controller::selectEntities(
+  const glm::vec3 &start, const glm::vec3 &end, id_t pid) const {
+  assertPid(pid);
+  std::set<id_t> ret;
+  // Defines the rectangle
+  glm::vec2 center = glm::vec2((end + start) / 2.f);
+  glm::vec2 size = glm::abs(glm::vec2(end - start));
+  Rect dragRect(center, size, 0.f);
+
+  for (const auto &pair : Game::get()->getEntities()) {
+    auto e = pair.second;
+    // Must be an actor owned by the passed player
+    if (!e->hasProperty(GameEntity::P_ACTOR) || e->getPlayerID() != pid) {
+      continue;
+    }
+    if (boxInBox(dragRect, e->getRect(Renderer::get()->getSimDT()))) {
+      ret.insert(e->getID());
+    }
+  }
+
+  return ret;
 }
 };  // rts

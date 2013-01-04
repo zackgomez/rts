@@ -52,6 +52,10 @@ class Controller {
   // Called once per frame with render dt
   void renderUpdate(float dt);
   void minimapUpdateCamera(const glm::vec2 &screenCoord);
+  // returns NO_ENTITY if no acceptable entity near click
+  id_t selectEntity(const glm::vec2 &screenCoord) const;
+  std::set<id_t> selectEntities(const glm::vec3 &start,
+      const glm::vec3 &end, id_t pid) const;
 };
 };  // rts
 #endif  // SRC_RTS_CONTROLLER_H_

@@ -74,12 +74,6 @@ class Renderer {
     running_ = false;
   }
 
-  // returns 0 if no acceptable entity near click
-  // TODO(zack): move selection to the UI/player
-  id_t selectEntity(const glm::vec2 &screenCoord) const;
-  std::set<id_t> selectEntities(const glm::vec3 &start,
-                                const glm::vec3 &end, id_t pid) const;
-
   // Returns the terrain location at the given screen coord.  If the coord
   // is not on the map returns glm::vec3(HUGE_VAL).
   glm::vec3 screenToTerrain(const glm::vec2 &screenCoord) const;
