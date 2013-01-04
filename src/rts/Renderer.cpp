@@ -35,6 +35,8 @@ Renderer::Renderer()
     running_(true),
     cameraPos_(0.f, 0.f, 5.f),
     resolution_(vec2Param("local.resolution")),
+    timeMultiplier_(1.f),
+    lastTickTime_(Clock::now()),
     lastRender_(0) {
   // TODO(zack): move this to a separate initialize function
   initEngine(resolution_);
@@ -106,29 +108,25 @@ void Renderer::startMainloop() {
   }
 }
 
-void Renderer::addChatMessage(id_t from, const std::string &message) {
-  std::stringstream ss;
-  ss << Game::get()->getPlayer(from)->getName() << ": " << message;
-  chats_.emplace_back(ss.str(), Clock::now());
+void Renderer::addChatMessage(const std::string &message) {
+  chats_.emplace_back(message, Clock::now());
 }
 
 void Renderer::render() {
   // lock
   std::unique_lock<std::mutex> lock(mutex_);
 
-  if (Game::get()) {
-    float dt = Clock::secondsSince(Game::get()->getLastTickTime());
+  float dt = Clock::secondsSince(lastTickTime_);
 
-    Renderer::get()->startRender(dt);
+  Renderer::get()->startRender(dt);
 
-    Renderer::get()->renderMap();
+  Renderer::get()->renderMap();
 
-    for (auto &it : Game::get()->getEntities()) {
-      Renderer::get()->renderEntity(it.second);
-    }
-
-    Renderer::get()->endRender();
+  for (auto &it : Game::get()->getEntities()) {
+    Renderer::get()->renderEntity(it.second);
   }
+
+  Renderer::get()->endRender();
 
   // unlock
   lock.unlock();
@@ -241,30 +239,24 @@ void Renderer::renderActorInfo() {
 }
 
 void Renderer::renderMap() {
-  const Map *map = nullptr;
-  if (!Game::get() || !(map = Game::get()->getMap())) {
-    return;
-  }
   record_section("renderMap");
 
-  auto gridDim = map->getSize() * 2.f;
-  auto mapSize = map->getSize();
-  auto mapColor = map->getMinimapColor();
+  auto gridDim = mapSize_ * 2.f;
 
   GLuint mapProgram = ResourceManager::get()->getShader("map");
   glUseProgram(mapProgram);
   GLuint colorUniform = glGetUniformLocation(mapProgram, "color");
   GLuint mapSizeUniform = glGetUniformLocation(mapProgram, "mapSize");
   GLuint gridDimUniform = glGetUniformLocation(mapProgram, "gridDim");
-  glUniform4fv(colorUniform, 1, glm::value_ptr(mapColor));
-  glUniform2fv(mapSizeUniform, 1, glm::value_ptr(mapSize));
+  glUniform4fv(colorUniform, 1, glm::value_ptr(mapColor_));
+  glUniform2fv(mapSizeUniform, 1, glm::value_ptr(mapSize_));
   glUniform2fv(gridDimUniform, 1, glm::value_ptr(gridDim));
 
   // TODO(zack): render map with height/terrain map
   glm::mat4 transform =
     glm::scale(
         glm::mat4(1.f),
-        glm::vec3(mapSize.x, mapSize.y, 1.f));
+        glm::vec3(mapSize_.x, mapSize_.y, 1.f));
   renderRectangleProgram(transform);
 }
 
@@ -275,9 +267,8 @@ void Renderer::startRender(float dt) {
   else
     renderdt_ = 0;
 
-  if (Game::get()->isPaused()) {
-    simdt_ = renderdt_ = 0.f;
-  }
+  simdt_ *= timeMultiplier_;
+  renderdt_ *= timeMultiplier_;
 
   glClearColor(0.f, 0.f, 0.f, 0.f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -317,21 +308,20 @@ void Renderer::endRender() {
 void Renderer::updateCamera(const glm::vec3 &delta) {
   cameraPos_ += delta;
 
-  glm::vec2 mapSize = Game::get()->getMap()->getSize() / 2.f;
+  auto mapExtent = mapSize_ / 2.f;
   cameraPos_ = glm::clamp(
                  cameraPos_,
-                 glm::vec3(-mapSize.x, -mapSize.y, 0.f),
-                 glm::vec3(mapSize.x, mapSize.y, 20.f));
+                 glm::vec3(-mapExtent.x, -mapSize_.y, 0.f),
+                 glm::vec3(mapExtent.x, mapSize_.y, 20.f));
 }
 
 void Renderer::minimapUpdateCamera(const glm::vec2 &screenCoord) {
   const glm::vec2 minimapPos = convertUIPos(vec2Param("ui.minimap.pos"));
   const glm::vec2 minimapDim = vec2Param("ui.minimap.dim");
-  const glm::vec2 mapSize = Game::get()->getMap()->getSize();
   glm::vec2 mapCoord = screenCoord;
   mapCoord -= minimapPos;
   mapCoord -= glm::vec2(minimapDim.x / 2, minimapDim.y / 2);
-  mapCoord *= mapSize / minimapDim;
+  mapCoord *= mapSize_ / minimapDim;
   mapCoord.y *= -1;
   const glm::vec3 camCoord = cameraPos_;
   const glm::vec3 cameraDelta =
@@ -405,16 +395,16 @@ glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
 
   glm::vec3 terrain = glm::vec3(ndc) - dir * ndc.z / dir.z;
 
-  const glm::vec2 mapSize = Game::get()->getMap()->getSize() / 2.f;
+  const glm::vec2 mapExtent = mapSize_ / 2.f;
   // Don't return a non terrain coordinate
-  if (terrain.x < -mapSize.x) {
+  if (terrain.x < -mapExtent.x) {
     terrain.x = -HUGE_VAL;
-  } else if (terrain.x > mapSize.x) {
+  } else if (terrain.x > mapExtent.x) {
      terrain.x = HUGE_VAL;
   }
-  if (terrain.y < -mapSize.y) {
+  if (terrain.y < -mapExtent.y) {
       terrain.y = -HUGE_VAL;
-  } else if (terrain.y > mapSize.y) {
+  } else if (terrain.y > mapExtent.y) {
       terrain.y = HUGE_VAL;
   }
 

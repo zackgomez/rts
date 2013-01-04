@@ -49,9 +49,6 @@ class Game {
   checksum_t getChecksum() const {
     return checksums_.back();
   }
-  Clock::time_point getLastTickTime() const {
-    return lastTickTime_;
-  }
 
   // Does not block, should only be called from Game thread
   void sendMessage(id_t to, const Message &msg);
@@ -93,6 +90,8 @@ class Game {
   // Returns true if all the players have submitted input for the current tick_
   bool updatePlayers();
   checksum_t checksum();
+  void pause();
+  void unpause();
 
   LoggerPtr logger_;
 
@@ -110,8 +109,6 @@ class Game {
   std::map<id_t, std::queue<PlayerAction>> actions_;
   tick_t tick_;
   tick_t tickOffset_;
-
-  Clock::time_point lastTickTime_;
 
   // holds checksums before the tick specified by the index
   // checksums_[3] == checksum at the end of tick 2/beginning of tick 3

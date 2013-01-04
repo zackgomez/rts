@@ -6,6 +6,7 @@
 #include "rts/CollisionObject.h"
 #include "rts/MessageHub.h"
 #include "rts/Player.h"
+#include "rts/Renderer.h"
 #include "rts/Unit.h"
 
 namespace rts {
@@ -33,6 +34,9 @@ void Map::init(const std::vector<Player *> &players) {
 
   invariant(players.size() <= intParam(name_ + ".players"),
       "too many players for map");
+
+  Renderer::get()->setMapSize(size_);
+  Renderer::get()->setMapColor(color_);
 
   for (int i = 0; i < players.size(); i++) {
     const Player *p = players[i];

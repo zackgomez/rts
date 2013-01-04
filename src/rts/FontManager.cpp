@@ -29,7 +29,6 @@ void FontManager::drawString(const std::string &s, const glm::vec2 &pos,
   glm::vec4 color(0.f, 0.f, 0.f, 1.f);
   auto program = ResourceManager::get()->getShader("font");
   GLuint colorUniform = glGetUniformLocation(program, "color");
-  GLuint textureUniform = glGetUniformLocation(program, "texture");
   GLuint tcUniform = glGetUniformLocation(program, "texcoord");
   glUseProgram(program);
   glUniform4fv(colorUniform, 1, glm::value_ptr(color));

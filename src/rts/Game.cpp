@@ -83,9 +83,11 @@ checksum_t Game::checksum() {
 void Game::start(float period) {
   // Lock the player update
   auto lock = std::unique_lock<std::mutex>(actionMutex_);
-  paused_ = true;
+  pause();
 
   // Starting resources
+  // TODO(zack): move to map init (spawn logical entities with correct
+  // values)
   float startingReq = fltParam("global.startingRequisition");
   for (auto &player : players_) {
     resources_[player->getPlayerID()].requisition += startingReq;
@@ -98,14 +100,14 @@ void Game::start(float period) {
 
   // Queue up offset number of 'done' frames
   for (tick_ = -tickOffset_; tick_ < 0; tick_++) {
-    logger_->info() << "Running synch frame " << tick_ << '\n';
+    logger_->info() << "Running sync tick " << tick_ << '\n';
     for (auto player : players_) {
       player->startTick(tick_);
     }
   }
 
   // Game is ready to go!
-  paused_ = false;
+  unpause();
 }
 
 void Game::update(float dt) {
@@ -123,10 +125,10 @@ void Game::update(float dt) {
   bool playersReady = updatePlayers();
   if (!playersReady) {
     logger_->warning() << "Not all players ready for tick " << tick_ << '\n';
-    paused_ = true;
+    pause();
     return;
   }
-  paused_ = false;
+  unpause();
 
   // Don't allow new actions during this time
   std::unique_lock<std::mutex> actionLock(actionMutex_);
@@ -232,7 +234,7 @@ void Game::update(float dt) {
   // unlock entities automatically when lock goes out of scope
   // Next tick
   tick_++;
-  lastTickTime_ = Clock::now();
+  Renderer::get()->setLastTickTime(Clock::now());
 
   // unlock game automatically when lock goes out of scope
 }
@@ -344,7 +346,9 @@ void Game::handleAction(id_t playerID, const PlayerAction &action) {
   if (action["type"] == ActionTypes::CHAT) {
     invariant(action.isMember("chat"), "malformed CHAT action");
     // TODO(zack) only send message if it's meant for the player
-    Renderer::get()->addChatMessage(playerID, action["chat"].asString());
+    std::stringstream ss;
+    ss << getPlayer(playerID)->getName(), action["chat"].asString();
+    Renderer::get()->addChatMessage(ss.str());
   } else {
     Message msg;
     msg["to"] = action["entity"];
@@ -393,5 +397,15 @@ void Game::handleAction(id_t playerID, const PlayerAction &action) {
         << action["type"].asString() << '\n';
     }
   }
+}
+
+void Game::pause() {
+  paused_ = true;
+  Renderer::get()->setTimeMultiplier(0.f);
+}
+
+void Game::unpause() {
+  paused_ = false;
+  Renderer::get()->setTimeMultiplier(1.f);
 }
 };  // rts

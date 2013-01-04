@@ -42,9 +42,24 @@ class Renderer {
     running_ = false;
   }
 
+  // Sets the last update time for inter/extrapolation purposes
+  void setLastTickTime(const Clock::time_point &t) {
+    lastTickTime_ = t;
+  }
+  void setTimeMultiplier(float t) {
+    timeMultiplier_ = t;
+  }
   void startMainloop();
 
-  void addChatMessage(id_t from, const std::string &message);
+  // eventually replace this with a set map geometry or something similar
+  void setMapSize(const glm::vec2 &mapSize) {
+    mapSize_ = mapSize;
+  }
+  void setMapColor(const glm::vec4 &mapColor) {
+    mapColor_ = mapColor;
+  }
+
+  void addChatMessage(const std::string &message);
 
   float getSimDT() const {
     return simdt_;
@@ -98,9 +113,15 @@ class Renderer {
 
   std::mutex mutex_;
 
+  glm::vec2 mapSize_;
+  glm::vec4 mapColor_;
+
   glm::vec3 cameraPos_;
   glm::vec2 resolution_;
+  // render/simulation dt are scaled by this
+  float timeMultiplier_;
   // Used to interpolate, last tick seen, and dt since last tick
+  Clock::time_point lastTickTime_;
   float simdt_;
   // For updating purely render aspects
   uint32_t lastRender_;
