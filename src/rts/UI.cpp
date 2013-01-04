@@ -14,22 +14,22 @@
 
 namespace rts {
 
-glm::vec2 convertUIPos(const glm::vec2 &pos) {
-  const glm::vec2 resolution = vec2Param("local.resolution");
-  return glm::vec2(
-      pos.x < 0 ? pos.x + resolution.x : pos.x,
-      pos.y < 0 ? pos.y + resolution.y : pos.y);
-}
-
 glm::vec2 worldToMinimap(glm::vec2 pos) {
   const glm::vec2 &mapSize = Game::get()->getMap()->getSize();
   const glm::vec2 minimapSize = vec2Param("ui.minimap.dim");
-  const glm::vec2 minimapPos = convertUIPos(vec2Param("ui.minimap.pos"));
+  const glm::vec2 minimapPos = UI::convertUIPos(vec2Param("ui.minimap.pos"));
   pos.y *= -1;
   pos += mapSize / 2.f;
   pos *= minimapSize / mapSize;
   pos += minimapPos;
   return pos;
+}
+
+glm::vec2 UI::convertUIPos(const glm::vec2 &pos) {
+  auto resolution = Renderer::get()->getResolution();
+  return glm::vec2(
+      pos.x < 0 ? pos.x + resolution.x : pos.x,
+      pos.y < 0 ? pos.y + resolution.y : pos.y);
 }
 
 UI::UI()

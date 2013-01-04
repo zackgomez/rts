@@ -23,41 +23,14 @@ class Renderer {
  public:
   ~Renderer();
 
-  static Renderer* get();
+  static Renderer* get() {
+    static Renderer instance;
+    return &instance;
+  }
 
-  void setController(Controller *controller);
-  void setUI(UI *ui);
   UI* getUI() {
     return ui_;
   }
-
-  Controller *getController() const {
-    return controller_;
-  }
-  std::unique_lock<std::mutex> lockEntities() {
-    return std::unique_lock<std::mutex>(mutex_);
-  }
-  void signalShutdown() {
-    running_ = false;
-  }
-
-  // Sets the last update time for inter/extrapolation purposes
-  void setLastTickTime(const Clock::time_point &t) {
-    lastTickTime_ = t;
-  }
-  void setTimeMultiplier(float t) {
-    timeMultiplier_ = t;
-  }
-  void startMainloop();
-
-  // eventually replace this with a set map geometry or something similar
-  void setMapSize(const glm::vec2 &mapSize) {
-    mapSize_ = mapSize;
-  }
-  void setMapColor(const glm::vec4 &mapColor) {
-    mapColor_ = mapColor;
-  }
-
   float getSimDT() const {
     return simdt_;
   }
@@ -67,21 +40,49 @@ class Renderer {
   const glm::vec3& getCameraPos() const {
     return cameraPos_;
   }
+  const glm::vec2& getMapSize() const {
+    return mapSize_;
+  }
+  Controller *getController() const {
+    return controller_;
+  }
+
+  // Sets the last update time for inter/extrapolation purposes
+  void setLastTickTime(const Clock::time_point &t) {
+    lastTickTime_ = t;
+  }
+  void setTimeMultiplier(float t) {
+    timeMultiplier_ = t;
+  }
+  // eventually replace this with a set map geometry or something similar
+  void setMapSize(const glm::vec2 &mapSize) {
+    mapSize_ = mapSize;
+  }
+  void setMapColor(const glm::vec4 &mapColor) {
+    mapColor_ = mapColor;
+  }
+  void setCameraPos(const glm::vec3 &pos);
+  void setController(Controller *controller);
+  void setUI(UI *ui);
+
+  void startMainloop();
   void updateCamera(const glm::vec3 &delta);
-  // moves the camera to where you click on the minimap
-  void minimapUpdateCamera(const glm::vec2 &screenCoord);
+  std::unique_lock<std::mutex> lockEntities() {
+    return std::unique_lock<std::mutex>(mutex_);
+  }
+  void signalShutdown() {
+    running_ = false;
+  }
 
   // returns 0 if no acceptable entity near click
   // TODO(zack): move selection to the UI/player
   id_t selectEntity(const glm::vec2 &screenCoord) const;
   std::set<id_t> selectEntities(const glm::vec3 &start,
                                 const glm::vec3 &end, id_t pid) const;
-  glm::vec2 convertUIPos(const glm::vec2 &pos) const;
 
   // Returns the terrain location at the given screen coord.  If the coord
   // is not on the map returns glm::vec3(HUGE_VAL).
   glm::vec3 screenToTerrain(const glm::vec2 &screenCoord) const;
-  const std::map<const ModelEntity *, glm::vec3>& getEntityWorldPosMap() const;
 
  private:
   Renderer();

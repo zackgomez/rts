@@ -65,11 +65,6 @@ Renderer::~Renderer() {
   delete ui_;
 }
 
-Renderer *Renderer::get() {
-  static Renderer instance;
-  return &instance;
-}
-
 void Renderer::setController(Controller *controller) {
   if (controller_) {
     delete controller_;
@@ -142,12 +137,6 @@ void Renderer::renderEntity(ModelEntity *entity) {
                   transform * glm::vec4(0, 0, 0, 1);
   ndc /= ndc.w;
   ndcCoords_[entity] = glm::vec3(ndc);
-}
-
-glm::vec2 Renderer::convertUIPos(const glm::vec2 &pos) const {
-  return glm::vec2(
-      pos.x < 0 ? pos.x + resolution_.x : pos.x,
-      pos.y < 0 ? pos.y + resolution_.y : pos.y);
 }
 
 void Renderer::renderUI() {
@@ -300,27 +289,15 @@ void Renderer::endRender() {
 }
 
 void Renderer::updateCamera(const glm::vec3 &delta) {
-  cameraPos_ += delta;
-
-  auto mapExtent = mapSize_ / 2.f;
-  cameraPos_ = glm::clamp(
-      cameraPos_,
-      glm::vec3(-mapExtent.x, -mapExtent.y, 0.f),
-      glm::vec3(mapExtent.x, mapExtent.y, 20.f));
+  setCameraPos(cameraPos_ + delta);
 }
 
-void Renderer::minimapUpdateCamera(const glm::vec2 &screenCoord) {
-  const glm::vec2 minimapPos = convertUIPos(vec2Param("ui.minimap.pos"));
-  const glm::vec2 minimapDim = vec2Param("ui.minimap.dim");
-  glm::vec2 mapCoord = screenCoord;
-  mapCoord -= minimapPos;
-  mapCoord -= glm::vec2(minimapDim.x / 2, minimapDim.y / 2);
-  mapCoord *= mapSize_ / minimapDim;
-  mapCoord.y *= -1;
-  const glm::vec3 camCoord = cameraPos_;
-  const glm::vec3 cameraDelta =
-      glm::vec3(mapCoord.x - camCoord.x, mapCoord.y - camCoord.y, 0);
-  updateCamera(cameraDelta);
+void Renderer::setCameraPos(const glm::vec3 &pos) {
+  auto mapExtent = mapSize_ / 2.f;
+  cameraPos_ = glm::clamp(
+      pos,
+      glm::vec3(-mapExtent.x, -mapExtent.y, 0.f),
+      glm::vec3(mapExtent.x, mapExtent.y, 20.f));
 }
 
 id_t Renderer::selectEntity(const glm::vec2 &screenCoord) const {

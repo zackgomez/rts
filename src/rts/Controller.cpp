@@ -105,7 +105,7 @@ void Controller::renderUpdate(float dt) {
       && glm::distance(loc, leftStart_) > fltParam("hud.minDragDistance")) {
     Renderer::get()->getUI()->setDragRect(leftStart_, loc);
   } else if (leftDragMinimap_) {
-    Renderer::get()->minimapUpdateCamera(screenCoord);
+    minimapUpdateCamera(screenCoord);
   }
 }
 
@@ -127,8 +127,7 @@ void Controller::mouseDown(const glm::vec2 &screenCoord, int button) {
   const GameEntity *entity = Game::get()->getEntity(eid);
 
   if (button == SDL_BUTTON_LEFT) {
-    glm::vec2 minimapPos = Renderer::get()
-        ->convertUIPos(vec2Param("ui.minimap.pos"));
+    glm::vec2 minimapPos = UI::convertUIPos(vec2Param("ui.minimap.pos"));
     glm::vec2 minimapDim = vec2Param("ui.minimap.dim");
     // TODO(connor) perhaps clean this up with some sort of click state?
     if (screenCoord.x >= minimapPos.x &&
@@ -369,5 +368,17 @@ void Controller::keyRelease(SDL_keysym keysym) {
   } else if (key == SDLK_LSHIFT || key == SDLK_RSHIFT) {
     shift_ = false;
   }
+}
+
+void Controller::minimapUpdateCamera(const glm::vec2 &screenCoord) {
+  const glm::vec2 minimapPos = UI::convertUIPos(vec2Param("ui.minimap.pos"));
+  const glm::vec2 minimapDim = vec2Param("ui.minimap.dim");
+  glm::vec2 mapCoord = screenCoord;
+  mapCoord -= minimapPos;
+  mapCoord -= glm::vec2(minimapDim.x / 2, minimapDim.y / 2);
+  mapCoord *= Renderer::get()->getMapSize() / minimapDim;
+  mapCoord.y *= -1;
+  glm::vec3 finalPos(mapCoord, Renderer::get()->getCameraPos().z);
+  Renderer::get()->setCameraPos(finalPos);
 }
 };  // rts

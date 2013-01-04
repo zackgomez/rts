@@ -51,6 +51,7 @@ class Controller {
 
   // Called once per frame with render dt
   void renderUpdate(float dt);
+  void minimapUpdateCamera(const glm::vec2 &screenCoord);
 };
 };  // rts
 #endif  // SRC_RTS_CONTROLLER_H_

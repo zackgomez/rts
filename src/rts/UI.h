@@ -16,6 +16,8 @@ struct MapHighlight;
 
 class UI {
  public:
+  static glm::vec2 convertUIPos(const glm::vec2 &pos);
+
   UI();
   ~UI();
 
