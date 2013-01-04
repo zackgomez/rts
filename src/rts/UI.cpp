@@ -146,7 +146,7 @@ void UI::renderEntity(const ModelEntity *e, const glm::mat4 &transform, float dt
 }
 
 void UI::renderChat() {
-  auto&& messages = Renderer::get()->getChatMessages();
+  auto&& messages = Game::get()->getChatMessages();
   auto&& displayTime = fltParam("ui.messages.chatDisplayTime");
   bool validMessage = !messages.empty() &&
       Clock::secondsSince(messages.back().time) < displayTime;

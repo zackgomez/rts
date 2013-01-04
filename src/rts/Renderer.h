@@ -18,7 +18,6 @@ class ModelEntity;
 class UI;
 
 struct MapHighlight;
-struct ChatMessage;
 
 class Renderer {
  public:
@@ -59,8 +58,6 @@ class Renderer {
     mapColor_ = mapColor;
   }
 
-  void addChatMessage(const std::string &message);
-
   float getSimDT() const {
     return simdt_;
   }
@@ -85,9 +82,6 @@ class Renderer {
   // is not on the map returns glm::vec3(HUGE_VAL).
   glm::vec3 screenToTerrain(const glm::vec2 &screenCoord) const;
   const std::map<const ModelEntity *, glm::vec3>& getEntityWorldPosMap() const;
-  const std::vector<ChatMessage>& getChatMessages() const {
-    return chats_;
-  }
 
  private:
   Renderer();
@@ -125,17 +119,7 @@ class Renderer {
   uint32_t lastRender_;
   float renderdt_;
 
-  std::vector<ChatMessage> chats_;
-
   std::map<const ModelEntity *, glm::vec3> ndcCoords_;
-};
-
-struct ChatMessage {
-  ChatMessage(const std::string &m, const Clock::time_point &t)
-      : msg(m), time(t) { }
-
-  std::string msg;
-  Clock::time_point time;
 };
 };  // namespace rts
 

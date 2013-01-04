@@ -108,10 +108,6 @@ void Renderer::startMainloop() {
   }
 }
 
-void Renderer::addChatMessage(const std::string &message) {
-  chats_.emplace_back(message, Clock::now());
-}
-
 void Renderer::render() {
   // lock
   std::unique_lock<std::mutex> lock(mutex_);

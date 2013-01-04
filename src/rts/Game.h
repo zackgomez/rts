@@ -19,6 +19,7 @@ class Player;
 struct PlayerResources {
   float requisition;
 };
+struct ChatMessage;
 
 // Handles the game logic and player actions, is very multithread aware.
 class Game {
@@ -47,6 +48,9 @@ class Game {
   }
   checksum_t getChecksum() const {
     return checksums_.back();
+  }
+  const std::vector<ChatMessage>& getChatMessages() const {
+    return chats_;
   }
 
   // Does not block, should only be called from Game thread
@@ -92,8 +96,6 @@ class Game {
   void pause();
   void unpause();
 
-  LoggerPtr logger_;
-
   std::mutex actionMutex_;
 
   Map *map_;
@@ -104,10 +106,10 @@ class Game {
   std::map<id_t, PlayerResources> resources_;
   // tid => float
   std::map<id_t, float> victoryPoints_;
-  // pid => ...
-  std::map<id_t, std::queue<PlayerAction>> actions_;
   tick_t tick_;
   tick_t tickOffset_;
+
+  std::vector<ChatMessage> chats_;
 
   // holds checksums before the tick specified by the index
   // checksums_[3] == checksum at the end of tick 2/beginning of tick 3
@@ -121,6 +123,14 @@ class Game {
 
  private:
   static Game *instance_;
+};
+
+struct ChatMessage {
+  ChatMessage(const std::string &m, const Clock::time_point &t)
+      : msg(m), time(t) { }
+
+  std::string msg;
+  Clock::time_point time;
 };
 };  // namespace rts
 

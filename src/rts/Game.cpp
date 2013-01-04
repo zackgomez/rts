@@ -30,8 +30,6 @@ Game::Game(Map *map, const std::vector<Player *> &players)
     tickOffset_(2),
     paused_(true),
     running_(true) {
-  logger_ = Logger::getLogger("Game");
-
   MessageHub::get()->setGame(this);
 
   for (auto player : players) {
@@ -100,7 +98,7 @@ void Game::start() {
 
   // Queue up offset number of 'done' frames
   for (tick_ = -tickOffset_; tick_ < 0; tick_++) {
-    logger_->info() << "Running sync tick " << tick_ << '\n';
+    LOG(INFO) << "Running sync tick " << tick_ << '\n';
     for (auto player : players_) {
       player->startTick(tick_);
     }
@@ -124,7 +122,7 @@ void Game::update(float dt) {
   // If all the players aren't ready, we can't continue
   bool playersReady = updatePlayers();
   if (!playersReady) {
-    logger_->warning() << "Not all players ready for tick " << tick_ << '\n';
+    LOG(WARN) << "Not all players ready for tick " << tick_ << '\n';
     pause();
     return;
   }
@@ -243,8 +241,8 @@ void Game::sendMessage(id_t to, const Message &msg) {
   assertEid(to);
   auto it = entities_.find(to);
   if (it == entities_.end()) {
-    logger_->warning() << "Tried to send message to unknown entity:\n"
-                       << msg.toStyledString() << '\n';
+    LOG(WARN) << "Tried to send message to unknown entity:\n"
+      << msg.toStyledString() << '\n';
     return;
   }
 
@@ -289,7 +287,7 @@ void Game::handleMessage(const Message &msg) {
     float amount = msg["amount"].asFloat();
     victoryPoints_[tid] += amount;
   } else {
-    logger_->warning() << "Game received unknown message type: " << msg;
+    LOG(WARN) << "Game received unknown message type: " << msg;
     // No other work, if unknown message
     return;
   }
@@ -347,8 +345,8 @@ void Game::handleAction(id_t playerID, const PlayerAction &action) {
     invariant(action.isMember("chat"), "malformed CHAT action");
     // TODO(zack) only send message if it's meant for the player
     std::stringstream ss;
-    ss << getPlayer(playerID)->getName(), action["chat"].asString();
-    Renderer::get()->addChatMessage(ss.str());
+    ss << getPlayer(playerID)->getName() << ": " << action["chat"].asString();
+    chats_.emplace_back(ss.str(), Clock::now());
   } else {
     Message msg;
     msg["to"] = action["entity"];
@@ -392,7 +390,7 @@ void Game::handleAction(id_t playerID, const PlayerAction &action) {
 
       MessageHub::get()->sendMessage(msg);
     } else {
-      logger_->warning()
+      LOG(WARN)
         << "Unknown action type from player " << playerID << " : "
         << action["type"].asString() << '\n';
     }
