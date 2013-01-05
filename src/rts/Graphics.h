@@ -2,6 +2,7 @@
 #define SRC_RTS_GRAPHICS_H_
 
 #include <GL/glew.h>
+#include <cstdint>
 #include <string>
 #include <glm/glm.hpp>
 #include "rts/MatrixStack.h"

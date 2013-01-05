@@ -1,6 +1,7 @@
 #ifndef SRC_RTS_RENDERER_H_
 #define SRC_RTS_RENDERER_H_
 #include <map>
+#include <mutex>
 #include <set>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
