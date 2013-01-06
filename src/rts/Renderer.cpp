@@ -133,93 +133,12 @@ void Renderer::renderEntity(ModelEntity *entity) {
   if (ui_) {
     ui_->renderEntity(entity, transform, renderdt_);
   }
-
-  glm::vec4 ndc = getProjectionStack().current() * getViewStack().current() *
-                  transform * glm::vec4(0, 0, 0, 1);
-  ndc /= ndc.w;
-  ndcCoords_[entity] = glm::vec3(ndc);
 }
 
 void Renderer::renderUI() {
   record_section("renderUI");
-  glDisable(GL_DEPTH_TEST);
-
-  // Actor info health/mana etc for actors on the screen
-  renderActorInfo();
-
   if (ui_) {
     ui_->render(renderdt_);
-  }
-
-  glEnable(GL_DEPTH_TEST);
-}
-
-void Renderer::renderActorInfo() {
-  record_section("renderActor");
-  for (auto pair : ndcCoords_) {
-    const GameEntity *e = (const GameEntity *)pair.first;
-    auto &ndc = pair.second;
-    auto type = e->getType();
-    // TODO(zack): only render status for actors currently on screen/visible to
-    // player
-    if (!e->hasProperty(GameEntity::P_ACTOR)) {
-      continue;
-    }
-    auto actor = (const Actor *)e;
-    if (actor->hasProperty(GameEntity::P_CAPPABLE)) {
-        Building *building = (Building*)actor;
-        if (building->getCap() > 0.f &&
-          building->getCap() < building->getMaxCap()) {
-            // display health bar
-            float capFact = glm::max(
-                building->getCap() / building->getMaxCap(),
-                0.f);
-            glm::vec2 size = vec2Param("hud.actor_cap.dim");
-            glm::vec2 offset = vec2Param("hud.actor_cap.pos");
-            glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) *
-              resolution_;
-            pos += offset;
-            // Black underneath
-            drawRectCenter(pos, size, glm::vec4(0, 0, 0, 1));
-            pos.x -= size.x * (1.f - capFact) / 2.f;
-            size.x *= capFact;
-            const glm::vec4 cap_color = vec4Param("hud.actor_cap.color");
-            drawRectCenter(pos, size, cap_color);
-        }
-    } else {
-      // display health bar
-      float healthFact = glm::max(
-        0.f,
-        actor->getHealth() / actor->getMaxHealth());
-      glm::vec2 size = vec2Param("hud.actor_health.dim");
-      glm::vec2 offset = vec2Param("hud.actor_health.pos");
-      glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) *
-        resolution_;
-      pos += offset;
-      // Red underneath for max health
-      drawRectCenter(pos, size, glm::vec4(1, 0, 0, 1));
-      // Green on top for current health
-      pos.x -= size.x * (1.f - healthFact) / 2.f;
-      size.x *= healthFact;
-      drawRectCenter(pos, size, glm::vec4(0, 1, 0, 1));
-    }
-
-    auto queue = actor->getProductionQueue();
-    if (!queue.empty()) {
-      // display production bar
-      float prodFactor = 1.f - queue.front().time / queue.front().max_time;
-      glm::vec2 size = vec2Param("hud.actor_prod.dim");
-      glm::vec2 offset = vec2Param("hud.actor_prod.pos");
-      glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f))
-        * resolution_;
-      pos += offset;
-      // Purple underneath for max time
-      drawRectCenter(pos, size, glm::vec4(0.5, 0, 1, 1));
-      // Blue on top for time elapsed
-      pos.x -= size.x * (1.f - prodFactor) / 2.f;
-      size.x *= prodFactor;
-      drawRectCenter(pos, size, glm::vec4(0, 0, 1, 1));
-    }
   }
 }
 
@@ -278,8 +197,6 @@ void Renderer::startRender() {
   auto lightPos = applyMatrix(getViewStack().current(), glm::vec3(-5, -5, 10));
   setParam("renderer.lightPos", lightPos);
 
-  // Clear coordinates
-  ndcCoords_.clear();
   lastRender_ = SDL_GetTicks();
 }
 
