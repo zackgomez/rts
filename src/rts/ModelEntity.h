@@ -20,7 +20,7 @@ public:
   virtual glm::vec2 getPosition(float dt) const = 0;
   virtual float getAngle(float dt) const = 0;
   virtual std::string getMeshName() const = 0;
-  virtual glm::vec4 getColor() const = 0;
+  virtual glm::vec3 getColor() const = 0;
   virtual glm::mat4 getTransform(float dt) const = 0;
 
   virtual void render(float dt) = 0;

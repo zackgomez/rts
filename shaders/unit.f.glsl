@@ -1,6 +1,9 @@
 #version 120
 
-uniform vec4 color;
+uniform vec3 ambientColor;
+uniform vec3 diffuseColor;
+uniform vec3 specularColor;
+uniform float shininess;
 
 uniform vec3 lightPos; // in view space
 
@@ -14,11 +17,18 @@ void main()
 
     vec3 lightdir = normalize(lightPos - fragpos);
     float ndotl = max(dot(normal, lightdir), 0.0);
-    float ambient = 0.3;
 
-    // Some basic diffuse lighting...
-    float pow = clamp(ndotl, 0, 1);
+    // ambient component
+    vec3 color = ambientColor;
 
-    gl_FragColor = vec4(vec3(pow * color), 1.f);
+    // diffuse component
+    color += clamp(ndotl, 0, 1) * diffuseColor;
+
+    // specular component
+    vec3 eyeVec = normalize(-fragpos);  // frag/lightpos are in eye space
+    vec3 lightVec = normalize(reflect(-lightdir, normal));
+    float specPower = pow(max(dot(eyeVec, lightVec), 0.0), shininess);
+    color += specPower * specularColor;
+
+    gl_FragColor = vec4(color, 1.f);
 }
-

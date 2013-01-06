@@ -3,11 +3,14 @@
 
 #include <GL/glew.h>
 #include <cstdint>
+#include <map>
 #include <string>
+#include <GL/glew.h>
 #include <glm/glm.hpp>
 #include "rts/MatrixStack.h"
 
 struct Mesh;
+struct Material;
 
 void initEngine(const glm::vec2 &resolution);
 void teardownEngine();
@@ -27,7 +30,13 @@ GLuint makeTexture(const std::string &filename);
 void   freeTexture(GLuint tex);
 
 Mesh * loadMesh(const std::string &objFile);
+Material * createMaterial(
+    const glm::vec3 &ambient,
+    const glm::vec3 &diffuse,
+    const glm::vec3 &specular,
+    float shininess);
 void freeMesh(Mesh *mesh);
+void freeMaterial(Material *material);
 void setMeshTransform(Mesh *mesh, const glm::mat4 &transform);
 
 void renderRectangleColor(
@@ -43,7 +52,8 @@ void renderRectangleProgram(
 // Uses the currently bound program
 void renderMesh(
     const glm::mat4 &modelMatrix,
-    const Mesh *mesh);
+    const Mesh *mesh,
+    const Material *m);
 
 /* Draws a rectangle at the given pixels.
  * (0,0) is the top-left corner.
