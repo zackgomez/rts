@@ -28,6 +28,7 @@
   {
     "meshes"   :
     {
+      "square"        : "models/square.obj",
       "unit"          : "models/soldier.obj",
       "melee_unit"    : "models/melee_unit.obj",
       "building"      : "models/building.obj",
