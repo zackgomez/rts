@@ -40,11 +40,11 @@ std::string GameEntityRenderShim::getMeshName() const {
   return strParam(getName() + ".model");
 }
 
-glm::vec4 GameEntityRenderShim::getColor() const {
+glm::vec3 GameEntityRenderShim::getColor() const {
   const Player *player = Game::get()->getPlayer(getPlayerID());
-  glm::vec3 pcolor = player ? player->getColor() :
-    vec3Param("global.defaultColor");
-  return glm::vec4(pcolor, 1.f);
+  return player
+    ? player->getColor()
+    : vec3Param("global.defaultColor");
 }
 
 void GameEntityRenderShim::render(float dt) {
@@ -73,16 +73,17 @@ void GameEntityRenderShim::render(float dt) {
 }
 
 void GameEntityRenderShim::renderMesh(const glm::mat4 &transform) {
-  // TODO(zack): include shader in model description
   GLuint meshProgram = ResourceManager::get()->getShader("unit");
   glUseProgram(meshProgram);
-  GLuint colorUniform = glGetUniformLocation(meshProgram, "color");
-  GLuint lightPosUniform = glGetUniformLocation(meshProgram, "lightPos");
-  glUniform4fv(colorUniform, 1, glm::value_ptr(getColor()));
-  auto lightPos = vec3Param("renderer.lightPos");
-  glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos));
+
+  // TODO(zack): well this is kinda stupid, cache this
+  auto color = getColor();
+  Material *mat = createMaterial(0.1f * color, color, glm::vec3(8.f), 1000.f);
+
   Mesh * mesh = ResourceManager::get()->getMesh(getMeshName());
-  ::renderMesh(transform, mesh);
+  ::renderMesh(transform, mesh, mat);
+
+  freeMaterial(mat);
 }
 
 }  // namespace rts

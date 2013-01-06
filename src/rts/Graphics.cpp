@@ -40,6 +40,13 @@ struct Mesh {
   size_t       nverts;
 };
 
+struct Material {
+  glm::vec3 ambient;
+  glm::vec3 diffuse;
+  glm::vec3 specular;
+  float shininess;
+};
+
 // Static helper functions
 static void loadResources();
 static int loadVerts(const std::string &filename,
@@ -179,7 +186,8 @@ void renderRectangleProgram(const glm::mat4 &modelMatrix) {
   glDisableVertexAttribArray(0);
 }
 
-void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m) {
+void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m,
+    const Material *mt) {
   record_section("renderMesh");
   GLuint program;
   glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*) &program);
@@ -197,6 +205,10 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m) {
   GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
   GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
   GLuint normalUniform = glGetUniformLocation(program, "normalMatrix");
+  GLuint ambientUniform = glGetUniformLocation(program, "ambientColor");
+  GLuint diffuseUniform = glGetUniformLocation(program, "diffuseColor");
+  GLuint specularUniform = glGetUniformLocation(program, "specularColor");
+  GLuint shininessUniform = glGetUniformLocation(program, "shininess");
   // Attributes
   GLuint positionAttrib = glGetAttribLocation(program, "position");
   GLuint normalAttrib   = glGetAttribLocation(program, "normal");
@@ -209,6 +221,17 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m) {
       glm::value_ptr(projMatrix));
   glUniformMatrix4fv(normalUniform, 1, GL_FALSE,
       glm::value_ptr(normalMatrix));
+  if (mt) {
+    glUniform3fv(ambientUniform, 1, glm::value_ptr(mt->ambient));
+    glUniform3fv(diffuseUniform, 1, glm::value_ptr(mt->diffuse));
+    glUniform3fv(specularUniform, 1, glm::value_ptr(mt->specular));
+    glUniform1f(shininessUniform, mt->shininess);
+  }
+  if (hasParam("renderer.lightPos")) {
+    auto lightPos = vec3Param("renderer.lightPos");
+    GLuint lightPosUniform = glGetUniformLocation(program, "lightPos");
+    glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos));
+  }
 
   // Bind data
   glBindBuffer(GL_ARRAY_BUFFER, m->buffer);
@@ -392,6 +415,7 @@ GLuint loadShader(GLenum type, const std::string &filename) {
     std::stringstream ss;
     ss << "Compile failure in " << strShaderType << " shader:\n"
       << strInfoLog << '\n';
+    LOG(ERROR) << ss.str();
     delete[] strInfoLog;
     throw engine_exception(ss.str());
   }
@@ -483,6 +507,19 @@ Mesh * loadMesh(const std::string &objFile) {
   return ret;
 }
 
+Material * createMaterial(
+    const glm::vec3 &ambient,
+    const glm::vec3 &diffuse,
+    const glm::vec3 &specular,
+    float shininess) {
+  Material *m = new Material;
+  m->ambient = ambient;
+  m->diffuse = diffuse;
+  m->specular = specular;
+  m->shininess = shininess;
+  return m;
+}
+
 void freeMesh(Mesh *mesh) {
   if (!mesh) {
     return;
@@ -491,6 +528,13 @@ void freeMesh(Mesh *mesh) {
   glDeleteBuffers(1, &mesh->buffer);
   free(mesh->verts);
   free(mesh);
+}
+
+void freeMaterial(Material *material) {
+  if (!material) {
+    return;
+  }
+  delete material;
 }
 
 void setMeshTransform(Mesh *mesh, const glm::mat4 &transform) {
