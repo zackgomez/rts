@@ -137,14 +137,14 @@ void UI::renderEntity(const ModelEntity *e, const glm::mat4 &transform, float dt
   if (player->isSelected(e->getID())) {
     // A bit of a hack here...
     auto finalTransform = glm::translate(
-        glm::rotate(transform, -90.f, glm::vec3(1, 0, 0)),
+        transform,
         glm::vec3(0, 0, 0.1));
     renderCircleColor(finalTransform,
         glm::vec4(vec3Param("colors.selected"), 1.f));
   } else if (entityHighlights_.find(e->getID()) != entityHighlights_.end()) {
     // A bit of a hack here...
     auto finalTransform = glm::translate(
-        glm::rotate(transform, -90.f, glm::vec3(1, 0, 0)),
+        transform,
         glm::vec3(0, 0, 0.1));
     renderCircleColor(finalTransform,
         glm::vec4(vec3Param("colors.targeted"), 1.f));

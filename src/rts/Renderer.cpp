@@ -43,22 +43,6 @@ Renderer::Renderer()
   initEngine(resolution_);
   // Initialize font manager, if necessary
   FontManager::get();
-
-  // TODO(zack): move to ResourceManager
-  // unit model is based at 0, height 1, translate to center of model
-  glm::mat4 unitMeshTrans = glm::scale(glm::mat4(1.f), glm::vec3(1, 0.5f, 1));
-  setMeshTransform(ResourceManager::get()->getMesh("unit"), unitMeshTrans);
-  setMeshTransform(
-    ResourceManager::get()->getMesh("melee_unit"),
-    glm::rotate(
-      glm::scale(unitMeshTrans, glm::vec3(2.f)),
-      90.f, glm::vec3(0, 1, 0)));
-
-  glm::mat4 projMeshTrans =
-    glm::rotate(glm::mat4(1.f), 90.f, glm::vec3(1, 0, 0));
-  setMeshTransform(
-    ResourceManager::get()->getMesh("basic_bullet"),
-    projMeshTrans);
 }
 
 Renderer::~Renderer() {

@@ -6,13 +6,13 @@
 #include "common/Collision.h"
 #include "common/Types.h"
 #include "rts/Message.h"
-#include "rts/GameEntityRenderShim.h"
+#include "rts/ModelEntity.h"
 
 class Checksum;
 
 namespace rts {
 
-class GameEntity : public GameEntityRenderShim {
+class GameEntity : public ModelEntity {
  public:
   explicit GameEntity(const std::string &name, const Json::Value &params,
                   bool mobile = false, bool targetable = false,

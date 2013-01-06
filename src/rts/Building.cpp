@@ -16,6 +16,9 @@ Building::Building(const std::string &name, const Json::Value &params)
     capperID_(NO_ENTITY),
     lastCappingPlayerID_(NO_PLAYER),
     capResetDelay_(0) {
+
+  // TODO(zack): remove this hack, by scaling the models appropriately
+  setScale(glm::vec3(2.f));
 }
 
 void Building::handleMessage(const Message &msg) {

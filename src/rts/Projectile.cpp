@@ -18,6 +18,13 @@ Projectile::Projectile(const std::string &name, const Json::Value &params)
   targetID_ = toID(params["projectile_target"]);
   invariant(params.isMember("projectile_owner"), "missing owner");
   ownerID_ = toID(params["projectile_owner"]);
+
+  setMeshName(strParam("model"));
+  setMaterial(createMaterial(
+        glm::vec3(0.2f),
+        glm::vec3(0.6f),
+        glm::vec3(0.8f),
+        10.f));
 }
 
 void Projectile::update(float dt) {

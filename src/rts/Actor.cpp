@@ -3,6 +3,7 @@
 #include "common/util.h"
 #include "rts/Building.h"
 #include "rts/MessageHub.h"
+#include "rts/Player.h"
 #include "rts/Projectile.h"
 #include "rts/Unit.h"
 #include "rts/Weapon.h"
@@ -30,6 +31,11 @@ Actor::Actor(const std::string &name, const Json::Value &params,
   }
 
   health_ = getMaxHealth();
+
+  setMeshName(strParam("model"));
+  const Player *player = Game::get()->getPlayer(getPlayerID());
+  auto color = player ? player->getColor() : vec3Param("global.defaultColor");
+  setMaterial(createMaterial(0.1f * color, color, glm::vec3(1.f), 10.f));
 }
 
 Actor::~Actor() {
