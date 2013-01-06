@@ -88,7 +88,6 @@ class Renderer {
   void renderMap();
   void renderEntity(ModelEntity *entity);
   void renderUI();
-  void renderActorInfo();
 
   glm::vec3 screenToNDC(const glm::vec2 &screenCoord) const;
   void renderActor(const Actor *actor, glm::mat4 transform);
@@ -114,8 +113,6 @@ class Renderer {
   // For updating purely render aspects
   uint32_t lastRender_;
   float renderdt_;
-
-  std::map<const ModelEntity *, glm::vec3> ndcCoords_;
 };
 };  // namespace rts
 
