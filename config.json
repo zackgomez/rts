@@ -314,6 +314,11 @@
   // GRAPHICS PARAMS
   "hud" :
   {
+    "actor_card" :
+    {
+      "dim" : [30, 30],
+      "pos" : [0, 90]
+    },
     "actor_health" : 
     {
       "dim" : [80, 5],

@@ -133,8 +133,8 @@ void UI::renderEntity(const ModelEntity *e, const glm::mat4 &transform, float dt
   }
   record_section("renderActorInfo");
   // TODO(zack): only render for actors currently on screen/visible
-  auto player = (LocalPlayer*) Game::get()->getPlayer(playerID_);
-  if (player->isSelected(e->getID())) {
+  auto localPlayer = (LocalPlayer*) Game::get()->getPlayer(playerID_);
+  if (localPlayer->isSelected(e->getID())) {
     // A bit of a hack here...
     auto finalTransform = glm::translate(
         transform,
@@ -155,20 +155,26 @@ void UI::renderEntity(const ModelEntity *e, const glm::mat4 &transform, float dt
       transform * glm::vec4(0, 0, 0, 1);
   ndc /= ndc.w;
   auto resolution = Renderer::get()->getResolution();
+  auto coord = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution;
   auto actor = (const Actor *)e;
+  // First the unit placard.  For now just a square in the color of the owner,
+  // eventually an icon denoting unit and damage type + upgrades.
+  glm::vec2 size = vec2Param("hud.actor_card.dim");
+  glm::vec2 pos = coord - vec2Param("hud.actor_card.pos");
+  auto player = Game::get()->getPlayer(actor->getPlayerID());
+  auto color = player ? player->getColor() : vec3Param("global.defaultColor");
+  drawRectCenter(pos, size, glm::vec4(color, 0.7f));
+
+  // Cap status
   if (actor->hasProperty(GameEntity::P_CAPPABLE)) {
     Building *building = (Building*)actor;
     if (building->getCap() > 0.f &&
         building->getCap() < building->getMaxCap()) {
-      // display health bar
       float capFact = glm::max(
           building->getCap() / building->getMaxCap(),
           0.f);
       glm::vec2 size = vec2Param("hud.actor_cap.dim");
-      glm::vec2 offset = vec2Param("hud.actor_cap.pos");
-      glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) *
-          resolution;
-      pos += offset;
+      glm::vec2 pos = coord - vec2Param("hud.actor_cap.pos");
       // Black underneath
       drawRectCenter(pos, size, glm::vec4(0, 0, 0, 1));
       pos.x -= size.x * (1.f - capFact) / 2.f;
@@ -182,10 +188,7 @@ void UI::renderEntity(const ModelEntity *e, const glm::mat4 &transform, float dt
         0.f,
         actor->getHealth() / actor->getMaxHealth());
     glm::vec2 size = vec2Param("hud.actor_health.dim");
-    glm::vec2 offset = vec2Param("hud.actor_health.pos");
-    glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) *
-        resolution;
-    pos += offset;
+    glm::vec2 pos = coord - vec2Param("hud.actor_health.pos");
     // Red underneath for max health
     drawRectCenter(pos, size, glm::vec4(1, 0, 0, 1));
     // Green on top for current health
@@ -199,10 +202,7 @@ void UI::renderEntity(const ModelEntity *e, const glm::mat4 &transform, float dt
     // display production bar
     float prodFactor = 1.f - queue.front().time / queue.front().max_time;
     glm::vec2 size = vec2Param("hud.actor_prod.dim");
-    glm::vec2 offset = vec2Param("hud.actor_prod.pos");
-    glm::vec2 pos = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f))
-        * resolution;
-    pos += offset;
+    glm::vec2 pos = coord - vec2Param("hud.actor_prod.pos");
     // Purple underneath for max time
     drawRectCenter(pos, size, glm::vec4(0.5, 0, 1, 1));
     // Blue on top for time elapsed
