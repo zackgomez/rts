@@ -1,6 +1,7 @@
 #define GLM_SWIZZLE_XYZW
 #include "rts/UI.h"
 #include <sstream>
+#include "common/Clock.h"
 #include "common/ParamReader.h"
 #include "rts/Actor.h"
 #include "rts/Building.h"
@@ -183,7 +184,15 @@ void UI::renderEntity(const ModelEntity *e, const glm::mat4 &transform, float dt
       drawRectCenter(pos, size, cap_color);
     }
   } else {
-    // display health bar
+    // Display the health bar
+    // Health bar flashes white on red (instead of green on red) when it has
+    // recently taken damage.
+    glm::vec4 healthBarColor = glm::vec4(0, 1, 0, 1);
+    float timeSinceDamage = Clock::secondsSince(actor->getLastTookDamage());
+    if (timeSinceDamage < fltParam("hud.actor_health.flash_duration")) {
+      healthBarColor = glm::vec4(1, 1, 1, 1);
+    }
+
     float healthFact = glm::max(
         0.f,
         actor->getHealth() / actor->getMaxHealth());
@@ -194,7 +203,7 @@ void UI::renderEntity(const ModelEntity *e, const glm::mat4 &transform, float dt
     // Green on top for current health
     pos.x -= size.x * (1.f - healthFact) / 2.f;
     size.x *= healthFact;
-    drawRectCenter(pos, size, glm::vec4(0, 1, 0, 1));
+    drawRectCenter(pos, size, healthBarColor);
   }
 
   auto queue = actor->getProductionQueue();

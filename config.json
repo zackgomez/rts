@@ -322,7 +322,8 @@
     "actor_health" : 
     {
       "dim" : [80, 5],
-      "pos" : [0, 50]
+      "pos" : [0, 50],
+      "flash_duration" : 0.25
     },
     "actor_prod" :
     {

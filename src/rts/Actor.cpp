@@ -46,6 +46,8 @@ void Actor::handleMessage(const Message &msg) {
     invariant(msg.isMember("pid"), "malformed attack message");
     invariant(msg.isMember("damage"), "malformed attack message");
     invariant(msg.isMember("damage_type"), "malformed attack message");
+    
+    setTookDamage();
 
     // TODO(zack) figure out how to deal with this case (friendly fire)
     // when we have from, we can work that in here too

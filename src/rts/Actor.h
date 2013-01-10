@@ -4,6 +4,7 @@
 #include <queue>
 #include <string>
 #include <vector>
+#include "common/Clock.h"
 #include "rts/GameEntity.h"
 #include "common/Logger.h"
 
@@ -58,6 +59,14 @@ class Actor : public GameEntity {
     return param("sight");
   }
 
+  Clock::time_point getLastTookDamage() const {
+    return lastTookDamage_;
+  }
+  
+  void setTookDamage() {
+    lastTookDamage_ = Clock::now();
+  }
+
  protected:
   virtual void handleOrder(const Message &order);
 
@@ -66,6 +75,9 @@ class Actor : public GameEntity {
 
   float health_;
   float melee_timer_;
+
+  // Used by the render
+  Clock::time_point lastTookDamage_;
 
   Weapon *rangedWeapon_, *meleeWeapon_;
 
