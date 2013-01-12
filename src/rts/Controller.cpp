@@ -190,7 +190,8 @@ void Controller::mouseDown(const glm::vec2 &screenCoord, int button) {
       // selection, move them to target
       } else if (!player_->getSelection().empty()
           && (!entity || !player_->getSelection().count(eid))) {
-        if (loc.x != HUGE_VAL && loc.y != HUGE_VAL) {
+				//loc.x/y wil be -/+HUGE_VAL if outside map bounds
+        if (loc.x != HUGE_VAL && loc.y != HUGE_VAL && loc.x != -HUGE_VAL && loc.y != -HUGE_VAL) {
           // Visual feedback
           Renderer::get()->getUI()->highlight(glm::vec2(loc.x, loc.y));
 
