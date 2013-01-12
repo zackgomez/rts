@@ -21,3 +21,5 @@ msvc/rts/*.opensdf
 msvc/rts/*.user
 /rts.app
 /rts.dmg
+/nbproject/private/
+nbproject
