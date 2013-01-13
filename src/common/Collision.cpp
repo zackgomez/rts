@@ -63,6 +63,18 @@ bool boxInBox(
   return true;
 }
 
+bool pointInPolygon(const glm::vec3 &point,
+    const std::vector<glm::vec3> &polygon) {
+  int n = polygon.size();
+  bool result = false;
+  for (int i = 0, j = n - 1; i < n; j = i++) {
+    if ((polygon[i].y > point.y) != (polygon[j].y > point.y) &&
+        point.x < (polygon[j].x - polygon[i].x) * (point.y - polygon[i].y) /
+        (polygon[j].x - polygon[j].x) + polygon[i].x) result = !result;
+  }
+  return result;
+}
+
 float boxBoxCollision(
     const Rect &rect1,
     const glm::vec2 &v1,

@@ -146,3 +146,21 @@ TEST(CollisionTest, BoxBoxCollision) {
       Rect(boxp2, boxs, 0.f), glm::vec2(0.f),
       10.f));
 }
+
+TEST(CollisionTest, pointInPolygon) {
+  // make a simple box
+  std::vector<glm::vec3> polygon;
+  for (int i = 0; i < 4; i++) {
+    polygon.push_back(glm::vec3(1 * (i % 2), 1 * (i / 2), 0));
+  }
+  // a point that should be in the box
+  glm::vec3 p1(0.5, 0.5, 0.0);
+  // a point that will be outside the box
+  glm::vec3 p2(2.0, 1.0, 0.0);
+  // a point on the boundary (should return false)
+  glm::vec3 p3(1.0, 1.0, 0.0);
+
+  ASSERT_TRUE(pointInPolygon(p1, polygon));
+  ASSERT_FALSE(pointInPolygon(p2, polygon));
+  ASSERT_FALSE(pointInPolygon(p3, polygon));
+}

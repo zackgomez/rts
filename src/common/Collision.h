@@ -2,6 +2,7 @@
 #define SRC_COMMON_COLLISION_H_
 
 #include <glm/glm.hpp>
+#include <vector>
 
 struct Circle {
   glm::vec2 center;
@@ -29,6 +30,9 @@ bool pointInBox(
 bool boxInBox(
     const Rect &r1,
     const Rect &r2);
+
+bool pointInPolygon(const glm::vec3 &point,
+    const std::vector<glm::vec3> &polygon);
 
 const float NO_INTERSECTION = -1.f;
 
