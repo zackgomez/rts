@@ -69,6 +69,7 @@ class Renderer {
   void rotateCamera(const glm::vec2 &rot);
   void resetCameraRotation();
   void zoomCamera(float delta);
+
   void setController(Controller *controller);
   void setUI(UI *ui);
 

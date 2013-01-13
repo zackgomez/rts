@@ -34,13 +34,12 @@ class UI {
   void setChatBuffer(const std::string &buffer) {
     chatBuffer_ = buffer;
   }
-  void setDragRect(const glm::vec3 &start, const glm::vec3 &end);
 
  private:
   void renderChat();
   void renderMinimap();
   void renderHighlights(float dt);
-  void renderDragRect(float dt);
+  static void renderDragRect(float dt);
 
   std::vector<UIWidget *> widgets_;
 
@@ -50,8 +49,6 @@ class UI {
   std::string chatBuffer_;
 
   id_t playerID_;
-
-  glm::vec3 dragStart_, dragEnd_;
 };
 
 class UIWidget {
@@ -94,6 +91,21 @@ class TextWidget : public UIWidget {
   float height_;
   glm::vec4 bgcolor_;
   T textFunc_;
+};
+
+template<class T>
+class CustomWidget : public UIWidget {
+public:
+  CustomWidget(T&& func)
+    : func_(func) {
+  }
+
+  void render(float dt) {
+    func_(dt);
+  }
+
+private:
+  T func_;
 };
 
 struct MapHighlight {

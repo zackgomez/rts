@@ -30,6 +30,10 @@ class Controller {
   void keyPress(SDL_keysym key);
   void keyRelease(SDL_keysym key);
 
+  // Accessors
+  // returns glm::vec4(HUGE_VAL) for no rect, or glm::vec4(start, end)
+  glm::vec4 getDragRect() const;
+
  private:
   //
   // Member variables
@@ -47,7 +51,7 @@ class Controller {
   bool alt_;
   bool leftDrag_;
   bool leftDragMinimap_;
-  glm::vec3 leftStart_;
+  glm::vec2 leftStart_;
   // For computing mouse motion
   glm::vec2 lastMousePos_;
 
@@ -60,8 +64,8 @@ class Controller {
   void minimapUpdateCamera(const glm::vec2 &screenCoord);
   // returns NO_ENTITY if no acceptable entity near click
   id_t selectEntity(const glm::vec2 &screenCoord) const;
-  std::set<id_t> selectEntities(const glm::vec3 &start,
-      const glm::vec3 &end, id_t pid) const;
+  std::set<id_t> selectEntities(const glm::vec2 &start,
+      const glm::vec2 &end, id_t pid) const;
 };
 };  // rts
 #endif  // SRC_RTS_CONTROLLER_H_

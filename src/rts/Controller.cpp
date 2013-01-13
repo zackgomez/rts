@@ -1,3 +1,4 @@
+#define GLM_SWIZZLE_XYZW
 #include "rts/Controller.h"
 #include <glm/gtx/norm.hpp>
 #include "common/util.h"
@@ -112,15 +113,17 @@ void Controller::renderUpdate(float dt) {
   }
   player_->setSelection(newsel);
 
-  // Draw drag rectangle if over threshold size
-  if (leftDrag_) {
-    glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
-    if (glm::distance(loc, leftStart_) > fltParam("hud.minDragDistance")) {
-      Renderer::get()->getUI()->setDragRect(leftStart_, loc);
-    }
-  } else if (leftDragMinimap_) {
+  if (leftDragMinimap_) {
     minimapUpdateCamera(screenCoord);
   }
+}
+
+glm::vec4 Controller::getDragRect() const {
+  float dist = glm::distance(leftStart_, lastMousePos_);
+  if (leftDrag_ && dist > fltParam("hud.minDragDistance")) {
+    return glm::vec4(leftStart_, lastMousePos_);
+  }
+  return glm::vec4(-HUGE_VAL);
 }
 
 void Controller::quitEvent() {
@@ -154,7 +157,7 @@ void Controller::mouseDown(const glm::vec2 &screenCoord, int button) {
       leftDragMinimap_ = true;
     } else {
       leftDrag_ = true;
-      leftStart_ = loc;
+      leftStart_ = screenCoord;
       // If no order, then adjust selection
       if (order_.empty()) {
         // If no shift held, then deselect (shift just adds)
@@ -238,9 +241,12 @@ void Controller::mouseUp(const glm::vec2 &screenCoord, int button) {
   if (button == SDL_BUTTON_LEFT) {
     glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
     std::set<id_t> newSelect;
-    if (glm::distance(leftStart_, loc) > fltParam("hud.minDragDistance")) {
+    if (glm::distance(leftStart_, screenCoord) > fltParam("hud.minDragDistance")) {
       auto selection = player_->getSelection();
-      newSelect = selectEntities(leftStart_, loc, player_->getPlayerID());
+      newSelect = selectEntities(
+        leftStart_,
+        screenCoord,
+        player_->getPlayerID());
 
       if (shift_) {
         newSelect.insert(selection.begin(), selection.end());
@@ -450,12 +456,15 @@ id_t Controller::selectEntity(const glm::vec2 &screenCoord) const {
 }
 
 std::set<id_t> Controller::selectEntities(
-  const glm::vec3 &start, const glm::vec3 &end, id_t pid) const {
+  const glm::vec2 &start, const glm::vec2 &end, id_t pid) const {
   assertPid(pid);
   std::set<id_t> ret;
+
+  glm::vec2 terrainStart = Renderer::get()->screenToTerrain(start).xy;
+  glm::vec2 terrainEnd = Renderer::get()->screenToTerrain(end).xy;
   // Defines the rectangle
-  glm::vec2 center = glm::vec2((end + start) / 2.f);
-  glm::vec2 size = glm::abs(glm::vec2(end - start));
+  glm::vec2 center = (terrainStart + terrainEnd) / 2.f;
+  glm::vec2 size = glm::abs(terrainEnd - terrainStart);
   Rect dragRect(center, size, 0.f);
 
   for (const auto &pair : Game::get()->getEntities()) {

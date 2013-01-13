@@ -5,6 +5,7 @@
 #include "common/ParamReader.h"
 #include "rts/Actor.h"
 #include "rts/Building.h"
+#include "rts/Controller.h"
 #include "rts/Graphics.h"
 #include "rts/FontManager.h"
 #include "rts/Game.h"
@@ -35,15 +36,20 @@ glm::vec2 UI::convertUIPos(const glm::vec2 &pos) {
 }
 
 UI::UI()
-  : chatActive_(false),
-    dragStart_(HUGE_VAL),
-    dragEnd_(HUGE_VAL) {
+  : chatActive_(false) {
 }
 
 UI::~UI() {
   for (auto widget : widgets_) {
     delete widget;
   }
+}
+
+// This does template type deduction so you don't have to figure out wtf T is
+// when you want to make a custom widget
+template<typename T>
+CustomWidget<T>* createCustomWidget(T&& func) {
+  return new CustomWidget<T>(func);
 }
 
 void UI::initGameWidgets(id_t playerID) {
@@ -94,6 +100,8 @@ void UI::initGameWidgets(id_t playerID) {
       pos.x += size.x * 2.0;
     }
   }
+
+  widgets_.push_back(createCustomWidget(UI::renderDragRect));
 }
 
 void UI::render(float dt) {
@@ -105,16 +113,10 @@ void UI::render(float dt) {
     widget->render(dt);
   }
 
-  renderDragRect(dt);
   renderMinimap();
   renderChat();
 
   glEnable(GL_DEPTH_TEST);
-}
-
-void UI::setDragRect(const glm::vec3 &s, const glm::vec3 &e) {
-  dragStart_ = s;
-  dragEnd_ = e;
 }
 
 void UI::highlight(const glm::vec2 &mapCoord) {
@@ -348,25 +350,15 @@ void UI::renderHighlights(float dt) {
 }
 
 void UI::renderDragRect(float dt) {
-  // Render drag selection if it exists
-  if (dragStart_ != glm::vec3(HUGE_VAL)) {
-    glm::mat4 fullmat =
-      getProjectionStack().current() * getViewStack().current();
-    const auto resolution = vec2Param("local.resolution");
-
-    glm::vec2 start = applyMatrix(fullmat, dragStart_).xy;
-    glm::vec2 end = applyMatrix(fullmat, dragEnd_).xy;
-    start = (glm::vec2(start.x, -start.y) + glm::vec2(1.f))
-        * 0.5f * resolution;
-    end = (glm::vec2(end.x, -end.y) + glm::vec2(1.f))
-        * 0.5f * resolution;
-
-    // TODO(zack): make this color a param
-    drawRectCenter((start + end) / 2.f, end - start,
-        glm::vec4(0.2f, 0.6f, 0.2f, 0.3f));
-    // Reset each frame
-    dragStart_ = glm::vec3(HUGE_VAL);
+  glm::vec4 rect = Renderer::get()->getController()->getDragRect();
+  if (rect == glm::vec4(HUGE_VAL)) {
+    return;
   }
+  // TODO(zack): make this color a param
+  auto color = glm::vec4(0.2f, 0.6f, 0.2f, 0.3f);
+  glm::vec2 start = rect.xy;
+  glm::vec2 end = rect.zw;
+  drawRect(start, end - start, color);
 }
 
 TextureWidget::TextureWidget(
