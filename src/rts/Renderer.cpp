@@ -47,7 +47,6 @@ Renderer::Renderer()
 
 Renderer::~Renderer() {
   delete controller_;
-  delete ui_;
 }
 
 void Renderer::setController(Controller *controller) {
@@ -55,13 +54,6 @@ void Renderer::setController(Controller *controller) {
     delete controller_;
   }
   controller_ = controller;
-}
-
-void Renderer::setUI(UI *ui) {
-  if (ui_) {
-    delete ui_;
-  }
-  ui_ = ui;
 }
 
 void Renderer::startMainloop() {
@@ -114,16 +106,12 @@ void Renderer::renderEntity(ModelEntity *entity) {
   }
   entity->render(simdt_);
   auto transform = entity->getTransform(simdt_);
-  if (ui_) {
-    ui_->renderEntity(entity, transform, renderdt_);
-  }
+  UI::get()->renderEntity(entity, transform, renderdt_);
 }
 
 void Renderer::renderUI() {
   record_section("renderUI");
-  if (ui_) {
-    ui_->render(renderdt_);
-  }
+  UI::get()->render(renderdt_);
 }
 
 void Renderer::renderMap() {

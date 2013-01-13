@@ -40,9 +40,11 @@ Game *game;
 // Matchmaker port
 const std::string mmport = "11100";
 
-void gameThread() {
+void gameThread(rts::id_t localPlayerID) {
   const float simrate = fltParam("game.simrate");
   const float simdt = 1.f / simrate;
+
+  UI::get()->initGameWidgets(localPlayerID);
 
   game->start();
 
@@ -56,6 +58,9 @@ void gameThread() {
     std::this_thread::sleep_for(delayms);
   }
 
+  UI::get()->clearGameWidgets();
+
+  // TODO(move to matchmaker menu)
   Renderer::get()->signalShutdown();
 }
 
@@ -105,12 +110,9 @@ int main(int argc, char **argv) {
 
   Map *map = new Map(matchmaker.getMapName());
   game = new Game(map, players);
-  auto ui = new UI();
-  ui->initGameWidgets(matchmaker.getLocalPlayerID());
-  Renderer::get()->setUI(ui);
 
   // RUN IT
-  std::thread gamet(gameThread);
+  std::thread gamet(gameThread, matchmaker.getLocalPlayerID());
   Renderer::get()->startMainloop();
   gamet.join();
 

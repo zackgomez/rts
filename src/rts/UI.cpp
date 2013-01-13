@@ -17,6 +17,8 @@
 
 namespace rts {
 
+UI* UI::instance_ = nullptr;
+
 glm::vec2 worldToMinimap(glm::vec2 pos) {
   const glm::vec2 &mapSize = Game::get()->getMap()->getSize();
   const glm::vec2 minimapSize = vec2Param("ui.minimap.dim");
@@ -37,12 +39,15 @@ glm::vec2 UI::convertUIPos(const glm::vec2 &pos) {
 
 UI::UI()
   : chatActive_(false) {
+  invariant(!instance_, "Multiple UIs?");
+  instance_ = this;
 }
 
 UI::~UI() {
   for (auto widget : widgets_) {
     delete widget;
   }
+  instance_ = nullptr;
 }
 
 // This does template type deduction so you don't have to figure out wtf T is
@@ -101,20 +106,30 @@ void UI::initGameWidgets(id_t playerID) {
     }
   }
 
+  widgets_.push_back(createCustomWidget(UI::renderChat));
+  widgets_.push_back(createCustomWidget(UI::renderMinimap));
+  widgets_.push_back(createCustomWidget(UI::renderHighlights));
   widgets_.push_back(createCustomWidget(UI::renderDragRect));
 }
 
-void UI::render(float dt) {
-  renderHighlights(dt);
+void UI::clearGameWidgets() {
+  for (auto widget : widgets_) {
+    delete widget;
+  }
+  widgets_.clear();
+  highlights_.clear();
+  entityHighlights_.clear();
+  chatActive_ = false;
+  chatBuffer_.clear();
+  playerID_ = NULL_ID;
+}
 
+void UI::render(float dt) {
   glDisable(GL_DEPTH_TEST);
 
   for (auto&& widget : widgets_) {
     widget->render(dt);
   }
-
-  renderMinimap();
-  renderChat();
 
   glEnable(GL_DEPTH_TEST);
 }
@@ -227,13 +242,16 @@ void UI::renderEntity(
   glEnable(GL_DEPTH_TEST);
 }
 
-void UI::renderChat() {
+void UI::renderChat(float dt) {
+  const auto chatActive = instance_->chatActive_;
+  const auto chatBuffer = instance_->chatBuffer_;
+
   auto&& messages = Game::get()->getChatMessages();
   auto&& displayTime = fltParam("ui.messages.chatDisplayTime");
   bool validMessage = !messages.empty() &&
       Clock::secondsSince(messages.back().time) < displayTime;
 
-  if (validMessage || chatActive_) {
+  if (validMessage || chatActive) {
     auto pos = convertUIPos(vec2Param("ui.messages.pos"));
     auto fontHeight = fltParam("ui.messages.fontHeight");
     auto messageHeight = fontHeight + fltParam("ui.messages.heightBuffer");
@@ -249,15 +267,15 @@ void UI::renderChat() {
       messagePos.y -= i * messageHeight;
       FontManager::get()->drawString(message.msg, messagePos, fontHeight);
     }
-    if (chatActive_) {
+    if (chatActive) {
       drawRect(pos, glm::vec2(size.x, 1.2f * fontHeight),
           vec4Param("ui.messages.inputColor"));
-      FontManager::get()->drawString(chatBuffer_, pos, fontHeight);
+      FontManager::get()->drawString(chatBuffer, pos, fontHeight);
     }
   }
 }
 
-void UI::renderMinimap() {
+void UI::renderMinimap(float dt) {
   const glm::vec2 &mapSize = Game::get()->getMap()->getSize();
   const glm::vec4 &mapColor = Game::get()->getMap()->getMinimapColor();
   // TODO(connor) we probably want some small buffer around the sides of the
@@ -317,8 +335,11 @@ void UI::renderMinimap() {
 }
 
 void UI::renderHighlights(float dt) {
+  invariant(instance_, "called without UI object");
+  auto &highlights = instance_->highlights_;
+  auto &entityHighlights = instance_->entityHighlights_;
   // Render each of the highlights
-  for (auto& hl : highlights_) {
+  for (auto& hl : highlights) {
     hl.remaining -= dt;
     glm::mat4 transform =
       glm::scale(
@@ -329,20 +350,20 @@ void UI::renderHighlights(float dt) {
     renderCircleColor(transform, glm::vec4(1, 0, 0, 1));
   }
   // Remove done highlights
-  for (size_t i = 0; i < highlights_.size(); ) {
-    if (highlights_[i].remaining <= 0.f) {
-      std::swap(highlights_[i], highlights_[highlights_.size() - 1]);
-      highlights_.pop_back();
+  for (size_t i = 0; i < highlights.size(); ) {
+    if (highlights[i].remaining <= 0.f) {
+      std::swap(highlights[i], highlights[highlights.size() - 1]);
+      highlights.pop_back();
     } else {
       i++;
     }
   }
 
-  auto it = entityHighlights_.begin();
-  while (it != entityHighlights_.end()) {
-    auto cur = (entityHighlights_[it->first] -= dt);
+  auto it = entityHighlights.begin();
+  while (it != entityHighlights.end()) {
+    auto cur = (entityHighlights[it->first] -= dt);
     if (cur <= 0.f) {
-      it = entityHighlights_.erase(it);
+      it = entityHighlights.erase(it);
     } else {
       it++;
     }

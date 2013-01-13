@@ -21,12 +21,21 @@ class UI {
   UI();
   ~UI();
 
+  static UI* get() {
+    if (!instance_) {
+      instance_ = new UI;
+    }
+    return instance_;
+  }
+
+  void initGameWidgets(id_t playerID);
+  void clearGameWidgets();
+
   void render(float dt);
   void renderEntity(const ModelEntity *e, const glm::mat4 &transform, float dt);
   void highlight(const glm::vec2 &mapCoord);
   void highlightEntity(id_t eid);
 
-  void initGameWidgets(id_t playerID);
 
   void setChatActive(bool active) {
     chatActive_ = active;
@@ -36,9 +45,10 @@ class UI {
   }
 
  private:
-  void renderChat();
-  void renderMinimap();
-  void renderHighlights(float dt);
+  static UI* instance_;
+  static void renderChat(float dt);
+  static void renderMinimap(float dt);
+  static void renderHighlights(float dt);
   static void renderDragRect(float dt);
 
   std::vector<UIWidget *> widgets_;
