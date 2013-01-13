@@ -18,8 +18,6 @@ CollisionObject::CollisionObject(
   setMeshName("square");
   setMaterial(createMaterial(glm::vec3(), glm::vec3(), glm::vec3(), 0));
   setScale(glm::vec3(2.f*size_, 1.f));
-
-  LOG(DEBUG) << "pos: " << pos_ << "  size: " << size_ << "  angle: " << angle_ << '\n';
 }
 
 void CollisionObject::handleMessage(const Message &msg) {

@@ -20,10 +20,13 @@ const std::string CHATTING = "CHATTING";
 Controller::Controller(LocalPlayer *player)
   : player_(player),
     shift_(false),
+    ctrl_(false),
+    alt_(false),
     leftDrag_(false),
     leftDragMinimap_(false),
     message_(),
     state_(PlayerState::DEFAULT),
+    zoom_(0.f),
     order_() {
 }
 
@@ -49,6 +52,11 @@ void Controller::processInput(float dt) {
       screenCoord = glm::vec2(event.button.x, event.button.y);
       mouseUp(screenCoord, event.button.button);
       break;
+    case SDL_MOUSEMOTION:
+      screenCoord = glm::vec2(event.button.x, event.button.y);
+      mouseMotion(screenCoord);
+      break;
+    // TODO(zack) add MOUSE_WHEEL
     case SDL_QUIT:
       quitEvent();
       break;
@@ -58,7 +66,7 @@ void Controller::processInput(float dt) {
 }
 
 void Controller::renderUpdate(float dt) {
-  // No input while game is paused, not even panning
+  // No input while game is paused, not even camera motion
   if (Game::get()->isPaused()) {
     return;
   }
@@ -84,10 +92,14 @@ void Controller::renderUpdate(float dt) {
   } else if (y >= res.y - CAMERA_PAN_THRESHOLD) {
     dir.y = 2 * ((res.y - y) - CAMERA_PAN_THRESHOLD) / CAMERA_PAN_THRESHOLD;
   }
+  Renderer::get()->zoomCamera(zoom_);
 
-  const float CAMERA_PAN_SPEED = fltParam("camera.panspeed");
-  glm::vec3 delta = CAMERA_PAN_SPEED * dt * glm::vec3(dir.x, dir.y, 0.f);
-  Renderer::get()->updateCamera(delta);
+  // Don't allow screen translations during rotation
+  if (!alt_) {
+    const float CAMERA_PAN_SPEED = fltParam("camera.panspeed");
+    glm::vec3 delta = CAMERA_PAN_SPEED * dt * glm::vec3(dir.x, dir.y, 0.f);
+    Renderer::get()->updateCamera(delta);
+  }
 
   // Deselect dead entities
   std::set<id_t> newsel;
@@ -101,10 +113,11 @@ void Controller::renderUpdate(float dt) {
   player_->setSelection(newsel);
 
   // Draw drag rectangle if over threshold size
-  glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
-  if (leftDrag_
-      && glm::distance(loc, leftStart_) > fltParam("hud.minDragDistance")) {
-    Renderer::get()->getUI()->setDragRect(leftStart_, loc);
+  if (leftDrag_) {
+    glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
+    if (glm::distance(loc, leftStart_) > fltParam("hud.minDragDistance")) {
+      Renderer::get()->getUI()->setDragRect(leftStart_, loc);
+    }
   } else if (leftDragMinimap_) {
     minimapUpdateCamera(screenCoord);
   }
@@ -119,6 +132,9 @@ void Controller::quitEvent() {
 }
 
 void Controller::mouseDown(const glm::vec2 &screenCoord, int button) {
+  if (alt_) {
+    return;
+  }
   PlayerAction action;
   std::set<id_t> newSelect = player_->getSelection();
 
@@ -219,8 +235,8 @@ void Controller::mouseDown(const glm::vec2 &screenCoord, int button) {
 }
 
 void Controller::mouseUp(const glm::vec2 &screenCoord, int button) {
-  glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
   if (button == SDL_BUTTON_LEFT) {
+    glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
     std::set<id_t> newSelect;
     if (glm::distance(leftStart_, loc) > fltParam("hud.minDragDistance")) {
       auto selection = player_->getSelection();
@@ -238,6 +254,16 @@ void Controller::mouseUp(const glm::vec2 &screenCoord, int button) {
   // nop
 }
 
+void Controller::mouseMotion(const glm::vec2 &screenCoord) {
+  // Rotate camera while alt is held
+  if (alt_) {
+    glm::vec2 delta = screenCoord - lastMousePos_;
+    delta *= fltParam("local.cameraRotSpeed");
+    Renderer::get()->rotateCamera(delta);
+  }
+  lastMousePos_ = screenCoord;
+}
+
 void Controller::keyPress(SDL_keysym keysym) {
   static const SDLKey MAIN_KEYS[] = {SDLK_q, SDLK_w, SDLK_e, SDLK_r};
   SDLKey key = keysym.sym;
@@ -250,9 +276,17 @@ void Controller::keyPress(SDL_keysym keysym) {
     MessageHub::get()->addAction(action);
   // Camera panning
   } else if (key == SDLK_UP) {
-    cameraPanDir_.y = 1.f;
+    if (alt_) {
+      zoom_ = -fltParam("local.zoomSpeed");
+    } else {
+      cameraPanDir_.y = 1.f;
+    }
   } else if (key == SDLK_DOWN) {
-    cameraPanDir_.y = -1.f;
+    if (alt_) {
+      zoom_ = fltParam("local.zoomSpeed");
+    } else {
+      cameraPanDir_.y = -1.f;
+    }
   } else if (key == SDLK_RIGHT) {
     cameraPanDir_.x = 1.f;
   } else if (key == SDLK_LEFT) {
@@ -274,6 +308,12 @@ void Controller::keyPress(SDL_keysym keysym) {
       }
     } else if (key == SDLK_LSHIFT || key == SDLK_RSHIFT) {
       shift_ = true;
+    } else if (key == SDLK_LCTRL || key == SDLK_RCTRL) {
+      ctrl_ = true;
+    } else if (key == SDLK_LALT || key == SDLK_RALT) {
+      alt_ = true;
+    } else if (key == SDLK_BACKSPACE) {
+      Renderer::get()->resetCameraRotation();
     } else if (key == SDLK_g) {
       // Debug commands
       SDL_WM_GrabInput(SDL_GRAB_ON);
@@ -366,8 +406,13 @@ void Controller::keyRelease(SDL_keysym keysym) {
     cameraPanDir_.x = 0.f;
   } else if (key == SDLK_UP || key == SDLK_DOWN) {
     cameraPanDir_.y = 0.f;
+    zoom_ = 0.f;
   } else if (key == SDLK_LSHIFT || key == SDLK_RSHIFT) {
     shift_ = false;
+  } else if (key == SDLK_LCTRL || key == SDLK_RCTRL) {
+    ctrl_ = false;
+  } else if (key == SDLK_LALT || key == SDLK_RALT) {
+    alt_ = false;
   }
 }
 
@@ -380,7 +425,7 @@ void Controller::minimapUpdateCamera(const glm::vec2 &screenCoord) {
   mapCoord *= Renderer::get()->getMapSize() / minimapDim;
   mapCoord.y *= -1;
   glm::vec3 finalPos(mapCoord, Renderer::get()->getCameraPos().z);
-  Renderer::get()->setCameraPos(finalPos);
+  Renderer::get()->setCameraLookAt(finalPos);
 }
 
 id_t Controller::selectEntity(const glm::vec2 &screenCoord) const {
@@ -390,6 +435,9 @@ id_t Controller::selectEntity(const glm::vec2 &screenCoord) const {
   // Find the best entity
   for (const auto& pair : Game::get()->getEntities()) {
     auto entity = pair.second;
+    if (!entity->hasProperty(GameEntity::P_ACTOR)) {
+      continue;
+    }
     auto rect = entity->getRect(Renderer::get()->getSimDT());
     float dist = glm::distance2(pos, rect.pos);
     if (rect.contains(pos) && dist < bestDist) {

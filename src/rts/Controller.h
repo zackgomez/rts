@@ -26,6 +26,7 @@ class Controller {
   void mouseDown(const glm::vec2 &screenCoord, int button);
   // @param button the SDL_BUTTON description of the released button
   void mouseUp(const glm::vec2 &screenCoord, int button);
+  void mouseMotion(const glm::vec2 &screenCoord);
   void keyPress(SDL_keysym key);
   void keyRelease(SDL_keysym key);
 
@@ -42,12 +43,17 @@ class Controller {
   std::string order_;
 
   bool shift_;
+  bool ctrl_;
+  bool alt_;
   bool leftDrag_;
   bool leftDragMinimap_;
   glm::vec3 leftStart_;
+  // For computing mouse motion
+  glm::vec2 lastMousePos_;
 
   // TODO(zack): move to renderer/engine as a camera velocity
   glm::vec2 cameraPanDir_;
+  float zoom_;
 
   // Called once per frame with render dt
   void renderUpdate(float dt);

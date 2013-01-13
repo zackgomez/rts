@@ -34,7 +34,7 @@ id_t Entity::lastID_ = STARTING_EID;
 Renderer::Renderer()
   : controller_(nullptr),
     running_(true),
-    cameraPos_(0.f, 0.f, 5.f),
+    camera_(glm::vec3(0.f), 5.f, 0.f, 45.f),
     resolution_(vec2Param("local.resolution")),
     timeMultiplier_(1.f),
     lastTickTime_(Clock::now()),
@@ -165,16 +165,12 @@ void Renderer::startRender() {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   // Set up matrices
-  float aspectRatio = resolution_.x / resolution_.y;
+  float aspect = resolution_.x / resolution_.y;
   float fov = 90.f;
   getProjectionStack().clear();
-  getProjectionStack().current() =
-    glm::perspective(fov, aspectRatio, 0.1f, 100.f);
+  getProjectionStack().current() = glm::perspective(fov, aspect, 0.1f, 100.f);
   getViewStack().clear();
-  getViewStack().current() =
-    glm::lookAt(cameraPos_,
-                glm::vec3(cameraPos_.x, cameraPos_.y + 0.5f, 0),
-                glm::vec3(0, 1, 0));
+  getViewStack().current() = camera_.calculateViewMatrix();
 
   // Set up lights
   // TODO(zack): read light pos from map config
@@ -191,27 +187,53 @@ void Renderer::endRender() {
 }
 
 void Renderer::updateCamera(const glm::vec3 &delta) {
-  setCameraPos(cameraPos_ + delta);
+  glm::mat4 viewMat = glm::inverse(camera_.calculateViewMatrix());
+
+  glm::vec3 forward = applyMatrix(viewMat, glm::vec3(0, 1, 0), false);
+  forward = glm::normalize(glm::vec3(forward.x, forward.y, 0));
+
+  glm::vec3 right = applyMatrix(viewMat, glm::vec3(1, 0, 0), false);
+  right = glm::normalize(glm::vec3(right.x, right.y, 0));
+
+  auto transformedDelta = delta.x * right + delta.y * forward;
+  setCameraLookAt(camera_.getLookAt() + transformedDelta);
 }
 
-void Renderer::setCameraPos(const glm::vec3 &pos) {
+void Renderer::rotateCamera(const glm::vec2 &rot) {
+  camera_.setTheta(camera_.getTheta() + rot.x);
+  camera_.setPhi(camera_.getPhi() + rot.y);
+}
+void Renderer::resetCameraRotation() {
+  camera_.setTheta(0.f);
+  camera_.setPhi(45.f);
+}
+
+void Renderer::zoomCamera(float delta) {
+  camera_.setZoom(glm::clamp(camera_.getZoom() + delta, 1.5f, 10.f));
+}
+
+void Renderer::setCameraLookAt(const glm::vec3 &pos) {
   auto mapExtent = mapSize_ / 2.f;
-  cameraPos_ = glm::clamp(
+  camera_.setLookAt(glm::clamp(
       pos,
       glm::vec3(-mapExtent.x, -mapExtent.y, 0.f),
-      glm::vec3(mapExtent.x, mapExtent.y, 20.f));
+      glm::vec3(mapExtent.x, mapExtent.y, 20.f)));
 }
 
 glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
-  glm::vec4 ndc = glm::vec4(screenToNDC(screenCoord), 1.f);
+  glm::vec3 ndc = screenToNDC(screenCoord);
 
-  ndc = glm::inverse(
-      getProjectionStack().current() * getViewStack().current()) * ndc;
-  ndc /= ndc.w;
+  auto inverseProjMat = glm::inverse(getProjectionStack().current());
+  auto inverseViewMat = glm::inverse(getViewStack().current());
+  glm::vec3 cameraDir = glm::normalize(
+      applyMatrix(inverseProjMat, glm::vec3(ndc)));
+  glm::vec3 worldDir = glm::normalize(
+      applyMatrix(inverseViewMat, cameraDir, false));
+  glm::vec3 worldPos = applyMatrix(inverseViewMat, glm::vec3(0.f));
 
-  glm::vec3 dir = glm::normalize(glm::vec3(ndc) - cameraPos_);
-
-  glm::vec3 terrain = glm::vec3(ndc) - dir * ndc.z / dir.z;
+  // for now, just project into the ground
+  float t = (0.f - worldPos.z) / worldDir.z;
+  auto terrain = worldPos + t * worldDir;
 
   auto mapExtent = mapSize_ / 2.f;
   // Don't return a non terrain coordinate
@@ -230,12 +252,9 @@ glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
 }
 
 glm::vec3 Renderer::screenToNDC(const glm::vec2 &screen) const {
-  float z;
-  glReadPixels(screen.x, resolution_.y - screen.y, 1, 1,
-      GL_DEPTH_COMPONENT, GL_FLOAT, &z);
   return glm::vec3(
-      2.f * (screen.x / resolution_.x) - 1.f,
+      (2.f * (screen.x / resolution_.x) - 1.f),
       2.f * (1.f - (screen.y / resolution_.y)) - 1.f,
-      z);
+      1.f);
 }
 };  // rts

@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 #include "common/Clock.h"
 #include "common/Logger.h"
+#include "rts/Camera.h"
 #include "rts/GameEntity.h"
 
 namespace rts {
@@ -39,7 +40,7 @@ class Renderer {
     return resolution_;
   }
   const glm::vec3& getCameraPos() const {
-    return cameraPos_;
+    return camera_.getLookAt();
   }
   const glm::vec2& getMapSize() const {
     return mapSize_;
@@ -62,7 +63,12 @@ class Renderer {
   void setMapColor(const glm::vec4 &mapColor) {
     mapColor_ = mapColor;
   }
-  void setCameraPos(const glm::vec3 &pos);
+  void setCameraLookAt(const glm::vec3 &pos);
+  // @param rot.x theta rotation in degrees
+  // @param rot.y phi rotation in degrees
+  void rotateCamera(const glm::vec2 &rot);
+  void resetCameraRotation();
+  void zoomCamera(float delta);
   void setController(Controller *controller);
   void setUI(UI *ui);
 
@@ -103,8 +109,8 @@ class Renderer {
   glm::vec2 mapSize_;
   glm::vec4 mapColor_;
 
-  glm::vec3 cameraPos_;
   glm::vec2 resolution_;
+  Camera camera_;
   // render/simulation dt are scaled by this
   float timeMultiplier_;
   // Used to interpolate, last tick seen, and dt since last tick

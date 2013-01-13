@@ -128,7 +128,10 @@ void UI::highlightEntity(id_t eid) {
   entityHighlights_[eid] = fltParam("ui.highlight.duration");
 }
 
-void UI::renderEntity(const ModelEntity *e, const glm::mat4 &transform, float dt) {
+void UI::renderEntity(
+    const ModelEntity *e,
+    const glm::mat4 &transform,
+    float dt) {
   if (!e->hasProperty(GameEntity::P_ACTOR)) {
     return;
   }
@@ -279,6 +282,7 @@ void UI::renderMinimap() {
     glm::vec2(res.x - offset, res.y - offset),
   };
   // Iterates over the four corners of the current viewport
+  /*
   glm::vec2 minimapCoord[4];
   for (int i = 0; i < 4; i++) {
     glm::vec2 screenCoord = screenCoords[i];
@@ -293,6 +297,7 @@ void UI::renderMinimap() {
   drawLine(minimapCoord[1], minimapCoord[3], lineColor);
   drawLine(minimapCoord[3], minimapCoord[2], lineColor);
   drawLine(minimapCoord[2], minimapCoord[0], lineColor);
+  */
 
   // render actors
   for (const auto &pair : Game::get()->getEntities()) {

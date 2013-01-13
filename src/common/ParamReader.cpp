@@ -101,6 +101,7 @@ bool ParamReader::hasParam(const std::string &param) const {
 Json::Value ParamReader::getParam(const std::string &param) const {
   auto it = params_.find(param);
   if (it == params_.end()) {
+    LOG(FATAL) << "missing param: " << param << '\n';
     throw param_exception("Param " + param + " not found.\n");
   }
 
