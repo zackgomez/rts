@@ -5,6 +5,7 @@
 #include "common/ParamReader.h"
 #include "rts/Building.h"
 #include "rts/Game.h"
+#include "rts/Map.h"
 #include "rts/MessageHub.h"
 #include "rts/Player.h"
 #include "rts/PlayerAction.h"
@@ -462,10 +463,17 @@ std::set<id_t> Controller::selectEntities(
 
   glm::vec2 terrainStart = Renderer::get()->screenToTerrain(start).xy;
   glm::vec2 terrainEnd = Renderer::get()->screenToTerrain(end).xy;
+  
+  //Bound selection rect by map bounds
+  glm::vec2 mapSize = Game::get()->getMap()->getSize()/2.f;
+  terrainStart = glm::clamp(terrainStart, -mapSize, mapSize);
+  terrainEnd = glm::clamp(terrainEnd, -mapSize, mapSize);
+  
   // Defines the rectangle
   glm::vec2 center = (terrainStart + terrainEnd) / 2.f;
   glm::vec2 size = glm::abs(terrainEnd - terrainStart);
   Rect dragRect(center, size, 0.f);
+
 
   for (const auto &pair : Game::get()->getEntities()) {
     auto e = pair.second;
