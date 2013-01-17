@@ -302,14 +302,25 @@
 
   "colors" :
   {
+    //TODO: move these and their references into a subcategory of colors
     "selected" : [0.1, 0.8, 0.1],
     "targeted" : [0.8, 0.1, 0.1],
     "dummyPlayer" : [0.2, 0.2, 0.2],
     "team" : [
       [0.1, 0.1, 0.8],
       [0.8, 0.1, 0.1]
-    ]
+    ], 
+    "minimap" :
+    {
+      "local_selected" : [0.8, 0.8, 0.8],
+      "local" : [0.1, 0.8, 0.1],
+      "ally"  : [0.1, 0.1, 0.8],
+      "enemy" : [0.8, 0.1, 0.1],
+      "neutral" : [0.4, 0.4, 0.4]
+    }
   },
+  
+ 
 
   // GRAPHICS PARAMS
   "hud" :

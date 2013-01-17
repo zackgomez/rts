@@ -319,20 +319,41 @@ void UI::renderMinimap(float dt) {
   drawLine(minimapCoord[2], minimapCoord[0], lineColor);
   */
 
+  int colorScheme = intParam("local.minimap_color_scheme"); 
+    //0 = player colors (red player is red...)
+    //1 = ally (you are green, allies blue, enemies red...)
+  
+  id_t teamID_ = Game::get()->getPlayer(playerID_)->getTeamID();
+    
   // render actors
   for (const auto &pair : Renderer::get()->getEntities()) {
     const GameEntity *e = (const GameEntity *)pair.second;
     if (!e->hasProperty(GameEntity::P_ACTOR)) {
       continue;
     }
-    glm::vec2 pos = worldToMinimap(e->getPosition(Renderer::get()->getSimDT()));
-    const Player *player = Game::get()->getPlayer(e->getPlayerID());
-    glm::vec3 pcolor = player ? player->getColor() :
-      vec3Param("global.defaultColor");
-    float actorSize = fltParam("ui.minimap.actorSize");
-    drawRect(pos, glm::vec2(actorSize), glm::vec4(pcolor, 1.f));
+      glm::vec2 pos = worldToMinimap(e->getPosition(Renderer::get()->getSimDT()));
+      const Player *player = Game::get()->getPlayer(e->getPlayerID());
+      glm::vec3 pcolor; 
+      if (colorScheme == 0) {
+        pcolor = player ? player->getColor() : vec3Param("global.defaultColor");
+      } else {
+        if (!player) { //no player
+          pcolor =  vec3Param("colors.minimap.neutral");
+        } else if (((LocalPlayer*)(Game::get()->getPlayer(playerID_)))->
+                isSelected(e->getID())) { //selected
+          pcolor = vec3Param("colors.minimap.local_selected");
+        } else if (player->getPlayerID() == playerID_) { //local player
+          pcolor = vec3Param("colors.minimap.local");
+        } else if (player->getTeamID() == teamID_) { //on same team
+          pcolor = vec3Param("colors.minimap.ally");
+        } else { //enemy
+          pcolor = vec3Param("colors.minimap.enemy");
+        }
+      }
+      float actorSize = fltParam("ui.minimap.actorSize");
+      drawRect(pos, glm::vec2(actorSize), glm::vec4(pcolor, 1.f));
+    }
   }
-}
 
 void UI::renderHighlights(float dt) {
   invariant(instance_, "called without UI object");

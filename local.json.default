@@ -9,8 +9,13 @@
   // Game Preferences
   "resolution" : [1280, 800],
   "camera.panthresh" : 50,
+  "minimap_color_scheme" : 1, 
+    //0 = player colors (red player is red...)
+    //1 = ally (you are green, allies blue, enemies red...)
+
   // Framerate CAP
   "framerate" : 80.0,
   "cameraRotSpeed" : 0.3,
   "zoomSpeed" : 0.1
+  
 }
