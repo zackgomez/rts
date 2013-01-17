@@ -82,9 +82,6 @@ class Actor : public GameEntity {
   Weapon *rangedWeapon_, *meleeWeapon_;
 
   std::queue<Production> production_queue_;
-
- private:
-  static LoggerPtr logger_;
 };
 };  // namespace rts
 

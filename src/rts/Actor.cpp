@@ -10,8 +10,6 @@
 
 namespace rts {
 
-LoggerPtr Actor::logger_;
-
 Actor::Actor(const std::string &name, const Json::Value &params,
              bool mobile, bool targetable,
              bool collidable) :
@@ -19,9 +17,6 @@ Actor::Actor(const std::string &name, const Json::Value &params,
   melee_timer_(0.f),
   meleeWeapon_(nullptr),
   rangedWeapon_(nullptr) {
-  if (!logger_.get()) {
-    logger_ = Logger::getLogger("Actor");
-  }
 
   if (hasParam("meleeWeapon")) {
     meleeWeapon_ = new Weapon(strParam("meleeWeapon"), this);
@@ -75,7 +70,7 @@ void Actor::handleOrder(const Message &order) {
   if (order["order_type"] == OrderTypes::ENQUEUE) {
     enqueue(order);
   } else {
-    logger_->warning() << "Actor got unknown order: "
+    LOG(WARNING) << "Actor got unknown order: "
                        << order.toStyledString() << '\n';
   }
 }

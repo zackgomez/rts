@@ -302,7 +302,7 @@ void UI::renderMinimap() {
   */
 
   // render actors
-  for (const auto &pair : Game::get()->getEntities()) {
+  for (const auto &pair : Renderer::get()->getEntities()) {
     const GameEntity *e = (const GameEntity *)pair.second;
     if (!e->hasProperty(GameEntity::P_ACTOR)) {
       continue;

@@ -440,16 +440,17 @@ id_t Controller::selectEntity(const glm::vec2 &screenCoord) const {
   id_t eid = NO_ENTITY;
   float bestDist = HUGE_VAL;
   // Find the best entity
-  for (const auto& pair : Game::get()->getEntities()) {
+  for (const auto& pair : Renderer::get()->getEntities()) {
     auto entity = pair.second;
     if (!entity->hasProperty(GameEntity::P_ACTOR)) {
       continue;
     }
-    auto rect = entity->getRect(Renderer::get()->getSimDT());
+    auto gameEntity = (GameEntity *) entity;
+    auto rect = gameEntity->getRect(Renderer::get()->getSimDT());
     float dist = glm::distance2(pos, rect.pos);
     if (rect.contains(pos) && dist < bestDist) {
       bestDist = dist;
-      eid = entity->getID();
+      eid = pair.first;
     }
   }
 
@@ -474,15 +475,16 @@ std::set<id_t> Controller::selectEntities(
   glm::vec2 size = glm::abs(terrainEnd - terrainStart);
   Rect dragRect(center, size, 0.f);
 
-
-  for (const auto &pair : Game::get()->getEntities()) {
+  for (const auto &pair : Renderer::get()->getEntities()) {
     auto e = pair.second;
     // Must be an actor owned by the passed player
-    if (!e->hasProperty(GameEntity::P_ACTOR) || e->getPlayerID() != pid) {
+    if (!e->hasProperty(GameEntity::P_ACTOR)) {
       continue;
     }
-    if (boxInBox(dragRect, e->getRect(Renderer::get()->getSimDT()))) {
-      ret.insert(e->getID());
+    auto ge = (GameEntity *) e;
+    if (ge->getPlayerID() == pid
+        && boxInBox(dragRect, ge->getRect(Renderer::get()->getSimDT()))) {
+      ret.insert(ge->getID());
     }
   }
 

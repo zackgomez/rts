@@ -6,6 +6,7 @@
 #include "rts/Game.h"
 #include "rts/MessageHub.h"
 #include "rts/Projectile.h"
+#include "rts/Renderer.h"
 #include "rts/Weapon.h"
 
 namespace rts {
@@ -196,7 +197,7 @@ const GameEntity * Unit::getTarget(id_t lastTargetID) const {
     // this, the arg is a const GameEntity *, and it returns a float
     // In vim, these {} are marked as errors, that's just because vim doesn't
     // know c++11
-    target = Game::get()->findEntity(
+    target = Renderer::get()->findEntity(
       [&](const GameEntity *e) -> float {
         if (e->getPlayerID() != NO_PLAYER
             && e->getTeamID() != getTeamID()

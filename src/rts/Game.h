@@ -60,33 +60,12 @@ class Game {
   void addAction(id_t pid, const PlayerAction &act);
 
   const GameEntity * getEntity(id_t eid) const;
-  const std::map<id_t, GameEntity *>& getEntities() const { return entities_; }
   const Player * getPlayer(id_t pid) const;
   const std::vector<Player *>& getPlayers() const { return players_; }
   const std::set<id_t> getTeams() const { return teams_; }
 
   const PlayerResources& getResources(id_t pid) const;
   float getVictoryPoints(id_t tid) const;
-
-  // Returns the entity that scores the LOWEST with the given scoring function.
-  // Scoring function should have signature float scorer(const GameEntity *);
-  template <class T>
-  const GameEntity * findEntity(T scorer) const {
-    float bestscore = HUGE_VAL;
-    const GameEntity *bestentity = nullptr;
-
-    for (const auto& it : entities_) {
-      const GameEntity *e = it.second;
-      float score = scorer(e);
-      if (score < bestscore) {
-        bestscore = score;
-        bestentity = e;
-      }
-    }
-
-    return bestentity;
-  }
-
 
  protected:
   void handleAction(id_t playerID, const PlayerAction &action);
@@ -100,7 +79,6 @@ class Game {
 
   Map *map_;
   std::vector<Player *> players_;
-  std::map<id_t, GameEntity *> entities_;
   std::set<id_t> teams_;
   // pid => float
   std::map<id_t, PlayerResources> resources_;

@@ -71,7 +71,7 @@ bool Game::updatePlayers() {
 
 checksum_t Game::checksum() {
   Checksum chksum;
-  for (auto it : entities_) {
+  for (auto it : Renderer::get()->getEntities()) {
     it.second->checksum(chksum);
   }
 
@@ -110,6 +110,7 @@ void Game::start() {
 
 void Game::update(float dt) {
   auto lock = Renderer::get()->lockEntities();
+  auto& entities = Renderer::get()->getEntities();
 
   // First update players
   // TODO(zack): less hacky dependence on paused_
@@ -172,32 +173,30 @@ void Game::update(float dt) {
 
   // Integrate positions before updating entities, to ensure the render displays
   // extrapolated information.  This is safe and provides a better experience.
-  for (auto &it : entities_) {
+  for (auto &it : entities) {
     it.second->integrate(dt);
   }
 
   // Update entities
   std::vector<id_t> deadEnts;
-  for (auto &it : entities_) {
+  for (auto &it : entities) {
     GameEntity *entity = it.second;
     entity->update(dt);
   }
   // Remove deadEnts
   for (auto eid : deadEntities_) {
-    GameEntity *e = entities_[eid];
-    entities_.erase(eid);
-    delete e;
+    Renderer::get()->removeEntity(eid);
   }
   deadEntities_.clear();
 
   // Collision detection
-  for (auto it = entities_.begin(); it != entities_.end(); it++) {
+  for (auto it = entities.begin(); it != entities.end(); it++) {
     const GameEntity *e1 = it->second;
     if (!e1->hasProperty(GameEntity::P_COLLIDABLE)) {
       continue;
     }
     auto it2 = it;
-    for (it2++; it2 != entities_.end(); it2++) {
+    for (it2++; it2 != entities.end(); it2++) {
       const GameEntity *e2 = it2->second;
       if (!e2->hasProperty(GameEntity::P_COLLIDABLE)) {
         continue;
@@ -238,9 +237,10 @@ void Game::update(float dt) {
 }
 
 void Game::sendMessage(id_t to, const Message &msg) {
+  auto entities = Renderer::get()->getEntities();
   assertEid(to);
-  auto it = entities_.find(to);
-  if (it == entities_.end()) {
+  auto it = entities.find(to);
+  if (it == entities.end()) {
     LOG(WARN) << "Tried to send message to unknown entity:\n"
       << msg.toStyledString() << '\n';
     return;
@@ -264,7 +264,7 @@ void Game::handleMessage(const Message &msg) {
                     msg["entity_name"].asString(),
                     msg["params"]);
     if (ent) {
-      entities_[ent->getID()] = ent;
+      Renderer::get()->spawnEntity(ent);
     }
   } else if (msg["type"] == MessageTypes::DESTROY_ENTITY) {
     invariant(msg.isMember("eid"), "malformed DESTROY_ENTITY message");
@@ -306,8 +306,9 @@ void Game::addAction(id_t pid, const PlayerAction &act) {
 }
 
 const GameEntity * Game::getEntity(id_t eid) const {
-  auto it = entities_.find(eid);
-  return it == entities_.end() ? nullptr : it->second;
+  auto entities = Renderer::get()->getEntities();
+  auto it = entities.find(eid);
+  return it == entities.end() ? nullptr : it->second;
 }
 
 const Player * Game::getPlayer(id_t pid) const {

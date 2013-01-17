@@ -49,6 +49,15 @@ class Renderer {
     return controller_;
   }
 
+  std::map<id_t, GameEntity *>& getEntities() {
+    return entities_;
+  }
+  const std::map<id_t, GameEntity *>& getEntities() const {
+    return entities_;
+  }
+  void spawnEntity(Entity *ent);
+  void removeEntity(id_t eid);
+
   // Sets the last update time for inter/extrapolation purposes
   void setLastTickTime(const Clock::time_point &t) {
     lastTickTime_ = t;
@@ -86,6 +95,11 @@ class Renderer {
   // is not on the map returns glm::vec3(HUGE_VAL).
   glm::vec3 screenToTerrain(const glm::vec2 &screenCoord) const;
 
+  // Returns the entity that scores the LOWEST with the given scoring function.
+  // Scoring function should have signature float scorer(const GameEntity *);
+  template <class T>
+  const GameEntity * findEntity(T scorer) const;
+
  private:
   Renderer();
 
@@ -99,6 +113,8 @@ class Renderer {
   glm::vec3 screenToNDC(const glm::vec2 &screenCoord) const;
   void renderActor(const Actor *actor, glm::mat4 transform);
   glm::vec2 worldToMinimap(const glm::vec3 &mapPos);
+
+  std::map<id_t, GameEntity *> entities_;
 
   Controller *controller_;
   UI* ui_;
@@ -121,6 +137,23 @@ class Renderer {
   uint32_t lastRender_;
   float renderdt_;
 };
+
+template <class T>
+const GameEntity * Renderer::findEntity(T scorer) const {
+  float bestscore = HUGE_VAL;
+  const GameEntity *bestentity = nullptr;
+
+  for (const auto& it : entities_) {
+    const GameEntity *e = it.second;
+    float score = scorer(e);
+    if (score < bestscore) {
+      bestscore = score;
+      bestentity = e;
+    }
+  }
+
+  return bestentity;
+}
 };  // namespace rts
 
 #endif  // SRC_RTS_RENDERER_H_

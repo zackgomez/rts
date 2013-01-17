@@ -98,7 +98,7 @@ void Renderer::render() {
 
   renderMap();
 
-  for (auto &it : Game::get()->getEntities()) {
+  for (auto &it : entities_) {
     renderEntity(it.second);
   }
 
@@ -184,6 +184,19 @@ void Renderer::endRender() {
   renderUI();
 
   SDL_GL_SwapBuffers();
+}
+
+void Renderer::spawnEntity(Entity *ent) {
+  invariant(ent, "Cannot spawn null entity");
+  invariant(entities_.find(ent->getID()) == entities_.end(),
+      "cannot add spawn entity with already existing ID");
+  entities_[ent->getID()] = (GameEntity *)ent;
+}
+
+void Renderer::removeEntity(id_t eid) {
+  auto *e = entities_[eid];
+  entities_.erase(eid);
+  delete e;
 }
 
 void Renderer::updateCamera(const glm::vec3 &delta) {
