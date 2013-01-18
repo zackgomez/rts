@@ -58,7 +58,6 @@ void Controller::processInput(float dt) {
       screenCoord = glm::vec2(event.button.x, event.button.y);
       mouseMotion(screenCoord);
       break;
-    // TODO(zack) add MOUSE_WHEEL
     case SDL_QUIT:
       quitEvent();
       break;
@@ -223,6 +222,11 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
         }
       }
     }
+  } else if (button == SDL_BUTTON_WHEELUP) {
+    LOG(DEBUG) << "HERE\n";
+    Renderer::get()->zoomCamera(-fltParam("local.mouseZoomSpeed"));
+  } else if (button == SDL_BUTTON_WHEELDOWN) {
+    Renderer::get()->zoomCamera(fltParam("local.mouseZoomSpeed"));
   }
 
   if (Game::get()->isPaused()) {
@@ -234,8 +238,6 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
   if (action.isMember("type")) {
     MessageHub::get()->addAction(action);
   }
-      // If we have a selection, and they didn't click on the current
-      // selection, move them to target
 }
 
 void GameController::mouseUp(const glm::vec2 &screenCoord, int button) {
@@ -284,13 +286,13 @@ void GameController::keyPress(SDL_keysym keysym) {
   // Camera panning
   } else if (key == SDLK_UP) {
     if (alt_) {
-      zoom_ = -fltParam("local.zoomSpeed");
+      zoom_ = -fltParam("local.keyZoomSpeed");
     } else {
       cameraPanDir_.y = 1.f;
     }
   } else if (key == SDLK_DOWN) {
     if (alt_) {
-      zoom_ = fltParam("local.zoomSpeed");
+      zoom_ = fltParam("local.keyZoomSpeed");
     } else {
       cameraPanDir_.y = -1.f;
     }
