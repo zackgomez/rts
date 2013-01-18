@@ -38,7 +38,8 @@ Renderer::Renderer()
     resolution_(vec2Param("local.resolution")),
     timeMultiplier_(1.f),
     lastTickTime_(Clock::now()),
-    lastRender_(0) {
+    lastRender_(0),
+    mapSize_(0.f) {
   // TODO(zack): move this to a separate initialize function
   initEngine(resolution_);
   // Initialize font manager, if necessary
@@ -116,7 +117,9 @@ void Renderer::renderUI() {
 
 void Renderer::renderMap() {
   record_section("renderMap");
-
+  if (mapSize_ == glm::vec2(0.f)) {
+    return;
+  }
   auto gridDim = mapSize_ * 2.f;
 
   GLuint mapProgram = ResourceManager::get()->getShader("map");

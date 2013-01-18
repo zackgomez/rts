@@ -30,9 +30,6 @@ class Renderer {
     return &instance;
   }
 
-  UI* getUI() {
-    return ui_;
-  }
   float getSimDT() const {
     return simdt_;
   }
@@ -67,6 +64,7 @@ class Renderer {
   }
   // eventually replace this with a set map geometry or something similar
   void setMapSize(const glm::vec2 &mapSize) {
+    LOG(DEBUG) << "Setting map size: " << mapSize << '\n';
     mapSize_ = mapSize;
   }
   void setMapColor(const glm::vec4 &mapColor) {
@@ -80,7 +78,6 @@ class Renderer {
   void zoomCamera(float delta);
 
   void setController(Controller *controller);
-  void setUI(UI *ui);
 
   void startMainloop();
   void updateCamera(const glm::vec3 &delta);
@@ -117,7 +114,6 @@ class Renderer {
   std::map<id_t, GameEntity *> entities_;
 
   Controller *controller_;
-  UI* ui_;
 
   bool running_;
 

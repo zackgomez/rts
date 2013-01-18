@@ -35,12 +35,10 @@ void handleInput(float dt);
 int initLibs();
 void cleanup();
 
-Game *game;
-
 // Matchmaker port
 const std::string mmport = "11100";
 
-void gameThread(rts::id_t localPlayerID) {
+void gameThread(Game *game, rts::id_t localPlayerID) {
   const float simrate = fltParam("game.simrate");
   const float simdt = 1.f / simrate;
 
@@ -78,6 +76,28 @@ void cleanup() {
   teardownEngine();
 }
 
+void matchmakerThread(std::vector<std::string> args) {
+  // Set up players and game
+  Matchmaker matchmaker(getParam("local.player"));
+
+  std::vector<Player *> players;
+
+  if (args.size() > 0 && args[0] == "--2p") {
+    std::string ip = args.size() > 1 ? args[1] : "";
+    players = matchmaker.doDirectSetup(ip);
+  } else if (args.size() > 1 && args[0] == "--mm") {
+    players = matchmaker.doServerSetup(args[1], mmport);
+  } else {
+    players = matchmaker.doDebugSetup();
+  }
+
+  Map *map = new Map(matchmaker.getMapName());
+  Game *game = new Game(map, players);
+
+  std::thread gamet(gameThread, game, matchmaker.getLocalPlayerID());
+  gamet.detach();
+}
+
 int main(int argc, char **argv) {
   std::string progname = argv[0];
   std::vector<std::string> args;
@@ -94,27 +114,11 @@ int main(int argc, char **argv) {
   // Initialize Engine
   Renderer::get();
 
-  // Set up players and game
-  Matchmaker matchmaker(getParam("local.player"));
-
-  std::vector<Player *> players;
-
-  if (args.size() > 0 && args[0] == "--2p") {
-    std::string ip = args.size() > 1 ? args[1] : "";
-    players = matchmaker.doDirectSetup(ip);
-  } else if (args.size() > 1 && args[0] == "--mm") {
-    players = matchmaker.doServerSetup(args[1], mmport);
-  } else {
-    players = matchmaker.doDebugSetup();
-  }
-
-  Map *map = new Map(matchmaker.getMapName());
-  game = new Game(map, players);
-
   // RUN IT
-  std::thread gamet(gameThread, matchmaker.getLocalPlayerID());
+  std::thread mmthread(matchmakerThread, args);
+  mmthread.detach();
+
   Renderer::get()->startMainloop();
-  gamet.join();
 
   return 0;
 }
