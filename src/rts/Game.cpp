@@ -109,7 +109,7 @@ void Game::start() {
 }
 
 void Game::update(float dt) {
-  auto lock = Renderer::get()->lockEntities();
+  auto lock = Renderer::get()->lockEngine();
   auto& entities = Renderer::get()->getEntities();
 
   // First update players

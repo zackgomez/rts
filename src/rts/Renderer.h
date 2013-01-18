@@ -81,7 +81,7 @@ class Renderer {
 
   void startMainloop();
   void updateCamera(const glm::vec3 &delta);
-  std::unique_lock<std::mutex> lockEntities() {
+  std::unique_lock<std::mutex> lockEngine() {
     return std::unique_lock<std::mutex>(mutex_);
   }
   void signalShutdown() {

@@ -215,8 +215,6 @@ id_t Matchmaker::getLocalPlayerID() const {
 
 void Matchmaker::makeLocalPlayer() {
   localPlayer_ = new LocalPlayer(pid_, tid_, name_, color_);
-  auto controller = new Controller(localPlayer_);
-  Renderer::get()->setController(controller);
   players_.push_back(localPlayer_);
 }
 

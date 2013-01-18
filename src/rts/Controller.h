@@ -8,31 +8,47 @@ namespace rts {
 class Game;
 class LocalPlayer;
 
-// This class is basically just and input source, right now it's configured
-// soley for SDL
 class Controller {
  public:
-  explicit Controller(LocalPlayer *player);
-  ~Controller();
-
   // @param dt the elapsed time in seconds since the last call
   void processInput(float dt);
 
   //
   // Input handler functions
   //
-  void quitEvent();
+  virtual void quitEvent() = 0;
   // @param button the SDL_BUTTON description of the pressed button
-  void mouseDown(const glm::vec2 &screenCoord, int button);
+  virtual void mouseDown(const glm::vec2 &screenCoord, int button) = 0;
   // @param button the SDL_BUTTON description of the released button
-  void mouseUp(const glm::vec2 &screenCoord, int button);
-  void mouseMotion(const glm::vec2 &screenCoord);
-  void keyPress(SDL_keysym key);
-  void keyRelease(SDL_keysym key);
+  virtual void mouseUp(const glm::vec2 &screenCoord, int button) = 0;
+  virtual void mouseMotion(const glm::vec2 &screenCoord) = 0;
+  virtual void keyPress(SDL_keysym key) = 0;
+  virtual void keyRelease(SDL_keysym key) = 0;
+
+ protected:
+  virtual void renderUpdate(float dt) = 0;
+};
+
+// This class is basically just and input source, right now it's configured
+// soley for SDL
+class GameController : public Controller {
+ public:
+  explicit GameController(LocalPlayer *player);
+  ~GameController();
+
+  virtual void quitEvent();
+  virtual void mouseDown(const glm::vec2 &screenCoord, int button);
+  virtual void mouseUp(const glm::vec2 &screenCoord, int button);
+  virtual void mouseMotion(const glm::vec2 &screenCoord);
+  virtual void keyPress(SDL_keysym key);
+  virtual void keyRelease(SDL_keysym key);
 
   // Accessors
   // returns glm::vec4(HUGE_VAL) for no rect, or glm::vec4(start, end)
   glm::vec4 getDragRect() const;
+
+ protected:
+  virtual void renderUpdate(float dt);
 
  private:
   //
@@ -58,9 +74,6 @@ class Controller {
   // TODO(zack): move to renderer/engine as a camera velocity
   glm::vec2 cameraPanDir_;
   float zoom_;
-
-  // Called once per frame with render dt
-  void renderUpdate(float dt);
   void minimapUpdateCamera(const glm::vec2 &screenCoord);
   // returns NO_ENTITY if no acceptable entity near click
   id_t selectEntity(const glm::vec2 &screenCoord) const;

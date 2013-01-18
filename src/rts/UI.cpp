@@ -1,6 +1,7 @@
 #define GLM_SWIZZLE_XYZW
 #include "rts/UI.h"
 #include <sstream>
+#include <functional>
 #include "common/Clock.h"
 #include "common/ParamReader.h"
 #include "rts/Actor.h"
@@ -58,6 +59,7 @@ CustomWidget<T>* createCustomWidget(T&& func) {
 }
 
 void UI::initGameWidgets(id_t playerID) {
+  auto lock = Renderer::get()->lockEngine();
   // TODO(zack): remove this, put it in a widget
   playerID_ = playerID;
 
@@ -107,12 +109,14 @@ void UI::initGameWidgets(id_t playerID) {
   }
 
   widgets_.push_back(createCustomWidget(UI::renderChat));
-  widgets_.push_back(createCustomWidget(UI::renderMinimap));
+  widgets_.push_back(createCustomWidget(
+    std::bind(UI::renderMinimap, playerID_, std::placeholders::_1)));
   widgets_.push_back(createCustomWidget(UI::renderHighlights));
   widgets_.push_back(createCustomWidget(UI::renderDragRect));
 }
 
 void UI::clearGameWidgets() {
+  auto lock = Renderer::get()->lockEngine();
   for (auto widget : widgets_) {
     delete widget;
   }
@@ -275,7 +279,7 @@ void UI::renderChat(float dt) {
   }
 }
 
-void UI::renderMinimap(float dt) {
+void UI::renderMinimap(id_t localPlayerID, float dt) {
   const glm::vec2 &mapSize = Game::get()->getMap()->getSize();
   const glm::vec4 &mapColor = Game::get()->getMap()->getMinimapColor();
   // TODO(connor) we probably want some small buffer around the sides of the
@@ -323,7 +327,7 @@ void UI::renderMinimap(float dt) {
     //0 = player colors (red player is red...)
     //1 = ally (you are green, allies blue, enemies red...)
   
-  id_t teamID_ = Game::get()->getPlayer(playerID_)->getTeamID();
+  id_t teamID_ = Game::get()->getPlayer(localPlayerID)->getTeamID();
     
   // render actors
   for (const auto &pair : Renderer::get()->getEntities()) {
@@ -339,10 +343,10 @@ void UI::renderMinimap(float dt) {
       } else {
         if (!player) { //no player
           pcolor =  vec3Param("colors.minimap.neutral");
-        } else if (((LocalPlayer*)(Game::get()->getPlayer(playerID_)))->
+        } else if (((LocalPlayer*)(Game::get()->getPlayer(localPlayerID)))->
                 isSelected(e->getID())) { //selected
           pcolor = vec3Param("colors.minimap.local_selected");
-        } else if (player->getPlayerID() == playerID_) { //local player
+        } else if (player->getPlayerID() == localPlayerID) { //local player
           pcolor = vec3Param("colors.minimap.local");
         } else if (player->getTeamID() == teamID_) { //on same team
           pcolor = vec3Param("colors.minimap.ally");
@@ -392,7 +396,8 @@ void UI::renderHighlights(float dt) {
 }
 
 void UI::renderDragRect(float dt) {
-  glm::vec4 rect = Renderer::get()->getController()->getDragRect();
+  glm::vec4 rect = ((GameController *)Renderer::get()->getController())
+    ->getDragRect();
   if (rect == glm::vec4(HUGE_VAL)) {
     return;
   }

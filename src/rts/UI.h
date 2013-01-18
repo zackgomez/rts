@@ -47,7 +47,7 @@ class UI {
  private:
   static UI* instance_;
   static void renderChat(float dt);
-  static void renderMinimap(float dt);
+  static void renderMinimap(id_t localPlayerID, float dt);
   static void renderHighlights(float dt);
   static void renderDragRect(float dt);
 
@@ -106,7 +106,7 @@ class TextWidget : public UIWidget {
 template<class T>
 class CustomWidget : public UIWidget {
 public:
-  CustomWidget(T&& func)
+  CustomWidget(T func)
     : func_(func) {
   }
 

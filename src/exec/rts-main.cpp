@@ -43,6 +43,9 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
   const float simdt = 1.f / simrate;
 
   UI::get()->initGameWidgets(localPlayerID);
+  auto controller = new rts::GameController(
+      (rts::LocalPlayer *) Game::get()->getPlayer(localPlayerID));
+  Renderer::get()->setController(controller);
 
   game->start();
 
@@ -57,6 +60,7 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
   }
 
   UI::get()->clearGameWidgets();
+  delete game;
 
   // TODO(move to matchmaker menu)
   Renderer::get()->signalShutdown();

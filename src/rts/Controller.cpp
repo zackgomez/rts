@@ -19,7 +19,7 @@ const std::string DEFAULT = "DEFAULT";
 const std::string CHATTING = "CHATTING";
 }
 
-Controller::Controller(LocalPlayer *player)
+GameController::GameController(LocalPlayer *player)
   : player_(player),
     shift_(false),
     ctrl_(false),
@@ -32,7 +32,7 @@ Controller::Controller(LocalPlayer *player)
     order_() {
 }
 
-Controller::~Controller() {
+GameController::~GameController() {
 }
 
 void Controller::processInput(float dt) {
@@ -67,7 +67,7 @@ void Controller::processInput(float dt) {
   renderUpdate(dt);
 }
 
-void Controller::renderUpdate(float dt) {
+void GameController::renderUpdate(float dt) {
   // No input while game is paused, not even camera motion
   if (Game::get()->isPaused()) {
     return;
@@ -119,7 +119,7 @@ void Controller::renderUpdate(float dt) {
   }
 }
 
-glm::vec4 Controller::getDragRect() const {
+glm::vec4 GameController::getDragRect() const {
   float dist = glm::distance(leftStart_, lastMousePos_);
   if (leftDrag_ && dist > fltParam("hud.minDragDistance")) {
     return glm::vec4(leftStart_, lastMousePos_);
@@ -127,7 +127,7 @@ glm::vec4 Controller::getDragRect() const {
   return glm::vec4(-HUGE_VAL);
 }
 
-void Controller::quitEvent() {
+void GameController::quitEvent() {
   // Send the quit game event
   PlayerAction action;
   action["type"] = ActionTypes::LEAVE_GAME;
@@ -135,7 +135,7 @@ void Controller::quitEvent() {
   MessageHub::get()->addAction(action);
 }
 
-void Controller::mouseDown(const glm::vec2 &screenCoord, int button) {
+void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
   if (alt_) {
     return;
   }
@@ -238,7 +238,7 @@ void Controller::mouseDown(const glm::vec2 &screenCoord, int button) {
       // selection, move them to target
 }
 
-void Controller::mouseUp(const glm::vec2 &screenCoord, int button) {
+void GameController::mouseUp(const glm::vec2 &screenCoord, int button) {
   if (button == SDL_BUTTON_LEFT) {
     glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
     std::set<id_t> newSelect;
@@ -261,7 +261,7 @@ void Controller::mouseUp(const glm::vec2 &screenCoord, int button) {
   // nop
 }
 
-void Controller::mouseMotion(const glm::vec2 &screenCoord) {
+void GameController::mouseMotion(const glm::vec2 &screenCoord) {
   // Rotate camera while alt is held
   if (alt_) {
     glm::vec2 delta = screenCoord - lastMousePos_;
@@ -271,7 +271,7 @@ void Controller::mouseMotion(const glm::vec2 &screenCoord) {
   lastMousePos_ = screenCoord;
 }
 
-void Controller::keyPress(SDL_keysym keysym) {
+void GameController::keyPress(SDL_keysym keysym) {
   static const SDLKey MAIN_KEYS[] = {SDLK_q, SDLK_w, SDLK_e, SDLK_r};
   SDLKey key = keysym.sym;
   // TODO(zack) watch out for pausing here
@@ -407,7 +407,7 @@ void Controller::keyPress(SDL_keysym keysym) {
   }
 }
 
-void Controller::keyRelease(SDL_keysym keysym) {
+void GameController::keyRelease(SDL_keysym keysym) {
   SDLKey key = keysym.sym;
   if (key == SDLK_RIGHT || key == SDLK_LEFT) {
     cameraPanDir_.x = 0.f;
@@ -423,7 +423,7 @@ void Controller::keyRelease(SDL_keysym keysym) {
   }
 }
 
-void Controller::minimapUpdateCamera(const glm::vec2 &screenCoord) {
+void GameController::minimapUpdateCamera(const glm::vec2 &screenCoord) {
   const glm::vec2 minimapPos = UI::convertUIPos(vec2Param("ui.minimap.pos"));
   const glm::vec2 minimapDim = vec2Param("ui.minimap.dim");
   glm::vec2 mapCoord = screenCoord;
@@ -435,7 +435,7 @@ void Controller::minimapUpdateCamera(const glm::vec2 &screenCoord) {
   Renderer::get()->setCameraLookAt(finalPos);
 }
 
-id_t Controller::selectEntity(const glm::vec2 &screenCoord) const {
+id_t GameController::selectEntity(const glm::vec2 &screenCoord) const {
   glm::vec2 pos = glm::vec2(Renderer::get()->screenToTerrain(screenCoord));
   id_t eid = NO_ENTITY;
   float bestDist = HUGE_VAL;
@@ -457,7 +457,7 @@ id_t Controller::selectEntity(const glm::vec2 &screenCoord) const {
   return eid;
 }
 
-std::set<id_t> Controller::selectEntities(
+std::set<id_t> GameController::selectEntities(
   const glm::vec2 &start, const glm::vec2 &end, id_t pid) const {
   assertPid(pid);
   std::set<id_t> ret;
