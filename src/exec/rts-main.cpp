@@ -83,6 +83,9 @@ void cleanup() {
 }
 
 void matchmakerThread() {
+  Matchmaker matchmaker(getParam("local.player"));
+  std::vector<Player *> players;
+
   {
   auto lock = Renderer::get()->lockEngine();
   rts::MatchmakerController *controller =
@@ -90,15 +93,11 @@ void matchmakerThread() {
   Renderer::get()->setController(controller);
   }
 
-  Matchmaker matchmaker(getParam("local.player"));
-  std::vector<Player *> players;
-
   while (players.empty()) {
     try {
       players = matchmaker.waitPlayers();
     } catch (std::exception &e) {
       LOG(FATAL) << "caught exception: " << e.what() << '\n';
-      exit(1);
     }
   }
 
