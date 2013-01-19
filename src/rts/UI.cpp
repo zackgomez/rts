@@ -7,6 +7,7 @@
 #include "rts/Actor.h"
 #include "rts/Building.h"
 #include "rts/Controller.h"
+#include "rts/GameController.h"
 #include "rts/Graphics.h"
 #include "rts/FontManager.h"
 #include "rts/Game.h"

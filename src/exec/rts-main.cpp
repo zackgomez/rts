@@ -13,6 +13,7 @@
 #include "common/NetConnection.h"
 #include "common/util.h"
 #include "rts/Controller.h"
+#include "rts/GameController.h"
 #include "rts/Game.h"
 #include "rts/Graphics.h"
 #include "rts/Map.h"
