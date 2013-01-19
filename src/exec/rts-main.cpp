@@ -17,6 +17,7 @@
 #include "rts/Graphics.h"
 #include "rts/Map.h"
 #include "rts/Matchmaker.h"
+#include "rts/MatchmakerController.h"
 #include "rts/Renderer.h"
 #include "rts/Player.h"
 #include "rts/Unit.h"

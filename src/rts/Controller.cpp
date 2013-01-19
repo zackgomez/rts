@@ -505,38 +505,4 @@ std::set<id_t> GameController::selectEntities(
   return ret;
 }
 
-MatchmakerController::MatchmakerController(Matchmaker *mm)
-  : matchmaker_(mm),
-    elapsedTime_(0.f) {
-}
-
-MatchmakerController::~MatchmakerController() {
-}
-
-void MatchmakerController::initWidgets() {
-  UI::get()->initMatchmakerWidgets();
-
-  UIWidget *mmwidget = UI::get()->getWidget("matchmaker");
-  invariant(mmwidget, "Couldn't find widgets!");
-  mmwidget->setOnClickListener([&] (const glm::vec2 &pos) -> bool {
-    matchmaker_->signalReady();
-    return true;
-  });
-}
-
-void MatchmakerController::clearWidgets() {
-  UI::get()->clearMatchmakerWidgets();
-}
-
-void MatchmakerController::renderUpdate(float dt) {
-  elapsedTime_ += dt;
-}
-
-void MatchmakerController::quitEvent() {
-  Renderer::get()->signalShutdown();
-}
-
-void MatchmakerController::keyPress(SDL_keysym key) {
-}
-
 };  // rts

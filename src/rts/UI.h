@@ -8,6 +8,8 @@
 #include "common/Types.h"
 #include "common/util.h"
 #include "common/Types.h"
+#include "rts/FontManager.h"
+#include "rts/Graphics.h"
 
 namespace rts {
 
@@ -29,14 +31,14 @@ class UI {
     return instance_;
   }
 
+  void addWidget(const std::string &name, UIWidget *widget);
   UIWidget *getWidget(const std::string &name);
+  void clearWidgets();
+
   bool handleMousePress(const glm::vec2 &loc);
 
   void initGameWidgets(id_t playerID);
   void clearGameWidgets();
-
-  void initMatchmakerWidgets();
-  void clearMatchmakerWidgets();
 
   void render(float dt);
   void renderEntity(const ModelEntity *e, const glm::mat4 &transform, float dt);
@@ -113,9 +115,19 @@ class TextWidget : public UIWidget {
       const glm::vec2 &size,
       float fontHeight,
       const glm::vec4 &bgcolor,
-      T& textGetter);
+      T& textGetter)
+  : pos_(pos),
+    size_(size),
+    height_(fontHeight),
+    bgcolor_(bgcolor),
+    textFunc_(textGetter) {
+  }
 
-  void render(float dt);
+  void render(float dt) {
+    const std::string text = textFunc_();
+    drawRect(pos_, size_, bgcolor_);
+    FontManager::get()->drawString(text, pos_, height_);
+  }
 
  private:
   glm::vec2 pos_;
@@ -124,6 +136,16 @@ class TextWidget : public UIWidget {
   glm::vec4 bgcolor_;
   T textFunc_;
 };
+
+template<typename T>
+TextWidget<T>* createTextWidget(
+  const glm::vec2& pos,
+  const glm::vec2& size,
+  float fontHeight,
+  const glm::vec4 &bgcolor,
+  T textGetter) {
+  return new TextWidget<T>(pos, size, fontHeight, bgcolor, textGetter);
+}
 
 template<class T>
 class CustomWidget : public UIWidget {
@@ -139,6 +161,12 @@ public:
 private:
   T func_;
 };
+// This does template type deduction so you don't have to figure out wtf T is
+// when you want to make a custom widget
+template<typename T>
+CustomWidget<T>* createCustomWidget(T&& func) {
+  return new CustomWidget<T>(func);
+}
 
 struct MapHighlight {
   glm::vec2 pos;

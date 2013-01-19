@@ -59,6 +59,10 @@ UIWidget* UI::getWidget(const std::string &name) {
   return it->second;
 }
 
+void UI::addWidget(const std::string &name, UIWidget *widget) {
+  widgets_[name] = widget;
+}
+
 bool UI::handleMousePress(const glm::vec2 &screenCoord) {
   for (auto&& pair : widgets_) {
     if (pair.second->isClick(screenCoord)) {
@@ -69,23 +73,6 @@ bool UI::handleMousePress(const glm::vec2 &screenCoord) {
   }
 
   return false;
-}
-
-// This does template type deduction so you don't have to figure out wtf T is
-// when you want to make a custom widget
-template<typename T>
-CustomWidget<T>* createCustomWidget(T&& func) {
-  return new CustomWidget<T>(func);
-}
-
-template<typename T>
-TextWidget<T>* createTextWidget(
-  const glm::vec2& pos,
-  const glm::vec2& size,
-  float fontHeight,
-  const glm::vec4 &bgcolor,
-  T textGetter) {
-  return new TextWidget<T>(pos, size, fontHeight, bgcolor, textGetter);
 }
 
 
@@ -146,10 +133,7 @@ void UI::initGameWidgets(id_t playerID) {
 }
 
 void UI::clearGameWidgets() {
-  for (auto pair : widgets_) {
-    delete pair.second;
-  }
-  widgets_.clear();
+  clearWidgets();
   highlights_.clear();
   entityHighlights_.clear();
   chatActive_ = false;
@@ -157,25 +141,10 @@ void UI::clearGameWidgets() {
   playerID_ = NULL_ID;
 }
 
-void UI::initMatchmakerWidgets() {
-  auto pos = convertUIPos(glm::vec2(400.f));
-  auto size = glm::vec2(200.f);
-  auto fontHeight = 12.f;
-  auto bgcolor = glm::vec4(1.f);
-  auto textFunc = [=]()->std::string {
-    std::stringstream ss;
-    ss << "Time spent waiting: "
-      << ((MatchmakerController *)Renderer::get()->getController())->getTimeElapsed();
-    return ss.str();
-  };
-  auto widget = 
-    createTextWidget(pos, size, fontHeight, bgcolor, textFunc);
-  widget->setClickable(pos + size/2.f, size);
-
-  widgets_["matchmaker"] = widget;
-}
-
-void UI::clearMatchmakerWidgets() {
+void UI::clearWidgets() {
+  for (auto pair : widgets_) {
+    delete pair.second;
+  }
   widgets_.clear();
 }
 
@@ -499,26 +468,5 @@ TextureWidget::TextureWidget(
 void TextureWidget::render(float dt) {
   auto tex = ResourceManager::get()->getTexture(texName_);
   drawTexture(pos_, size_, tex);
-}
-
-template<class T>
-TextWidget<T>::TextWidget(
-    const glm::vec2 &pos,
-    const glm::vec2 &size,
-    float height,
-    const glm::vec4 &bgcolor,
-    T& textGetter)
-  : pos_(pos),
-    size_(size),
-    height_(height),
-    bgcolor_(bgcolor),
-    textFunc_(textGetter) {
-}
-
-template<class T>
-void TextWidget<T>::render(float dt) {
-  const std::string text = textFunc_();
-  drawRect(pos_, size_, bgcolor_);
-  FontManager::get()->drawString(text, pos_, height_);
 }
 };  // rts
