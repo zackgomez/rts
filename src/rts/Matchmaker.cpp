@@ -67,6 +67,19 @@ Matchmaker::Matchmaker(const Json::Value &player)
     error_(false) {
 }
 
+std::vector<Player *> Matchmaker::waitPlayers() {
+  LOG(DEBUG) << "START WAITING\n";
+  playersReadyCondVar_.wait(std::unique_lock<std::mutex>(workMutex_));
+  LOG(DEBUG) << "DONE WAITING\n";
+
+  return std::vector<Player *>();
+}
+
+void Matchmaker::signalReady() {
+  LOG(DEBUG) << "SIGNALLING\n";
+  playersReadyCondVar_.notify_all();
+}
+
 std::vector<Player *> Matchmaker::doDebugSetup() {
   pid_ = STARTING_PID;
   tid_ = STARTING_TID;

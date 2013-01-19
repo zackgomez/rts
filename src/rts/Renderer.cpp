@@ -44,6 +44,7 @@ Renderer::Renderer()
   initEngine(resolution_);
   // Initialize font manager, if necessary
   FontManager::get();
+  UI::get();
 }
 
 Renderer::~Renderer() {
@@ -52,9 +53,12 @@ Renderer::~Renderer() {
 
 void Renderer::setController(Controller *controller) {
   if (controller_) {
+    controller_->clearWidgets();
     delete controller_;
   }
+  LOG(DEBUG) << "setting controller to " << controller << '\n';
   controller_ = controller;
+  controller_->initWidgets();
 }
 
 void Renderer::startMainloop() {
@@ -65,11 +69,13 @@ void Renderer::startMainloop() {
   // render loop
   Clock::time_point last = Clock::now();
   while (running_) {
+    std::unique_lock<std::mutex> lock(mutex_);
     if (controller_) {
       controller_->processInput(fps);
     }
 
     render();
+    lock.unlock();
     Clock::dumpTimes();
 
     // Regulate frame rate
@@ -82,8 +88,6 @@ void Renderer::startMainloop() {
 
 void Renderer::render() {
   Clock::startSection("render");
-  // lock
-  std::unique_lock<std::mutex> lock(mutex_);
 
   simdt_ = Clock::secondsSince(lastTickTime_);
 

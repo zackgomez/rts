@@ -24,7 +24,7 @@ class Logger {
 
   std::ostream& debug() {
     std::cout << "DEBUG - " << prefix_ << ": ";
-    return std::cout;
+    return std::cerr;
   }
   std::ostream& info() {
     std::cout << "INFO - " << prefix_ << ": ";

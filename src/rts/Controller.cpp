@@ -6,6 +6,7 @@
 #include "rts/Building.h"
 #include "rts/Game.h"
 #include "rts/Map.h"
+#include "rts/Matchmaker.h"
 #include "rts/MessageHub.h"
 #include "rts/Player.h"
 #include "rts/PlayerAction.h"
@@ -48,6 +49,9 @@ void Controller::processInput(float dt) {
       break;
     case SDL_MOUSEBUTTONDOWN:
       screenCoord = glm::vec2(event.button.x, event.button.y);
+      if (UI::get()->handleMousePress(screenCoord)) {
+        break;
+      }
       mouseDown(screenCoord, event.button.button);
       break;
     case SDL_MOUSEBUTTONUP:
@@ -64,6 +68,14 @@ void Controller::processInput(float dt) {
     }
   }
   renderUpdate(dt);
+}
+
+void GameController::initWidgets() {
+  UI::get()->initGameWidgets(player_->getPlayerID());
+}
+
+void GameController::clearWidgets() {
+  UI::get()->clearGameWidgets();
 }
 
 void GameController::renderUpdate(float dt) {
@@ -499,6 +511,21 @@ MatchmakerController::MatchmakerController(Matchmaker *mm)
 }
 
 MatchmakerController::~MatchmakerController() {
+}
+
+void MatchmakerController::initWidgets() {
+  UI::get()->initMatchmakerWidgets();
+
+  UIWidget *mmwidget = UI::get()->getWidget("matchmaker");
+  invariant(mmwidget, "Couldn't find widgets!");
+  mmwidget->setOnClickListener([&] (const glm::vec2 &pos) -> bool {
+    matchmaker_->signalReady();
+    return true;
+  });
+}
+
+void MatchmakerController::clearWidgets() {
+  UI::get()->clearMatchmakerWidgets();
 }
 
 void MatchmakerController::renderUpdate(float dt) {

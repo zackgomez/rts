@@ -51,6 +51,26 @@ UI::~UI() {
   instance_ = nullptr;
 }
 
+UIWidget* UI::getWidget(const std::string &name) {
+  auto it = widgets_.find(name);
+  if (it == widgets_.end()) {
+    return nullptr;
+  }
+  return it->second;
+}
+
+bool UI::handleMousePress(const glm::vec2 &screenCoord) {
+  for (auto&& pair : widgets_) {
+    if (pair.second->isClick(screenCoord)) {
+      if (pair.second->handleClick(screenCoord)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 // This does template type deduction so you don't have to figure out wtf T is
 // when you want to make a custom widget
 template<typename T>
@@ -70,7 +90,6 @@ TextWidget<T>* createTextWidget(
 
 
 void UI::initGameWidgets(id_t playerID) {
-  auto lock = Renderer::get()->lockEngine();
   // TODO(zack): remove this, put it in a widget
   playerID_ = playerID;
 
@@ -127,7 +146,6 @@ void UI::initGameWidgets(id_t playerID) {
 }
 
 void UI::clearGameWidgets() {
-  auto lock = Renderer::get()->lockEngine();
   for (auto pair : widgets_) {
     delete pair.second;
   }
@@ -150,8 +168,11 @@ void UI::initMatchmakerWidgets() {
       << ((MatchmakerController *)Renderer::get()->getController())->getTimeElapsed();
     return ss.str();
   };
-  widgets_["matchmaker"] = 
+  auto widget = 
     createTextWidget(pos, size, fontHeight, bgcolor, textFunc);
+  widget->setClickable(pos + size/2.f, size);
+
+  widgets_["matchmaker"] = widget;
 }
 
 void UI::clearMatchmakerWidgets() {
@@ -436,6 +457,34 @@ void UI::renderDragRect(float dt) {
   glm::vec2 start = rect.xy;
   glm::vec2 end = rect.zw;
   drawRect(start, end - start, color);
+}
+
+UIWidget::UIWidget()
+  : clickable_(false),
+    pos_(-1.f), size_(0.f) {
+}
+
+void UIWidget::setClickable(const glm::vec2 &pos, const glm::vec2 &size) {
+  pos_ = pos;
+  size_ = size;
+  clickable_ = true;
+}
+
+bool UIWidget::isClick(const glm::vec2 &pos) const {
+  return clickable_ && pointInBox(pos, pos_, size_, 0.f);
+}
+
+bool UIWidget::handleClick(const glm::vec2 &pos) {
+  if (!onClickListener_) {
+    return false;
+  }
+  LOG(DEBUG) << "handleClick\n";
+  return onClickListener_(pos);
+}
+
+void UIWidget::setOnClickListener(UIWidget::OnClickListener l) {
+  LOG(DEBUG) << "Setting listener\n";
+  onClickListener_ = l;
 }
 
 TextureWidget::TextureWidget(

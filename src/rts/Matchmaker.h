@@ -28,6 +28,9 @@ class Matchmaker {
  public:
   explicit Matchmaker(const Json::Value &playerConfig);
 
+  std::vector<Player *> waitPlayers();
+  void signalReady();
+
   /*
    * Sets up a debug game with a local and dummy player on the 2 player debug
    * map.
@@ -81,8 +84,10 @@ class Matchmaker {
   std::string mapName_;
 
   // threading vars
+  std::mutex workMutex_;
   std::mutex playerMutex_;
   std::condition_variable doneCondVar_;
+  std::condition_variable playersReadyCondVar_;
   bool error_;
 };
 }  // rts

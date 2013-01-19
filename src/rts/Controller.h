@@ -11,8 +11,12 @@ class Matchmaker;
 
 class Controller {
  public:
+   virtual ~Controller() { }
   // @param dt the elapsed time in seconds since the last call
   void processInput(float dt);
+
+  virtual void initWidgets() { }
+  virtual void clearWidgets() { }
 
   //
   // Input handler functions
@@ -36,6 +40,9 @@ class GameController : public Controller {
  public:
   explicit GameController(LocalPlayer *player);
   ~GameController();
+
+  virtual void initWidgets();
+  virtual void clearWidgets();
 
   virtual void quitEvent();
   virtual void mouseDown(const glm::vec2 &screenCoord, int button);
@@ -90,6 +97,9 @@ class MatchmakerController : public Controller {
    float getTimeElapsed() {
      return elapsedTime_;
    }
+
+  virtual void initWidgets();
+  virtual void clearWidgets();
 
   virtual void quitEvent();
   virtual void keyPress(SDL_keysym key);

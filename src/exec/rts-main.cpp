@@ -42,10 +42,12 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
   const float simrate = fltParam("game.simrate");
   const float simdt = 1.f / simrate;
 
-  UI::get()->initGameWidgets(localPlayerID);
-  auto controller = new rts::GameController(
-      (rts::LocalPlayer *) Game::get()->getPlayer(localPlayerID));
-  Renderer::get()->setController(controller);
+  {
+    auto lock = Renderer::get()->lockEngine();
+    auto controller = new rts::GameController(
+        (rts::LocalPlayer *) Game::get()->getPlayer(localPlayerID));
+    Renderer::get()->setController(controller);
+  }
 
   game->start();
 
@@ -59,7 +61,6 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
     std::this_thread::sleep_for(delayms);
   }
 
-  UI::get()->clearGameWidgets();
   delete game;
 
   // TODO(move to matchmaker menu)
@@ -81,12 +82,22 @@ void cleanup() {
 }
 
 void matchmakerThread(std::vector<std::string> args) {
-  // Set up players and game
   Matchmaker matchmaker(getParam("local.player"));
-  Renderer::get()->setController(new rts::MatchmakerController(&matchmaker));
-  UI::get()->initMatchmakerWidgets();
-
   std::vector<Player *> players;
+  try {
+    // Set up players and game
+    {
+      auto lock = Renderer::get()->lockEngine();
+      rts::MatchmakerController *controller =
+        new rts::MatchmakerController(&matchmaker);
+      Renderer::get()->setController(controller);
+    }
+
+    std::vector<Player *> players = matchmaker.waitPlayers();
+  } catch (std::exception &e) {
+    LOG(FATAL) << "caught exception: " << e.what() << '\n';
+    exit(1);
+  }
 
   try {
       if (args.size() > 0 && args[0] == "--2p") {
@@ -101,7 +112,7 @@ void matchmakerThread(std::vector<std::string> args) {
     players.clear();
     LOG(ERROR) << "unable to matchmake for " << args[0] << '\n';
   }
-  UI::get()->clearMatchmakerWidgets();
+
   if (players.empty()) {
     exit(0);
   }

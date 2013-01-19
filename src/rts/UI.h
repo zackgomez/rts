@@ -1,5 +1,6 @@
 #ifndef SRC_RTS_UI_H_
 #define SRC_RTS_UI_H_
+#include <functional>
 #include <map>
 #include <string>
 #include <vector>
@@ -29,6 +30,7 @@ class UI {
   }
 
   UIWidget *getWidget(const std::string &name);
+  bool handleMousePress(const glm::vec2 &loc);
 
   void initGameWidgets(id_t playerID);
   void clearGameWidgets();
@@ -67,9 +69,25 @@ class UI {
 
 class UIWidget {
  public:
+  UIWidget();
   virtual ~UIWidget() { }
 
+  bool isClick(const glm::vec2 &pos) const;
+  bool handleClick(const glm::vec2 &pos);
+
+  typedef std::function<bool(const glm::vec2 &)> OnClickListener;
+
+  void setOnClickListener(OnClickListener onClickListener);
+  void setClickable(const glm::vec2 &pos, const glm::vec2 &size);
+  void setUnClickable();
+
+
   virtual void render(float dt) = 0;
+
+ private:
+   bool clickable_;
+   OnClickListener onClickListener_;
+   glm::vec2 pos_, size_;
 };
 
 class TextureWidget : public UIWidget {
