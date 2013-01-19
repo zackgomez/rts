@@ -68,16 +68,13 @@ Matchmaker::Matchmaker(const Json::Value &player)
 }
 
 std::vector<Player *> Matchmaker::waitPlayers() {
-  LOG(DEBUG) << "START WAITING\n";
   auto lock = std::unique_lock<std::mutex>(workMutex_);
   playersReadyCondVar_.wait(lock);
-  LOG(DEBUG) << "DONE WAITING\n";
 
   return std::vector<Player *>();
 }
 
 void Matchmaker::signalReady() {
-  LOG(DEBUG) << "SIGNALLING\n";
   playersReadyCondVar_.notify_all();
 }
 

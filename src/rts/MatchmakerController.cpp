@@ -3,6 +3,7 @@
 #include "rts/Matchmaker.h"
 #include "rts/Renderer.h"
 #include "rts/UI.h"
+#include "rts/Widgets.h"
 
 namespace rts {
 
@@ -15,24 +16,21 @@ MatchmakerController::~MatchmakerController() {
 }
 
 void MatchmakerController::initWidgets() {
-  auto pos = glm::vec2(400.f);
-  auto size = glm::vec2(200.f);
-  auto fontHeight = 12.f;
-  auto bgcolor = glm::vec4(1.f);
-  auto textFunc = [=]()->std::string {
-    std::stringstream ss;
-    ss << "Time spent waiting: " << elapsedTime_;
-    return ss.str();
+  std::string widgetNames[] = {
+    "matchmaker_menu.single_player_button",
+    "matchmaker_menu.matchmaking_button"
   };
-  auto widget = 
-    createTextWidget(pos, size, fontHeight, bgcolor, textFunc);
-  widget->setClickable(pos + size/2.f, size);
-  widget->setOnClickListener([&] (const glm::vec2 &pos) -> bool {
-    matchmaker_->signalReady();
-    return true;
-  });
+  for (auto name : widgetNames) {
+    auto widget = (TextWidget *)createWidget(name);
+    widget->setClickable(widget->getCenter(), widget->getSize());
+    UI::get()->addWidget(name, widget);
+  }
 
-  UI::get()->addWidget("matchmaker", widget);
+  UI::get()->getWidget("matchmaker_menu.single_player_button")
+    ->setOnClickListener([&] (const glm::vec2 &pos) -> bool {
+        matchmaker_->signalReady();
+        return true;
+        });
 }
 
 void MatchmakerController::clearWidgets() {
@@ -47,7 +45,9 @@ void MatchmakerController::quitEvent() {
   Renderer::get()->signalShutdown();
 }
 
-void MatchmakerController::keyPress(SDL_keysym key) {
-  // TODO(zack): ESC quits
+void MatchmakerController::keyPress(SDL_keysym keysym) {
+  if (keysym.sym == SDLK_ESCAPE) {
+    Renderer::get()->signalShutdown();
+  }
 }
 };  // rts

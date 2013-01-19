@@ -418,6 +418,27 @@
     }
   },
 
+  "matchmaker_menu" : {
+    "single_player_button" :
+    {
+      "type"       : "TextWidget",
+      "text"       : "Start Singleplayer",
+      "pos"        : [300, 300],
+      "dim"        : [300, 32],
+      "fontHeight" : 24.0,
+      "bgcolor"    : [0.8, 0.8, 0.8, 0.8]
+    },
+    "matchmaking_button" :
+    {
+      "type"       : "TextWidget",
+      "text"       : "Start Matchmaking",
+      "pos"        : [300, 400],
+      "dim"        : [300, 32],
+      "fontHeight" : 24.0,
+      "bgcolor"    : [0.8, 0.8, 0.8, 0.8]
+    }
+  },
+
   "camera" :
   {
     "panspeed"     : 19.0,

@@ -15,6 +15,7 @@
 #include "rts/Renderer.h"
 #include "rts/ResourceManager.h"
 #include "rts/Unit.h"
+#include "rts/Widgets.h"
 
 namespace rts {
 
@@ -90,18 +91,13 @@ void UI::initGameWidgets(id_t playerID) {
 
   {
     std::string name = "ui.reqdisplay";
-    auto pos = convertUIPos(vec2Param(name + ".pos"));
-    auto size = vec2Param(name + ".dim");
-    auto fontHeight = fltParam(name + ".fontHeight");
-    auto bgcolor = vec4Param(name + ".bgcolor");
     auto textFunc = [=]()->std::string {
       std::stringstream ss;
       ss << "Req: "
          << (int)Game::get()->getResources(playerID).requisition;
       return ss.str();
     };
-    widgets_[name] = new TextWidget<decltype(textFunc)>(
-          pos, size, fontHeight, bgcolor, textFunc);
+    widgets_[name] = new TextWidget(name, textFunc);
   }
 
   {
@@ -118,7 +114,7 @@ void UI::initGameWidgets(id_t playerID) {
         ss << (int)Game::get()->getVictoryPoints(tid);
         return ss.str();
       };
-      widgets_["ui.vicdisplay"] = new TextWidget<decltype(textFunc)>(
+      widgets_["ui.vicdisplay"] = new TextWidget(
             pos, size, fontHeight, bgcolor, textFunc);
 
       pos.x += size.x * 2.0;
@@ -426,47 +422,5 @@ void UI::renderDragRect(float dt) {
   glm::vec2 start = rect.xy;
   glm::vec2 end = rect.zw;
   drawRect(start, end - start, color);
-}
-
-UIWidget::UIWidget()
-  : clickable_(false),
-    pos_(-1.f), size_(0.f) {
-}
-
-void UIWidget::setClickable(const glm::vec2 &pos, const glm::vec2 &size) {
-  pos_ = pos;
-  size_ = size;
-  clickable_ = true;
-}
-
-bool UIWidget::isClick(const glm::vec2 &pos) const {
-  return clickable_ && pointInBox(pos, pos_, size_, 0.f);
-}
-
-bool UIWidget::handleClick(const glm::vec2 &pos) {
-  if (!onClickListener_) {
-    return false;
-  }
-  LOG(DEBUG) << "handleClick\n";
-  return onClickListener_(pos);
-}
-
-void UIWidget::setOnClickListener(UIWidget::OnClickListener l) {
-  LOG(DEBUG) << "Setting listener\n";
-  onClickListener_ = l;
-}
-
-TextureWidget::TextureWidget(
-    const glm::vec2 &pos,
-    const glm::vec2 &size,
-    const std::string &texName)
-  : pos_(pos),
-    size_(size),
-    texName_(texName) {
-}
-
-void TextureWidget::render(float dt) {
-  auto tex = ResourceManager::get()->getTexture(texName_);
-  drawTexture(pos_, size_, tex);
 }
 };  // rts
