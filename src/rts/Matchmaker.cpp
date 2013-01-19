@@ -58,6 +58,9 @@ NetConnectionPtr attemptConnection(
   return NetConnectionPtr(new NetConnection(sock));
 }
 
+const std::string Matchmaker::MODE_SINGLEPLAYER = "sp";
+const std::string Matchmaker::MODE_MATCHMAKING = "mm";
+
 Matchmaker::Matchmaker(const Json::Value &player)
   : name_(player["name"].asString()),
     color_(toVec3(player["color"])),
@@ -71,10 +74,17 @@ std::vector<Player *> Matchmaker::waitPlayers() {
   auto lock = std::unique_lock<std::mutex>(workMutex_);
   playersReadyCondVar_.wait(lock);
 
-  return std::vector<Player *>();
+  if (mode_ == MODE_SINGLEPLAYER) {
+    return doDebugSetup();
+  } else if (mode_ == MODE_MATCHMAKING) {
+    return doServerSetup("zackgomez.com", "11100");
+  }
 }
 
-void Matchmaker::signalReady() {
+void Matchmaker::signalReady(const std::string &mode) {
+  invariant(mode == MODE_SINGLEPLAYER || mode == MODE_MATCHMAKING,
+      "unknown matchmaking mode");
+  mode_ = mode;
   playersReadyCondVar_.notify_all();
 }
 

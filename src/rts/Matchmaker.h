@@ -26,10 +26,13 @@ class matchmaker_exception : public exception_with_trace {
 
 class Matchmaker {
  public:
+  static const std::string MODE_SINGLEPLAYER;
+  static const std::string MODE_MATCHMAKING;
+
   explicit Matchmaker(const Json::Value &playerConfig);
 
   std::vector<Player *> waitPlayers();
-  void signalReady();
+  void signalReady(const std::string &mode);
 
   /*
    * Sets up a debug game with a local and dummy player on the 2 player debug
@@ -73,6 +76,8 @@ class Matchmaker {
   std::string name_;
   glm::vec3 color_;
   std::string listenPort_;
+
+  std::string mode_;
 
   id_t pid_;
   id_t tid_;

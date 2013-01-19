@@ -28,7 +28,13 @@ void MatchmakerController::initWidgets() {
 
   UI::get()->getWidget("matchmaker_menu.single_player_button")
     ->setOnClickListener([&] (const glm::vec2 &pos) -> bool {
-        matchmaker_->signalReady();
+        matchmaker_->signalReady(Matchmaker::MODE_SINGLEPLAYER);
+        return true;
+        });
+
+  UI::get()->getWidget("matchmaker_menu.matchmaking_button")
+    ->setOnClickListener([&] (const glm::vec2 &pos) -> bool {
+        matchmaker_->signalReady(Matchmaker::MODE_MATCHMAKING);
         return true;
         });
 }

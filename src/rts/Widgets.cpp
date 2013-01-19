@@ -37,7 +37,6 @@ bool UIWidget::handleClick(const glm::vec2 &pos) {
   if (!onClickListener_) {
     return false;
   }
-  LOG(DEBUG) << "handleClick\n";
   return onClickListener_(pos);
 }
 
