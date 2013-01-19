@@ -82,26 +82,24 @@ void cleanup() {
   teardownEngine();
 }
 
-void matchmakerThread(std::vector<std::string> args) {
-  Matchmaker matchmaker(getParam("local.player"));
-  std::vector<Player *> players;
-  try {
-    // Set up players and game
-    {
-      auto lock = Renderer::get()->lockEngine();
-      rts::MatchmakerController *controller =
-        new rts::MatchmakerController(&matchmaker);
-      Renderer::get()->setController(controller);
-    }
-
-    players = matchmaker.waitPlayers();
-  } catch (std::exception &e) {
-    LOG(FATAL) << "caught exception: " << e.what() << '\n';
-    exit(1);
+void matchmakerThread() {
+  {
+  auto lock = Renderer::get()->lockEngine();
+  rts::MatchmakerController *controller =
+    new rts::MatchmakerController(&matchmaker);
+  Renderer::get()->setController(controller);
   }
 
-  if (players.empty()) {
-    exit(0);
+  Matchmaker matchmaker(getParam("local.player"));
+  std::vector<Player *> players;
+
+  while (players.empty()) {
+    try {
+      players = matchmaker.waitPlayers();
+    } catch (std::exception &e) {
+      LOG(FATAL) << "caught exception: " << e.what() << '\n';
+      exit(1);
+    }
   }
 
   Map *map = new Map(matchmaker.getMapName());
@@ -128,7 +126,7 @@ int main(int argc, char **argv) {
   Renderer::get();
 
   // RUN IT
-  std::thread mmthread(matchmakerThread, args);
+  std::thread mmthread(matchmakerThread);
   mmthread.detach();
 
   Renderer::get()->startMainloop();
