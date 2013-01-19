@@ -492,4 +492,24 @@ std::set<id_t> GameController::selectEntities(
 
   return ret;
 }
+
+MatchmakerController::MatchmakerController(Matchmaker *mm)
+  : matchmaker_(mm),
+    elapsedTime_(0.f) {
+}
+
+MatchmakerController::~MatchmakerController() {
+}
+
+void MatchmakerController::renderUpdate(float dt) {
+  elapsedTime_ += dt;
+}
+
+void MatchmakerController::quitEvent() {
+  Renderer::get()->signalShutdown();
+}
+
+void MatchmakerController::keyPress(SDL_keysym key) {
+}
+
 };  // rts

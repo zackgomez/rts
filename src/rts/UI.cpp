@@ -45,8 +45,8 @@ UI::UI()
 }
 
 UI::~UI() {
-  for (auto widget : widgets_) {
-    delete widget;
+  for (auto pair : widgets_) {
+    delete pair.second;
   }
   instance_ = nullptr;
 }
@@ -58,6 +58,17 @@ CustomWidget<T>* createCustomWidget(T&& func) {
   return new CustomWidget<T>(func);
 }
 
+template<typename T>
+TextWidget<T>* createTextWidget(
+  const glm::vec2& pos,
+  const glm::vec2& size,
+  float fontHeight,
+  const glm::vec4 &bgcolor,
+  T textGetter) {
+  return new TextWidget<T>(pos, size, fontHeight, bgcolor, textGetter);
+}
+
+
 void UI::initGameWidgets(id_t playerID) {
   auto lock = Renderer::get()->lockEngine();
   // TODO(zack): remove this, put it in a widget
@@ -68,7 +79,7 @@ void UI::initGameWidgets(id_t playerID) {
     auto pos = convertUIPos(vec2Param(name + ".pos"));
     auto size = vec2Param(name + ".dim");
     auto tex = strParam(name + ".texture");
-    widgets_.push_back(new TextureWidget(pos, size, tex));
+    widgets_[name] = new TextureWidget(pos, size, tex);
   }
 
   {
@@ -83,8 +94,8 @@ void UI::initGameWidgets(id_t playerID) {
          << (int)Game::get()->getResources(playerID).requisition;
       return ss.str();
     };
-    widgets_.push_back(new TextWidget<decltype(textFunc)>(
-          pos, size, fontHeight, bgcolor, textFunc));
+    widgets_[name] = new TextWidget<decltype(textFunc)>(
+          pos, size, fontHeight, bgcolor, textFunc);
   }
 
   {
@@ -101,24 +112,24 @@ void UI::initGameWidgets(id_t playerID) {
         ss << (int)Game::get()->getVictoryPoints(tid);
         return ss.str();
       };
-      widgets_.push_back(new TextWidget<decltype(textFunc)>(
-            pos, size, fontHeight, bgcolor, textFunc));
+      widgets_["ui.vicdisplay"] = new TextWidget<decltype(textFunc)>(
+            pos, size, fontHeight, bgcolor, textFunc);
 
       pos.x += size.x * 2.0;
     }
   }
 
-  widgets_.push_back(createCustomWidget(UI::renderChat));
-  widgets_.push_back(createCustomWidget(
+  widgets_["ui.chat"] = (createCustomWidget(UI::renderChat));
+  widgets_["ui.minimap"] = (createCustomWidget(
     std::bind(UI::renderMinimap, playerID_, std::placeholders::_1)));
-  widgets_.push_back(createCustomWidget(UI::renderHighlights));
-  widgets_.push_back(createCustomWidget(UI::renderDragRect));
+  widgets_["ui.highlights"] = (createCustomWidget(UI::renderHighlights));
+  widgets_["ui.dragRect"] = (createCustomWidget(UI::renderDragRect));
 }
 
 void UI::clearGameWidgets() {
   auto lock = Renderer::get()->lockEngine();
-  for (auto widget : widgets_) {
-    delete widget;
+  for (auto pair : widgets_) {
+    delete pair.second;
   }
   widgets_.clear();
   highlights_.clear();
@@ -128,11 +139,30 @@ void UI::clearGameWidgets() {
   playerID_ = NULL_ID;
 }
 
+void UI::initMatchmakerWidgets() {
+  auto pos = convertUIPos(glm::vec2(400.f));
+  auto size = glm::vec2(200.f);
+  auto fontHeight = 12.f;
+  auto bgcolor = glm::vec4(1.f);
+  auto textFunc = [=]()->std::string {
+    std::stringstream ss;
+    ss << "Time spent waiting: "
+      << ((MatchmakerController *)Renderer::get()->getController())->getTimeElapsed();
+    return ss.str();
+  };
+  widgets_["matchmaker"] = 
+    createTextWidget(pos, size, fontHeight, bgcolor, textFunc);
+}
+
+void UI::clearMatchmakerWidgets() {
+  widgets_.clear();
+}
+
 void UI::render(float dt) {
   glDisable(GL_DEPTH_TEST);
 
-  for (auto&& widget : widgets_) {
-    widget->render(dt);
+  for (auto&& pair : widgets_) {
+    pair.second->render(dt);
   }
 
   glEnable(GL_DEPTH_TEST);

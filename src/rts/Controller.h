@@ -7,6 +7,7 @@ namespace rts {
 
 class Game;
 class LocalPlayer;
+class Matchmaker;
 
 class Controller {
  public:
@@ -79,6 +80,31 @@ class GameController : public Controller {
   id_t selectEntity(const glm::vec2 &screenCoord) const;
   std::set<id_t> selectEntities(const glm::vec2 &start,
       const glm::vec2 &end, id_t pid) const;
+};
+
+class MatchmakerController : public Controller {
+ public:
+   MatchmakerController(Matchmaker *mm);
+   ~MatchmakerController();
+
+   float getTimeElapsed() {
+     return elapsedTime_;
+   }
+
+  virtual void quitEvent();
+  virtual void keyPress(SDL_keysym key);
+
+  virtual void mouseDown(const glm::vec2 &screenCoord, int button) { }
+  virtual void mouseUp(const glm::vec2 &screenCoord, int button) { }
+  virtual void mouseMotion(const glm::vec2 &screenCoord) { }
+  virtual void keyRelease(SDL_keysym key) { }
+
+ protected:
+  virtual void renderUpdate(float dt);
+
+ private:
+   Matchmaker *matchmaker_;
+   float elapsedTime_;
 };
 };  // rts
 #endif  // SRC_RTS_CONTROLLER_H_

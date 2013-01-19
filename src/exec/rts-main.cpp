@@ -83,16 +83,27 @@ void cleanup() {
 void matchmakerThread(std::vector<std::string> args) {
   // Set up players and game
   Matchmaker matchmaker(getParam("local.player"));
+  Renderer::get()->setController(new rts::MatchmakerController(&matchmaker));
+  UI::get()->initMatchmakerWidgets();
 
   std::vector<Player *> players;
 
-  if (args.size() > 0 && args[0] == "--2p") {
-    std::string ip = args.size() > 1 ? args[1] : "";
-    players = matchmaker.doDirectSetup(ip);
-  } else if (args.size() > 1 && args[0] == "--mm") {
-    players = matchmaker.doServerSetup(args[1], mmport);
-  } else {
-    players = matchmaker.doDebugSetup();
+  try {
+      if (args.size() > 0 && args[0] == "--2p") {
+        std::string ip = args.size() > 1 ? args[1] : "";
+        players = matchmaker.doDirectSetup(ip);
+      } else if (args.size() > 1 && args[0] == "--mm") {
+        players = matchmaker.doServerSetup(args[1], mmport);
+      } else {
+        players = matchmaker.doDebugSetup();
+      }
+  } catch (rts::matchmaker_exception &e) {
+    players.clear();
+    LOG(ERROR) << "unable to matchmake for " << args[0] << '\n';
+  }
+  UI::get()->clearMatchmakerWidgets();
+  if (players.empty()) {
+    exit(0);
   }
 
   Map *map = new Map(matchmaker.getMapName());
