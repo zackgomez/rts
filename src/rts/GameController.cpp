@@ -1,5 +1,6 @@
 #define GLM_SWIZZLE_XYZW
 #include "rts/GameController.h"
+#include <iomanip>
 #include <sstream>
 #include <glm/gtx/norm.hpp>
 #include "common/util.h"
@@ -80,6 +81,12 @@ void renderDragRect(bool enabled, const glm::vec2 &start, const glm::vec2 &end, 
   drawRect(start, end - start, color);
 }
 
+std::string getVPString(id_t team) {
+  std::stringstream ss;
+  ss << (int)Game::get()->getVictoryPoints(team);
+  return ss.str();
+}
+
 GameController::GameController(LocalPlayer *player)
   : player_(player),
     shift_(false),
@@ -146,6 +153,20 @@ void GameController::onCreate() {
 
   UI::get()->setEntityOverlayRenderer(
       std::bind(renderEntity, player_, std::ref(entityHighlights_), _1, _2, _3));
+
+  ((TextWidget *)UI::get()->getWidget("ui.widgets.vicdisplay-1"))
+    ->setTextFunc(std::bind(getVPString, STARTING_TID));
+
+  ((TextWidget *)UI::get()->getWidget("ui.widgets.vicdisplay-2"))
+    ->setTextFunc(std::bind(getVPString, STARTING_TID + 1));
+
+  ((TextWidget *)UI::get()->getWidget("ui.widgets.reqdisplay"))
+    ->setTextFunc([&]() -> std::string {
+      std::stringstream ss;
+      ss << "Req: "
+         << (int)Game::get()->getResources(player_->getPlayerID()).requisition;
+      return ss.str();
+    });
 }
 
 void GameController::onDestroy() {

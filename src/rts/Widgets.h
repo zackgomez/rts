@@ -78,8 +78,8 @@ class TextWidget : public SizedWidget {
       const glm::vec4 &bgcolor,
       TextFunc textGetter = TextFunc());
 
-  void setTextFunc(std::function<std::string()> func);
-  void setText(const std::string &s);
+  TextWidget *setTextFunc(const TextFunc &func);
+  TextWidget *setText(const std::string &s);
 
   void render(float dt);
 

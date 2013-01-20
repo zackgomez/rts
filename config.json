@@ -381,12 +381,12 @@
         "pos"     : [-400, -300],
         "dim"     : [400, 300]
       },
-      "topbar" : {
-        "type"    : "TextureWidget",
-        "texture" : "topbar",
-        "pos"     : [0, 0],
-        "dim"     : [1280, 50]
-      },
+      //"topbar" : {
+        //"type"    : "TextureWidget",
+        //"texture" : "topbar",
+        //"pos"     : [0, 0],
+        //"dim"     : [1280, 50]
+      //},
       "reqdisplay" : {
         "type"       : "TextWidget",
         "pos"        : [-150, 0],

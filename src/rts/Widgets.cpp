@@ -102,12 +102,14 @@ TextWidget::TextWidget(
     textFunc_(textGetter) {
 }
 
-void TextWidget::setTextFunc(std::function<std::string()> func) {
+TextWidget *TextWidget::setTextFunc(const TextFunc &func) {
   textFunc_ = func;
+  return this;
 }
 
-void TextWidget::setText(const std::string &text) {
+TextWidget *TextWidget::setText(const std::string &text) {
   text_ = text;
+  return this;
 }
 
 void TextWidget::render(float dt) {
