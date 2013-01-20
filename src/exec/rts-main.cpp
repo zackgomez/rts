@@ -40,6 +40,8 @@ void cleanup();
 // Matchmaker port
 const std::string mmport = "11100";
 
+void matchmakerThread();
+
 void gameThread(Game *game, rts::id_t localPlayerID) {
   const float simrate = fltParam("game.simrate");
   const float simdt = 1.f / simrate;
@@ -63,10 +65,18 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
     std::this_thread::sleep_for(delayms);
   }
 
-  delete game;
 
-  // TODO(move to score screen menu)
-  Renderer::get()->signalShutdown();
+
+  {
+    auto lock = Renderer::get()->lockEngine();
+    Renderer::get()->clearEntities();
+    delete game;
+    Renderer::get()->setController(nullptr);
+  }
+
+  // TODO(zack): move to score screen menu
+  std::thread mmthread(matchmakerThread);
+  mmthread.detach();
 }
 
 int initLibs() {

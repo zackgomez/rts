@@ -54,6 +54,7 @@ class Renderer {
   }
   void spawnEntity(Entity *ent);
   void removeEntity(id_t eid);
+  void clearEntities();
 
   // Sets the last update time for inter/extrapolation purposes
   void setLastTickTime(const Clock::time_point &t) {

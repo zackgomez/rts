@@ -49,6 +49,14 @@ Renderer::Renderer()
 
 Renderer::~Renderer() {
   delete controller_;
+  clearEntities();
+}
+
+void Renderer::clearEntities() {
+  for (auto&& pair : entities_) {
+    delete pair.second;
+  }
+  entities_.clear();
 }
 
 void Renderer::setController(Controller *controller) {
@@ -58,7 +66,9 @@ void Renderer::setController(Controller *controller) {
   }
   LOG(DEBUG) << "setting controller to " << controller << '\n';
   controller_ = controller;
-  controller_->initWidgets();
+  if (controller_) {
+    controller_->initWidgets();
+  }
 }
 
 void Renderer::startMainloop() {
