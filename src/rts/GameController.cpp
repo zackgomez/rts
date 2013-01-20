@@ -114,7 +114,6 @@ void GameController::initWidgets() {
       std::ref(leftStart_),
       std::ref(lastMousePos_),
       std::placeholders::_1)));
-
 }
 
 void GameController::clearWidgets() {
