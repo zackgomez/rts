@@ -219,17 +219,4 @@ void UI::renderChat(float dt) {
     }
   }
 }
-
-void UI::renderDragRect(float dt) {
-  glm::vec4 rect = ((GameController *)Renderer::get()->getController())
-    ->getDragRect();
-  if (rect == glm::vec4(HUGE_VAL)) {
-    return;
-  }
-  // TODO(zack): make this color a param
-  auto color = glm::vec4(0.2f, 0.6f, 0.2f, 0.3f);
-  glm::vec2 start = rect.xy;
-  glm::vec2 end = rect.zw;
-  drawRect(start, end - start, color);
-}
 };  // rts

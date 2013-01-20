@@ -58,6 +58,19 @@ static void renderHighlights(
   }
 }
 
+void renderDragRect(bool enabled, const glm::vec2 &start, const glm::vec2 &end, float dt) {
+  if (!enabled) {
+    return;
+  }
+  float dist = glm::distance(start, end);
+  if (dist < fltParam("hud.minDragDistance")) {
+    return;
+  }
+  // TODO(zack): make this color a param
+  auto color = glm::vec4(0.2f, 0.6f, 0.2f, 0.3f);
+  drawRect(start, end - start, color);
+}
+
 GameController::GameController(LocalPlayer *player)
   : player_(player),
     shift_(false),
@@ -95,7 +108,12 @@ void GameController::initWidgets() {
         std::ref(entityHighlights_),
         std::placeholders::_1)));
   UI::get()->addWidget("ui.widgets.dragRect",
-    createCustomWidget(UI::renderDragRect));
+    createCustomWidget(std::bind(
+      renderDragRect,
+      std::ref(leftDrag_),
+      std::ref(leftStart_),
+      std::ref(lastMousePos_),
+      std::placeholders::_1)));
 
 }
 
@@ -155,15 +173,8 @@ void GameController::renderUpdate(float dt) {
   }
 }
 
-glm::vec4 GameController::getDragRect() const {
-  float dist = glm::distance(leftStart_, lastMousePos_);
-  if (leftDrag_ && dist > fltParam("hud.minDragDistance")) {
-    return glm::vec4(leftStart_, lastMousePos_);
-  }
-  return glm::vec4(-HUGE_VAL);
-}
-
-void GameController::quitEvent() {
+void GameController::quitEvent()
+{
   // Send the quit game event
   PlayerAction action;
   action["type"] = ActionTypes::LEAVE_GAME;

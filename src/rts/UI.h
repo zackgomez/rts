@@ -52,7 +52,6 @@ class UI {
   }
 
   static void renderChat(float dt);
-  static void renderDragRect(float dt);
 
  private:
   static UI* instance_;
