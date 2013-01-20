@@ -130,11 +130,9 @@ void GameController::initWidgets() {
     invariant(from, "No playyayayaya");
     std::stringstream ss;
     ss << from->getName() << ": " << m["chat"].asString();
-    LOG(DEBUG) << " message: " << m << '\n';
     ((CommandWidget *)UI::get()->getWidget("ui.widgets.chat"))
       ->addMessage(ss.str())
-      // TODO(zxack): param
-      ->show(1.f);
+      ->show(fltParam("ui.chat.chatDisplayTime"));
   });
 }
 
@@ -217,42 +215,30 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
 
   if (button == SDL_BUTTON_LEFT) {
     leftStart_ = screenCoord;
-    /*
-    glm::vec2 minimapPos = UI::convertUIPos(vec2Param("ui.minimap.pos"));
-    glm::vec2 minimapDim = vec2Param("ui.minimap.dim");
-    // TODO(connor) perhaps clean this up with some sort of click state?
-    if (screenCoord.x >= minimapPos.x &&
-        screenCoord.x <= minimapPos.x + minimapDim.x &&
-        screenCoord.y >= minimapPos.y &&
-        screenCoord.y <= minimapPos.y + minimapDim.y) {
-      leftDragMinimap_ = true;
-    } else {
-    */
-      leftDrag_ = true;
-      // If no order, then adjust selection
-      if (order_.empty()) {
-        // If no shift held, then deselect (shift just adds)
-        if (!shift_) {
-          newSelect.clear();
-        }
-        // If there is an entity and its ours, select
-        if (entity && entity->getPlayerID() == player_->getPlayerID()) {
-          newSelect.insert(eid);
-        }
-      } else {
-        // If order, then execute it
-        action["type"] = order_;
-        action["entity"] = toJson(player_->getSelection());
-        action["target"] = toJson(loc);
-        if (entity && entity->getTeamID() != player_->getTeamID()) {
-          action["enemy_id"] = toJson(entity->getID());
-        }
-        action["pid"] = toJson(player_->getPlayerID());
-
-        // Clear order
-        order_.clear();
+    leftDrag_ = true;
+    // If no order, then adjust selection
+    if (order_.empty()) {
+      // If no shift held, then deselect (shift just adds)
+      if (!shift_) {
+        newSelect.clear();
       }
-    //}
+      // If there is an entity and its ours, select
+      if (entity && entity->getPlayerID() == player_->getPlayerID()) {
+        newSelect.insert(eid);
+      }
+    } else {
+      // If order, then execute it
+      action["type"] = order_;
+      action["entity"] = toJson(player_->getSelection());
+      action["target"] = toJson(loc);
+      if (entity && entity->getTeamID() != player_->getTeamID()) {
+        action["enemy_id"] = toJson(entity->getID());
+      }
+      action["pid"] = toJson(player_->getPlayerID());
+
+      // Clear order
+      order_.clear();
+    }
   } else if (button == SDL_BUTTON_RIGHT) {
     // TODO(connor) make right click actions on minimap
     // If there is an order, it is canceled by right click

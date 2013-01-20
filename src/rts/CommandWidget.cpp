@@ -65,7 +65,6 @@ CommandWidget* CommandWidget::captureText() {
     /*
     */
   });
-  // TODO(zack): capture input
   return this;
 }
 
@@ -88,7 +87,6 @@ void CommandWidget::render(float dt) {
   auto pos = glm::vec2(
       getCenter().x - getSize().x/2.f,
       getCenter().y + getSize().y/2.f);
-  LOG(DEBUG) << "pos " << pos << '\n';
   auto messagePos = glm::vec2(pos.x, pos.y - inputHeight);
   int maxMessages = intParam(name_ + ".maxMessages");
   for (auto it = messages_.rbegin();
