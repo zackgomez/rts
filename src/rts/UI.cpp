@@ -30,11 +30,9 @@ glm::vec2 UI::convertUIPos(const glm::vec2 &pos) {
       pos.y < 0 ? pos.y + resolution.y : pos.y);
 }
 
-UI::UI()
-  : chatActive_(false) {
+UI::UI() {
   invariant(!instance_, "Multiple UIs?");
   instance_ = this;
-  playerID_ = NULL_ID;
 }
 
 UI::~UI() {
@@ -92,12 +90,9 @@ void UI::renderEntity(
   if (!e->hasProperty(GameEntity::P_ACTOR)) {
     return;
   }
+  return;
   record_section("renderActorInfo");
   // TODO(zack): only render for actors currently on screen/visible
-  auto localPlayer = (LocalPlayer*) Game::get()->getPlayer(playerID_);
-  if (!localPlayer) {
-    return;
-  }
   /*
   if (localPlayer->isSelected(e->getID())) {
     // A bit of a hack here...
@@ -185,38 +180,5 @@ void UI::renderEntity(
     drawRectCenter(pos, size, glm::vec4(0, 0, 1, 1));
   }
   glEnable(GL_DEPTH_TEST);
-}
-
-void UI::renderChat(float dt) {
-  const auto chatActive = instance_->chatActive_;
-  const auto chatBuffer = instance_->chatBuffer_;
-
-  auto&& messages = Game::get()->getChatMessages();
-  auto&& displayTime = fltParam("ui.messages.chatDisplayTime");
-  bool validMessage = !messages.empty() &&
-      Clock::secondsSince(messages.back().time) < displayTime;
-
-  if (validMessage || chatActive) {
-    auto pos = convertUIPos(vec2Param("ui.messages.pos"));
-    auto fontHeight = fltParam("ui.messages.fontHeight");
-    auto messageHeight = fontHeight + fltParam("ui.messages.heightBuffer");
-    auto height = intParam("ui.messages.max") * messageHeight;
-    glm::vec2 startPos = pos - glm::vec2(0, height);
-    auto size = glm::vec2(fltParam("ui.messages.backgroundWidth"), height);
-    drawRect(startPos, size, vec4Param("ui.messages.backgroundColor"));
-    int numMessages =
-        std::min(intParam("ui.messages.max"), (int)messages.size());
-    for (int i = 1; i <= numMessages; i++) {
-      const ChatMessage &message = messages[messages.size() - i];
-      glm::vec2 messagePos = pos;
-      messagePos.y -= i * messageHeight;
-      FontManager::get()->drawString(message.msg, messagePos, fontHeight);
-    }
-    if (chatActive) {
-      drawRect(pos, glm::vec2(size.x, 1.2f * fontHeight),
-          vec4Param("ui.messages.inputColor"));
-      FontManager::get()->drawString(chatBuffer, pos, fontHeight);
-    }
-  }
 }
 };  // rts

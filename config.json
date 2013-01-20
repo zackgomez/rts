@@ -409,12 +409,14 @@
         "bgcolor"    : [0.4, 0.4, 0.4, 1.0]
       }
     },
-    "messages" : {
+    "chat" : {
       // where the local message is drawn
       "pos"             : [25, -320],
+      "dim"             : [400, 240],
       "fontHeight"      : 16,
       "heightBuffer"    : 4,
-      "max"             : 12,
+      "maxMessages"     : 12,
+      "inputHeight"     : 20,
       "backgroundColor" : [1, 1, 1, 0.25],
       "inputColor"      : [0.8, 0.8, 0.8, 0.25],
       "backgroundWidth" : 400,

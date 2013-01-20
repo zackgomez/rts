@@ -4,6 +4,7 @@
 #include "common/util.h"
 #include "common/ParamReader.h"
 #include "rts/Building.h"
+#include "rts/CommandWidget.h"
 #include "rts/Game.h"
 #include "rts/Map.h"
 #include "rts/Matchmaker.h"
@@ -100,7 +101,8 @@ void GameController::initWidgets() {
       return true;
     });
 
-  UI::get()->addWidget("ui.widgets.chat", createCustomWidget(UI::renderChat));
+  auto chatWidget = new CommandWidget("ui.chat");
+  UI::get()->addWidget("ui.widgets.chat", chatWidget);
   UI::get()->addWidget("ui.widgets.highlights",
     createCustomWidget(std::bind(
         renderHighlights,
@@ -291,7 +293,6 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
 
 void GameController::mouseUp(const glm::vec2 &screenCoord, int button) {
   if (button == SDL_BUTTON_LEFT) {
-    glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
     std::set<id_t> newSelect;
     if (glm::distance(leftStart_, screenCoord) > fltParam("hud.minDragDistance")) {
       auto selection = player_->getSelection();
@@ -351,12 +352,8 @@ void GameController::keyPress(SDL_keysym keysym) {
     cameraPanDir_.x = -1.f;
   } else if (state_ == PlayerState::DEFAULT) {
     if (key == SDLK_RETURN) {
-      state_ = PlayerState::CHATTING;
-      UI::get()->setChatActive(true);
-      UI::get()->setChatBuffer(message_);
-      SDL_EnableUNICODE(SDL_ENABLE);
-      SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,
-          SDL_DEFAULT_REPEAT_INTERVAL);
+      ((CommandWidget *)UI::get()->getWidget("ui.widgets.chat"))
+        ->captureText();
     } else if (key == SDLK_ESCAPE) {
       // ESC clears out current states
       if (!order_.empty()) {
@@ -419,41 +416,6 @@ void GameController::keyPress(SDL_keysym keysym) {
           }
         }
       }
-    }
-  } else if (state_ == PlayerState::CHATTING) {
-    char unicode = keysym.unicode;
-    if (key == SDLK_RETURN) {
-      SDL_EnableUNICODE(SDL_DISABLE);
-      SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
-      state_ = PlayerState::DEFAULT;
-      if (!message_.empty()) {
-        Message msg;
-        action["pid"] = toJson(player_->getPlayerID());
-        action["type"] = ActionTypes::CHAT;
-        action["chat"] = message_;
-        MessageHub::get()->addAction(action);
-      }
-      message_.clear();
-      UI::get()->setChatActive(false);
-    } else if (key == SDLK_ESCAPE) {
-      // Clears message and exits chat mode.
-      SDL_EnableUNICODE(SDL_DISABLE);
-      SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
-      state_ = PlayerState::DEFAULT;
-      message_.clear();
-      UI::get()->setChatActive(false);
-    } else if (key == SDLK_BACKSPACE) {
-      if (!message_.empty())
-        message_.erase(message_.end() - 1);
-      UI::get()->setChatBuffer(message_);
-    } else if (unicode != 0 &&
-        (keysym.mod == KMOD_NONE   ||
-         keysym.mod == KMOD_LSHIFT ||
-         keysym.mod == KMOD_RSHIFT ||
-         keysym.mod == KMOD_CAPS   ||
-         keysym.mod == KMOD_NUM)) {
-      message_.append(1, unicode);
-      UI::get()->setChatBuffer(message_);
     }
   }
 }

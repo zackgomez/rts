@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <glm/glm.hpp>
+#include <SDL/SDL.h>
 #include "common/Types.h"
 #include "common/util.h"
 #include "common/Types.h"
@@ -35,28 +36,29 @@ class UI {
   void clearWidgets();
 
   bool handleMousePress(const glm::vec2 &loc);
+  bool handleKeyPress(SDL_keysym keysym);
 
   void render(float dt);
   void renderEntity(const ModelEntity *e, const glm::mat4 &transform, float dt);
 
-  void setChatActive(bool active) {
-    chatActive_ = active;
+  typedef std::function<bool(SDL_keysym keysym)> KeyCapturer;
+  void setKeyCapturer(KeyCapturer kc) {
+    capturer_ = kc;
+    SDL_EnableUNICODE(SDL_ENABLE);
+    SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,
+        SDL_DEFAULT_REPEAT_INTERVAL);
   }
-  void setChatBuffer(const std::string &buffer) {
-    chatBuffer_ = buffer;
+  void clearKeyCapturer() {
+    capturer_ = KeyCapturer();
+    SDL_EnableUNICODE(SDL_DISABLE);
+    SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
   }
-
-  static void renderChat(float dt);
 
  private:
   static UI* instance_;
 
   std::map<std::string, UIWidget *> widgets_;
-
-  bool chatActive_;
-  std::string chatBuffer_;
-
-  id_t playerID_;
+  KeyCapturer capturer_;
 };
 };  // rts
 #endif  // SRC_RTS_UI_H_
