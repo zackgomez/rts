@@ -411,7 +411,7 @@
     },
     "chat" : {
       // where the local message is drawn
-      "pos"             : [25, -320],
+      "pos"             : [25, 150],
       "dim"             : [400, 240],
       "fontHeight"      : 16,
       "heightBuffer"    : 4,

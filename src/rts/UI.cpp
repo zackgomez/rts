@@ -66,6 +66,13 @@ bool UI::handleMousePress(const glm::vec2 &screenCoord) {
   return false;
 }
 
+bool UI::handleKeyPress(SDL_keysym keysym) {
+  if (capturer_) {
+    return capturer_(keysym);
+  }
+  return false;
+}
+
 void UI::clearWidgets() {
   for (auto pair : widgets_) {
     delete pair.second;

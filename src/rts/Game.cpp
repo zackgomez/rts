@@ -344,10 +344,9 @@ float Game::getVictoryPoints(id_t tid) const {
 void Game::handleAction(id_t playerID, const PlayerAction &action) {
   if (action["type"] == ActionTypes::CHAT) {
     invariant(action.isMember("chat"), "malformed CHAT action");
-    // TODO(zack) only send message if it's meant for the player
-    std::stringstream ss;
-    ss << getPlayer(playerID)->getName() << ": " << action["chat"].asString();
-    chats_.emplace_back(ss.str(), Clock::now());
+    if (chatListener_) {
+      chatListener_(action);
+    }
   } else {
     Message msg;
     msg["to"] = action["entity"];

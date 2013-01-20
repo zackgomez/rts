@@ -27,7 +27,7 @@ class Game {
   explicit Game(Map *map, const std::vector<Player *> &players);
   ~Game();
 
-  static const Game* get() { return instance_; }
+  static Game* get() { return instance_; }
 
   // Synchronizes game between players and does any other initialization
   // required
@@ -49,9 +49,6 @@ class Game {
   checksum_t getChecksum() const {
     return checksums_.back();
   }
-  const std::vector<ChatMessage>& getChatMessages() const {
-    return chats_;
-  }
 
   // Does not block, should only be called from Game thread
   void sendMessage(id_t to, const Message &msg);
@@ -66,6 +63,11 @@ class Game {
 
   const PlayerResources& getResources(id_t pid) const;
   float getVictoryPoints(id_t tid) const;
+
+  typedef std::function<void(const Message&)> ChatListener;
+  void setChatListener(ChatListener cl) {
+    chatListener_ = cl;
+  }
 
  protected:
   void handleAction(id_t playerID, const PlayerAction &action);
@@ -87,8 +89,6 @@ class Game {
   tick_t tick_;
   tick_t tickOffset_;
 
-  std::vector<ChatMessage> chats_;
-
   // holds checksums before the tick specified by the index
   // checksums_[3] == checksum at the end of tick 2/beginning of tick 3
   std::vector<checksum_t> checksums_;
@@ -98,6 +98,8 @@ class Game {
 
   bool paused_;
   bool running_;
+
+  ChatListener chatListener_;
 
  private:
   static Game *instance_;

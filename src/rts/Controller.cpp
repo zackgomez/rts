@@ -9,6 +9,9 @@ void Controller::processInput(float dt) {
   while (SDL_PollEvent(&event)) {
     switch (event.type) {
     case SDL_KEYDOWN:
+      if (UI::get()->handleKeyPress(event.key.keysym)) {
+        break;
+      }
       keyPress(event.key.keysym);
       break;
     case SDL_KEYUP:

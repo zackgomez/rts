@@ -13,8 +13,13 @@ class CommandWidget : public SizedWidget {
   CommandWidget* hide();
   // Will capture text until submitted or ESC pressed
   CommandWidget* captureText();
+  void stopCapturing();
 
-  void addMessage(const std::string &msg);
+  void setCloseOnSubmit(bool close) {
+    closeOnSubmit_ = close;
+  }
+
+  CommandWidget* addMessage(const std::string &msg);
 
   typedef std::function<void(const std::string &newText)> OnTextSubmittedHandler;
   void setOnTextSubmittedHandler(OnTextSubmittedHandler h) {
@@ -26,11 +31,11 @@ class CommandWidget : public SizedWidget {
  private:
   std::string name_;
   bool capturing_;
+  bool closeOnSubmit_;
   float showDuration_;
   OnTextSubmittedHandler textSubmittedHandler_;
   std::string buffer_;
   std::vector<std::string> messages_;
 
-  void stopCapturing();
 };
 };  // rts

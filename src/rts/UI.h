@@ -1,5 +1,6 @@
 #ifndef SRC_RTS_UI_H_
 #define SRC_RTS_UI_H_
+#include <functional>
 #include <map>
 #include <string>
 #include <vector>

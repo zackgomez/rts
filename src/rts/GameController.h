@@ -40,9 +40,6 @@ class GameController : public Controller {
   //
   LocalPlayer *player_;
 
-  bool chatting_;
-  std::string message_;
-
   std::string state_;
   std::string order_;
 

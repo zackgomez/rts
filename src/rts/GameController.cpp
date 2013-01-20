@@ -1,5 +1,6 @@
 #define GLM_SWIZZLE_XYZW
 #include "rts/GameController.h"
+#include <sstream>
 #include <glm/gtx/norm.hpp>
 #include "common/util.h"
 #include "common/ParamReader.h"
@@ -79,7 +80,6 @@ GameController::GameController(LocalPlayer *player)
     alt_(false),
     leftDrag_(false),
     leftDragMinimap_(false),
-    message_(),
     state_(PlayerState::DEFAULT),
     zoom_(0.f),
     order_() {
@@ -102,6 +102,14 @@ void GameController::initWidgets() {
     });
 
   auto chatWidget = new CommandWidget("ui.chat");
+  chatWidget->setCloseOnSubmit(true);
+  chatWidget->setOnTextSubmittedHandler([&, chatWidget](const std::string &t) {
+    Message msg;
+    msg["pid"] = toJson(player_->getPlayerID());
+    msg["type"] = ActionTypes::CHAT;
+    msg["chat"] = t;
+    MessageHub::get()->addAction(msg);
+  });
   UI::get()->addWidget("ui.widgets.chat", chatWidget);
   UI::get()->addWidget("ui.widgets.highlights",
     createCustomWidget(std::bind(
@@ -116,6 +124,18 @@ void GameController::initWidgets() {
       std::ref(leftStart_),
       std::ref(lastMousePos_),
       std::placeholders::_1)));
+
+  Game::get()->setChatListener([&](const Message &m) {
+    const Player* from = Game::get()->getPlayer(toID(m["pid"]));
+    invariant(from, "No playyayayaya");
+    std::stringstream ss;
+    ss << from->getName() << ": " << m["chat"].asString();
+    LOG(DEBUG) << " message: " << m << '\n';
+    ((CommandWidget *)UI::get()->getWidget("ui.widgets.chat"))
+      ->addMessage(ss.str())
+      // TODO(zxack): param
+      ->show(1.f);
+  });
 }
 
 void GameController::clearWidgets() {
@@ -274,7 +294,6 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
       }
     }
   } else if (button == SDL_BUTTON_WHEELUP) {
-    LOG(DEBUG) << "HERE\n";
     Renderer::get()->zoomCamera(-fltParam("local.mouseZoomSpeed"));
   } else if (button == SDL_BUTTON_WHEELDOWN) {
     Renderer::get()->zoomCamera(fltParam("local.mouseZoomSpeed"));

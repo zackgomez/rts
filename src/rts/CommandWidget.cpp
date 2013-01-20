@@ -8,14 +8,20 @@
 namespace rts {
 CommandWidget::CommandWidget(const std::string &name)
   : SizedWidget(
-      vec2Param(name + ".pos"),
+      UI::convertUIPos(vec2Param(name + ".pos")) + vec2Param(name + ".dim")/2.f,
       vec2Param(name + ".dim")),
   name_(name),
     capturing_(false),
+    closeOnSubmit_(false),
     showDuration_(0.f) {
 }
 
 CommandWidget::~CommandWidget() {
+}
+
+CommandWidget* CommandWidget::addMessage(const std::string &s) {
+  messages_.push_back(s);
+  return this;
 }
 
 CommandWidget* CommandWidget::show(float duration) {
@@ -37,20 +43,27 @@ void CommandWidget::stopCapturing() {
 CommandWidget* CommandWidget::captureText() {
   capturing_ = true;
   UI::get()->setKeyCapturer([&](SDL_keysym keysym) -> bool {
-      // if return
-      /*
-      if (!message_.empty()) {
-        Message msg;
-        action["pid"] = toJson(player_->getPlayerID());
-        action["type"] = ActionTypes::CHAT;
-        action["chat"] = message_;
-        MessageHub::get()->addAction(action);
+    if (keysym.sym == SDLK_ESCAPE) {
+      stopCapturing();
+      return true;
+    } else if (keysym.sym == SDLK_RETURN) {
+      if (!buffer_.empty() && textSubmittedHandler_) {
+        textSubmittedHandler_(buffer_);
       }
-      */
-      // if esp
-      // if backspace
-      // else char
-    return false;
+      buffer_.clear();
+      if (closeOnSubmit_) {
+        stopCapturing();
+      }
+    } else if (keysym.sym == SDLK_BACKSPACE) {
+      buffer_.pop_back();
+    } else if (isprint(keysym.unicode)) {
+      buffer_.push_back((char)keysym.unicode);
+    } else {
+      return false;
+    }
+    return true;
+    /*
+    */
   });
   // TODO(zack): capture input
   return this;
@@ -63,14 +76,20 @@ void CommandWidget::render(float dt) {
 
   showDuration_ -= dt;
 
-  drawRectCenter(getCenter(), getSize(), vec4Param(name_ + ".backgroundColor"));
+  drawRectCenter(
+    getCenter(),
+    getSize(),
+    vec4Param(name_ + ".backgroundColor"));
 
   auto fontHeight = fltParam(name_ + ".fontHeight");
   auto messageHeight = fontHeight + fltParam(name_ + ".heightBuffer");
   auto inputHeight = fontHeight + fltParam(name_ + ".inputHeight");
 
-  auto pos = glm::vec2(getCenter().x, getCenter().y + getSize().y/2.f);
-  auto messagePos = pos - inputHeight;
+  auto pos = glm::vec2(
+      getCenter().x - getSize().x/2.f,
+      getCenter().y + getSize().y/2.f);
+  LOG(DEBUG) << "pos " << pos << '\n';
+  auto messagePos = glm::vec2(pos.x, pos.y - inputHeight);
   int maxMessages = intParam(name_ + ".maxMessages");
   for (auto it = messages_.rbegin();
        it != messages_.rend() && maxMessages > 0;
@@ -80,9 +99,14 @@ void CommandWidget::render(float dt) {
   }
 
   if (capturing_) {
-    drawRect(pos, glm::vec2(getSize().x, 1.2f * fontHeight),
+    drawRect(
+        glm::vec2(pos.x, pos.y - inputHeight),
+        glm::vec2(getSize().x, inputHeight),
         vec4Param(name_ + ".inputColor"));
-    FontManager::get()->drawString(buffer_, pos - inputHeight, fontHeight);
+    FontManager::get()->drawString(
+        buffer_,
+        glm::vec2(pos.x, pos.y - inputHeight/2.f - fontHeight/2.f),
+        fontHeight);
   }
 }
 };  // rts
