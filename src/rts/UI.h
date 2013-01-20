@@ -42,6 +42,12 @@ class UI {
   void render(float dt);
   void renderEntity(const ModelEntity *e, const glm::mat4 &transform, float dt);
 
+  typedef std::function<void(const ModelEntity *, const glm::mat4&, float)>
+      EntityOverlayRenderer;
+  void setEntityOverlayRenderer(EntityOverlayRenderer r) {
+    entityOverlayRenderer_ = r;
+  }
+
   typedef std::function<bool(SDL_keysym keysym)> KeyCapturer;
   void setKeyCapturer(KeyCapturer kc) {
     capturer_ = kc;
@@ -58,6 +64,7 @@ class UI {
  private:
   static UI* instance_;
 
+  EntityOverlayRenderer entityOverlayRenderer_;
   std::map<std::string, UIWidget *> widgets_;
   KeyCapturer capturer_;
 };

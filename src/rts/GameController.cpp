@@ -24,6 +24,13 @@ const std::string DEFAULT = "DEFAULT";
 const std::string CHATTING = "CHATTING";
 }
 
+static void renderEntity(
+    const LocalPlayer *localPlayer,
+    const std::map<id_t, float>& entityHighlights,
+    const ModelEntity *e,
+    const glm::mat4 &transform,
+    float dt);
+
 static void renderHighlights(
     std::vector<MapHighlight> &highlights,
     std::map<id_t, float> &entityHighlights,
@@ -88,8 +95,10 @@ GameController::GameController(LocalPlayer *player)
 GameController::~GameController() {
 }
 
-void GameController::initWidgets() {
+void GameController::onCreate() {
   createWidgets("ui.widgets");
+
+  using namespace std::placeholders;
 
   auto minimapWidget =
       new MinimapWidget("ui.widgets.minimap", player_->getPlayerID());
@@ -116,14 +125,14 @@ void GameController::initWidgets() {
         renderHighlights,
         std::ref(highlights_),
         std::ref(entityHighlights_),
-        std::placeholders::_1)));
+        _1)));
   UI::get()->addWidget("ui.widgets.dragRect",
     createCustomWidget(std::bind(
       renderDragRect,
       std::ref(leftDrag_),
       std::ref(leftStart_),
       std::ref(lastMousePos_),
-      std::placeholders::_1)));
+      _1)));
 
   Game::get()->setChatListener([&](const Message &m) {
     const Player* from = Game::get()->getPlayer(toID(m["pid"]));
@@ -134,10 +143,14 @@ void GameController::initWidgets() {
       ->addMessage(ss.str())
       ->show(fltParam("ui.chat.chatDisplayTime"));
   });
+
+  UI::get()->setEntityOverlayRenderer(
+      std::bind(renderEntity, player_, std::ref(entityHighlights_), _1, _2, _3));
 }
 
-void GameController::clearWidgets() {
+void GameController::onDestroy() {
   UI::get()->clearWidgets();
+  UI::get()->setEntityOverlayRenderer(UI::EntityOverlayRenderer());
 }
 
 void GameController::renderUpdate(float dt) {
@@ -519,6 +532,104 @@ void GameController::highlight(const glm::vec2 &mapCoord) {
 
 void GameController::highlightEntity(id_t eid) {
   entityHighlights_[eid] = fltParam("ui.highlight.duration");
+}
+
+void renderEntity(
+    const LocalPlayer *localPlayer,
+    const std::map<id_t, float>& entityHighlights,
+    const ModelEntity *e,
+    const glm::mat4 &transform,
+    float dt) {
+  if (!e->hasProperty(GameEntity::P_ACTOR)) {
+    return;
+  }
+  record_section("renderActorInfo");
+  // TODO(zack): only render for actors currently on screen/visible
+  if (localPlayer->isSelected(e->getID())) {
+    // A bit of a hack here...
+    auto finalTransform = glm::translate(
+        transform,
+        glm::vec3(0, 0, 0.1));
+    renderCircleColor(finalTransform,
+        glm::vec4(vec3Param("colors.selected"), 1.f));
+  } else if (entityHighlights.find(e->getID()) != entityHighlights.end()) {
+    // A bit of a hack here...
+    auto finalTransform = glm::translate(
+        transform,
+        glm::vec3(0, 0, 0.1));
+    renderCircleColor(finalTransform,
+        glm::vec4(vec3Param("colors.targeted"), 1.f));
+  }
+
+  glDisable(GL_DEPTH_TEST);
+  auto ndc = getProjectionStack().current() * getViewStack().current() *
+      transform * glm::vec4(0, 0, 0, 1);
+  ndc /= ndc.w;
+  auto resolution = Renderer::get()->getResolution();
+  auto coord = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution;
+  auto actor = (const Actor *)e;
+  // First the unit placard.  For now just a square in the color of the owner,
+  // eventually an icon denoting unit and damage type + upgrades.
+  glm::vec2 size = vec2Param("hud.actor_card.dim");
+  glm::vec2 pos = coord - vec2Param("hud.actor_card.pos");
+  auto player = Game::get()->getPlayer(actor->getPlayerID());
+  auto color = player ? player->getColor() : vec3Param("global.defaultColor");
+  drawRectCenter(pos, size, glm::vec4(color, 0.7f));
+
+  // Cap status
+  if (actor->hasProperty(GameEntity::P_CAPPABLE)) {
+    Building *building = (Building*)actor;
+    if (building->getCap() > 0.f &&
+        building->getCap() < building->getMaxCap()) {
+      float capFact = glm::max(
+          building->getCap() / building->getMaxCap(),
+          0.f);
+      glm::vec2 size = vec2Param("hud.actor_cap.dim");
+      glm::vec2 pos = coord - vec2Param("hud.actor_cap.pos");
+      // Black underneath
+      drawRectCenter(pos, size, glm::vec4(0, 0, 0, 1));
+      pos.x -= size.x * (1.f - capFact) / 2.f;
+      size.x *= capFact;
+      const glm::vec4 cap_color = vec4Param("hud.actor_cap.color");
+      drawRectCenter(pos, size, cap_color);
+    }
+  } else {
+    // Display the health bar
+    // Health bar flashes white on red (instead of green on red) when it has
+    // recently taken damage.
+    glm::vec4 healthBarColor = glm::vec4(0, 1, 0, 1);
+    float timeSinceDamage = Clock::secondsSince(actor->getLastTookDamage());
+    if (timeSinceDamage < fltParam("hud.actor_health.flash_duration")) {
+      healthBarColor = glm::vec4(1, 1, 1, 1);
+    }
+
+    float healthFact = glm::max(
+        0.f,
+        actor->getHealth() / actor->getMaxHealth());
+    glm::vec2 size = vec2Param("hud.actor_health.dim");
+    glm::vec2 pos = coord - vec2Param("hud.actor_health.pos");
+    // Red underneath for max health
+    drawRectCenter(pos, size, glm::vec4(1, 0, 0, 1));
+    // Green on top for current health
+    pos.x -= size.x * (1.f - healthFact) / 2.f;
+    size.x *= healthFact;
+    drawRectCenter(pos, size, healthBarColor);
+  }
+
+  auto queue = actor->getProductionQueue();
+  if (!queue.empty()) {
+    // display production bar
+    float prodFactor = 1.f - queue.front().time / queue.front().max_time;
+    glm::vec2 size = vec2Param("hud.actor_prod.dim");
+    glm::vec2 pos = coord - vec2Param("hud.actor_prod.pos");
+    // Purple underneath for max time
+    drawRectCenter(pos, size, glm::vec4(0.5, 0, 1, 1));
+    // Blue on top for time elapsed
+    pos.x -= size.x * (1.f - prodFactor) / 2.f;
+    size.x *= prodFactor;
+    drawRectCenter(pos, size, glm::vec4(0, 0, 1, 1));
+  }
+  glEnable(GL_DEPTH_TEST);
 }
 
 

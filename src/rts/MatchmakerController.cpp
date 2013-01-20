@@ -15,7 +15,7 @@ MatchmakerController::MatchmakerController(Matchmaker *mm)
 MatchmakerController::~MatchmakerController() {
 }
 
-void MatchmakerController::initWidgets() {
+void MatchmakerController::onCreate() {
   std::string widgetNames[] = {
     "matchmaker_menu.single_player_button",
     "matchmaker_menu.matchmaking_button"
@@ -39,7 +39,7 @@ void MatchmakerController::initWidgets() {
         });
 }
 
-void MatchmakerController::clearWidgets() {
+void MatchmakerController::onDestroy() {
   UI::get()->clearWidgets();
 }
 

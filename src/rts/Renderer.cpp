@@ -48,7 +48,7 @@ Renderer::Renderer()
 }
 
 Renderer::~Renderer() {
-  delete controller_;
+  clearController();
   clearEntities();
 }
 
@@ -60,15 +60,19 @@ void Renderer::clearEntities() {
 }
 
 void Renderer::setController(Controller *controller) {
-  if (controller_) {
-    controller_->clearWidgets();
-    delete controller_;
-  }
-  LOG(DEBUG) << "setting controller to " << controller << '\n';
+  clearController();
   controller_ = controller;
   if (controller_) {
-    controller_->initWidgets();
+    controller_->onCreate();
   }
+}
+
+void Renderer::clearController() {
+  if (controller_) {
+    controller_->onDestroy();
+    delete controller_;
+  }
+  controller_ = nullptr;
 }
 
 void Renderer::startMainloop() {

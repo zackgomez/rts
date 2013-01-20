@@ -11,8 +11,8 @@ class Controller {
   // @param dt the elapsed time in seconds since the last call
   void processInput(float dt);
 
-  virtual void initWidgets() { }
-  virtual void clearWidgets() { }
+  virtual void onCreate() { }
+  virtual void onDestroy() { }
 
   //
   // Input handler functions

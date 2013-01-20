@@ -17,8 +17,8 @@ class GameController : public Controller {
   explicit GameController(LocalPlayer *player);
   ~GameController();
 
-  virtual void initWidgets();
-  virtual void clearWidgets();
+  virtual void onCreate();
+  virtual void onDestroy();
 
   virtual void quitEvent();
   virtual void mouseDown(const glm::vec2 &screenCoord, int button);

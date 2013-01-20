@@ -16,8 +16,8 @@ class MatchmakerController : public Controller {
      return elapsedTime_;
    }
 
-  virtual void initWidgets();
-  virtual void clearWidgets();
+  virtual void onCreate();
+  virtual void onDestroy();
 
   virtual void quitEvent();
   virtual void keyPress(SDL_keysym key);

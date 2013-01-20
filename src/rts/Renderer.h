@@ -79,6 +79,7 @@ class Renderer {
   void zoomCamera(float delta);
 
   void setController(Controller *controller);
+  void clearController();
 
   void startMainloop();
   void updateCamera(const glm::vec3 &delta);
