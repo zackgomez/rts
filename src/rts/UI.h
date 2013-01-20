@@ -51,26 +51,18 @@ class UI {
     chatBuffer_ = buffer;
   }
 
+  static void renderChat(float dt);
+  static void renderDragRect(float dt);
+
  private:
   static UI* instance_;
-  static void renderChat(float dt);
-  static void renderMinimap(id_t localPlayerID, float dt);
-  static void renderHighlights(float dt);
-  static void renderDragRect(float dt);
 
   std::map<std::string, UIWidget *> widgets_;
 
-  std::vector<MapHighlight> highlights_;
-  std::map<id_t, float> entityHighlights_;
   bool chatActive_;
   std::string chatBuffer_;
 
   id_t playerID_;
-};
-
-struct MapHighlight {
-  glm::vec2 pos;
-  float remaining;
 };
 };  // rts
 #endif  // SRC_RTS_UI_H_

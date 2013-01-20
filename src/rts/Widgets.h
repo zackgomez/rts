@@ -9,6 +9,7 @@ namespace rts {
 
 class UIWidget;
 UIWidget *createWidget(const std::string &paramName);
+void createWidgets(const std::string &widgetGroupName);
 
 class UIWidget {
  public:
@@ -53,6 +54,7 @@ class SizedWidget : public UIWidget {
 
 class TextureWidget : public SizedWidget {
  public:
+  TextureWidget(const std::string &name);
   TextureWidget(
       const glm::vec2 &pos,
       const glm::vec2 &size,

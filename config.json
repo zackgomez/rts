@@ -365,18 +365,51 @@
     "damageRenderDuration" : 0.4
   },
 
-  "ui" :
-  {
-    "minimap" :
-    {
-      "texture" : "minimap",
-      "pos"   : [0, -300],
-      "dim"   : [300, 300],
-      "viewportLineColor" : [1, 1, 1, 1],
-      "actorSize" : 4
+  "ui" : {
+    "widgets" : {
+      "minimap" : {
+        "type"    : "TextureWidget",
+        "texture" : "minimap",
+        "pos"     : [0, -300],
+        "dim"     : [300, 300],
+        "viewportLineColor" : [1, 1, 1, 1],
+        "actorSize" : 4
+      },
+      "unitinfo" : {
+        "type"    : "TextureWidget",
+        "texture" : "unit_panel",
+        "pos"     : [-400, -300],
+        "dim"     : [400, 300]
+      },
+      "topbar" : {
+        "type"    : "TextureWidget",
+        "texture" : "topbar",
+        "pos"     : [0, 0],
+        "dim"     : [1280, 50]
+      },
+      "reqdisplay" : {
+        "type"       : "TextWidget",
+        "pos"        : [-150, 0],
+        "dim"        : [150, 50],
+        "fontHeight" : 32.0,
+        "bgcolor"    : [0.4, 0.4, 0.4, 1.0]
+      },
+      "vicdisplay-1" : {
+        "type"       : "TextWidget",
+        "pos"        : [600, 0],
+        "dim"        : [70, 50],
+        "fontHeight" : 32.0,
+        "bgcolor"    : [0.4, 0.4, 0.4, 1.0]
+      },
+      "vicdisplay-2" : {
+        "type"       : "TextWidget",
+        "pos"        : [700, 0],
+        "dim"        : [70, 50],
+        "fontHeight" : 32.0,
+        "bgcolor"    : [0.4, 0.4, 0.4, 1.0]
+      }
     },
-    "messages" :
-    {
+    "messages" : {
       // where the local message is drawn
       "pos"             : [25, -320],
       "fontHeight"      : 16,
@@ -387,33 +420,7 @@
       "backgroundWidth" : 400,
       "chatDisplayTime" : 5.0
     },
-    "unitinfo" :
-    {
-      "texture" : "unit_panel",
-      "pos"   : [-400, -300],
-      "dim"   : [400, 300]
-    },
-    "topbar" :
-    {
-      "texture" : "topbar",
-      "pos"   : [0, 0],
-      "dim"   : [1280, 50]
-    },
-    "reqdisplay" :
-    {
-      "pos"        : [-150, 0],
-      "dim"        : [150, 50],
-      "fontHeight" : 32.0,
-      "bgcolor"    : [0.4, 0.4, 0.4, 1.0]
-    },
-    "vicdisplay" :
-    {
-      "pos"        : [600, 0],
-      "dim"        : [70, 50],
-      "fontHeight" : 32.0
-    },
-    "highlight" :
-    {
+    "highlight" : {
       "duration" : 0.5
     }
   },

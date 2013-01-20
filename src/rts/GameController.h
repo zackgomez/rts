@@ -7,6 +7,11 @@ namespace rts {
 
 class LocalPlayer;
 
+struct MapHighlight {
+  glm::vec2 pos;
+  float remaining;
+};
+
 class GameController : public Controller {
  public:
   explicit GameController(LocalPlayer *player);
@@ -49,15 +54,21 @@ class GameController : public Controller {
   glm::vec2 leftStart_;
   // For computing mouse motion
   glm::vec2 lastMousePos_;
+  std::vector<MapHighlight> highlights_;
+  std::map<id_t, float> entityHighlights_;
 
   // TODO(zack): move to renderer/engine as a camera velocity
   glm::vec2 cameraPanDir_;
   float zoom_;
+
+
   void minimapUpdateCamera(const glm::vec2 &screenCoord);
   // returns NO_ENTITY if no acceptable entity near click
   id_t selectEntity(const glm::vec2 &screenCoord) const;
   std::set<id_t> selectEntities(const glm::vec2 &start,
       const glm::vec2 &end, id_t pid) const;
+  void highlight(const glm::vec2 &mapCoord);
+  void highlightEntity(id_t eid);
 };
 };  // rts
 

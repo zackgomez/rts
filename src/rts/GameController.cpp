@@ -8,16 +8,54 @@
 #include "rts/Map.h"
 #include "rts/Matchmaker.h"
 #include "rts/MessageHub.h"
+#include "rts/MinimapWidget.h"
 #include "rts/Player.h"
 #include "rts/PlayerAction.h"
 #include "rts/Renderer.h"
 #include "rts/UI.h"
+#include "rts/Widgets.h"
 
 namespace rts {
 
 namespace PlayerState {
 const std::string DEFAULT = "DEFAULT";
 const std::string CHATTING = "CHATTING";
+}
+
+static void renderHighlights(
+    std::vector<MapHighlight> &highlights,
+    std::map<id_t, float> &entityHighlights,
+    float dt) {
+  // Render each of the highlights
+  for (auto& hl : highlights) {
+    hl.remaining -= dt;
+    glm::mat4 transform =
+      glm::scale(
+          glm::translate(
+            glm::mat4(1.f),
+            glm::vec3(hl.pos.x, hl.pos.y, 0.01f)),
+          glm::vec3(0.33f));
+    renderCircleColor(transform, glm::vec4(1, 0, 0, 1));
+  }
+  // Remove done highlights
+  for (size_t i = 0; i < highlights.size(); ) {
+    if (highlights[i].remaining <= 0.f) {
+      std::swap(highlights[i], highlights[highlights.size() - 1]);
+      highlights.pop_back();
+    } else {
+      i++;
+    }
+  }
+
+  auto it = entityHighlights.begin();
+  while (it != entityHighlights.end()) {
+    auto cur = (entityHighlights[it->first] -= dt);
+    if (cur <= 0.f) {
+      it = entityHighlights.erase(it);
+    } else {
+      it++;
+    }
+  }
 }
 
 GameController::GameController(LocalPlayer *player)
@@ -37,11 +75,32 @@ GameController::~GameController() {
 }
 
 void GameController::initWidgets() {
-  UI::get()->initGameWidgets(player_->getPlayerID());
+  createWidgets("ui.widgets");
+
+  auto minimapWidget =
+      new MinimapWidget("ui.widgets.minimap", player_->getPlayerID());
+  UI::get()->addWidget("ui.widgets.minimap", minimapWidget);
+  minimapWidget->setClickable(minimapWidget->getCenter(), minimapWidget->getSize());
+  minimapWidget->setOnClickListener(
+    [&](const glm::vec2 &pos) -> bool {
+      leftDragMinimap_ = true;
+      return true;
+    });
+
+  UI::get()->addWidget("ui.widgets.chat", createCustomWidget(UI::renderChat));
+  UI::get()->addWidget("ui.widgets.highlights",
+    createCustomWidget(std::bind(
+        renderHighlights,
+        std::ref(highlights_),
+        std::ref(entityHighlights_),
+        std::placeholders::_1)));
+  UI::get()->addWidget("ui.widgets.dragRect",
+    createCustomWidget(UI::renderDragRect));
+
 }
 
 void GameController::clearWidgets() {
-  UI::get()->clearGameWidgets();
+  UI::get()->clearWidgets();
 }
 
 void GameController::renderUpdate(float dt) {
@@ -125,6 +184,8 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
   const GameEntity *entity = Game::get()->getEntity(eid);
 
   if (button == SDL_BUTTON_LEFT) {
+    leftStart_ = screenCoord;
+    /*
     glm::vec2 minimapPos = UI::convertUIPos(vec2Param("ui.minimap.pos"));
     glm::vec2 minimapDim = vec2Param("ui.minimap.dim");
     // TODO(connor) perhaps clean this up with some sort of click state?
@@ -134,8 +195,8 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
         screenCoord.y <= minimapPos.y + minimapDim.y) {
       leftDragMinimap_ = true;
     } else {
+    */
       leftDrag_ = true;
-      leftStart_ = screenCoord;
       // If no order, then adjust selection
       if (order_.empty()) {
         // If no shift held, then deselect (shift just adds)
@@ -159,7 +220,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
         // Clear order
         order_.clear();
       }
-    }
+    //}
   } else if (button == SDL_BUTTON_RIGHT) {
     // TODO(connor) make right click actions on minimap
     // If there is an order, it is canceled by right click
@@ -172,7 +233,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
       if (entity && entity->getTeamID() != player_->getTeamID()
           && !player_->getSelection().empty()) {
         // Visual feedback
-        UI::get()->highlightEntity(entity->getID());
+        highlightEntity(entity->getID());
 
         // Queue up action
         if (entity->hasProperty(GameEntity::P_CAPPABLE)) {
@@ -190,7 +251,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
 				//loc.x/y wil be -/+HUGE_VAL if outside map bounds
         if (loc.x != HUGE_VAL && loc.y != HUGE_VAL && loc.x != -HUGE_VAL && loc.y != -HUGE_VAL) {
           // Visual feedback
-          UI::get()->highlight(glm::vec2(loc.x, loc.y));
+          highlight(glm::vec2(loc.x, loc.y));
 
           // Queue up action
           action["type"] = ActionTypes::MOVE;
@@ -404,8 +465,9 @@ void GameController::keyRelease(SDL_keysym keysym) {
 }
 
 void GameController::minimapUpdateCamera(const glm::vec2 &screenCoord) {
-  const glm::vec2 minimapPos = UI::convertUIPos(vec2Param("ui.minimap.pos"));
-  const glm::vec2 minimapDim = vec2Param("ui.minimap.dim");
+  // TODO(zack): fix this up
+  const glm::vec2 minimapPos = UI::convertUIPos(vec2Param("ui.widgets.minimap.pos"));
+  const glm::vec2 minimapDim = vec2Param("ui.widgets.minimap.dim");
   glm::vec2 mapCoord = screenCoord;
   mapCoord -= minimapPos;
   mapCoord -= glm::vec2(minimapDim.x / 2, minimapDim.y / 2);
@@ -469,6 +531,17 @@ std::set<id_t> GameController::selectEntities(
   }
 
   return ret;
+}
+
+void GameController::highlight(const glm::vec2 &mapCoord) {
+  MapHighlight hl;
+  hl.pos = mapCoord;
+  hl.remaining = fltParam("ui.highlight.duration");
+  highlights_.push_back(hl);
+}
+
+void GameController::highlightEntity(id_t eid) {
+  entityHighlights_[eid] = fltParam("ui.highlight.duration");
 }
 
 

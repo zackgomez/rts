@@ -4,13 +4,25 @@
 #include "common/util.h"
 #include "rts/FontManager.h"
 #include "rts/ResourceManager.h"
+#include "rts/UI.h"
 
 namespace rts {
+
+void createWidgets(const std::string &widgetGroupName) {
+  Json::Value group = ParamReader::get()->getParam(widgetGroupName);
+  for (auto it = group.begin(); it != group.end(); it++) {
+    auto name = widgetGroupName + '.' + it.memberName();
+    auto widget = createWidget(name);
+    UI::get()->addWidget(name, widget);
+  }
+}
 
 UIWidget *createWidget(const std::string &paramName) {
   auto type = strParam(paramName + ".type");
   if (type == "TextWidget") {
     return new TextWidget(paramName);
+  } else if (type == "TextureWidget") {
+    return new TextureWidget(paramName);
   } else {
     invariant(false, "No widget found for type " + type);
   }
@@ -45,12 +57,17 @@ void UIWidget::setOnClickListener(UIWidget::OnClickListener l) {
 }
 
 
-
+TextureWidget::TextureWidget(const std::string &name) 
+  : TextureWidget(
+      vec2Param(name + ".pos"),
+      vec2Param(name + ".dim"),
+      strParam(name + ".texture")) {
+}
 TextureWidget::TextureWidget(
     const glm::vec2 &pos,
     const glm::vec2 &size,
     const std::string &texName)
-  : SizedWidget(pos + size/2.f, size),
+  : SizedWidget(UI::convertUIPos(pos) + size/2.f, size),
     texName_(texName) {
 }
 
@@ -79,7 +96,7 @@ TextWidget::TextWidget(
     float fontHeight,
     const glm::vec4 &bgcolor,
     TextFunc textGetter)
-  : SizedWidget(pos + size/2.f, size),
+  : SizedWidget(UI::convertUIPos(pos) + size/2.f, size),
     height_(fontHeight),
     bgcolor_(bgcolor),
     textFunc_(textGetter) {

@@ -65,7 +65,7 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
 
   delete game;
 
-  // TODO(move to matchmaker menu)
+  // TODO(move to score screen menu)
   Renderer::get()->signalShutdown();
 }
 
