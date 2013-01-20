@@ -7,10 +7,8 @@
 
 namespace rts {
 CommandWidget::CommandWidget(const std::string &name)
-  : SizedWidget(
-      UI::convertUIPos(vec2Param(name + ".pos")) + vec2Param(name + ".dim")/2.f,
-      vec2Param(name + ".dim")),
-  name_(name),
+  : SizedWidget(name),
+    name_(name),
     capturing_(false),
     closeOnSubmit_(false),
     showDuration_(0.f) {

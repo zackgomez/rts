@@ -10,9 +10,7 @@
 namespace rts {
 
 MinimapWidget::MinimapWidget(const std::string &name, id_t localPlayerID)
-  : SizedWidget(
-      UI::convertUIPos(vec2Param(name + ".pos")) + vec2Param(name + ".dim")/2.f,
-      vec2Param(name + ".dim")),
+  : SizedWidget(name),
     localPlayerID_(localPlayerID),
     name_(name) {
 }

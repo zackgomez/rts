@@ -30,16 +30,20 @@
     <ClCompile Include="..\..\src\rts\Building.cpp" />
     <ClCompile Include="..\..\src\rts\Camera.cpp" />
     <ClCompile Include="..\..\src\rts\CollisionObject.cpp" />
+    <ClCompile Include="..\..\src\rts\CommandWidget.cpp" />
     <ClCompile Include="..\..\src\rts\Controller.cpp" />
     <ClCompile Include="..\..\src\rts\EntityFactory.cpp" />
     <ClCompile Include="..\..\src\rts\FontManager.cpp" />
     <ClCompile Include="..\..\src\rts\Game.cpp" />
+    <ClCompile Include="..\..\src\rts\GameController.cpp" />
     <ClCompile Include="..\..\src\rts\GameEntity.cpp" />
     <ClCompile Include="..\..\src\rts\Graphics.cpp" />
     <ClCompile Include="..\..\src\rts\Map.cpp" />
     <ClCompile Include="..\..\src\rts\Matchmaker.cpp" />
+    <ClCompile Include="..\..\src\rts\MatchmakerController.cpp" />
     <ClCompile Include="..\..\src\rts\MatrixStack.cpp" />
     <ClCompile Include="..\..\src\rts\MessageHub.cpp" />
+    <ClCompile Include="..\..\src\rts\MinimapWidget.cpp" />
     <ClCompile Include="..\..\src\rts\ModelEntity.cpp" />
     <ClCompile Include="..\..\src\rts\NetPlayer.cpp" />
     <ClCompile Include="..\..\src\rts\Player.cpp" />
@@ -49,6 +53,7 @@
     <ClCompile Include="..\..\src\rts\UI.cpp" />
     <ClCompile Include="..\..\src\rts\Unit.cpp" />
     <ClCompile Include="..\..\src\rts\Weapon.cpp" />
+    <ClCompile Include="..\..\src\rts\Widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\common\Checksum.h" />
@@ -65,18 +70,22 @@
     <ClInclude Include="..\..\src\rts\Building.h" />
     <ClInclude Include="..\..\src\rts\Camera.h" />
     <ClInclude Include="..\..\src\rts\CollisionObject.h" />
+    <ClInclude Include="..\..\src\rts\CommandWidget.h" />
     <ClInclude Include="..\..\src\rts\Controller.h" />
     <ClInclude Include="..\..\src\rts\Entity.h" />
     <ClInclude Include="..\..\src\rts\EntityFactory.h" />
     <ClInclude Include="..\..\src\rts\FontManager.h" />
     <ClInclude Include="..\..\src\rts\Game.h" />
+    <ClInclude Include="..\..\src\rts\GameController.h" />
     <ClInclude Include="..\..\src\rts\GameEntity.h" />
     <ClInclude Include="..\..\src\rts\Graphics.h" />
     <ClInclude Include="..\..\src\rts\Map.h" />
     <ClInclude Include="..\..\src\rts\Matchmaker.h" />
+    <ClInclude Include="..\..\src\rts\MatchmakerController.h" />
     <ClInclude Include="..\..\src\rts\MatrixStack.h" />
     <ClInclude Include="..\..\src\rts\Message.h" />
     <ClInclude Include="..\..\src\rts\MessageHub.h" />
+    <ClInclude Include="..\..\src\rts\MinimapWidget.h" />
     <ClInclude Include="..\..\src\rts\ModelEntity.h" />
     <ClInclude Include="..\..\src\rts\NetPlayer.h" />
     <ClInclude Include="..\..\src\rts\Player.h" />
@@ -87,6 +96,7 @@
     <ClInclude Include="..\..\src\rts\UI.h" />
     <ClInclude Include="..\..\src\rts\Unit.h" />
     <ClInclude Include="..\..\src\rts\Weapon.h" />
+    <ClInclude Include="..\..\src\rts\Widgets.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\config.json" />

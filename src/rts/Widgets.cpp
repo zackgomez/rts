@@ -57,18 +57,14 @@ void UIWidget::setOnClickListener(UIWidget::OnClickListener l) {
 }
 
 
-TextureWidget::TextureWidget(const std::string &name) 
-  : TextureWidget(
-      vec2Param(name + ".pos"),
-      vec2Param(name + ".dim"),
-      strParam(name + ".texture")) {
+SizedWidget::SizedWidget(const std::string &name) {
+  size_ = vec2Param(name + ".dim");
+  center_ = UI::convertUIPos(vec2Param(name + ".pos")) + size_/2.f;
 }
-TextureWidget::TextureWidget(
-    const glm::vec2 &pos,
-    const glm::vec2 &size,
-    const std::string &texName)
-  : SizedWidget(UI::convertUIPos(pos) + size/2.f, size),
-    texName_(texName) {
+
+TextureWidget::TextureWidget(const std::string &name) 
+  : SizedWidget(name),
+    texName_(strParam(name + ".texture")) {
 }
 
 void TextureWidget::render(float dt) {
@@ -76,30 +72,13 @@ void TextureWidget::render(float dt) {
   drawTextureCenter(getCenter(), getSize(), tex);
 }
 
-
-
-TextWidget::TextWidget(const std::string &name, TextFunc func)
-  : TextWidget(
-      vec2Param(name + ".pos"),
-      vec2Param(name + ".dim"),
-      fltParam(name + ".fontHeight"),
-      vec4Param(name + ".bgcolor"),
-      func) {
+TextWidget::TextWidget(const std::string &name)
+  : SizedWidget(name),
+    height_(fltParam(name + ".fontHeight")),
+    bgcolor_(vec4Param(name + ".bgcolor")) {
   if (hasParam(name + ".text")) {
     setText(strParam(name + ".text"));
   }
-}
-
-TextWidget::TextWidget(
-    const glm::vec2 &pos,
-    const glm::vec2 &size,
-    float fontHeight,
-    const glm::vec4 &bgcolor,
-    TextFunc textGetter)
-  : SizedWidget(UI::convertUIPos(pos) + size/2.f, size),
-    height_(fontHeight),
-    bgcolor_(bgcolor),
-    textFunc_(textGetter) {
 }
 
 TextWidget *TextWidget::setTextFunc(const TextFunc &func) {

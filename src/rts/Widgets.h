@@ -36,8 +36,7 @@ class UIWidget {
 
 class SizedWidget : public UIWidget {
  public:
-  SizedWidget(const glm::vec2 &center, const glm::vec2 &size) 
-    : center_(center), size_(size) { }
+  SizedWidget(const std::string &name);
 
   const glm::vec2 &getCenter() const { return
     center_;
@@ -55,10 +54,6 @@ class SizedWidget : public UIWidget {
 class TextureWidget : public SizedWidget {
  public:
   TextureWidget(const std::string &name);
-  TextureWidget(
-      const glm::vec2 &pos,
-      const glm::vec2 &size,
-      const std::string& texName);
 
   void render(float dt);
 
@@ -70,13 +65,7 @@ class TextWidget : public SizedWidget {
  public:
   typedef std::function<std::string()> TextFunc;
 
-  TextWidget(const std::string &name, TextFunc func = TextFunc());
-  TextWidget(
-      const glm::vec2 &pos,
-      const glm::vec2 &size,
-      float fontHeight,
-      const glm::vec4 &bgcolor,
-      TextFunc textGetter = TextFunc());
+  TextWidget(const std::string &name);
 
   TextWidget *setTextFunc(const TextFunc &func);
   TextWidget *setText(const std::string &s);
