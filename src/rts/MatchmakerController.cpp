@@ -8,8 +8,7 @@
 namespace rts {
 
 MatchmakerController::MatchmakerController(Matchmaker *mm)
-  : matchmaker_(mm),
-    elapsedTime_(0.f) {
+  : matchmaker_(mm) {
 }
 
 MatchmakerController::~MatchmakerController() {
@@ -38,7 +37,6 @@ void MatchmakerController::onDestroy() {
 }
 
 void MatchmakerController::renderUpdate(float dt) {
-  elapsedTime_ += dt;
 }
 
 void MatchmakerController::quitEvent() {

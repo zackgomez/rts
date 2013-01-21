@@ -47,25 +47,6 @@ static void renderHighlights(
           glm::vec3(0.33f));
     renderCircleColor(transform, glm::vec4(1, 0, 0, 1));
   }
-  // Remove done highlights
-  for (size_t i = 0; i < highlights.size(); ) {
-    if (highlights[i].remaining <= 0.f) {
-      std::swap(highlights[i], highlights[highlights.size() - 1]);
-      highlights.pop_back();
-    } else {
-      i++;
-    }
-  }
-
-  auto it = entityHighlights.begin();
-  while (it != entityHighlights.end()) {
-    auto cur = (entityHighlights[it->first] -= dt);
-    if (cur <= 0.f) {
-      it = entityHighlights.erase(it);
-    } else {
-      it++;
-    }
-  }
 }
 
 void renderDragRect(bool enabled, const glm::vec2 &start, const glm::vec2 &end, float dt) {
@@ -178,6 +159,26 @@ void GameController::renderUpdate(float dt) {
   // No input while game is paused, not even camera motion
   if (Game::get()->isPaused()) {
     return;
+  }
+
+  // Remove done highlights
+  for (size_t i = 0; i < highlights_.size(); ) {
+    if (highlights_[i].remaining <= 0.f) {
+      std::swap(highlights_[i], highlights_[highlights_.size() - 1]);
+      highlights_.pop_back();
+    } else {
+      i++;
+    }
+  }
+
+  auto it = entityHighlights_.begin();
+  while (it != entityHighlights_.end()) {
+    auto cur = (entityHighlights_[it->first] -= dt);
+    if (cur <= 0.f) {
+      it = entityHighlights_.erase(it);
+    } else {
+      it++;
+    }
   }
 
   int x, y;
