@@ -410,11 +410,12 @@
       }
     },
     "chat" : {
+      "type"            : "CommandWidget",
       // where the local message is drawn
       "pos"             : [25, 150],
       "dim"             : [400, 240],
       "fontHeight"      : 16,
-      "heightBuffer"    : 4,
+      "messageHeight"   : 20,
       "maxMessages"     : 12,
       "inputHeight"     : 20,
       "backgroundColor" : [1, 1, 1, 0.25],
@@ -428,23 +429,33 @@
   },
 
   "matchmaker_menu" : {
-    "single_player_button" :
-    {
+    "single_player_button" : {
       "type"       : "TextWidget",
       "text"       : "Start Singleplayer",
+      "pos"        : [300, 200],
+      "dim"        : [300, 32],
+      "fontHeight" : 24.0,
+      "bgcolor"    : [0.8, 0.8, 0.8, 0.8]
+    },
+    "matchmaking_button" : {
+      "type"       : "TextWidget",
+      "text"       : "Start Matchmaking",
       "pos"        : [300, 300],
       "dim"        : [300, 32],
       "fontHeight" : 24.0,
       "bgcolor"    : [0.8, 0.8, 0.8, 0.8]
     },
-    "matchmaking_button" :
-    {
-      "type"       : "TextWidget",
-      "text"       : "Start Matchmaking",
-      "pos"        : [300, 400],
-      "dim"        : [300, 32],
-      "fontHeight" : 24.0,
-      "bgcolor"    : [0.8, 0.8, 0.8, 0.8]
+    "info_display" : {
+      "type"            : "CommandWidget",
+      "pos"             : [400, 400],
+      "dim"             : [500, 300],
+      "fontHeight"      : 16,
+      "messageHeight"   : 20,
+      "maxMessages"     : 12,
+      "inputHeight"     : 0,
+      "backgroundColor" : [1, 1, 1, 0.25],
+      "inputColor"      : [0.8, 0.8, 0.8, 0.25],
+      "backgroundWidth" : 400
     }
   },
 

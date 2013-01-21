@@ -1,5 +1,6 @@
 #include "rts/MatchmakerController.h"
 #include <sstream>
+#include "rts/CommandWidget.h"
 #include "rts/Matchmaker.h"
 #include "rts/Renderer.h"
 #include "rts/UI.h"
@@ -8,7 +9,8 @@
 namespace rts {
 
 MatchmakerController::MatchmakerController(Matchmaker *mm)
-  : matchmaker_(mm) {
+  : matchmaker_(mm),
+    infoWidget_(nullptr) {
 }
 
 MatchmakerController::~MatchmakerController() {
@@ -16,6 +18,10 @@ MatchmakerController::~MatchmakerController() {
 
 void MatchmakerController::onCreate() {
   createWidgets("matchmaker_menu");
+
+  infoWidget_ = ((CommandWidget *)UI::get()->getWidget("matchmaker_menu.info_display"));
+  infoWidget_->show(HUGE_VAL);
+  infoWidget_->addMessage("Info Window.");
 
   UI::get()->getWidget("matchmaker_menu.single_player_button")
     ->setClickable()
@@ -27,6 +33,7 @@ void MatchmakerController::onCreate() {
   UI::get()->getWidget("matchmaker_menu.matchmaking_button")
     ->setClickable()
     ->setOnClickListener([&] (const glm::vec2 &pos) -> bool {
+        infoWidget_->addMessage("Trying matchmaker...");
         matchmaker_->signalReady(Matchmaker::MODE_MATCHMAKING);
         return true;
         });

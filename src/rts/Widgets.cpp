@@ -2,6 +2,7 @@
 #include "common/Collision.h"
 #include "common/ParamReader.h"
 #include "common/util.h"
+#include "rts/CommandWidget.h"
 #include "rts/FontManager.h"
 #include "rts/ResourceManager.h"
 #include "rts/UI.h"
@@ -23,6 +24,8 @@ UIWidget *createWidget(const std::string &paramName) {
     return new TextWidget(paramName);
   } else if (type == "TextureWidget") {
     return new TextureWidget(paramName);
+  } else if (type == "CommandWidget") {
+    return new CommandWidget(paramName);
   } else {
     invariant(false, "No widget found for type " + type);
   }

@@ -79,7 +79,7 @@ void CommandWidget::render(float dt) {
     vec4Param(name_ + ".backgroundColor"));
 
   auto fontHeight = fltParam(name_ + ".fontHeight");
-  auto messageHeight = fontHeight + fltParam(name_ + ".heightBuffer");
+  auto messageHeight = fltParam(name_ + ".messageHeight");
   auto inputHeight = fontHeight + fltParam(name_ + ".inputHeight");
 
   auto pos = glm::vec2(

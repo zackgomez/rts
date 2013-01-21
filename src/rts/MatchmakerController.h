@@ -6,6 +6,7 @@
 namespace rts {
 
 class Matchmaker;
+class CommandWidget;
 
 class MatchmakerController : public Controller {
  public:
@@ -32,6 +33,7 @@ class MatchmakerController : public Controller {
 
  private:
    Matchmaker *matchmaker_;
+   CommandWidget *infoWidget_;
    float elapsedTime_;
 };
 };  // rts
