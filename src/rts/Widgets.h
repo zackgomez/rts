@@ -16,14 +16,19 @@ class UIWidget {
   UIWidget();
   virtual ~UIWidget() { }
 
-  bool isClick(const glm::vec2 &pos) const;
+  virtual bool isClick(const glm::vec2 &pos) const {
+    return false;
+  }
   bool handleClick(const glm::vec2 &pos);
 
   typedef std::function<bool(const glm::vec2 &)> OnClickListener;
 
-  void setOnClickListener(OnClickListener onClickListener);
-  void setClickable(const glm::vec2 &pos, const glm::vec2 &size);
-  void setUnClickable();
+  UIWidget* setOnClickListener(OnClickListener onClickListener);
+  UIWidget* setClickable();
+  UIWidget* setUnClickable();
+  bool isClickable() const {
+    return clickable_;
+  }
 
 
   virtual void render(float dt) = 0;
@@ -38,6 +43,8 @@ class SizedWidget : public UIWidget {
  public:
   SizedWidget(const std::string &name);
 
+  virtual bool isClick(const glm::vec2 &pos) const;
+
   const glm::vec2 &getCenter() const { return
     center_;
   }
@@ -45,6 +52,7 @@ class SizedWidget : public UIWidget {
   const glm::vec2 &getSize() const { return
     size_;
   }
+
 
  private:
   glm::vec2 center_;

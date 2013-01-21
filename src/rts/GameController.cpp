@@ -110,7 +110,7 @@ void GameController::onCreate() {
   auto minimapWidget =
       new MinimapWidget("ui.widgets.minimap", player_->getPlayerID());
   UI::get()->addWidget("ui.widgets.minimap", minimapWidget);
-  minimapWidget->setClickable(minimapWidget->getCenter(), minimapWidget->getSize());
+  minimapWidget->setClickable();
   minimapWidget->setOnClickListener(
     [&](const glm::vec2 &pos) -> bool {
       leftDragMinimap_ = true;

@@ -16,23 +16,17 @@ MatchmakerController::~MatchmakerController() {
 }
 
 void MatchmakerController::onCreate() {
-  std::string widgetNames[] = {
-    "matchmaker_menu.single_player_button",
-    "matchmaker_menu.matchmaking_button"
-  };
-  for (auto name : widgetNames) {
-    auto widget = (TextWidget *)createWidget(name);
-    widget->setClickable(widget->getCenter(), widget->getSize());
-    UI::get()->addWidget(name, widget);
-  }
+  createWidgets("matchmaker_menu");
 
   UI::get()->getWidget("matchmaker_menu.single_player_button")
+    ->setClickable()
     ->setOnClickListener([&] (const glm::vec2 &pos) -> bool {
         matchmaker_->signalReady(Matchmaker::MODE_SINGLEPLAYER);
         return true;
         });
 
   UI::get()->getWidget("matchmaker_menu.matchmaking_button")
+    ->setClickable()
     ->setOnClickListener([&] (const glm::vec2 &pos) -> bool {
         matchmaker_->signalReady(Matchmaker::MODE_MATCHMAKING);
         return true;

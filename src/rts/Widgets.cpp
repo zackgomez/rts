@@ -35,14 +35,9 @@ UIWidget::UIWidget()
     pos_(-1.f), size_(0.f) {
 }
 
-void UIWidget::setClickable(const glm::vec2 &pos, const glm::vec2 &size) {
-  pos_ = pos;
-  size_ = size;
+UIWidget* UIWidget::setClickable() {
   clickable_ = true;
-}
-
-bool UIWidget::isClick(const glm::vec2 &pos) const {
-  return clickable_ && pointInBox(pos, pos_, size_, 0.f);
+  return this;
 }
 
 bool UIWidget::handleClick(const glm::vec2 &pos) {
@@ -52,14 +47,19 @@ bool UIWidget::handleClick(const glm::vec2 &pos) {
   return onClickListener_(pos);
 }
 
-void UIWidget::setOnClickListener(UIWidget::OnClickListener l) {
+UIWidget * UIWidget::setOnClickListener(UIWidget::OnClickListener l) {
   onClickListener_ = l;
+  return this;
 }
 
 
 SizedWidget::SizedWidget(const std::string &name) {
   size_ = vec2Param(name + ".dim");
   center_ = UI::convertUIPos(vec2Param(name + ".pos")) + size_/2.f;
+}
+
+bool SizedWidget::isClick(const glm::vec2 &pos) const {
+  return isClickable() && pointInBox(pos, center_, size_, 0.f);
 }
 
 TextureWidget::TextureWidget(const std::string &name) 
