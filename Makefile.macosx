@@ -7,8 +7,9 @@ GLM=lib/glm-0.9.2.7
 JSON=lib/jsoncpp
 STBI=lib/stbi
 STBTT=lib/stb_truetype
+FMOD=macosx/fmod
 BOOSTDIR=lib/boost_1_50_0
-LDFLAGS=-lGLEW -framework SDL -framework Cocoa -framework OpenGL
+LDFLAGS=-lGLEW -framework SDL -framework Cocoa -framework OpenGL $(FMOD)/lib/libfmodex.dylib
 OBJDIR=obj
 SRCDIR=src
 EXECDIR=$(SRCDIR)/exec
@@ -17,7 +18,7 @@ COMMONDIR=$(SRCDIR)/common
 TESTDIR=$(SRCDIR)/tests
 GTESTDIR=lib/gtest-1.6.0
 GTESTLIB=lib/gtest-1.6.0/libgtest.a
-CXXFLAGS=-g -O0 -Wall -I$(GLM) -std=c++0x -stdlib=libc++ -I$(JSON) -I$(STBI) -Wno-reorder -I$(STBTT) -I$(SRCDIR) -I$(GTESTDIR)/include -U__STRICT_ANSI__ -I$(BOOSTDIR)
+CXXFLAGS=-g -O0 -Wall -I$(GLM) -std=c++0x -stdlib=libc++ -I$(JSON) -I$(STBI) -Wno-reorder -I$(STBTT) -I$(SRCDIR) -I$(GTESTDIR)/include -U__STRICT_ANSI__ -I$(BOOSTDIR) -I$(FMOD)/inc
 #CXXFLAGS+=-DSECTION_RECORDING
 
 TESTOBJ = $(patsubst $(TESTDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(TESTDIR)/*.cpp)))
