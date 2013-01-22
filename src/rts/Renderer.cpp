@@ -47,7 +47,7 @@ Renderer::Renderer()
   FMOD_RESULT result;
   FMOD::System *system_;
 
-  result = FMOD::System_Create(&system);		// Create the main system object.
+  result = FMOD::System_Create(&system_);		// Create the main system object.
   if (result != FMOD_OK)
   {
     printf("FMOD error! (%d)\n", result);
