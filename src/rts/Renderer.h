@@ -9,6 +9,7 @@
 #include "common/Logger.h"
 #include "rts/Camera.h"
 #include "rts/GameEntity.h"
+#include <fmod.hpp>
 
 namespace rts {
 
@@ -116,6 +117,8 @@ class Renderer {
   std::map<id_t, GameEntity *> entities_;
 
   Controller *controller_;
+
+  FMOD::System *system_;
 
   bool running_;
 

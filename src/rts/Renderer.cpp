@@ -33,6 +33,7 @@ id_t Entity::lastID_ = STARTING_EID;
 
 Renderer::Renderer()
   : controller_(nullptr),
+    system_(nullptr),
     running_(true),
     camera_(glm::vec3(0.f), 5.f, 0.f, 45.f),
     resolution_(vec2Param("local.resolution")),
@@ -42,6 +43,30 @@ Renderer::Renderer()
     mapSize_(0.f) {
   // TODO(zack): move this to a separate initialize function
   initEngine(resolution_);
+
+  FMOD_RESULT result;
+  FMOD::System *system_;
+
+  result = FMOD::System_Create(&system);		// Create the main system object.
+  if (result != FMOD_OK)
+  {
+    printf("FMOD error! (%d)\n", result);
+    exit(-1);
+  }
+
+  result = system_->init(50, FMOD_INIT_NORMAL, 0);	// Initialize FMOD.
+  if (result != FMOD_OK)
+  {
+    printf("FMOD error! (%d)\n", result);
+    exit(-1);
+  }
+
+  // TODO(zack): REMOVE
+  FMOD::Sound *sound;
+  result = system_->createSound("sfx/wave.mp3", FMOD_DEFAULT, 0, &sound);		// FMOD_DEFAULT uses the defaults.  These are the same as FMOD_LOOP_OFF | FMOD_2D | FMOD_HARDWARE.
+  invariant(result == FMOD_OK, "create sound error");
+  system_->playSound(FMOD_CHANNEL_FREE, sound, false, nullptr);
+
   // Initialize font manager, if necessary
   FontManager::get();
   UI::get();
