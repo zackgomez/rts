@@ -4,10 +4,54 @@
 #include "common/util.h"
 #include "rts/CommandWidget.h"
 #include "rts/FontManager.h"
+#include "rts/Renderer.h"
 #include "rts/ResourceManager.h"
 #include "rts/UI.h"
 
 namespace rts {
+
+ // can read percentages as percent of resolution
+glm::vec2 uiVec2Param(const std::string &name) {
+  Json::Value raw = ParamReader::get()->getParam(name);
+  invariant(raw.size() == 2, "bad param " + raw.toStyledString());
+
+  auto res = Renderer::get()->getResolution();
+  if (raw[0].isDouble() && raw[1].isDouble()) {
+    return toVec2(raw) * res / 100.f;
+  } else if (raw[0].isInt() && raw[1].isInt()) {
+    return toVec2(raw);
+  } else {
+    invariant(false, "unexpected ui pos array element");
+  }
+}
+
+glm::vec2 uiPosParam(const std::string &name) {
+  auto res = Renderer::get()->getResolution();
+  auto ret = uiVec2Param(name);
+  ret.x = ret.x >= 0.f ? ret.x : res.x + ret.x;
+  ret.y = ret.y >= 0.f ? ret.y : res.y + ret.y;
+
+  return ret;
+}
+
+glm::vec2 uiSizeParam(const std::string &name) {
+  Json::Value raw = ParamReader::get()->getParam(name);
+  invariant(raw.size() == 2, "bad param " + raw.toStyledString());
+
+  auto res = Renderer::get()->getResolution();
+  if (raw[0].isDouble() && raw[1].isDouble()) {
+    auto ret = toVec2(raw) * res / 100.f;
+    float aspectFactor = (res.x / res.y);
+    ret = aspectFactor > 0
+      ? glm::vec2(ret.x / aspectFactor, ret.y)
+      : glm::vec2(ret.x, ret.y / aspectFactor);
+    return ret;
+  } else if (raw[0].isInt() && raw[1].isInt()) {
+    return toVec2(raw);
+  } else {
+    invariant(false, "unexpected ui pos array element");
+  }
+}
 
 void createWidgets(const std::string &widgetGroupName) {
   Json::Value group = ParamReader::get()->getParam(widgetGroupName);
@@ -57,8 +101,8 @@ UIWidget * UIWidget::setOnClickListener(UIWidget::OnClickListener l) {
 
 
 SizedWidget::SizedWidget(const std::string &name) {
-  size_ = vec2Param(name + ".dim");
-  center_ = UI::convertUIPos(vec2Param(name + ".pos")) + size_/2.f;
+  size_ = uiSizeParam(name + ".dim");
+  center_ = uiPosParam(name + ".pos") + size_/2.f;
 }
 
 bool SizedWidget::isClick(const glm::vec2 &pos) const {

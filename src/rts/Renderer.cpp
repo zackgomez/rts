@@ -60,13 +60,6 @@ Renderer::Renderer()
     printf("FMOD error! (%d)\n", result);
     exit(-1);
   }
-
-  // TODO(zack): REMOVE
-  FMOD::Sound *sound;
-  result = system_->createSound("sfx/wave.mp3", FMOD_DEFAULT, 0, &sound);		// FMOD_DEFAULT uses the defaults.  These are the same as FMOD_LOOP_OFF | FMOD_2D | FMOD_HARDWARE.
-  invariant(result == FMOD_OK, "create sound error");
-  system_->playSound(FMOD_CHANNEL_FREE, sound, false, nullptr);
-
   // Initialize font manager, if necessary
   FontManager::get();
   UI::get();
