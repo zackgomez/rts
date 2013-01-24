@@ -28,7 +28,7 @@ class Matchmaker {
  public:
   static const std::string MODE_SINGLEPLAYER;
   static const std::string MODE_MATCHMAKING;
-
+  
   explicit Matchmaker(const Json::Value &playerConfig);
 
   std::vector<Player *> waitPlayers();
@@ -58,12 +58,17 @@ class Matchmaker {
   std::string getMapName() const;
 
   id_t getLocalPlayerID() const;
+  
+  typedef std::function<void(const std::string &)> MatchmakerListener;
+  
+  void registerListener(MatchmakerListener func);
 
  private:
   // requires name, color, pid, and tid be set
   void makeLocalPlayer();
   // Throws exception on error
   NetPlayer * handshake(NetConnectionPtr conn) const;
+
   // Thread worker functions
   void connectToPlayer(const std::string &ip, const std::string &port);
   void acceptConnections(const std::string &port, int numConnections);
@@ -94,6 +99,7 @@ class Matchmaker {
   std::condition_variable doneCondVar_;
   std::condition_variable playersReadyCondVar_;
   bool error_;
+  MatchmakerListener matchmakerStatusCallback_; 
 };
 }  // rts
 

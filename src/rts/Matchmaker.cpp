@@ -1,5 +1,6 @@
 #include "rts/Matchmaker.h"
 #include <boost/algorithm/string.hpp>
+#include <sstream>
 #include "common/kissnet.h"
 #include "common/NetConnection.h"
 #include "common/ParamReader.h"
@@ -140,7 +141,15 @@ std::vector<Player *> Matchmaker::doServerSetup(
     const std::string &ip,
     const std::string &port) {
   // First connect to matchmaker
-  NetConnectionPtr server = attemptConnection(ip, port, listenPort_);
+  NetConnectionPtr server;
+  try {
+    server = attemptConnection(ip, port, listenPort_);
+  } catch (std::exception &e) {
+    matchmakerStatusCallback_("Failed to connect to matchmaker.");
+    return std::vector<Player *>();
+  }
+  matchmakerStatusCallback_("Connection to matchmaker successful.");
+  
   std::string localAddr = server->getSocket()->getLocalAddr();
   std::string localPort = server->getSocket()->getLocalPort();
 
@@ -175,7 +184,8 @@ std::vector<Player *> Matchmaker::doServerSetup(
       numPlayers_ = msg["numPlayers"].asLargestUInt();
       ips = msg["ips"];
     }
-  }
+  } 
+  
   // Server no longer needed
   server->stop();
 
@@ -208,11 +218,16 @@ std::vector<Player *> Matchmaker::doServerSetup(
   }
 
   // Wait...
+  std::stringstream ss;
   while (players_.size() < numPlayers_) {
     doneCondVar_.wait(lock);
     if (error_) {
+      matchmakerStatusCallback_("Failed to connect to player.");
       throw matchmaker_exception("Error in server setup");
     }
+    ss.clear();
+    ss << "Player successfully added. (" << (int) players_.size() << ").";
+    matchmakerStatusCallback_(ss.str());
   }
 
   // clean up
@@ -443,5 +458,9 @@ NetPlayer * Matchmaker::handshake(NetConnectionPtr conn) const {
   NetPlayer *ret = new NetPlayer(pid, tid, name, color, conn);
   ret->setLocalPlayer(localPlayer_->getPlayerID());
   return ret;
+}
+
+void Matchmaker::registerListener(MatchmakerListener func) {
+  matchmakerStatusCallback_ = func;
 }
 }  // rts

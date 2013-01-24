@@ -370,8 +370,8 @@
       "minimap" : {
         "type"    : "TextureWidget",
         "texture" : "minimap",
-        "pos"     : [0, -300],
-        "dim"     : [300, 300],
+        "pos"     : [0.0, -40.0],
+        "dim"     : [40.0, 40.0],
         "viewportLineColor" : [1, 1, 1, 1],
         "actorSize" : 4
       },
@@ -432,23 +432,23 @@
     "single_player_button" : {
       "type"       : "TextWidget",
       "text"       : "Start Singleplayer",
-      "pos"        : [300, 200],
-      "dim"        : [300, 32],
+      "pos"        : [35.0, 35.0],
+      "dim"        : [30.0, 5.0],
       "fontHeight" : 24.0,
       "bgcolor"    : [0.8, 0.8, 0.8, 0.8]
     },
     "matchmaking_button" : {
       "type"       : "TextWidget",
       "text"       : "Start Matchmaking",
-      "pos"        : [300, 300],
-      "dim"        : [300, 32],
+      "pos"        : [35.0, 45.0],
+      "dim"        : [30.0, 5.0],
       "fontHeight" : 24.0,
       "bgcolor"    : [0.8, 0.8, 0.8, 0.8]
     },
     "info_display" : {
       "type"            : "CommandWidget",
-      "pos"             : [400, 400],
-      "dim"             : [500, 300],
+      "pos"             : [30.0, 60.0],
+      "dim"             : [60.0, 35.0],
       "fontHeight"      : 16,
       "messageHeight"   : 20,
       "maxMessages"     : 12,

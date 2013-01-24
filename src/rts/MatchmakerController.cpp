@@ -37,6 +37,10 @@ void MatchmakerController::onCreate() {
         matchmaker_->signalReady(Matchmaker::MODE_MATCHMAKING);
         return true;
         });
+        
+  matchmaker_->registerListener([&] (const std::string &s) {
+    infoWidget_->addMessage(s);
+    });
 }
 
 void MatchmakerController::onDestroy() {
