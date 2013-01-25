@@ -140,6 +140,8 @@ std::vector<Player *> Matchmaker::doDirectSetup(const std::string &ip) {
 std::vector<Player *> Matchmaker::doServerSetup(
     const std::string &ip,
     const std::string &port) {
+  matchmakerStatusCallback_(
+    "Connecting to matchmaker at " + ip + ":" + port);
   // First connect to matchmaker
   NetConnectionPtr server;
   try {

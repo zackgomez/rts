@@ -2,6 +2,7 @@
 #define SRC_RTS_UI_H_
 #include <functional>
 #include <map>
+#include <mutex>
 #include <string>
 #include <vector>
 #include <glm/glm.hpp>
@@ -61,11 +62,16 @@ class UI {
     SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
   }
 
+  typedef std::function<void()> PostableFunction;
+  void postToMainThread(const PostableFunction& func);
+
  private:
   static UI* instance_;
 
   EntityOverlayRenderer entityOverlayRenderer_;
   std::map<std::string, UIWidget *> widgets_;
+  std::vector<PostableFunction> funcQueue_;
+  std::mutex funcMutex_;
   KeyCapturer capturer_;
 };
 };  // rts

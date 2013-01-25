@@ -83,6 +83,13 @@ void UI::clearWidgets() {
 void UI::render(float dt) {
   glDisable(GL_DEPTH_TEST);
 
+  std::unique_lock<std::mutex> lock(funcMutex_);
+  for (auto&& func : funcQueue_) {
+    func();
+  }
+  funcQueue_.clear();
+  lock.unlock();
+
   for (auto&& pair : widgets_) {
     pair.second->render(dt);
   }
@@ -94,5 +101,10 @@ void UI::renderEntity(const ModelEntity *e, const glm::mat4 &tr, float dt) {
   if (entityOverlayRenderer_) {
     entityOverlayRenderer_(e, tr, dt);
   }
+}
+
+void UI::postToMainThread(const PostableFunction &func) {
+  std::unique_lock<std::mutex> lock(funcMutex_);
+  funcQueue_.push_back(func);
 }
 };  // rts

@@ -66,7 +66,6 @@ class Renderer {
   }
   // eventually replace this with a set map geometry or something similar
   void setMapSize(const glm::vec2 &mapSize) {
-    LOG(DEBUG) << "Setting map size: " << mapSize << '\n';
     mapSize_ = mapSize;
   }
   void setMapColor(const glm::vec4 &mapColor) {

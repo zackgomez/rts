@@ -355,8 +355,8 @@
     "FreeSans" :
     {
       "file" : "fonts/FreeSans.ttf",
-      "size" : 32.0,
-      "texsize" : 512
+      "size" : 64.0,
+      "texsize" : 1024
     }
   },
 

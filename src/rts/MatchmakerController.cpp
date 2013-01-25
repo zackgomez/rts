@@ -33,14 +33,15 @@ void MatchmakerController::onCreate() {
   UI::get()->getWidget("matchmaker_menu.matchmaking_button")
     ->setClickable()
     ->setOnClickListener([&] (const glm::vec2 &pos) -> bool {
-        infoWidget_->addMessage("Trying matchmaker...");
         matchmaker_->signalReady(Matchmaker::MODE_MATCHMAKING);
         return true;
         });
         
   matchmaker_->registerListener([&] (const std::string &s) {
-    infoWidget_->addMessage(s);
+    UI::get()->postToMainThread([=] () {
+      infoWidget_->addMessage(s);
     });
+  });
 }
 
 void MatchmakerController::onDestroy() {

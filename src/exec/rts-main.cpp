@@ -46,12 +46,11 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
   const float simrate = fltParam("game.simrate");
   const float simdt = 1.f / simrate;
 
-  {
-    auto lock = Renderer::get()->lockEngine();
-    auto controller = new rts::GameController(
-        (rts::LocalPlayer *) Game::get()->getPlayer(localPlayerID));
+  auto controller = new rts::GameController(
+    (rts::LocalPlayer *) Game::get()->getPlayer(localPlayerID));
+  UI::get()->postToMainThread([=] () {
     Renderer::get()->setController(controller);
-  }
+  });
 
   game->start();
 
@@ -65,8 +64,7 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
     std::this_thread::sleep_for(delayms);
   }
 
-
-
+  // Clean up
   {
     auto lock = Renderer::get()->lockEngine();
     Renderer::get()->clearEntities();
@@ -97,12 +95,11 @@ void matchmakerThread() {
   Matchmaker matchmaker(getParam("local.player"));
   std::vector<Player *> players;
 
-  {
-  auto lock = Renderer::get()->lockEngine();
   rts::MatchmakerController *controller =
     new rts::MatchmakerController(&matchmaker);
-  Renderer::get()->setController(controller);
-  }
+  UI::get()->postToMainThread([=] () {
+    Renderer::get()->setController(controller);
+  });
 
   while (players.empty()) {
     try {
