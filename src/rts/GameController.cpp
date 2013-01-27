@@ -639,7 +639,8 @@ void renderEntity(
   }
 
   auto queue = actor->getProductionQueue();
-  if (!queue.empty()) {
+  if (!queue.empty() &&
+	  localPlayer->getPlayerID() == actor->getPlayerID()) {
     // display production bar
     float prodFactor = 1.f - queue.front().time / queue.front().max_time;
     glm::vec2 size = vec2Param("hud.actor_prod.dim");
