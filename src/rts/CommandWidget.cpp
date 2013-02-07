@@ -38,8 +38,9 @@ void CommandWidget::stopCapturing() {
   UI::get()->clearKeyCapturer();
 }
 
-CommandWidget* CommandWidget::captureText() {
+CommandWidget* CommandWidget::captureText(const std::string &prefix) {
   capturing_ = true;
+  buffer_ = prefix;
   UI::get()->setKeyCapturer([&](SDL_keysym keysym) -> bool {
     if (keysym.sym == SDLK_ESCAPE) {
       stopCapturing();

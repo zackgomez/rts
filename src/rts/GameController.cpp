@@ -102,9 +102,16 @@ void GameController::onCreate() {
   chatWidget->setCloseOnSubmit(true);
   chatWidget->setOnTextSubmittedHandler([&, chatWidget](const std::string &t) {
     Message msg;
+    if (t.find("/all: ") == 0) {
+      msg["target"] = "all";
+    } else {
+      msg["target"] = "team";
+    }
+    //In future add additional check for whisper
     msg["pid"] = toJson(player_->getPlayerID());
     msg["type"] = ActionTypes::CHAT;
     msg["chat"] = t;
+   
     MessageHub::get()->addAction(msg);
   });
   UI::get()->addWidget("ui.widgets.chat", chatWidget);
@@ -126,10 +133,13 @@ void GameController::onCreate() {
     const Player* from = Game::get()->getPlayer(toID(m["pid"]));
     invariant(from, "No playyayayaya");
     std::stringstream ss;
-    ss << from->getName() << ": " << m["chat"].asString();
-    ((CommandWidget *)UI::get()->getWidget("ui.widgets.chat"))
-      ->addMessage(ss.str())
-      ->show(fltParam("ui.chat.chatDisplayTime"));
+    bool send = false;
+    if (m["target"] == "all" || (m["target"] == "team" && from->getTeamID() == player_->getTeamID())) {
+      ss << from->getName() << ": " << m["chat"].asString();
+      ((CommandWidget *)UI::get()->getWidget("ui.widgets.chat"))
+        ->addMessage(ss.str())
+        ->show(fltParam("ui.chat.chatDisplayTime"));
+    } //Note: When we add whisper, append additional conditional
   });
 
   UI::get()->setEntityOverlayRenderer(
@@ -392,8 +402,9 @@ void GameController::keyPress(SDL_keysym keysym) {
     cameraPanDir_.x = -1.f;
   } else if (state_ == PlayerState::DEFAULT) {
     if (key == SDLK_RETURN) {
+      std::string prefix = (shift_) ? "/all: " : "/team: ";
       ((CommandWidget *)UI::get()->getWidget("ui.widgets.chat"))
-        ->captureText();
+        ->captureText(prefix);
     } else if (key == SDLK_ESCAPE) {
       // ESC clears out current states
       if (!order_.empty()) {

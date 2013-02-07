@@ -12,7 +12,7 @@ class CommandWidget : public SizedWidget {
   CommandWidget* show(float duration);
   CommandWidget* hide();
   // Will capture text until submitted or ESC pressed
-  CommandWidget* captureText();
+  CommandWidget* captureText(const std::string &prefix = "");
   void stopCapturing();
 
   void setCloseOnSubmit(bool close) {
