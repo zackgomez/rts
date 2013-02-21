@@ -48,10 +48,14 @@ class Unit : public Actor {
   void captureTarget(const Building *target, float cap);
 
   const GameEntity *getTarget(id_t lastTargetID) const;
+  glm::vec3 getTargetPos() const;
+
+  std::queue<glm::vec3> getPathNodes() const;
 
  protected:
   virtual void handleOrder(const Message &order);
 
+  std::queue<glm::vec3> pathQueue_;
   Weapon *weapon_;
   UnitState *state_;
 

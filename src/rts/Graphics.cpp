@@ -114,7 +114,7 @@ void teardownEngine() {
 void renderCircleColor(
     const glm::mat4 &modelMatrix,
     const glm::vec4 &color) {
-  record_section("renderRectangleColor");
+  record_section("renderCircleColor");
   GLuint program = resources.colorProgram;
   GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
   GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
@@ -137,7 +137,37 @@ void renderCircleColor(
   glDrawArrays(GL_LINE_LOOP, 0, intParam("engine.circle_segments"));
 
   // Clean up
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
   glDisableVertexAttribArray(0);
+}
+
+void renderLineColor(
+    const glm::vec3 &start,
+    const glm::vec3 &end,
+    const glm::vec4 &color) {
+  record_section("renderLineColor");
+  int buffer;
+  glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &buffer);
+  invariant(buffer == 0, "Array buffer cannot be bound during renderLine");
+
+  GLuint program = resources.colorProgram;
+  GLuint colorUniform = glGetUniformLocation(program, "color");
+  GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
+  GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
+
+  // Enable program and set up values
+  glUseProgram(program);
+  glUniform4fv(colorUniform, 1, glm::value_ptr(color));
+  glUniformMatrix4fv(projectionUniform, 1, GL_FALSE,
+      glm::value_ptr(projStack.current()));
+  glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE,
+      glm::value_ptr(viewStack.current()));
+
+  glm::vec3 verts[] = {start, end};
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glVertexPointer(3, GL_FLOAT, 0, verts);
+  glDrawArrays(GL_LINES, 0, 2);
+  glDisableClientState(GL_VERTEX_ARRAY);
 }
 
 void renderRectangleColor(
@@ -162,13 +192,10 @@ void renderRectangleProgram(const glm::mat4 &modelMatrix) {
     LOG(WARNING) << "No active program on call to renderRectangleProgram\n";
     return;
   }
-  GLuint projectionUniform =
-      glGetUniformLocation(program, "projectionMatrix");
-  GLuint modelViewUniform =
-      glGetUniformLocation(program, "modelViewMatrix");
+  GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
+  GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
 
   // Enable program and set up values
-  glUseProgram(program);
   glUniformMatrix4fv(projectionUniform, 1, GL_FALSE,
       glm::value_ptr(projStack.current()));
   glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE,
@@ -184,6 +211,7 @@ void renderRectangleProgram(const glm::mat4 &modelMatrix) {
 
   // Clean up
   glDisableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m,
@@ -249,6 +277,7 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m,
   glDrawArrays(GL_TRIANGLES, 0, m->nverts);
 
   // Clean up
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
   glDisableVertexAttribArray(positionAttrib);
   glDisableVertexAttribArray(normalAttrib);
   glDisableVertexAttribArray(texcoordAttrib);

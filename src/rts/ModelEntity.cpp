@@ -32,6 +32,10 @@ void ModelEntity::setScale(const glm::vec3 &scale) {
   scale_ = scale;
 }
 
+void ModelEntity::addExtraEffect(const RenderFunction &func) {
+  renderFuncs_.push_back(func);
+}
+
 void ModelEntity::render(float dt) {
   if (meshName_.empty()) {
     return;
@@ -45,6 +49,11 @@ void ModelEntity::render(float dt) {
   // TODO(zack): make this part of a model object
   Mesh * mesh = ResourceManager::get()->getMesh(meshName_);
   ::renderMesh(transform, mesh, material_);
+
+  // Now render additional effects
+  for (auto&& renderer : renderFuncs_) {
+    renderer(dt);
+  }
 }
 
 glm::mat4 ModelEntity::getTransform(float dt) const {

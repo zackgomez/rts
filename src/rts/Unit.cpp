@@ -24,6 +24,14 @@ Unit::Unit(const std::string &name, const Json::Value &params)
 
   // these are inited in Actor
   weapon_ = rangedWeapon_ ? rangedWeapon_ : meleeWeapon_;
+  addExtraEffect([&](float dt) {
+    if (pathQueue_.empty()) {
+      return;
+    }
+    auto target = pathQueue_.front();
+    auto pos = glm::vec3(getPosition(dt), 0.05f);
+    renderLineColor(pos, target, glm::vec4(1.f));
+  });
 }
 
 Unit::~Unit() {
@@ -98,6 +106,10 @@ void Unit::update(float dt) {
   }
 }
 
+std::queue<glm::vec3> Unit::getPathNodes() const {
+  return pathQueue_;
+}
+
 bool Unit::canAttack(const GameEntity *e) const {
   if (e->getType() == Building::TYPE) {
     return !((Building*)e)->canCapture(getID()) && weapon_->canAttack(e);
@@ -135,6 +147,8 @@ void Unit::turnTowards(const glm::vec2 &targetPos, float dt) {
 }
 
 void Unit::moveTowards(const glm::vec2 &targetPos, float dt) {
+  pathQueue_ = std::queue<glm::vec3>();
+  pathQueue_.push(glm::vec3(targetPos, 0.f));
   float dist = glm::length(targetPos - pos_);
   float speed = param("speed");
   // rotate
@@ -148,6 +162,7 @@ void Unit::moveTowards(const glm::vec2 &targetPos, float dt) {
 }
 
 void Unit::remainStationary() {
+  pathQueue_ = std::queue<glm::vec3>();
   speed_ = 0.f;
   turnSpeed_ = 0.f;
 }

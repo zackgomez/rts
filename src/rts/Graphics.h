@@ -39,6 +39,10 @@ void freeMesh(Mesh *mesh);
 void freeMaterial(Material *material);
 void setMeshTransform(Mesh *mesh, const glm::mat4 &transform);
 
+void renderLineColor(
+    const glm::vec3 &start,
+    const glm::vec3 &end,
+    const glm::vec4 &color);
 void renderRectangleColor(
     const glm::mat4 &modelMatrix,
     const glm::vec4 &color);
