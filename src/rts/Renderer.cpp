@@ -40,7 +40,7 @@ Renderer::Renderer()
     resolution_(vec2Param("local.resolution")),
     timeMultiplier_(1.f),
     lastTickTime_(Clock::now()),
-    lastRender_(0),
+    lastRender_(Clock::now()),
     mapSize_(0.f) {
   // TODO(zack): move this to a separate initialize function
   initEngine(resolution_);
@@ -138,8 +138,6 @@ void Renderer::render() {
   }
 
   endRender();
-
-  // unlock when lock goes out of scope
 }
 
 void Renderer::renderEntity(ModelEntity *entity) {
@@ -182,10 +180,7 @@ void Renderer::renderMap() {
 }
 
 void Renderer::startRender() {
-  if (lastRender_)
-    renderdt_ = (SDL_GetTicks() - lastRender_) / 1000.f;
-  else
-    renderdt_ = 0;
+  renderdt_ = Clock::secondsSince(lastRender_);
 
   simdt_ *= timeMultiplier_;
   renderdt_ *= timeMultiplier_;
@@ -210,7 +205,7 @@ void Renderer::startRender() {
   auto lightPos = applyMatrix(getViewStack().current(), glm::vec3(-5, -5, 10));
   setParam("renderer.lightPos", lightPos);
 
-  lastRender_ = SDL_GetTicks();
+  lastRender_ = Clock::now();
 }
 
 void Renderer::endRender() {

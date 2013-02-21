@@ -134,7 +134,7 @@ class Renderer {
   Clock::time_point lastTickTime_;
   float simdt_;
   // For updating purely render aspects
-  uint32_t lastRender_;
+  Clock::time_point lastRender_;
   float renderdt_;
 };
 
