@@ -128,6 +128,7 @@ void Game::update(float dt) {
     return;
   }
   paused_ = false;
+  unpause();
 
   // Don't allow new actions during this time
   std::unique_lock<std::mutex> actionLock(actionMutex_);
