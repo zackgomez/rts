@@ -9,6 +9,7 @@
 #include <algorithm>
 #include "common/Clock.h"
 #include "common/Collision.h"
+#include "common/FPSCalculator.h"
 #include "common/ParamReader.h"
 #include "common/util.h"
 #include "rts/Building.h"
@@ -98,6 +99,7 @@ void Renderer::startMainloop() {
   const float framerate = fltParam("local.framerate");
   float fps = 1.f / framerate;
 
+  FPSCalculator updateTimer(64);
   // render loop
   Clock::time_point last = Clock::now();
   while (running_) {
@@ -115,6 +117,10 @@ void Renderer::startMainloop() {
     last = Clock::now();
     std::chrono::milliseconds delayms(static_cast<int>(1000 * delay));
     std::this_thread::sleep_for(delayms);
+    float average_fps = updateTimer.sample();
+    if (rand() % 10 == 0) {
+      LOG(DEBUG) << "average render fps: " << average_fps << '\n';;
+    }
   }
 }
 

@@ -7,6 +7,7 @@
 #include <SDL/SDL.h>
 #include <GL/glew.h>
 #include "common/Clock.h"
+#include "common/FPSCalculator.h"
 #include "common/kissnet.h"
 #include "common/Logger.h"
 #include "common/ParamReader.h"
@@ -52,9 +53,11 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
     Renderer::get()->setController(controller);
   });
 
+  Clock::time_point last = Clock::now();
+  FPSCalculator updateTimer(10);
+
   game->start();
 
-  Clock::time_point last = Clock::now();
   while (game->isRunning()) {
     game->update(simdt);
 
@@ -62,6 +65,12 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
     last = Clock::now();
     std::chrono::milliseconds delayms(static_cast<int>(1000 * delay));
     std::this_thread::sleep_for(delayms);
+
+    float fps = updateTimer.sample();
+    if (rand() % 5 == 0) {
+      LOG(DEBUG) << "Average game update rate over past " << 10
+        << " frames: " << fps << '\n';
+    }
   }
 
   // Clean up
