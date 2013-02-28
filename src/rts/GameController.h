@@ -66,6 +66,9 @@ class GameController : public Controller {
       const glm::vec2 &end, id_t pid) const;
   void highlight(const glm::vec2 &mapCoord);
   void highlightEntity(id_t eid);
+
+  // For control groups
+  std::set<id_t> savedSelection_[10];
 };
 };  // rts
 

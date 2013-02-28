@@ -390,6 +390,14 @@ void GameController::keyPress(SDL_keysym keysym) {
     } else {
       cameraPanDir_.y = 1.f;
     }
+  // Control group binding and recalling
+  } else if (key >= '0' && key <= '9') {
+    int ctrlIndex = key - '0';
+	  if (ctrl_) {
+	    savedSelection_[ctrlIndex] = player_->getSelection();
+    } else {
+      player_->setSelection(savedSelection_[ctrlIndex]);
+    }
   } else if (key == SDLK_DOWN) {
     if (alt_) {
       zoom_ = fltParam("local.keyZoomSpeed");
