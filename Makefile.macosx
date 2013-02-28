@@ -25,10 +25,11 @@ TESTOBJ = $(patsubst $(TESTDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(
 COMMONOBJ = $(patsubst $(COMMONDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(COMMONDIR)/*.cpp))) $(JSON)/jsoncpp.o
 RTSOBJ = $(patsubst $(RTSDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(RTSDIR)/*.cpp))) obj/rts-main.o
 RTSEDOBJ = $(patsubst $(RTSDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(RTSDIR)/*.cpp))) obj/rtsed-main.o
+DEPTHGENOBJ = obj/depthfieldgen.o
 
 RESOURCES = config.json local.json models scripts shaders images fonts
 
-all: obj $(PROGRAM) rtsed
+all: obj $(PROGRAM) rtsed depthfieldgen
 
 $(OBJDIR)/SDLMain.o: macosx/SDLMain.m
 	$(CXX) -g -O0 -Wall $^ -c -o $@
@@ -39,6 +40,9 @@ $(PROGRAM): $(RTSOBJ) $(COMMONOBJ) local.json $(OBJDIR)/SDLMain.o
 
 rtsed: $(RTSEDOBJ) $(COMMONOBJ) local.json
 	$(CXX) $(CXXFLAGS) -o $@ $(RTSEDOBJ) $(COMMONOBJ) $(LDFLAGS)
+
+depthfieldgen: $(DEPTHGENOBJ) $(COMMONOBJ)
+	$(CXX) $(CXXFLAGS) -o $@ $(DEPTHGENOBJ) $(COMMONOBJ)
 
 tests: $(TESTOBJ) $(GTESTLIB) $(COMMONOBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $(TESTOBJ) $(COMMONOBJ) $(GTESTLIB) -lpthread

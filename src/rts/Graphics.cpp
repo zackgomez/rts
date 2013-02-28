@@ -364,12 +364,35 @@ void drawTextureCenter(
 }
 
 void drawTexture(
-  const glm::vec2 &pos,  // top left corner
-  const glm::vec2 &size,  // width/height
-  const GLuint texture,
-  const glm::vec4 &texcoord) {
+    const glm::vec2 &pos,  // top left corner
+    const glm::vec2 &size,  // width/height
+    const GLuint texture,
+    const glm::vec4 &texcoord) {
   glm::vec2 center = pos + size / 2.f;
   drawTextureCenter(center, size, texture, texcoord);
+}
+
+void drawDepthField(
+    const glm::vec2 &pos,
+    const glm::vec2 &size,
+    const glm::vec4 &color,
+    const DepthField *depthField) {
+  auto program = ResourceManager::get()->getShader("depthfield");
+  glUseProgram(program);
+  GLuint colorUniform = glGetUniformLocation(program, "color");
+  GLuint tcUniform = glGetUniformLocation(program, "texcoord");
+  GLuint minDistUniform = glGetUniformLocation(program, "minDist");
+  GLuint maxDistUniform = glGetUniformLocation(program, "maxDist");
+  glUniform4fv(tcUniform, 1, glm::value_ptr(glm::vec4(0.f, 0.f, 1.f, 1.f)));
+  glUniform4fv(colorUniform, 1, glm::value_ptr(color));
+  glUniform1f(minDistUniform, depthField->minDist);
+  glUniform1f(maxDistUniform, depthField->maxDist);
+
+  glActiveTexture(GL_TEXTURE0);
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, depthField->texture);
+
+  drawShader(pos, size);
 }
 
 MatrixStack& getViewStack() {

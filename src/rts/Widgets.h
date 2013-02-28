@@ -4,6 +4,7 @@
 #include <functional>
 #include <string>
 #include <glm/glm.hpp>
+#include "rts/ResourceManager.h"
 
 namespace rts {
 
@@ -67,6 +68,16 @@ class TextureWidget : public SizedWidget {
 
  private:
   std::string texName_;
+};
+
+class DepthFieldWidget : public SizedWidget {
+ public:
+   DepthFieldWidget(const std::string &name);
+
+   void render(float dt);
+
+ private:
+   DepthField *depthField_;
 };
 
 class TextWidget : public SizedWidget {

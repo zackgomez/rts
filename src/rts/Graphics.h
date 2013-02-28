@@ -11,6 +11,11 @@
 
 struct Mesh;
 struct Material;
+struct DepthField {
+  GLuint texture;
+  float minDist;
+  float maxDist;
+};
 
 void initEngine(const glm::vec2 &resolution);
 void teardownEngine();
@@ -95,6 +100,11 @@ void drawLine(
     const glm::vec2 &p1,
     const glm::vec2 &p2,
     const glm::vec4 &color);
+void drawDepthField(
+    const glm::vec2 &pos,
+    const glm::vec2 &size,
+    const glm::vec4 &color,
+    const DepthField *depthField);
 // Returns a vertex buffer with a circle centered at the origin, oriented
 // in the x,y plane with radius r and nsegments segments.
 GLuint makeCircleBuffer(float r, uint32_t nsegments);

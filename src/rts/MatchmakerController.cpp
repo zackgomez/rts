@@ -3,10 +3,19 @@
 #include "rts/CommandWidget.h"
 #include "rts/Matchmaker.h"
 #include "rts/Renderer.h"
+#include "rts/ResourceManager.h"
 #include "rts/UI.h"
 #include "rts/Widgets.h"
 
 namespace rts {
+
+void renderSteamLOL(float dt) {
+  drawDepthField(
+      glm::vec2(25, 25),
+      glm::vec2(200),
+      glm::vec4(1.f),
+      ResourceManager::get()->getDepthField("steamLogo"));
+}
 
 MatchmakerController::MatchmakerController(Matchmaker *mm)
   : matchmaker_(mm),
@@ -42,6 +51,8 @@ void MatchmakerController::onCreate() {
       infoWidget_->addMessage(s);
     });
   });
+
+  UI::get()->addWidget("testwidget", createCustomWidget(renderSteamLOL));
 }
 
 void MatchmakerController::onDestroy() {

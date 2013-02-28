@@ -39,6 +39,7 @@ void ResourceManager::loadResources() {
   Json::Value meshes = ParamReader::get()->getParam("resources.meshes");
   Json::Value textures = ParamReader::get()->getParam("resources.textures");
   Json::Value shaders = ParamReader::get()->getParam("resources.shaders");
+  Json::Value dfdescs = ParamReader::get()->getParam("resources.depthFields");
 
   for (Json::ValueIterator mesh = meshes.begin();
           mesh != meshes.end(); mesh++) {
@@ -55,6 +56,15 @@ void ResourceManager::loadResources() {
     shaders_[shader.key().asString()] =
       loadProgram((*shader)["vert"].asString(), (*shader)["frag"].asString());
   }
+
+  for (Json::ValueIterator dfdesc = dfdescs.begin();
+          dfdesc != dfdescs.end(); dfdesc++) {
+    DepthField *df = new DepthField;
+    df->texture = makeTexture((*dfdesc)["file"].asString());
+    df->minDist = (*dfdesc)["minDist"].asFloat();
+    df->maxDist = (*dfdesc)["maxDist"].asFloat();
+    depthFields_[dfdesc.key().asString()] = df;
+  }
 }
 
 Mesh * ResourceManager::getMesh(const std::string &name) {
@@ -70,4 +80,9 @@ GLuint ResourceManager::getTexture(const std::string &name) {
 GLuint ResourceManager::getShader(const std::string &name) {
   invariant(shaders_.count(name), "cannot find shader: " + name);
   return shaders_[name];
+}
+
+DepthField *ResourceManager::getDepthField(const std::string &name) {
+  invariant(depthFields_.count(name), "cannot find DepthField: " + name);
+  return depthFields_[name];
 }

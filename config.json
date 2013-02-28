@@ -42,6 +42,13 @@
       "unit_panel" : "images/UI/actor_underlay.png",
       "topbar"     : "images/UI/top_bar_1280.png"
     },
+    "depthFields" : {
+      "steamLogo"  : {
+        "file" : "images/steam-512.png",
+        "minDist" : 0.0,
+        "maxDist" : 16.7868852459
+      }
+    },
     "shaders" : {
       "map" : {
         "vert" : "shaders/map.v.glsl",
@@ -62,6 +69,10 @@
       "font" : {
         "vert" : "shaders/texsimple.v.glsl",
         "frag" : "shaders/fontcolor.f.glsl"
+      },
+      "depthfield" : {
+        "vert" : "shaders/texsimple.v.glsl",
+        "frag" : "shaders/depthfield.f.glsl"
       }
     }
   },

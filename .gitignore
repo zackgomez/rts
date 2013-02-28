@@ -4,6 +4,7 @@
 /rtsed
 /matchmaker
 /tests
+/depthfieldgen
 /*.dll
 rts.exe
 *.o

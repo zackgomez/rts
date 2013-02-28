@@ -22,6 +22,8 @@ void ParamReader::loadFile(const char *filename) {
   Json::Value root;
   Json::Reader reader;
   if (!reader.parse(file, root)) {
+    LOG(FATAL) << "Cannot parse param file " << filename << " : "
+      << reader.getFormattedErrorMessages() << '\n';
     throw file_exception(std::string("Cannot parse param file ") + filename
         + " : " + reader.getFormattedErrorMessages());
   }

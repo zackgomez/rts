@@ -19,6 +19,7 @@ class ResourceManager {
   Mesh * getMesh(const std::string &name);
   GLuint getTexture(const std::string &name);
   GLuint getShader(const std::string &name);
+  DepthField *getDepthField(const std::string &name);
 
  private:
   ResourceManager();
@@ -27,6 +28,7 @@ class ResourceManager {
   std::map<std::string, Mesh*> meshes_;
   std::map<std::string, GLuint> textures_;
   std::map<std::string, GLuint> shaders_;
+  std::map<std::string, DepthField*> depthFields_;
 
   LoggerPtr logger_;
 };
