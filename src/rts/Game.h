@@ -20,6 +20,16 @@ struct PlayerResources {
   float requisition;
 };
 struct ChatMessage;
+struct TickChecksum {
+  checksum_t entity_checksum;
+  checksum_t action_checksum;
+
+  TickChecksum() {}
+  TickChecksum(const Json::Value &val);
+  bool operator==(const TickChecksum &rhs) const;
+  bool operator!=(const TickChecksum &rhs) const;
+  Json::Value toJson() const;
+};
 
 // Handles the game logic and player actions, is very multithread aware.
 class Game {
@@ -46,7 +56,7 @@ class Game {
   bool isRunning() const {
     return running_;
   }
-  checksum_t getChecksum() const {
+  TickChecksum getChecksum() const {
     return checksums_.back();
   }
 
@@ -69,11 +79,11 @@ class Game {
     chatListener_ = cl;
   }
 
- protected:
+ private:
   void handleAction(id_t playerID, const PlayerAction &action);
   // Returns true if all the players have submitted input for the current tick_
   bool updatePlayers();
-  checksum_t checksum();
+  TickChecksum checksum();
   void pause();
   void unpause();
 
@@ -91,7 +101,8 @@ class Game {
 
   // holds checksums before the tick specified by the index
   // checksums_[3] == checksum at the end of tick 2/beginning of tick 3
-  std::vector<checksum_t> checksums_;
+  std::vector<TickChecksum> checksums_;
+  Checksum actionChecksummer_;
 
   // Entities that need removal at the end of a tick
   std::vector<id_t> deadEntities_;
@@ -101,7 +112,6 @@ class Game {
 
   ChatListener chatListener_;
 
- private:
   static Game *instance_;
 };
 

@@ -22,7 +22,7 @@ void LocalPlayer::startTick(tick_t tick) {
   PlayerAction a;
   a["type"] = ActionTypes::DONE;
   a["pid"] = toJson(playerID_);
-  a["checksum"] = Checksum::checksumToString(game_->getChecksum());
+  a["checksum"] = game_->getChecksum().toJson();
   a["tick"] = toJson(tick);
   game_->addAction(playerID_, a);
 }
@@ -63,7 +63,7 @@ void DummyPlayer::startTick(tick_t tick) {
   PlayerAction action;
   action["type"] = ActionTypes::DONE;
   action["pid"] = toJson(playerID_);
-  action["checksum"] = Checksum::checksumToString(game_->getChecksum());
+  action["checksum"] = game_->getChecksum().toJson();
   action["tick"] = toJson(tick);
   actions_.push(action);
 }

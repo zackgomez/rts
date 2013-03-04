@@ -2,6 +2,7 @@
 #define SRC_COMMON_CHECKSUM_H_
 #include <boost/crc.hpp>
 #include <istream>
+#include <json/json.h>
 
 typedef uint32_t checksum_t;
 
@@ -14,6 +15,8 @@ class Checksum {
 
   checksum_t getChecksum() const;
 
+  Checksum& process(const Json::Value &val);
+  Checksum& process(const std::string &data);
   Checksum& process(const void *data, size_t size);
   Checksum& process(std::istream &is);
 

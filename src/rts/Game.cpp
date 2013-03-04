@@ -69,13 +69,18 @@ bool Game::updatePlayers() {
   return true;
 }
 
-checksum_t Game::checksum() {
+TickChecksum Game::checksum() {
   Checksum chksum;
   for (auto it : Renderer::get()->getEntities()) {
     it.second->checksum(chksum);
   }
 
-  return chksum.getChecksum();
+  TickChecksum ret;
+  ret.entity_checksum = chksum.getChecksum();
+  ret.action_checksum = actionChecksummer_.getChecksum();
+  actionChecksummer_ = Checksum();
+
+  return ret;
 }
 
 void Game::start() {
@@ -137,18 +142,20 @@ void Game::update(float dt) {
   // It MUST be true that all players have added exactly one action of type
   // none targetting this frame
   tick_t idx = std::max((tick_t) 0, tick_ - tickOffset_);
-  std::string recordedChecksum = Checksum::checksumToString(checksums_[idx]);
+  TickChecksum recordedChecksum = checksums_[idx];
   for (auto &player : players_) {
     id_t pid = player->getPlayerID();
     auto actions = player->getActions();
 
-    std::string checksum;
+    TickChecksum remoteChecksum;
+    bool done = false;
     for (const auto &action : actions) {
-      invariant(checksum.empty(), "Action after DONE message??");
+      invariant(!done, "Action after DONE message??");
       if (action["type"] == ActionTypes::DONE) {
         // Check for sync error
         // Index into checksum array, [0, n]
-        checksum = action["checksum"].asString();
+        remoteChecksum = TickChecksum(action["checksum"]);
+        done = true;
         invariant(
             toTick(action["tick"]) == (tick_ - tickOffset_),
             "tick mismatch");
@@ -156,14 +163,23 @@ void Game::update(float dt) {
         running_ = false;
         return;
       } else {
+        actionChecksummer_.process(action);
         handleAction(pid, action);
       }
     }
-    invariant(!checksum.empty(), "missing done action for player");
+    invariant(done, "Missing DONE message for player");
     // TODO(zack): make this dump out a log so we can debug the reason why
-    if (checksum != recordedChecksum) {
-      LOG(ERROR) << tick_ << ": checksum mismatch (theirs): " << checksum <<
-          " vs (ours): " << recordedChecksum << '\n';
+    if (TickChecksum(remoteChecksum) != recordedChecksum) {
+      if (remoteChecksum.entity_checksum != recordedChecksum.entity_checksum) {
+        LOG(ERROR) << tick_ << ": entity checksum mismatch (theirs): "
+          << remoteChecksum.entity_checksum << " vs (ours): "
+          << recordedChecksum.entity_checksum << '\n';
+      }
+      if (remoteChecksum.action_checksum != recordedChecksum.action_checksum) {
+        LOG(ERROR) << tick_ << ": action checksum mismatch (theirs): "
+          << remoteChecksum.action_checksum << " vs (ours): "
+          << recordedChecksum.action_checksum << '\n';
+      }
     }
   }
   // Allow more actions
@@ -406,5 +422,26 @@ void Game::pause() {
 void Game::unpause() {
   paused_ = false;
   Renderer::get()->setTimeMultiplier(1.f);
+}
+
+TickChecksum::TickChecksum(const Json::Value &val) {
+  invariant(
+    val.isMember("entity") && val.isMember("action"),
+    "malformed checksum");
+  entity_checksum = val["entity"].asUInt();
+  action_checksum = val["action"].asUInt();
+}
+bool TickChecksum::operator==(const TickChecksum &rhs) const {
+  return entity_checksum == rhs.entity_checksum
+    && action_checksum == rhs.action_checksum;
+}
+bool TickChecksum::operator!=(const TickChecksum &rhs) const {
+  return !(*this == rhs);
+}
+Json::Value TickChecksum::toJson() const {
+  Json::Value ret;
+  ret["action"] = action_checksum;
+  ret["entity"] = entity_checksum;
+  return ret;
 }
 };  // rts
