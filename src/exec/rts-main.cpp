@@ -67,9 +67,9 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
     std::this_thread::sleep_for(delayms);
 
     float fps = updateTimer.sample();
-    if (rand() % 5 == 0) {
-      LOG(DEBUG) << "Average game update rate over past " << 10
-        << " frames: " << fps << '\n';
+    if (fps < (simrate * 0.95f)) {
+      LOG(WARNING) << "Simulation update rate low: "
+        << fps << " / " << simrate << '\n';
     }
   }
 

@@ -34,6 +34,9 @@ class Renderer {
   float getSimDT() const {
     return simdt_;
   }
+  float getAverageFPS() const {
+    return averageFPS_;
+  }
   const glm::vec2& getResolution() const {
     return resolution_;
   }
@@ -136,6 +139,7 @@ class Renderer {
   // For updating purely render aspects
   Clock::time_point lastRender_;
   float renderdt_;
+  float averageFPS_;
 };
 
 template <class T>

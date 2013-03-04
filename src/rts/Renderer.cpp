@@ -117,10 +117,7 @@ void Renderer::startMainloop() {
     last = Clock::now();
     std::chrono::milliseconds delayms(static_cast<int>(1000 * delay));
     std::this_thread::sleep_for(delayms);
-    float average_fps = updateTimer.sample();
-    if (rand() % 10 == 0) {
-      LOG(DEBUG) << "average render fps: " << average_fps << '\n';;
-    }
+    averageFPS_ = updateTimer.sample();
   }
 }
 

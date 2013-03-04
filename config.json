@@ -392,6 +392,13 @@
         "pos"     : [-400, -300],
         "dim"     : [400, 300]
       },
+      "perfinfo" : {
+        "type"       : "TextWidget",
+        "pos"        : [-100, 50],
+        "dim"        : [100, 50],
+        "fontHeight" : 24.0,
+        "bgcolor"    : [0.0, 0.0, 0.0, 0.0]
+      },
       //"topbar" : {
         //"type"    : "TextureWidget",
         //"texture" : "topbar",

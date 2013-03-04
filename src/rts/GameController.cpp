@@ -63,9 +63,7 @@ void renderDragRect(bool enabled, const glm::vec2 &start, const glm::vec2 &end, 
 }
 
 std::string getVPString(id_t team) {
-  std::stringstream ss;
-  ss << (int)Game::get()->getVictoryPoints(team);
-  return ss.str();
+  return std::to_string((int)Game::get()->getVictoryPoints(team));
 }
 
 GameController::GameController(LocalPlayer *player)
@@ -133,7 +131,6 @@ void GameController::onCreate() {
     const Player* from = Game::get()->getPlayer(toID(m["pid"]));
     invariant(from, "No playyayayaya");
     std::stringstream ss;
-    bool send = false;
     if (m["target"] == "all" || (m["target"] == "team" && from->getTeamID() == player_->getTeamID())) {
       ss << from->getName() << ": " << m["chat"].asString();
       ((CommandWidget *)UI::get()->getWidget("ui.widgets.chat"))
@@ -153,10 +150,16 @@ void GameController::onCreate() {
 
   ((TextWidget *)UI::get()->getWidget("ui.widgets.reqdisplay"))
     ->setTextFunc([&]() -> std::string {
-      std::stringstream ss;
-      ss << "Req: "
-         << (int)Game::get()->getResources(player_->getPlayerID()).requisition;
-      return ss.str();
+      int req = Game::get()->getResources(player_->getPlayerID()).requisition;
+      return "Req: " + std::to_string(req);
+    });
+
+  ((TextWidget *)UI::get()->getWidget("ui.widgets.perfinfo"))
+    ->setTextFunc([]() -> std::string {
+        glm::vec3 color(0.1f, 1.f, 0.1f);
+        int fps = round(Renderer::get()->getAverageFPS());
+        return std::string() + FontManager::makeColorCode(color)
+        + "FPS: " + std::to_string(fps);
     });
 }
 
