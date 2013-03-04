@@ -11,9 +11,8 @@
 namespace rts {
 
 Actor::Actor(const std::string &name, const Json::Value &params,
-             bool mobile, bool targetable,
-             bool collidable) :
-  GameEntity(name, params, mobile, targetable, collidable),
+             bool targetable, bool collidable) :
+  GameEntity(name, params, targetable, collidable),
   melee_timer_(0.f),
   meleeWeapon_(nullptr),
   rangedWeapon_(nullptr) {

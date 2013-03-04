@@ -10,7 +10,7 @@ const std::string CollisionObject::TYPE = "COLLISION_OBJECT";
 CollisionObject::CollisionObject(
     const std::string &name,
     const Json::Value &params)
-  : GameEntity(name, params, false, false, true) {
+  : GameEntity(name, params, false, true) {
   pos_ = toVec2(params["entity_pos"]);
   size_ = toVec2(params["entity_size"]);
   angle_ = params["entity_angle"].asFloat();

@@ -8,7 +8,7 @@ LoggerPtr Projectile::logger_;
 const std::string Projectile::TYPE = "PROJECTILE";
 
 Projectile::Projectile(const std::string &name, const Json::Value &params)
-  : GameEntity(name, params, true, false, false),
+  : GameEntity(name, params, false, false),
     targetID_(NO_ENTITY) {
   if (!logger_.get()) {
     logger_ = Logger::getLogger("Projectile");

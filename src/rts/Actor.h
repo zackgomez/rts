@@ -30,8 +30,7 @@ class Actor : public GameEntity {
   };
 
   Actor(const std::string &name, const Json::Value &params,
-        bool mobile = false, bool targetable = true,
-        bool collidable = true);
+        bool targetable = true, bool collidable = true);
   virtual ~Actor();
 
   virtual bool hasProperty(uint32_t property) const {

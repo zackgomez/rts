@@ -11,11 +11,10 @@ namespace rts {
 GameEntity::GameEntity(
     const std::string &name,
     const Json::Value &params,
-    bool mobile, bool targetable,
+    bool targetable,
     bool collidable)
   : playerID_(NO_PLAYER),
     name_(name),
-    mobile_(mobile),
     targetable_(targetable),
     collidable_(collidable),
     pos_(HUGE_VAL),
@@ -63,14 +62,6 @@ void GameEntity::update(float dt) {
 }
 
 void GameEntity::integrate(float dt) {
-  // for immobile entities, just check that they are stationary
-  if (!mobile_) {
-    invariant(
-      turnSpeed_ == 0.f && speed_ == 0.f,
-      "Immobile Entities shouldn't have motion");
-    return;
-  }
-
   // TODO(zack): upgrade to a better integrator (runge-kutta)
   // rotate
   angle_ += turnSpeed_ * dt;
@@ -101,7 +92,6 @@ void GameEntity::checksum(Checksum &chksum) const {
   chksum.process(&id, sizeof(id))
       .process(&playerID_, sizeof(playerID_))
       .process(&name_[0], name_.length())
-      .process(&mobile_, sizeof(mobile_))
       .process(&targetable_, sizeof(targetable_))
       .process(&pos_, sizeof(pos_))
       .process(&angle_, sizeof(angle_))
@@ -112,18 +102,11 @@ void GameEntity::checksum(Checksum &chksum) const {
 }
 
 glm::vec2 GameEntity::getPosition(float dt) const {
-  if (!mobile_) {
-    return getPosition();
-  }
-
   glm::vec2 vel = speed_ * getDirection(getAngle(dt));
   return pos_ + vel * dt;
 }
 
 float GameEntity::getAngle(float dt) const {
-  if (!mobile_) {
-    return getAngle();
-  }
   return angle_ + turnSpeed_ * dt;
 }
 
