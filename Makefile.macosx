@@ -3,6 +3,7 @@ PROGVER=0.3
 
 
 CXX=c++
+MAKEDEPEND=$(CXX) -MM
 GLM=lib/glm-0.9.2.7
 JSON=lib/jsoncpp
 STBI=lib/stbi
@@ -21,15 +22,18 @@ GTESTLIB=lib/gtest-1.6.0/libgtest.a
 CXXFLAGS=-g -O0 -Wall -I$(GLM) -std=c++0x -stdlib=libc++ -I$(JSON) -I$(STBI) -Wno-reorder -I$(STBTT) -I$(SRCDIR) -I$(GTESTDIR)/include -U__STRICT_ANSI__ -I$(BOOSTDIR) -I$(FMOD)/inc
 #CXXFLAGS+=-DSECTION_RECORDING
 
-TESTOBJ = $(patsubst $(TESTDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(TESTDIR)/*.cpp)))
-COMMONOBJ = $(patsubst $(COMMONDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(COMMONDIR)/*.cpp))) $(JSON)/jsoncpp.o
-RTSOBJ = $(patsubst $(RTSDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(RTSDIR)/*.cpp))) obj/rts-main.o
-RTSEDOBJ = $(patsubst $(RTSDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(RTSDIR)/*.cpp))) obj/rtsed-main.o
+COMMONSRC=$(wildcard $(COMMONDIR)/*.cpp)
+TESTSRC=$(wildcard $(TESTDIR)/*.cpp)
+RTSSRC=$(wildcard $(RTSDIR)/*.cpp)
+
+TESTOBJ = $(patsubst $(TESTDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(TESTSRC)))
+COMMONOBJ = $(patsubst $(COMMONDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(COMMONSRC))) $(JSON)/jsoncpp.o
+RTSOBJ = $(patsubst $(RTSDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(RTSSRC))) obj/rts-main.o
 DEPTHGENOBJ = obj/depthfieldgen.o
 
 RESOURCES = config.json local.json models scripts shaders images fonts
 
-all: obj $(PROGRAM) rtsed depthfieldgen
+all: obj $(PROGRAM) depthfieldgen
 
 $(OBJDIR)/SDLMain.o: macosx/SDLMain.m
 	$(CXX) -g -O0 -Wall $^ -c -o $@
@@ -37,9 +41,6 @@ $(OBJDIR)/SDLMain.o: macosx/SDLMain.m
 
 $(PROGRAM): $(RTSOBJ) $(COMMONOBJ) local.json $(OBJDIR)/SDLMain.o
 	$(CXX) $(CXXFLAGS) -o $@ $(RTSOBJ) $(COMMONOBJ) $(LDFLAGS) $(OBJDIR)/SDLMain.o
-
-rtsed: $(RTSEDOBJ) $(COMMONOBJ) local.json
-	$(CXX) $(CXXFLAGS) -o $@ $(RTSEDOBJ) $(COMMONOBJ) $(LDFLAGS)
 
 depthfieldgen: $(DEPTHGENOBJ) $(COMMONOBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $(DEPTHGENOBJ) $(COMMONOBJ)
@@ -55,6 +56,7 @@ $(OBJDIR)/%.o: $(EXECDIR)/%.cpp
 	$(CXX) -c $(CXXFLAGS) -o $(OBJDIR)/$*.o $<
 $(OBJDIR)/%.o: $(TESTDIR)/%.cpp
 	$(CXX) -c $(CXXFLAGS) -o $(OBJDIR)/$*.o $<
+$(DEPDIR)/%.d: $(RTSDIR)/%.cpp
 
 $(JSON)/jsoncpp.o: $(JSON)/jsoncpp.cpp
 	$(CXX) -c $(CXXFLAGS) -o $@ $^
@@ -69,7 +71,7 @@ local.json: local.json.default
 	cp local.json.default local.json
 
 clean:
-	rm -f rts rtsed tests obj/* $(GTESTLIB)
+	rm -f rts tests depthfieldgen obj/* $(GTESTLIB)
 	rm -rf obj/ rts.app
 
 force_look:
@@ -168,3 +170,15 @@ $(MACINFOPLIST):
 	@echo "   <string>$(PROGRAM), Version $(PROGVER), $(COMPANY)</string>" >> $(MACINFOPLIST)
 	@echo "</dict>" >> $(MACINFOPLIST)
 	@echo "</plist>" >> $(MACINFOPLIST)
+
+.PHONY: depend
+depend: .depend
+
+%.d: %.c
+
+.depend: $(COMMONSRC) $(RTSSRC) $(TESTSRC)
+	$(CXX) $(CXXFLAGS) -MM -MG $^ \
+		| sed -e 's/^\(.*\):/obj\/\1:/' > ./.depend
+
+
+include .depend

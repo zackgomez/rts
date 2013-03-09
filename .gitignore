@@ -24,3 +24,4 @@ msvc/rts/*.user
 /rts.dmg
 /nbproject/private/
 nbproject
+.depend
