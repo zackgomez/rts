@@ -174,8 +174,6 @@ $(MACINFOPLIST):
 .PHONY: depend
 depend: .depend
 
-%.d: %.c
-
 .depend: $(COMMONSRC) $(RTSSRC) $(TESTSRC)
 	$(CXX) $(CXXFLAGS) -MM -MG $^ \
 		| sed -e 's/^\(.*\):/obj\/\1:/' > ./.depend

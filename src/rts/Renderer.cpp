@@ -34,7 +34,6 @@ id_t Entity::lastID_ = STARTING_EID;
 
 Renderer::Renderer()
   : controller_(nullptr),
-    system_(nullptr),
     running_(true),
     camera_(glm::vec3(0.f), 5.f, 0.f, 45.f),
     resolution_(vec2Param("local.resolution")),
@@ -45,6 +44,7 @@ Renderer::Renderer()
   // TODO(zack): move this to a separate initialize function
   initEngine(resolution_);
 
+#ifdef USE_FMOD
   FMOD_RESULT result;
   FMOD::System *system_;
 
@@ -61,6 +61,7 @@ Renderer::Renderer()
     printf("FMOD error! (%d)\n", result);
     exit(-1);
   }
+#endif  // USE_FMOD
   // Initialize font manager, if necessary
   FontManager::get();
   UI::get();

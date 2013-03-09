@@ -9,7 +9,9 @@
 #include "common/Logger.h"
 #include "rts/Camera.h"
 #include "rts/GameEntity.h"
+#ifdef USE_FMOD
 #include <fmod.hpp>
+#endif  // USE_FMOD
 
 namespace rts {
 
@@ -120,7 +122,9 @@ class Renderer {
 
   Controller *controller_;
 
+#ifdef USE_FMOD
   FMOD::System *system_;
+#endif  // USE_FMOD
 
   bool running_;
 
