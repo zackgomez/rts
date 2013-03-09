@@ -19,18 +19,18 @@ MinimapWidget::~MinimapWidget() {
 }
 
 void MinimapWidget::render(float dt) {
-  const glm::vec2 &mapSize = Game::get()->getMap()->getSize();
-  const glm::vec4 &mapColor = Game::get()->getMap()->getMinimapColor();
   // TODO(connor) we probably want some small buffer around the sides of the
   // minimap so we can see the underlay image..
 
   // TODO(connor) support other aspect ratios so they don't stretch or distort
 
   // Render base image
+  const glm::vec4 &mapColor = Game::get()->getMap()->getMinimapColor();
   drawRectCenter(getCenter(), getSize(), mapColor);
 
   // Render viewport
   /*
+  const glm::vec2 &mapSize = Game::get()->getMap()->getSize();
   // NOTE(zack): this is a hack to get the viewport to render correctly in
   // windows.  If offset is 0, the coordinates get wonky.
   glm::vec4 lineColor = vec4Param(name_ + ".viewportLineColor");

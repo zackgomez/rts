@@ -46,7 +46,6 @@ void FontManager::drawString(const std::string &s, const glm::vec2 &pos,
     if (c == COLOR_CNTRL_CH) {
       color = glm::vec4(parseColor(s, i + 1), 1.f);
       glUniform4fv(colorUniform, 1, glm::value_ptr(color));
-      LOG(DEBUG) << "HERE: " << color << '\n';
       // advance past next 3 characters
       i += 3;
       continue;

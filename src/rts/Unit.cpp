@@ -126,30 +126,30 @@ bool Unit::canCapture(const Building *e) const {
 
 bool Unit::withinRange(const GameEntity *e) const {
   glm::vec2 targetPos = e->getPosition();
-  float dist = glm::distance(pos_, targetPos);
+  float dist = glm::distance(getPosition(), targetPos);
   return dist < weapon_->getMaxRange();
 }
 
 void Unit::turnTowards(const glm::vec2 &targetPos, float dt) {
   float desired_angle = angleToTarget(targetPos);
-  float delAngle = addAngles(desired_angle, -angle_);
+  float delAngle = addAngles(desired_angle, -getAngle());
   float turnRate = param("turnRate");
   // rotate
   // only rotate when not close enough
   // Would overshoot, just move directly there
   if (fabs(delAngle) < turnRate * dt) {
-    turnSpeed_ = delAngle / dt;
+    setTurnSpeed(delAngle / dt);
   } else {
-    turnSpeed_ = glm::sign(delAngle) * turnRate;
+    setTurnSpeed(glm::sign(delAngle) * turnRate);
   }
   // No movement
-  speed_ = 0.f;
+  setSpeed(0.f);
 }
 
 void Unit::moveTowards(const glm::vec2 &targetPos, float dt) {
   pathQueue_ = std::queue<glm::vec3>();
   pathQueue_.push(glm::vec3(targetPos, 0.f));
-  float dist = glm::length(targetPos - pos_);
+  float dist = glm::length(targetPos - getPosition());
   float speed = param("speed");
   // rotate
   turnTowards(targetPos, dt);
@@ -158,13 +158,13 @@ void Unit::moveTowards(const glm::vec2 &targetPos, float dt) {
   if (dist < speed * dt) {
     speed = dist / dt;
   }
-  speed_ = speed;
+  setSpeed(speed);
 }
 
 void Unit::remainStationary() {
   pathQueue_ = std::queue<glm::vec3>();
-  speed_ = 0.f;
-  turnSpeed_ = 0.f;
+  setSpeed(0.f);
+  setTurnSpeed(0.f);
 }
 
 void Unit::attackTarget(const GameEntity *e) {
@@ -218,7 +218,7 @@ const GameEntity * Unit::getTarget(id_t lastTargetID) const {
             && e->getTeamID() != getTeamID()
             && e->hasProperty(P_TARGETABLE)) {
           float dist = glm::distance(
-            pos_,
+            getPosition(),
             e->getPosition());
           // Only take ones that are within attack range, sort
           // by distance

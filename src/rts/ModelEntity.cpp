@@ -7,12 +7,41 @@ namespace rts {
 
 ModelEntity::ModelEntity()
   : Entity(),
+    pos_(HUGE_VAL),
+    angle_(0.f),
+    height_(0.f),
+    size_(glm::vec2(0.f)),
+    speed_(0.f),
+    turnSpeed_(0.f),
     material_(nullptr),
     scale_(1.f) {
 }
 
 ModelEntity::~ModelEntity() {
   freeMaterial(material_);
+}
+
+const Rect ModelEntity::getRect(float dt) const {
+  return Rect(getPosition(dt), size_, glm::radians(getAngle(dt)));
+}
+
+void ModelEntity::setPosition(const glm::vec2 &pos) {
+  pos_ = pos;
+}
+void ModelEntity::setSize(const glm::vec2 &size) {
+  size_ = size;
+}
+void ModelEntity::setAngle(float angle) {
+  angle_ = angle;
+}
+void ModelEntity::setHeight(float height) {
+  height_ = height;
+}
+void ModelEntity::setTurnSpeed(float turn_speed) {
+  turnSpeed_ = turn_speed;
+}
+void ModelEntity::setSpeed(float speed) {
+  speed_ = speed;
 }
 
 void ModelEntity::setMaterial(Material *material) {
@@ -56,6 +85,23 @@ void ModelEntity::render(float dt) {
   }
 }
 
+void ModelEntity::integrate(float dt) {
+  // TODO(zack): upgrade to a better integrator (runge-kutta)
+  // rotate
+  angle_ += turnSpeed_ * dt;
+  // clamp to [0, 360]
+  while (angle_ > 360.f) {
+    angle_ -= 360.f;
+  }
+  while (angle_ < 0.f) {
+    angle_ += 360.f;
+  }
+
+  // move
+  glm::vec2 vel = speed_ * getDirection(angle_);
+  pos_ += vel * dt;
+}
+
 glm::mat4 ModelEntity::getTransform(float dt) const {
   const glm::vec2 pos2 = getPosition(dt);
   const float rotAngle = getAngle(dt);
@@ -69,5 +115,32 @@ glm::mat4 ModelEntity::getTransform(float dt) const {
         glm::translate(glm::mat4(1.f), pos + glm::vec3(.0f, .0f, .01f)),
         rotAngle, glm::vec3(0, 0, 1)),
       glm::vec3(scale_));
+}
+
+glm::vec2 ModelEntity::getPosition(float dt) const {
+  glm::vec2 vel = speed_ * getDirection(getAngle(dt));
+  return pos_ + vel * dt;
+}
+
+float ModelEntity::getAngle(float dt) const {
+  return angle_ + turnSpeed_ * dt;
+}
+
+const glm::vec2 ModelEntity::getDirection(float angle) {
+  float rad = deg2rad(angle);
+  return glm::vec2(cosf(rad), sinf(rad));
+}
+
+const glm::vec2 ModelEntity::getDirection() const {
+  return getDirection(angle_);
+}
+
+float ModelEntity::angleToTarget(const glm::vec2 &target) const {
+  glm::vec2 delta = target - getPosition();
+  return rad2deg(atan2(delta.y , delta.x));
+}
+
+bool ModelEntity::pointInEntity(const glm::vec2 &p) {
+  return pointInBox(p, pos_, size_, angle_);
 }
 }  // rts

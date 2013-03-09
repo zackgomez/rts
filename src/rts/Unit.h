@@ -19,13 +19,6 @@ class Unit : public Actor {
     return TYPE;
   }
 
-  virtual float getSpeed() const {
-    return speed_;
-  }
-  virtual float getTurnSpeed() const {
-    return turnSpeed_;
-  }
-
   virtual void handleMessage(const Message &msg);
   virtual void update(float dt);
 

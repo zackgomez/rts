@@ -23,13 +23,12 @@ checksum_t Checksum::getChecksum() const {
   return checksum_.checksum();
 }
 
+Checksum& Checksum::process(const std::string &val) {
+  return process(&val[0], val.length());
+}
 Checksum& Checksum::process(const Json::Value &val) {
   Json::FastWriter writer;
   return process(writer.write(val));
-}
-
-Checksum& Checksum::process(const std::string &data) {
-  return process(data.c_str(), data.length());
 }
 
 Checksum& Checksum::process(const void *data, size_t size) {

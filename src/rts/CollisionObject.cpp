@@ -11,13 +11,13 @@ CollisionObject::CollisionObject(
     const std::string &name,
     const Json::Value &params)
   : GameEntity(name, params, false, true) {
-  pos_ = toVec2(params["entity_pos"]);
-  size_ = toVec2(params["entity_size"]);
-  angle_ = params["entity_angle"].asFloat();
+  setPosition(toVec2(params["entity_pos"]));
+  setSize(toVec2(params["entity_size"]));
+  setAngle(params["entity_angle"].asFloat());
 
   setMeshName("square");
   setMaterial(createMaterial(glm::vec3(), glm::vec3(), glm::vec3(), 0));
-  setScale(glm::vec3(2.f*size_, 1.f));
+  setScale(glm::vec3(2.f*getSize(), 1.f));
 }
 
 void CollisionObject::handleMessage(const Message &msg) {

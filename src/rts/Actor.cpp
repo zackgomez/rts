@@ -92,8 +92,9 @@ void Actor::produce(const std::string &prod_name) {
   Json::Value params;
   params["entity_pid"] = toJson(getPlayerID());
   // TODO(zack) (make this a param)
-  params["entity_pos"] = toJson(pos_ + getDirection());
-  params["entity_angle"] = angle_;
+  params["entity_pos"] = toJson(
+      ModelEntity::getPosition() + ModelEntity::getDirection());
+  params["entity_angle"] = ModelEntity::getAngle();
 
   MessageHub::get()->sendSpawnMessage(
     getID(),

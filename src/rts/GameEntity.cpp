@@ -16,29 +16,24 @@ GameEntity::GameEntity(
   : playerID_(NO_PLAYER),
     name_(name),
     targetable_(targetable),
-    collidable_(collidable),
-    pos_(HUGE_VAL),
-    angle_(0.f),
-    size_(glm::vec2(0.f)),
-    height_(0.f),
-    speed_(0.f),
-    turnSpeed_(0.f) {
+    collidable_(collidable) {
   if (params.isMember("entity_pid")) {
     playerID_ = toID(params["entity_pid"]);
   }
   if (params.isMember("entity_pos")) {
-    pos_ = toVec2(params["entity_pos"]);
+    setPosition(toVec2(params["entity_pos"]));
   }
   if (params.isMember("entity_size")) {
-    size_ = toVec2(params["entity_size"]);
+    setSize(toVec2(params["entity_size"]));
   } else {
-    size_ = vec2Param("size");
+    setSize(vec2Param("size"));
   }
   if (params.isMember("entity_angle")) {
-    angle_ = params["entity_angle"].asFloat();
+    setAngle(params["entity_angle"].asFloat());
   }
-  if (hasParam("height"))
-    height_ = param("height");
+  if (hasParam("height")) {
+    setHeight(param("height"));
+  }
 
   // Make sure we did it right
   assertPid(playerID_);
@@ -57,25 +52,8 @@ id_t GameEntity::getTeamID() const {
 }
 
 void GameEntity::update(float dt) {
-  turnSpeed_ = 0.f;
-  speed_ = 0.f;
-}
-
-void GameEntity::integrate(float dt) {
-  // TODO(zack): upgrade to a better integrator (runge-kutta)
-  // rotate
-  angle_ += turnSpeed_ * dt;
-  // clamp to [0, 360]
-  while (angle_ > 360.f) {
-    angle_ -= 360.f;
-  }
-  while (angle_ < 0.f) {
-    angle_ += 360.f;
-  }
-
-  // move
-  glm::vec2 vel = speed_ * getDirection(angle_);
-  pos_ += vel * dt;
+  setTurnSpeed(0.f);
+  setSpeed(0.f);
 }
 
 void GameEntity::handleMessage(const Message &msg) {
@@ -89,48 +67,17 @@ void GameEntity::handleMessage(const Message &msg) {
 
 void GameEntity::checksum(Checksum &chksum) const {
   id_t id = getID();
-  chksum.process(&id, sizeof(id))
-      .process(&playerID_, sizeof(playerID_))
-      .process(&name_[0], name_.length())
-      .process(&targetable_, sizeof(targetable_))
-      .process(&pos_, sizeof(pos_))
-      .process(&angle_, sizeof(angle_))
-      .process(&size_, sizeof(size_))
-      .process(&height_, sizeof(height_))
-      .process(&speed_, sizeof(speed_))
-      .process(&turnSpeed_, sizeof(turnSpeed_));
-}
-
-glm::vec2 GameEntity::getPosition(float dt) const {
-  glm::vec2 vel = speed_ * getDirection(getAngle(dt));
-  return pos_ + vel * dt;
-}
-
-float GameEntity::getAngle(float dt) const {
-  return angle_ + turnSpeed_ * dt;
-}
-
-const glm::vec2 GameEntity::getDirection(float angle) {
-  float rad = deg2rad(angle);
-  return glm::vec2(cosf(rad), sinf(rad));
-}
-
-const glm::vec2 GameEntity::getDirection() const {
-  return getDirection(angle_);
-}
-
-float GameEntity::angleToTarget(const glm::vec2 &target) const {
-  glm::vec2 delta = target - pos_;
-  return rad2deg(atan2(delta.y , delta.x));
-}
-
-float GameEntity::distanceBetweenEntities(const GameEntity *e) const {
-  glm::vec2 targetPos = e->getPosition();
-  return glm::length(targetPos - pos_);
-}
-
-bool GameEntity::pointInEntity(const glm::vec2 &p) {
-  return pointInBox(p, pos_, size_, angle_);
+  chksum
+    .process(id)
+    .process(playerID_)
+    .process(name_)
+    .process(targetable_)
+    .process(getPosition())
+    .process(getAngle())
+    .process(getSize())
+    .process(getHeight())
+    .process(getSpeed())
+    .process(getTurnSpeed());
 }
 
 float GameEntity::param(const std::string &p) const {
