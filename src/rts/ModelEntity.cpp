@@ -22,10 +22,13 @@ ModelEntity::~ModelEntity() {
 }
 
 const Rect ModelEntity::getRect(float dt) const {
-  return Rect(getPosition(dt), size_, glm::radians(getAngle(dt)));
+  return Rect(glm::vec2(getPosition(dt)), size_, glm::radians(getAngle(dt)));
 }
 
 void ModelEntity::setPosition(const glm::vec2 &pos) {
+  pos_ = glm::vec3(pos, pos_.z);
+}
+void ModelEntity::setPosition(const glm::vec3 &pos) {
   pos_ = pos;
 }
 void ModelEntity::setSize(const glm::vec2 &size) {
@@ -86,7 +89,6 @@ void ModelEntity::render(float dt) {
 }
 
 void ModelEntity::integrate(float dt) {
-  // TODO(zack): upgrade to a better integrator (runge-kutta)
   // rotate
   angle_ += turnSpeed_ * dt;
   // clamp to [0, 360]
@@ -98,27 +100,25 @@ void ModelEntity::integrate(float dt) {
   }
 
   // move
-  glm::vec2 vel = speed_ * getDirection(angle_);
+  glm::vec3 vel = glm::vec3(speed_ * getDirection(angle_), 0.f);
   pos_ += vel * dt;
 }
 
 glm::mat4 ModelEntity::getTransform(float dt) const {
-  const glm::vec2 pos2 = getPosition(dt);
   const float rotAngle = getAngle(dt);
-  const glm::vec3 pos = glm::vec3(pos2, Game::get()->getMap()->getMapHeight(pos2));
 
   return
     glm::scale(
       glm::rotate(
         // TODO(zack): remove this z position hack (used to make collision
         // objects (plane.obj) appear above the map
-        glm::translate(glm::mat4(1.f), pos + glm::vec3(.0f, .0f, .01f)),
+        glm::translate(glm::mat4(1.f), getPosition(dt) + glm::vec3(.0f, .0f, .01f)),
         rotAngle, glm::vec3(0, 0, 1)),
       glm::vec3(scale_));
 }
 
-glm::vec2 ModelEntity::getPosition(float dt) const {
-  glm::vec2 vel = speed_ * getDirection(getAngle(dt));
+glm::vec3 ModelEntity::getPosition(float dt) const {
+  glm::vec3 vel = glm::vec3(speed_ * getDirection(getAngle(dt)), 0.f);
   return pos_ + vel * dt;
 }
 
@@ -136,11 +136,11 @@ const glm::vec2 ModelEntity::getDirection() const {
 }
 
 float ModelEntity::angleToTarget(const glm::vec2 &target) const {
-  glm::vec2 delta = target - getPosition();
+  glm::vec2 delta = target - getPosition2();
   return rad2deg(atan2(delta.y , delta.x));
 }
 
 bool ModelEntity::pointInEntity(const glm::vec2 &p) {
-  return pointInBox(p, pos_, size_, angle_);
+  return pointInBox(p, glm::vec2(pos_), size_, angle_);
 }
 }  // rts

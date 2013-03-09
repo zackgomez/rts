@@ -21,8 +21,10 @@ public:
       return false;
   }
 
-  // This unit's position
-  const glm::vec2& getPosition() const {
+  glm::vec2 getPosition2() const {
+    return glm::vec2(pos_);
+  }
+  const glm::vec3& getPosition() const {
     return pos_;
   }
   // This unit's facing angle (relative to +x axis)
@@ -40,7 +42,7 @@ public:
   }
   // Bounding rectangle
   Rect getRect() const {
-    return Rect(pos_, size_, glm::radians(angle_));
+    return Rect(glm::vec2(pos_), size_, glm::radians(angle_));
   }
   const glm::vec2 getVelocity() const {
     return getDirection() * speed_;
@@ -53,12 +55,13 @@ public:
   }
 
   // Interpolation functions
-  glm::vec2 getPosition(float dt) const;
+  glm::vec3 getPosition(float dt) const;
   float getAngle(float dt) const;
   glm::mat4 getTransform(float dt) const;
   const Rect getRect(float dt) const;
 
   void setPosition(const glm::vec2 &pos);
+  void setPosition(const glm::vec3 &pos);
   void setSize(const glm::vec2 &size);
   void setAngle(float angle);
   void setHeight(float height);
@@ -84,7 +87,7 @@ protected:
   static const glm::vec2 getDirection(float angle);
 
 private:
-  glm::vec2 pos_;
+  glm::vec3 pos_;
   float angle_;
   glm::vec2 size_;
   float height_;

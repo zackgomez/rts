@@ -15,7 +15,7 @@ class MinimapWidget : public SizedWidget {
   id_t localPlayerID_;
   std::string name_;
 
-  glm::vec2 worldToMinimap(glm::vec2 world) const;
+  glm::vec2 worldToMinimap(const glm::vec3 &world) const;
 };
 
 };  // rts

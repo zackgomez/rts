@@ -95,10 +95,11 @@ void MinimapWidget::render(float dt) {
   }
 }
 
-glm::vec2 MinimapWidget::worldToMinimap(glm::vec2 pos) const {
+glm::vec2 MinimapWidget::worldToMinimap(const glm::vec3 &worldPos) const {
   const glm::vec2 &mapSize = Game::get()->getMap()->getSize();
   const glm::vec2 minimapSize = getSize();
   const glm::vec2 minimapPos = getCenter() - minimapSize/2.f;
+  glm::vec2 pos = glm::vec2(worldPos);
   pos.y *= -1;
   pos += mapSize / 2.f;
   pos *= minimapSize / mapSize;

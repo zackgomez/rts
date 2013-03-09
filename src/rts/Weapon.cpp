@@ -73,7 +73,7 @@ void Weapon::sendMessage() {
     // Spawn a projectile
     Json::Value params;
     params["entity_pid"] = toJson(owner_->getPlayerID());
-    params["entity_pos"] = toJson(owner_->getPosition());
+    params["entity_pos"] = toJson(owner_->getPosition2());
     params["projectile_target"] = toJson(target_);
     params["projectile_owner"] = toJson(owner_->getID());
     MessageHub::get()->sendSpawnMessage(
@@ -104,8 +104,8 @@ void Weapon::interrupt() {
 }
 
 bool Weapon::canAttack(const GameEntity *target) const {
-  glm::vec2 targetPos = target->getPosition();
-  glm::vec2 delta = targetPos - owner_->getPosition();
+  glm::vec2 targetPos = target->getPosition2();
+  glm::vec2 delta = targetPos - owner_->getPosition2();
   float targetAngle = rad2deg(atan2(delta.y , delta.x));
   // difference between facing and target
   float arc = addAngles(targetAngle, -owner_->getAngle());

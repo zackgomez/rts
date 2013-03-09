@@ -37,10 +37,10 @@ void Projectile::update(float dt) {
     return;
   }
   // Always go directly towards target
-  const glm::vec2 &targetPos = targetEnt->getPosition();
+  const glm::vec2 &targetPos = targetEnt->getPosition2();
   setAngle(angleToTarget(targetPos));
 
-  float dist = glm::length(targetPos - getPosition());
+  float dist = glm::length(targetPos - getPosition2());
   setSpeed(param("speed"));
 
   // If we would hit, then don't overshoot and send message (deal damage)

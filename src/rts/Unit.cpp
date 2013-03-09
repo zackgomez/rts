@@ -29,7 +29,7 @@ Unit::Unit(const std::string &name, const Json::Value &params)
       return;
     }
     auto target = pathQueue_.front();
-    auto pos = glm::vec3(getPosition(dt), 0.05f);
+    auto pos = glm::vec3(glm::vec2(getPosition(dt)), 0.05f);
     renderLineColor(pos, target, glm::vec4(1.f));
   });
 }
@@ -119,14 +119,14 @@ bool Unit::canAttack(const GameEntity *e) const {
 }
 
 bool Unit::canCapture(const Building *e) const {
-  float dist = glm::distance(e->getPosition(), getPosition());
+  float dist = glm::distance(e->getPosition2(), getPosition2());
   return e->canCapture(getID())
       && dist <= fltParam("global.captureRange");
 }
 
 bool Unit::withinRange(const GameEntity *e) const {
-  glm::vec2 targetPos = e->getPosition();
-  float dist = glm::distance(getPosition(), targetPos);
+  glm::vec2 targetPos = e->getPosition2();
+  float dist = glm::distance(getPosition2(), targetPos);
   return dist < weapon_->getMaxRange();
 }
 
@@ -149,7 +149,7 @@ void Unit::turnTowards(const glm::vec2 &targetPos, float dt) {
 void Unit::moveTowards(const glm::vec2 &targetPos, float dt) {
   pathQueue_ = std::queue<glm::vec3>();
   pathQueue_.push(glm::vec3(targetPos, 0.f));
-  float dist = glm::length(targetPos - getPosition());
+  float dist = glm::length(targetPos - getPosition2());
   float speed = param("speed");
   // rotate
   turnTowards(targetPos, dt);
@@ -218,8 +218,8 @@ const GameEntity * Unit::getTarget(id_t lastTargetID) const {
             && e->getTeamID() != getTeamID()
             && e->hasProperty(P_TARGETABLE)) {
           float dist = glm::distance(
-            getPosition(),
-            e->getPosition());
+            getPosition2(),
+            e->getPosition2());
           // Only take ones that are within attack range, sort
           // by distance
           return dist < getSight() ? dist : HUGE_VAL;
@@ -248,7 +248,7 @@ void IdleState::update(float dt) {
       unit_->attackTarget(target);
     } else {
       // otherwse rotate towards
-      unit_->turnTowards(target->getPosition(), dt);
+      unit_->turnTowards(target->getPosition2(), dt);
     }
   }
 
@@ -281,7 +281,7 @@ void MoveState::updateTarget() {
     if (!e) {
       targetID_ = NO_ENTITY;
     } else {
-      target_ = e->getPosition();
+      target_ = e->getPosition2();
     }
   }
 }
@@ -336,7 +336,7 @@ void AttackState::update(float dt) {
     unit_->attackTarget(target);
   } else {
     // Otherwise move towards target
-    unit_->moveTowards(target->getPosition(), dt);
+    unit_->moveTowards(target->getPosition2(), dt);
   }
 }
 
@@ -380,7 +380,7 @@ void AttackMoveState::update(float dt) {
       unit_->attackTarget(targetEnt);
     } else {
       // Otherwise move towards target
-      unit_->moveTowards(targetEnt->getPosition(), dt);
+      unit_->moveTowards(targetEnt->getPosition2(), dt);
     }
   }
 
@@ -428,7 +428,7 @@ void CaptureState::update(float dt) {
     unit_->captureTarget(btarget, dt);
   } else {
     // Otherwise move towards target
-    unit_->moveTowards(btarget->getPosition(), dt);
+    unit_->moveTowards(btarget->getPosition2(), dt);
   }
 }
 

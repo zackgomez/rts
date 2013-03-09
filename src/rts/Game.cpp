@@ -208,10 +208,15 @@ void Game::update(float dt) {
 
   // Collision detection
   for (auto it = entities.begin(); it != entities.end(); it++) {
-    const GameEntity *e1 = it->second;
+    GameEntity *e1 = it->second;
     if (!e1->hasProperty(GameEntity::P_COLLIDABLE)) {
       continue;
     }
+    // Collide with map
+    e1->setPosition(
+      glm::vec3(
+        glm::vec2(e1->getPosition()),
+        map_->getMapHeight(glm::vec2(e1->getPosition()))));
     auto it2 = it;
     for (it2++; it2 != entities.end(); it2++) {
       const GameEntity *e2 = it2->second;
