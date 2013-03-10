@@ -42,6 +42,7 @@ struct Mesh {
 
 struct Material {
   glm::vec3 baseColor;
+  GLuint texture;
   float shininess;
 };
 
@@ -233,6 +234,8 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m,
   GLuint normalUniform = glGetUniformLocation(program, "normalMatrix");
   GLuint baseColorUniform = glGetUniformLocation(program, "baseColor");
   GLuint shininessUniform = glGetUniformLocation(program, "shininess");
+  GLuint useTextureUniform = glGetUniformLocation(program, "useTexture");
+  GLuint textureUniform = glGetUniformLocation(resources.texProgram, "texture");
   // Attributes
   GLuint positionAttrib = glGetAttribLocation(program, "position");
   GLuint normalAttrib   = glGetAttribLocation(program, "normal");
@@ -245,9 +248,17 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m,
       glm::value_ptr(projMatrix));
   glUniformMatrix4fv(normalUniform, 1, GL_FALSE,
       glm::value_ptr(normalMatrix));
+  glUniform1i(useTextureUniform, 0);
   if (mt) {
     glUniform3fv(baseColorUniform, 1, glm::value_ptr(mt->baseColor));
     glUniform1f(shininessUniform, mt->shininess);
+    if (mt->texture) {
+      glUniform1i(useTextureUniform, 1);
+      glActiveTexture(GL_TEXTURE0);
+      glEnable(GL_TEXTURE);
+      glBindTexture(GL_TEXTURE_2D, mt->texture);
+      glUniform1i(textureUniform, 0);
+    }
   }
   if (hasParam("renderer.lightPos")) {
     auto lightPos = vec3Param("renderer.lightPos");
@@ -561,9 +572,11 @@ Mesh * loadMesh(const std::string &objFile) {
 
 Material * createMaterial(
     const glm::vec3 &baseColor,
-    float shininess) {
+    float shininess,
+    GLuint texture) {
   Material *m = new Material;
   m->baseColor = baseColor;
+  m->texture = 0;
   m->shininess = shininess;
   return m;
 }

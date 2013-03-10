@@ -6,8 +6,9 @@ uniform vec3 ambientColor;
 uniform vec3 diffuseColor;
 uniform vec3 specularColor;
 
-// material properties
 uniform vec3 baseColor;
+uniform int useTexture;
+uniform sampler2D tex;
 uniform float shininess;
 
 varying vec3 fragpos;
@@ -28,12 +29,20 @@ void main()
   color += clamp(ndotl, 0, 1) * diffuseColor;
   color *= baseColor;
 
+  if (useTexture) {
+    vec4 texcol = texture2D(tex, fragtc);
+    color *= (1 - texcol.a) * baseColor + texcol.a * texcol.rgb;
+  } else {
+    color *= baseColor;
+  }
+
+
   // specular component
   if (shininess != 0.0) {
     vec3 eyeVec = normalize(-fragpos);  // frag/lightpos are in eye space
     vec3 lightVec = normalize(reflect(-lightdir, normal));
     float specPower = pow(max(dot(eyeVec, lightVec), 0.0), shininess);
-    color += specPower * specularColor;
+    color += max(specPower * specularColor, 0.f);
   }
 
   gl_FragColor = vec4(color, 1.f);

@@ -1,6 +1,7 @@
 #include "rts/CollisionObject.h"
 #include <string>
 #include "rts/MessageHub.h"
+#include "rts/ResourceManager.h"
 
 namespace rts {
 
@@ -16,7 +17,9 @@ CollisionObject::CollisionObject(
   setAngle(params["entity_angle"].asFloat());
 
   setMeshName("square");
-  setMaterial(createMaterial(glm::vec3(0.f), 0.f));
+  GLuint texture = ResourceManager::get()->getTexture("collision-tex");
+  setMaterial(createMaterial(glm::vec3(0.f), 0.f, texture));
+    
   setScale(glm::vec3(2.f*getSize(), 1.f));
 }
 

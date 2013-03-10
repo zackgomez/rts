@@ -40,7 +40,8 @@
     {
       "minimap"    : "images/UI/minimap_underlay.png",
       "unit_panel" : "images/UI/actor_underlay.png",
-      "topbar"     : "images/UI/top_bar_1280.png"
+      "topbar"     : "images/UI/top_bar_1280.png",
+      "collision-tex" : "images/collision-tex-1024.png"
     },
     "depthFields" : {
       "steamLogo"  : {
