@@ -30,6 +30,7 @@ Actor::Actor(const std::string &name, const Json::Value &params,
   const Player *player = Game::get()->getPlayer(getPlayerID());
   auto color = player ? player->getColor() : vec3Param("global.defaultColor");
   setMaterial(createMaterial(color, 10.f));
+  setScale(glm::vec3(param("modelSize")));
 }
 
 Actor::~Actor() {

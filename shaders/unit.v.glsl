@@ -17,7 +17,7 @@ varying vec2 fragtc;
 void main()
 {
     fragnorm = vec3(normalMatrix * normal);
-    fragtc = texcoord;
+    fragtc = vec2(texcoord.x, 1 - texcoord.y);
     fragpos = vec3(modelViewMatrix * position);
 
     gl_Position = projectionMatrix * modelViewMatrix * position;

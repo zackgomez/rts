@@ -3,6 +3,8 @@
 #include <iostream>
 #include "common/ParamReader.h"
 #include "rts/MessageHub.h"
+#include "rts/Player.h"
+#include "rts/ResourceManager.h"
 #include "rts/Unit.h"
 
 namespace rts {
@@ -16,9 +18,6 @@ Building::Building(const std::string &name, const Json::Value &params)
     capperID_(NO_ENTITY),
     lastCappingPlayerID_(NO_PLAYER),
     capResetDelay_(0) {
-
-  // TODO(zack): remove this hack, by scaling the models appropriately
-  setScale(glm::vec3(2.f));
 }
 
 void Building::handleMessage(const Message &msg) {
@@ -60,6 +59,12 @@ void Building::handleMessage(const Message &msg) {
 
 void Building::update(float dt) {
   Actor::update(dt);
+
+  const Player *player = Game::get()->getPlayer(getPlayerID());
+  setMaterial(createMaterial(
+    player ? player->getColor() : vec3Param("global.defaultColor"),
+    10.f,
+    ResourceManager::get()->getTexture("vp")));
 
   // We need a single tick delay to see if an entity is still capturing this
   // building. The single tick ensures that the message from the capping unit

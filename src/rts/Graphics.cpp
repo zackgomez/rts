@@ -588,6 +588,7 @@ void freeMaterial(Material *material) {
   delete material;
 }
 
+
 void freeMesh(Mesh *mesh) {
   if (!mesh) {
     return;

@@ -36,7 +36,6 @@ void main()
     color *= baseColor;
   }
 
-
   // specular component
   if (shininess != 0.0) {
     vec3 eyeVec = normalize(-fragpos);  // frag/lightpos are in eye space
