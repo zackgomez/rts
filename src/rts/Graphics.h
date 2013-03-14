@@ -36,9 +36,7 @@ void   freeTexture(GLuint tex);
 
 Mesh * loadMesh(const std::string &objFile);
 Material * createMaterial(
-    const glm::vec3 &ambient,
-    const glm::vec3 &diffuse,
-    const glm::vec3 &specular,
+    const glm::vec3 &baseColor,
     float shininess);
 void freeMesh(Mesh *mesh);
 void freeMaterial(Material *material);

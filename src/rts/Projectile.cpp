@@ -21,9 +21,7 @@ Projectile::Projectile(const std::string &name, const Json::Value &params)
 
   setMeshName(strParam("model"));
   setMaterial(createMaterial(
-        glm::vec3(0.2f),
         glm::vec3(0.6f),
-        glm::vec3(0.8f),
         10.f));
 }
 

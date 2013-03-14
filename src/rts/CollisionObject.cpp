@@ -16,7 +16,7 @@ CollisionObject::CollisionObject(
   setAngle(params["entity_angle"].asFloat());
 
   setMeshName("square");
-  setMaterial(createMaterial(glm::vec3(), glm::vec3(), glm::vec3(), 0));
+  setMaterial(createMaterial(glm::vec3(0.f), 0.f));
   setScale(glm::vec3(2.f*getSize(), 1.f));
 }
 

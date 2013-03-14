@@ -202,6 +202,9 @@ void Renderer::startRender() {
   // TODO(zack): read light pos from map config
   auto lightPos = applyMatrix(getViewStack().current(), glm::vec3(-5, -5, 10));
   setParam("renderer.lightPos", lightPos);
+  setParam("renderer.light.ambient", glm::vec3(0.1f));
+  setParam("renderer.light.diffuse", glm::vec3(1.f));
+  setParam("renderer.light.specular", glm::vec3(1.f));
 
   lastRender_ = Clock::now();
 }

@@ -29,7 +29,7 @@ Actor::Actor(const std::string &name, const Json::Value &params,
   setMeshName(strParam("model"));
   const Player *player = Game::get()->getPlayer(getPlayerID());
   auto color = player ? player->getColor() : vec3Param("global.defaultColor");
-  setMaterial(createMaterial(0.1f * color, color, glm::vec3(1.f), 10.f));
+  setMaterial(createMaterial(color, 10.f));
 }
 
 Actor::~Actor() {
@@ -70,7 +70,7 @@ void Actor::handleOrder(const Message &order) {
     enqueue(order);
   } else {
     LOG(WARNING) << "Actor got unknown order: "
-                       << order.toStyledString() << '\n';
+      << order.toStyledString() << '\n';
   }
 }
 

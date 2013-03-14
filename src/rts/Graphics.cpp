@@ -41,9 +41,7 @@ struct Mesh {
 };
 
 struct Material {
-  glm::vec3 ambient;
-  glm::vec3 diffuse;
-  glm::vec3 specular;
+  glm::vec3 baseColor;
   float shininess;
 };
 
@@ -233,9 +231,7 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m,
   GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
   GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
   GLuint normalUniform = glGetUniformLocation(program, "normalMatrix");
-  GLuint ambientUniform = glGetUniformLocation(program, "ambientColor");
-  GLuint diffuseUniform = glGetUniformLocation(program, "diffuseColor");
-  GLuint specularUniform = glGetUniformLocation(program, "specularColor");
+  GLuint baseColorUniform = glGetUniformLocation(program, "baseColor");
   GLuint shininessUniform = glGetUniformLocation(program, "shininess");
   // Attributes
   GLuint positionAttrib = glGetAttribLocation(program, "position");
@@ -250,15 +246,19 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m,
   glUniformMatrix4fv(normalUniform, 1, GL_FALSE,
       glm::value_ptr(normalMatrix));
   if (mt) {
-    glUniform3fv(ambientUniform, 1, glm::value_ptr(mt->ambient));
-    glUniform3fv(diffuseUniform, 1, glm::value_ptr(mt->diffuse));
-    glUniform3fv(specularUniform, 1, glm::value_ptr(mt->specular));
+    glUniform3fv(baseColorUniform, 1, glm::value_ptr(mt->baseColor));
     glUniform1f(shininessUniform, mt->shininess);
   }
   if (hasParam("renderer.lightPos")) {
     auto lightPos = vec3Param("renderer.lightPos");
     GLuint lightPosUniform = glGetUniformLocation(program, "lightPos");
+    GLuint ambientUniform = glGetUniformLocation(program, "ambientColor");
+    GLuint diffuseUniform = glGetUniformLocation(program, "diffuseColor");
+    GLuint specularUniform = glGetUniformLocation(program, "specularColor");
     glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos));
+    glUniform3fv(ambientUniform, 1, glm::value_ptr(vec3Param("renderer.light.ambient")));
+    glUniform3fv(diffuseUniform, 1, glm::value_ptr(vec3Param("renderer.light.diffuse")));
+    glUniform3fv(specularUniform, 1, glm::value_ptr(vec3Param("renderer.light.specular")));
   }
 
   // Bind data
@@ -560,16 +560,19 @@ Mesh * loadMesh(const std::string &objFile) {
 }
 
 Material * createMaterial(
-    const glm::vec3 &ambient,
-    const glm::vec3 &diffuse,
-    const glm::vec3 &specular,
+    const glm::vec3 &baseColor,
     float shininess) {
   Material *m = new Material;
-  m->ambient = ambient;
-  m->diffuse = diffuse;
-  m->specular = specular;
+  m->baseColor = baseColor;
   m->shininess = shininess;
   return m;
+}
+
+void freeMaterial(Material *material) {
+  if (!material) {
+    return;
+  }
+  delete material;
 }
 
 void freeMesh(Mesh *mesh) {
@@ -580,13 +583,6 @@ void freeMesh(Mesh *mesh) {
   glDeleteBuffers(1, &mesh->buffer);
   free(mesh->verts);
   free(mesh);
-}
-
-void freeMaterial(Material *material) {
-  if (!material) {
-    return;
-  }
-  delete material;
 }
 
 void setMeshTransform(Mesh *mesh, const glm::mat4 &transform) {

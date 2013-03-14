@@ -157,7 +157,7 @@ void GameController::onCreate() {
   ((TextWidget *)UI::get()->getWidget("ui.widgets.perfinfo"))
     ->setTextFunc([]() -> std::string {
         glm::vec3 color(0.1f, 1.f, 0.1f);
-        int fps = round(Renderer::get()->getAverageFPS());
+        int fps = Renderer::get()->getAverageFPS();
         return std::string() + FontManager::makeColorCode(color)
         + "FPS: " + std::to_string(fps);
     });
