@@ -8,7 +8,7 @@ namespace rts {
 
 class Projectile : public GameEntity {
  public:
-  Projectile(const std::string &name, const Json::Value &params);
+  Projectile(id_t id, const std::string &name, const Json::Value &params);
   virtual ~Projectile() {}
 
   static const std::string TYPE;

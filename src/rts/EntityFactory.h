@@ -4,6 +4,7 @@
 #include <string>
 #include <json/json.h>
 #include "common/Logger.h"
+#include "common/Types.h"
 
 namespace rts {
 
@@ -13,7 +14,7 @@ class EntityFactory {
  public:
   static EntityFactory *get();
 
-  GameEntity * construct(const std::string &cl,
+  GameEntity * construct(id_t id, const std::string &cl,
                      const std::string &name, const Json::Value &params);
 
  private:

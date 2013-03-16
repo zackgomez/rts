@@ -5,8 +5,8 @@
 
 namespace rts {
 
-ModelEntity::ModelEntity()
-  : Entity(),
+ModelEntity::ModelEntity(id_t id)
+  : Entity(id),
     pos_(HUGE_VAL),
     angle_(0.f),
     height_(0.f),

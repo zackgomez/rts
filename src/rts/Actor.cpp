@@ -11,12 +11,12 @@
 
 namespace rts {
 
-Actor::Actor(const std::string &name, const Json::Value &params,
-             bool targetable, bool collidable) :
-  GameEntity(name, params, targetable, collidable),
-  melee_timer_(0.f),
-  meleeWeapon_(nullptr),
-  rangedWeapon_(nullptr) {
+Actor::Actor(id_t id, const std::string &name, const Json::Value &params,
+             bool targetable, bool collidable)
+  : GameEntity(id, name, params, targetable, collidable),
+    melee_timer_(0.f),
+    meleeWeapon_(nullptr),
+    rangedWeapon_(nullptr) {
 
   if (hasParam("meleeWeapon")) {
     meleeWeapon_ = new Weapon(strParam("meleeWeapon"), this);

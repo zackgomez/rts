@@ -7,7 +7,7 @@ namespace rts {
 class Entity
 {
 public:
-  Entity() : id_(lastID_++) { }
+  Entity(id_t id) : id_(id) { }
   virtual ~Entity() { }
 
   id_t getID() const { return id_; }
@@ -17,7 +17,5 @@ public:
 
 private:
   id_t id_;
-
-  static id_t lastID_;
 };
 }  // rts

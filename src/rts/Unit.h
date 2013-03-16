@@ -11,7 +11,7 @@ class Building;
 
 class Unit : public Actor {
  public:
-  explicit Unit(const std::string &name, const Json::Value &params);
+  explicit Unit(id_t id, const std::string &name, const Json::Value &params);
   virtual ~Unit();
 
   static const std::string TYPE;

@@ -253,7 +253,6 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m,
     glUniform3fv(baseColorUniform, 1, glm::value_ptr(mt->baseColor));
     glUniform1f(shininessUniform, mt->shininess);
     if (mt->texture) {
-      LOG(DEBUG) << "Using texture\n";
       glUniform1i(useTextureUniform, 1);
       glActiveTexture(GL_TEXTURE0);
       glEnable(GL_TEXTURE);

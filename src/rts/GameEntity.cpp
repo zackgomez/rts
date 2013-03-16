@@ -9,11 +9,13 @@
 namespace rts {
 
 GameEntity::GameEntity(
+    id_t id,
     const std::string &name,
     const Json::Value &params,
     bool targetable,
     bool collidable)
-  : playerID_(NO_PLAYER),
+  : ModelEntity(id),
+    playerID_(NO_PLAYER),
     name_(name),
     targetable_(targetable),
     collidable_(collidable) {

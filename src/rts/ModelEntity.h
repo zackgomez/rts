@@ -11,7 +11,7 @@ namespace rts {
 class ModelEntity : public Entity
 {
 public:
-  ModelEntity();
+  ModelEntity(id_t id);
   virtual ~ModelEntity();
 
   static const uint32_t P_RENDERABLE = 565038773;

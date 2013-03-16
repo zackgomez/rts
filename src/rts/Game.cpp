@@ -281,10 +281,12 @@ void Game::handleMessage(const Message &msg) {
     invariant(msg.isMember("params"),
               "malformed SPAWN_ENTITY message");
 
+    id_t eid = Renderer::get()->newEntityID();
     GameEntity *ent = EntityFactory::get()->construct(
-                    msg["entity_class"].asString(),
-                    msg["entity_name"].asString(),
-                    msg["params"]);
+        eid,
+        msg["entity_class"].asString(),
+        msg["entity_name"].asString(),
+        msg["params"]);
     if (ent) {
       Renderer::get()->spawnEntity(ent);
     }

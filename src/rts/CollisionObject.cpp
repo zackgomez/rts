@@ -9,9 +9,10 @@ LoggerPtr CollisionObject::logger_;
 const std::string CollisionObject::TYPE = "COLLISION_OBJECT";
 
 CollisionObject::CollisionObject(
+    id_t id,
     const std::string &name,
     const Json::Value &params)
-  : GameEntity(name, params, false, true) {
+  : GameEntity(id, name, params, false, true) {
   setPosition(toVec2(params["entity_pos"]));
   setSize(toVec2(params["entity_size"]));
   setAngle(params["entity_angle"].asFloat());

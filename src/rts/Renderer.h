@@ -1,5 +1,6 @@
 #ifndef SRC_RTS_RENDERER_H_
 #define SRC_RTS_RENDERER_H_
+#include <atomic>
 #include <map>
 #include <mutex>
 #include <set>
@@ -58,6 +59,8 @@ class Renderer {
   const std::map<id_t, GameEntity *>& getEntities() const {
     return entities_;
   }
+  // Internally synchronized
+  id_t newEntityID();
   void spawnEntity(Entity *ent);
   void removeEntity(id_t eid);
   void clearEntities();
@@ -119,6 +122,7 @@ class Renderer {
   glm::vec2 worldToMinimap(const glm::vec3 &mapPos);
 
   std::map<id_t, GameEntity *> entities_;
+  std::atomic<id_t> nextEntityID_;
 
   Controller *controller_;
 

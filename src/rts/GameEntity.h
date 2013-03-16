@@ -14,8 +14,9 @@ namespace rts {
 
 class GameEntity : public ModelEntity {
  public:
-  explicit GameEntity(const std::string &name, const Json::Value &params,
-                  bool targetable = false, bool collidable = false);
+  explicit GameEntity(id_t id,
+      const std::string &name, const Json::Value &params,
+      bool targetable = false, bool collidable = false);
   virtual ~GameEntity();
 
   static const uint32_t P_TARGETABLE = 463132888;

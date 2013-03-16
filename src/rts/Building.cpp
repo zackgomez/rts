@@ -12,8 +12,8 @@ namespace rts {
 LoggerPtr Building::logger_;
 const std::string Building::TYPE = "BUILDING";
 
-Building::Building(const std::string &name, const Json::Value &params)
-  : Actor(name, params),
+Building::Building(id_t id, const std::string &name, const Json::Value &params)
+  : Actor(id, name, params),
     capAmount_(0.f),
     capperID_(NO_ENTITY),
     lastCappingPlayerID_(NO_PLAYER),

@@ -29,7 +29,7 @@ class Actor : public GameEntity {
     float max_time;
   };
 
-  Actor(const std::string &name, const Json::Value &params,
+  Actor(id_t id, const std::string &name, const Json::Value &params,
         bool targetable = true, bool collidable = true);
   virtual ~Actor();
 

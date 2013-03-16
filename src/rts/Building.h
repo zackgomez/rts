@@ -8,7 +8,7 @@ namespace rts {
 
 class Building : public Actor {
  public:
-  explicit Building(const std::string &name, const Json::Value &params);
+  explicit Building(id_t id, const std::string &name, const Json::Value &params);
   virtual ~Building() { }
 
   static const std::string TYPE;

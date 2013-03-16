@@ -30,8 +30,6 @@
 
 namespace rts {
 
-id_t Entity::lastID_ = STARTING_EID;
-
 Renderer::Renderer()
   : controller_(nullptr),
     running_(true),
@@ -40,7 +38,8 @@ Renderer::Renderer()
     timeMultiplier_(1.f),
     lastTickTime_(Clock::now()),
     lastRender_(Clock::now()),
-    mapSize_(0.f) {
+    mapSize_(0.f),
+    nextEntityID_(STARTING_EID) {
   // TODO(zack): move this to a separate initialize function
   initEngine(resolution_);
 
@@ -77,6 +76,7 @@ void Renderer::clearEntities() {
     delete pair.second;
   }
   entities_.clear();
+  nextEntityID_ = STARTING_EID;
 }
 
 void Renderer::setController(Controller *controller) {
@@ -213,6 +213,11 @@ void Renderer::endRender() {
   renderUI();
 
   SDL_GL_SwapBuffers();
+}
+
+id_t Renderer::newEntityID() {
+  // TODO(synchronze here)
+  return nextEntityID_++;
 }
 
 void Renderer::spawnEntity(Entity *ent) {

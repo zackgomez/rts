@@ -14,8 +14,8 @@ namespace rts {
 LoggerPtr Unit::logger_;
 const std::string Unit::TYPE = "UNIT";
 
-Unit::Unit(const std::string &name, const Json::Value &params)
-  : Actor(name, params, true),
+Unit::Unit(id_t id, const std::string &name, const Json::Value &params)
+  : Actor(id, name, params, true),
     weapon_(nullptr),
     state_(new IdleState(this)) {
   if (!logger_.get()) {
