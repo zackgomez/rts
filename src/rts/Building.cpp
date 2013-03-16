@@ -60,12 +60,6 @@ void Building::handleMessage(const Message &msg) {
 void Building::update(float dt) {
   Actor::update(dt);
 
-  const Player *player = Game::get()->getPlayer(getPlayerID());
-  setMaterial(createMaterial(
-    player ? player->getColor() : vec3Param("global.defaultColor"),
-    10.f,
-    ResourceManager::get()->getTexture("vp")));
-
   // We need a single tick delay to see if an entity is still capturing this
   // building. The single tick ensures that the message from the capping unit
   // would have been sent, so if no such message was sent, the unit is no

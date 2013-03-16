@@ -72,6 +72,8 @@ class Actor : public GameEntity {
   void enqueue(const Message &queue_order);
   void produce(const std::string &prod_name);
 
+  void resetTexture();
+
   float health_;
   float melee_timer_;
 

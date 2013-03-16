@@ -5,6 +5,7 @@
 #include "rts/MessageHub.h"
 #include "rts/Player.h"
 #include "rts/Projectile.h"
+#include "rts/ResourceManager.h"
 #include "rts/Unit.h"
 #include "rts/Weapon.h"
 
@@ -27,13 +28,20 @@ Actor::Actor(const std::string &name, const Json::Value &params,
   health_ = getMaxHealth();
 
   setMeshName(strParam("model"));
-  const Player *player = Game::get()->getPlayer(getPlayerID());
-  auto color = player ? player->getColor() : vec3Param("global.defaultColor");
-  setMaterial(createMaterial(color, 10.f));
   setScale(glm::vec3(param("modelSize")));
+  resetTexture();
 }
 
 Actor::~Actor() {
+}
+
+void Actor::resetTexture() {
+  const Player *player = Game::get()->getPlayer(getPlayerID());
+  auto color = player ? player->getColor() : vec3Param("global.defaultColor");
+  GLuint texture = hasParam("texture")
+    ? ResourceManager::get()->getTexture(strParam("texture"))
+    : 0;
+  setMaterial(createMaterial(color, 10.f, texture));
 }
 
 void Actor::handleMessage(const Message &msg) {
@@ -106,6 +114,9 @@ void Actor::produce(const std::string &prod_name) {
 
 void Actor::update(float dt) {
   GameEntity::update(dt);
+
+  // TODO(zack): dirty hack :-(
+  resetTexture();
 
   melee_timer_ -= dt;
 
