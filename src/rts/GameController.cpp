@@ -100,17 +100,22 @@ void GameController::onCreate() {
   chatWidget->setCloseOnSubmit(true);
   chatWidget->setOnTextSubmittedHandler([&, chatWidget](const std::string &t) {
     Message msg;
-    if (t.find("/all: ") == 0) {
+    msg["pid"] = toJson(player_->getPlayerID());
+    msg["type"] = ActionTypes::CHAT;
+
+    std::string text = t;
+    if (t.find("/all ") == 0) {
       msg["target"] = "all";
+      // Remove command text
+      text = t.substr(5);
     } else {
       msg["target"] = "team";
     }
-    //In future add additional check for whisper
-    msg["pid"] = toJson(player_->getPlayerID());
-    msg["type"] = ActionTypes::CHAT;
-    msg["chat"] = t;
-   
-    MessageHub::get()->addAction(msg);
+    // In future add additional check for whisper
+    if (!text.empty()) {
+      msg["chat"] = text;
+      MessageHub::get()->addAction(msg);
+    }
   });
   UI::get()->addWidget("ui.widgets.chat", chatWidget);
   UI::get()->addWidget("ui.widgets.highlights",
@@ -132,11 +137,15 @@ void GameController::onCreate() {
     invariant(from, "No playyayayaya");
     std::stringstream ss;
     if (m["target"] == "all" || (m["target"] == "team" && from->getTeamID() == player_->getTeamID())) {
-      ss << from->getName() << ": " << m["chat"].asString();
+      ss << from->getName();
+      if (m["target"] == "all") {
+        ss << " (all)";
+      }
+      ss << ": " << m["chat"].asString();
       ((CommandWidget *)UI::get()->getWidget("ui.widgets.chat"))
         ->addMessage(ss.str())
         ->show(fltParam("ui.chat.chatDisplayTime"));
-    } //Note: When we add whisper, append additional conditional
+    } // Note: When we add whisper, append additional conditional
   });
 
   UI::get()->setEntityOverlayRenderer(
@@ -413,7 +422,7 @@ void GameController::keyPress(SDL_keysym keysym) {
     cameraPanDir_.x = -1.f;
   } else if (state_ == PlayerState::DEFAULT) {
     if (key == SDLK_RETURN) {
-      std::string prefix = (shift_) ? "/all: " : "/team: ";
+      std::string prefix = (shift_) ? "/all " : "";
       ((CommandWidget *)UI::get()->getWidget("ui.widgets.chat"))
         ->captureText(prefix);
     } else if (key == SDLK_ESCAPE) {
