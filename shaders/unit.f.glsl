@@ -27,9 +27,8 @@ void main()
 
   // diffuse component
   color += clamp(ndotl, 0, 1) * diffuseColor;
-  color *= baseColor;
 
-  if (useTexture) {
+  if (useTexture != 0) {
     vec4 texcol = texture2D(tex, fragtc);
     color *= (1 - texcol.a) * baseColor + texcol.a * texcol.rgb;
   } else {

@@ -253,6 +253,7 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m,
     glUniform3fv(baseColorUniform, 1, glm::value_ptr(mt->baseColor));
     glUniform1f(shininessUniform, mt->shininess);
     if (mt->texture) {
+      LOG(DEBUG) << "Using texture\n";
       glUniform1i(useTextureUniform, 1);
       glActiveTexture(GL_TEXTURE0);
       glEnable(GL_TEXTURE);
@@ -260,17 +261,15 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m,
       glUniform1i(textureUniform, 0);
     }
   }
-  if (hasParam("renderer.lightPos")) {
-    auto lightPos = vec3Param("renderer.lightPos");
-    GLuint lightPosUniform = glGetUniformLocation(program, "lightPos");
-    GLuint ambientUniform = glGetUniformLocation(program, "ambientColor");
-    GLuint diffuseUniform = glGetUniformLocation(program, "diffuseColor");
-    GLuint specularUniform = glGetUniformLocation(program, "specularColor");
-    glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos));
-    glUniform3fv(ambientUniform, 1, glm::value_ptr(vec3Param("renderer.light.ambient")));
-    glUniform3fv(diffuseUniform, 1, glm::value_ptr(vec3Param("renderer.light.diffuse")));
-    glUniform3fv(specularUniform, 1, glm::value_ptr(vec3Param("renderer.light.specular")));
-  }
+  auto lightPos = vec3Param("renderer.lightPos");
+  GLuint lightPosUniform = glGetUniformLocation(program, "lightPos");
+  GLuint ambientUniform = glGetUniformLocation(program, "ambientColor");
+  GLuint diffuseUniform = glGetUniformLocation(program, "diffuseColor");
+  GLuint specularUniform = glGetUniformLocation(program, "specularColor");
+  glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos));
+  glUniform3fv(ambientUniform, 1, glm::value_ptr(vec3Param("renderer.light.ambient")));
+  glUniform3fv(diffuseUniform, 1, glm::value_ptr(vec3Param("renderer.light.diffuse")));
+  glUniform3fv(specularUniform, 1, glm::value_ptr(vec3Param("renderer.light.specular")));
 
   // Bind data
   glBindBuffer(GL_ARRAY_BUFFER, m->buffer);
@@ -576,7 +575,7 @@ Material * createMaterial(
     GLuint texture) {
   Material *m = new Material;
   m->baseColor = baseColor;
-  m->texture = 0;
+  m->texture = texture;
   m->shininess = shininess;
   return m;
 }

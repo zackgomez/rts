@@ -11,8 +11,6 @@
   {
     "connectAttempts" : 5,
     "connectInterval" : 1.00,
-    // DEBUG PARAMS
-    "dropChance"      : 0.05,
 
     "handshake" : {
       "timeout" : 1.0
