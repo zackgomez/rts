@@ -19,6 +19,7 @@ Projectile::Projectile(id_t id, const std::string &name, const Json::Value &para
   invariant(params.isMember("projectile_owner"), "missing owner");
   ownerID_ = toID(params["projectile_owner"]);
 
+  setPosition(glm::vec3(getPosition2(), 0.5f));
   setMeshName(strParam("model"));
   setMaterial(createMaterial(
         glm::vec3(0.6f),
