@@ -135,7 +135,7 @@ void Renderer::render() {
     renderEntity(it.second);
   }
   for (auto &it : entities_) {
-    renderEntity(it.second);
+    renderEntityOverlay(it.second);
   }
 
   endRender();
@@ -147,6 +147,13 @@ void Renderer::renderEntity(ModelEntity *entity) {
       return;
   }
   entity->render(simdt_);
+}
+
+void Renderer::renderEntityOverlay(ModelEntity *entity) {
+  record_section("renderEntity");
+  if (!entity->hasProperty(ModelEntity::P_RENDERABLE)) {
+      return;
+  }
   UI::get()->renderEntity(entity, simdt_);
 }
 

@@ -114,6 +114,7 @@ class Renderer {
   void startRender();
   void endRender();
   void renderMap();
+  void renderEntityOverlay(ModelEntity *entity);
   void renderEntity(ModelEntity *entity);
   void renderUI();
 
