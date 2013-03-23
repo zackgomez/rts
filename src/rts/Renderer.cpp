@@ -134,6 +134,9 @@ void Renderer::render() {
   for (auto &it : entities_) {
     renderEntity(it.second);
   }
+  for (auto &it : entities_) {
+    renderEntity(it.second);
+  }
 
   endRender();
 }
@@ -144,8 +147,7 @@ void Renderer::renderEntity(ModelEntity *entity) {
       return;
   }
   entity->render(simdt_);
-  auto transform = entity->getTransform(simdt_);
-  UI::get()->renderEntity(entity, transform, renderdt_);
+  UI::get()->renderEntity(entity, simdt_);
 }
 
 void Renderer::renderUI() {

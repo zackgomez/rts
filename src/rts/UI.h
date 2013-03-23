@@ -41,9 +41,9 @@ class UI {
   bool handleKeyPress(SDL_keysym keysym);
 
   void render(float dt);
-  void renderEntity(const ModelEntity *e, const glm::mat4 &transform, float dt);
+  void renderEntity(const ModelEntity *e, float dt);
 
-  typedef std::function<void(const ModelEntity *, const glm::mat4&, float)>
+  typedef std::function<void(const ModelEntity *, float)>
       EntityOverlayRenderer;
   void setEntityOverlayRenderer(EntityOverlayRenderer r) {
     entityOverlayRenderer_ = r;

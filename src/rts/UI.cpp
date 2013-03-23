@@ -97,9 +97,9 @@ void UI::render(float dt) {
   glEnable(GL_DEPTH_TEST);
 }
 
-void UI::renderEntity(const ModelEntity *e, const glm::mat4 &tr, float dt) {
+void UI::renderEntity(const ModelEntity *e, float dt) {
   if (entityOverlayRenderer_) {
-    entityOverlayRenderer_(e, tr, dt);
+    entityOverlayRenderer_(e, dt);
   }
 }
 

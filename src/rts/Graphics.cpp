@@ -307,8 +307,11 @@ void drawRectCenter(
   viewStack.push();
   viewStack.current() = glm::mat4(1.f);
   projStack.push();
-  projStack.current() =
-    glm::ortho(0.f, screenRes.x, screenRes.y, 0.f);
+  projStack.current() = glm::scale(
+      glm::translate(
+        glm::mat4(1.f),
+        glm::vec3(-1, 1, 0)),
+      glm::vec3(2.f / glm::vec2(screenRes.x, -screenRes.y), -1.f));
 
   renderRectangleColor(transform, color);
 

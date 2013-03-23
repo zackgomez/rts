@@ -29,7 +29,6 @@ static void renderEntity(
     const LocalPlayer *localPlayer,
     const std::map<id_t, float>& entityHighlights,
     const ModelEntity *e,
-    const glm::mat4 &transform,
     float dt);
 
 static void renderHighlights(
@@ -149,7 +148,7 @@ void GameController::onCreate() {
   });
 
   UI::get()->setEntityOverlayRenderer(
-      std::bind(renderEntity, player_, std::ref(entityHighlights_), _1, _2, _3));
+      std::bind(renderEntity, player_, std::ref(entityHighlights_), _1, _2));
 
   ((TextWidget *)UI::get()->getWidget("ui.widgets.vicdisplay-1"))
     ->setTextFunc(std::bind(getVPString, STARTING_TID));
@@ -591,43 +590,37 @@ void renderEntity(
     const LocalPlayer *localPlayer,
     const std::map<id_t, float>& entityHighlights,
     const ModelEntity *e,
-    const glm::mat4 &transform,
     float dt) {
   if (!e->hasProperty(GameEntity::P_ACTOR)) {
     return;
   }
+  auto transform = glm::translate(glm::mat4(1.f), e->getPosition(dt));
   record_section("renderActorInfo");
   // TODO(zack): only render for actors currently on screen/visible
+  auto entitySize = e->getSize();
+  auto circleTransform = glm::scale(
+      glm::translate(
+        transform,
+        glm::vec3(0, 0, 0.1)),
+      glm::vec3(0.25f + sqrt(entitySize.x * entitySize.y)));
   if (localPlayer->isSelected(e->getID())) {
     // A bit of a hack here...
-    auto finalTransform = glm::translate(
-        transform,
-        glm::vec3(0, 0, 0.1));
-    renderCircleColor(finalTransform,
+    renderCircleColor(circleTransform,
         glm::vec4(vec3Param("colors.selected"), 1.f));
   } else if (entityHighlights.find(e->getID()) != entityHighlights.end()) {
     // A bit of a hack here...
-    auto finalTransform = glm::translate(
-        transform,
-        glm::vec3(0, 0, 0.1));
-    renderCircleColor(finalTransform,
+    renderCircleColor(circleTransform,
         glm::vec4(vec3Param("colors.targeted"), 1.f));
   }
 
   glDisable(GL_DEPTH_TEST);
-  auto ndc = getProjectionStack().current() * getViewStack().current() *
-      transform * glm::vec4(0, 0, 0, 1);
+  glm::vec3 placardPos(0.f, 0.f, e->getHeight() + 0.50f);
+  auto ndc = getProjectionStack().current() * getViewStack().current()
+    * transform * glm::vec4(placardPos, 1.f);
   ndc /= ndc.w;
   auto resolution = Renderer::get()->getResolution();
-  auto coord = (glm::vec2(ndc.x, -ndc.y) / 2.f + glm::vec2(0.5f)) * resolution;
+  auto coord = (glm::vec2(ndc.x, -ndc.y) / 2.f + 0.5f) * resolution;
   auto actor = (const Actor *)e;
-  // First the unit placard.  For now just a square in the color of the owner,
-  // eventually an icon denoting unit and damage type + upgrades.
-  glm::vec2 size = vec2Param("hud.actor_card.dim");
-  glm::vec2 pos = coord - vec2Param("hud.actor_card.pos");
-  auto player = Game::get()->getPlayer(actor->getPlayerID());
-  auto color = player ? player->getColor() : vec3Param("global.defaultColor");
-  drawRectCenter(pos, size, glm::vec4(color, 0.7f));
 
   // Cap status
   if (actor->hasProperty(GameEntity::P_CAPPABLE)) {
