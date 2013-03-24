@@ -2,6 +2,7 @@
 #define SRC_RTS_ENTITY_H_
 
 #include <string>
+#include <queue>
 #include <glm/glm.hpp>
 #include "common/Collision.h"
 #include "common/Types.h"
@@ -55,6 +56,16 @@ class GameEntity : public ModelEntity {
 
   virtual void checksum(Checksum &chksum) const;
 
+  std::queue<glm::vec3> getPathNodes() const;
+
+  // helper functions for update
+  // Don't move or rotate
+  void remainStationary();
+  // Rotates to face position
+  void turnTowards(const glm::vec2 &pos, float dt);
+  // Moves towards position as fast as possible (probably rotates)
+  void moveTowards(const glm::vec2 &pos, float dt);
+
  protected:
 
   float param(const std::string &p) const;
@@ -66,6 +77,8 @@ class GameEntity : public ModelEntity {
   void setPlayerID(id_t pid) {
     playerID_ = pid;
   }
+
+  std::queue<glm::vec3> pathQueue_;
 
  private:
   id_t playerID_;

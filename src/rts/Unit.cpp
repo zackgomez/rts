@@ -24,14 +24,6 @@ Unit::Unit(id_t id, const std::string &name, const Json::Value &params)
 
   // these are inited in Actor
   weapon_ = rangedWeapon_ ? rangedWeapon_ : meleeWeapon_;
-  addExtraEffect([&](float dt) {
-    if (pathQueue_.empty()) {
-      return;
-    }
-    auto target = pathQueue_.front();
-    auto pos = glm::vec3(glm::vec2(getPosition(dt)), 0.05f);
-    renderLineColor(pos, target, glm::vec4(1.f));
-  });
 }
 
 Unit::~Unit() {
@@ -106,10 +98,6 @@ void Unit::update(float dt) {
   }
 }
 
-std::queue<glm::vec3> Unit::getPathNodes() const {
-  return pathQueue_;
-}
-
 bool Unit::canAttack(const GameEntity *e) const {
   if (e->getType() == Building::TYPE) {
     return !((Building*)e)->canCapture(getID()) && weapon_->canAttack(e);
@@ -128,43 +116,6 @@ bool Unit::withinRange(const GameEntity *e) const {
   glm::vec2 targetPos = e->getPosition2();
   float dist = glm::distance(getPosition2(), targetPos);
   return dist < weapon_->getMaxRange();
-}
-
-void Unit::turnTowards(const glm::vec2 &targetPos, float dt) {
-  float desired_angle = angleToTarget(targetPos);
-  float delAngle = addAngles(desired_angle, -getAngle());
-  float turnRate = param("turnRate");
-  // rotate
-  // only rotate when not close enough
-  // Would overshoot, just move directly there
-  if (fabs(delAngle) < turnRate * dt) {
-    setTurnSpeed(delAngle / dt);
-  } else {
-    setTurnSpeed(glm::sign(delAngle) * turnRate);
-  }
-  // No movement
-  setSpeed(0.f);
-}
-
-void Unit::moveTowards(const glm::vec2 &targetPos, float dt) {
-  pathQueue_ = std::queue<glm::vec3>();
-  pathQueue_.push(glm::vec3(targetPos, 0.f));
-  float dist = glm::length(targetPos - getPosition2());
-  float speed = param("speed");
-  // rotate
-  turnTowards(targetPos, dt);
-  // move
-  // Set speed careful not to overshoot
-  if (dist < speed * dt) {
-    speed = dist / dt;
-  }
-  setSpeed(speed);
-}
-
-void Unit::remainStationary() {
-  pathQueue_ = std::queue<glm::vec3>();
-  setSpeed(0.f);
-  setTurnSpeed(0.f);
 }
 
 void Unit::attackTarget(const GameEntity *e) {

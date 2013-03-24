@@ -39,6 +39,15 @@ GameEntity::GameEntity(
 
   // Make sure we did it right
   assertPid(playerID_);
+
+  addExtraEffect([&](float dt) {
+    if (pathQueue_.empty()) {
+      return;
+    }
+    auto target = pathQueue_.front();
+    auto pos = glm::vec3(glm::vec2(getPosition(dt)), 0.05f);
+    renderLineColor(pos, target, glm::vec4(1.f));
+  });
 }
 
 GameEntity::~GameEntity() {
@@ -67,6 +76,43 @@ void GameEntity::handleMessage(const Message &msg) {
   }
 }
 
+void GameEntity::remainStationary() {
+  pathQueue_ = std::queue<glm::vec3>();
+  setSpeed(0.f);
+  setTurnSpeed(0.f);
+}
+
+void GameEntity::turnTowards(const glm::vec2 &targetPos, float dt) {
+  float desired_angle = angleToTarget(targetPos);
+  float delAngle = addAngles(desired_angle, -getAngle());
+  float turnRate = param("turnRate");
+  // rotate
+  // only rotate when not close enough
+  // Would overshoot, just move directly there
+  if (fabs(delAngle) < turnRate * dt) {
+    setTurnSpeed(delAngle / dt);
+  } else {
+    setTurnSpeed(glm::sign(delAngle) * turnRate);
+  }
+  // No movement
+  setSpeed(0.f);
+}
+
+void GameEntity::moveTowards(const glm::vec2 &targetPos, float dt) {
+  pathQueue_ = std::queue<glm::vec3>();
+  pathQueue_.push(glm::vec3(targetPos, 0.f));
+  float dist = glm::length(targetPos - getPosition2());
+  float speed = param("speed");
+  // rotate
+  turnTowards(targetPos, dt);
+  // move
+  // Set speed careful not to overshoot
+  if (dist < speed * dt) {
+    speed = dist / dt;
+  }
+  setSpeed(speed);
+}
+
 void GameEntity::checksum(Checksum &chksum) const {
   id_t id = getID();
   chksum
@@ -80,6 +126,10 @@ void GameEntity::checksum(Checksum &chksum) const {
     .process(getHeight())
     .process(getSpeed())
     .process(getTurnSpeed());
+}
+
+std::queue<glm::vec3> GameEntity::getPathNodes() const {
+  return pathQueue_;
 }
 
 float GameEntity::param(const std::string &p) const {

@@ -29,12 +29,6 @@ class Unit : public Actor {
   bool canCapture(const Building *target) const;
   // If this the target is within firing range
   bool withinRange(const GameEntity *target) const;
-  // Rotates to face position
-  void turnTowards(const glm::vec2 &pos, float dt);
-  // Moves towards position as fast as possible (probably rotates)
-  void moveTowards(const glm::vec2 &pos, float dt);
-  // Don't move or rotate
-  void remainStationary();
   // Attacks target if possible (within range, arc, cd available)
   void attackTarget(const GameEntity *target);
   // Captures target
@@ -43,12 +37,9 @@ class Unit : public Actor {
   const GameEntity *getTarget(id_t lastTargetID) const;
   glm::vec3 getTargetPos() const;
 
-  std::queue<glm::vec3> getPathNodes() const;
-
  protected:
   virtual void handleOrder(const Message &order);
 
-  std::queue<glm::vec3> pathQueue_;
   Weapon *weapon_;
   UnitState *state_;
 
