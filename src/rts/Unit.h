@@ -42,9 +42,6 @@ class Unit : public Actor {
 
   Weapon *weapon_;
   UnitState *state_;
-
- private:
-  static LoggerPtr logger_;
 };
 
 class UnitState {

@@ -35,7 +35,6 @@ class MessageHub {
   MessageHub();
   static MessageHub *instance;
   Game *game_;
-  LoggerPtr logger_;
 };
 };  // rts
 

@@ -14,7 +14,6 @@
 #include "stb_image.c"
 
 static bool initialized = false;
-static LoggerPtr logger;
 
 static MatrixStack viewStack;
 static MatrixStack projStack;
@@ -58,10 +57,6 @@ void initEngine(const glm::vec2 &resolution) {
   }
 
   screenRes = resolution;
-
-  if (!logger.get()) {
-    logger = Logger::getLogger("Engine");
-  }
 
   if (SDL_Init(SDL_INIT_VIDEO)) {
     std::stringstream ss; ss << "Couldn't initialize SDL: "
@@ -219,7 +214,7 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m,
   GLuint program;
   glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*) &program);
   if (!program) {
-    logger->warning() << "No active program on call to " << __FUNCTION__
+    LOG(WARNING) << "No active program on call to " << __FUNCTION__
       << "\n";
     return;
   }
@@ -442,7 +437,7 @@ GLuint loadShader(GLenum type, const std::string &filename) {
   // Load file
   std::ifstream file(filename.c_str());
   if (!file) {
-    logger->error() << "Unable to read shader from " << filename << '\n';
+    LOG(ERROR) << "Unable to read shader from " << filename << '\n';
     return 0;
   }
   std::string shaderText;
@@ -658,7 +653,7 @@ static int loadVerts(const std::string &filename,
                      vert_p4n4t2 **out, size_t *size) {
   std::ifstream cs(filename);
   if (!cs) {
-    logger->error() << "Couldn't open obj file " << filename << '\n';
+    LOG(ERROR) << "Couldn't open obj file " << filename << '\n';
     return 1;
   }
 
@@ -694,7 +689,7 @@ static int loadVerts(const std::string &filename,
   }
 
   // TODO(zack) make a logger call
-  printf("verts: %d, faces: %d, norms: %d, coords: %d, extended: %d\n",
+  Logger::get()->log("verts: %d, faces: %d, norms: %d, coords: %d, extended: %d\n",
          nverts, nfaces, nnorms, ncoords, extended);
 
   // Allocate an extra, dummy texcoord in case vert doesn't specify one

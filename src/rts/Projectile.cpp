@@ -4,15 +4,11 @@
 
 namespace rts {
 
-LoggerPtr Projectile::logger_;
 const std::string Projectile::TYPE = "PROJECTILE";
 
 Projectile::Projectile(id_t id, const std::string &name, const Json::Value &params)
   : GameEntity(id, name, params, false, false),
     targetID_(NO_ENTITY) {
-  if (!logger_.get()) {
-    logger_ = Logger::getLogger("Projectile");
-  }
 
   invariant(params.isMember("projectile_target"), "missing target");
   targetID_ = toID(params["projectile_target"]);

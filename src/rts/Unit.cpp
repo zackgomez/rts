@@ -11,16 +11,12 @@
 
 namespace rts {
 
-LoggerPtr Unit::logger_;
 const std::string Unit::TYPE = "UNIT";
 
 Unit::Unit(id_t id, const std::string &name, const Json::Value &params)
   : Actor(id, name, params, true),
     weapon_(nullptr),
     state_(new IdleState(this)) {
-  if (!logger_.get()) {
-    logger_ = Logger::getLogger("Unit");
-  }
 
   // these are inited in Actor
   weapon_ = rangedWeapon_ ? rangedWeapon_ : meleeWeapon_;

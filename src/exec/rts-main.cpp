@@ -89,6 +89,7 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
 int initLibs() {
   seedRandom(time(nullptr));
   kissnet::init_networking();
+  Logger::initLogger();
 
   atexit(cleanup);
 

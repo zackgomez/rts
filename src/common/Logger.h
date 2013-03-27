@@ -1,9 +1,12 @@
 #ifndef SRC_COMMON_LOGGER_H_
 #define SRC_COMMON_LOGGER_H_
 
-#include <memory>
 #include <iostream>
+#include <fstream>
 #include <string>
+#include <boost/format.hpp>
+#include "common/util.h"
+#include "common/WorkerThread.h"
 
 #define LOG(str) std::cout << __FILE__ << ":" <<  __LINE__ << " "#str << " - "
 
@@ -12,45 +15,23 @@ typedef std::auto_ptr<Logger> LoggerPtr;
 
 class Logger {
  public:
-  static LoggerPtr getLogger(const std::string &prefix) {
-    LoggerPtr ret(new Logger(prefix));
-    return ret;
+  static void initLogger();
+  static void shutdownLogger();
+
+  static Logger* get() {
+    invariant(instance_, "Logging not initialized");
+    return instance_;
   }
 
-  std::ostream& log() {
-    std::cout << prefix_ << ": ";
-    return std::cout;
-  }
+  void log(const char * format, ...);
 
-  std::ostream& debug() {
-    std::cout << "DEBUG - " << prefix_ << ": ";
-    return std::cerr;
-  }
-  std::ostream& info() {
-    std::cout << "INFO - " << prefix_ << ": ";
-    return std::cout;
-  }
-  std::ostream& warning() {
-    std::cerr << "WARNING - " << prefix_ << ": ";
-    return std::cerr;
-  }
-  std::ostream& error() {
-    std::cerr << "ERROR - " << prefix_ << ": ";
-    return std::cerr;
-  }
-
-  std::ostream& fatal() {
-    std::cerr << "ERROR - " << prefix_ << ": ";
-    return std::cerr;
-  }
 
  private:
-  explicit Logger(const std::string &prefix) :
-    prefix_(prefix) {
-    /* Empty */
-  }
+  Logger();
+  static Logger *instance_;
 
-  std::string prefix_;
+  //std::ofstream file_;
+  WorkerThread worker_;
 };
 
 #endif  // SRC_COMMON_LOGGER_H_

@@ -23,7 +23,6 @@ class NetPlayer : public Player {
   }
 
  private:
-  LoggerPtr logger_;
   NetConnectionPtr connection_;
   std::mutex mutex_;
   // last tick that is fully received

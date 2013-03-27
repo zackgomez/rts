@@ -5,7 +5,6 @@
 ResourceManager *ResourceManager::instance_ = NULL;
 
 ResourceManager::ResourceManager() {
-  logger_ = Logger::getLogger("ResourceManager");
 }
 
 ResourceManager::~ResourceManager() {

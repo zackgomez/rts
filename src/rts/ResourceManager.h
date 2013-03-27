@@ -29,8 +29,6 @@ class ResourceManager {
   std::map<std::string, GLuint> textures_;
   std::map<std::string, GLuint> shaders_;
   std::map<std::string, DepthField*> depthFields_;
-
-  LoggerPtr logger_;
 };
 
 #endif  // SRC_RTS_RESOURCEMANAGER_H_

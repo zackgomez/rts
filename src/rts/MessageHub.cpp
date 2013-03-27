@@ -15,7 +15,6 @@ MessageHub * MessageHub::get() {
 
 MessageHub::MessageHub()
   : game_(nullptr) {
-  logger_ = Logger::getLogger("MessageHub");
 }
 
 MessageHub::~MessageHub() {

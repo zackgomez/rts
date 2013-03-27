@@ -3,7 +3,6 @@
 
 #include <string>
 #include <json/json.h>
-#include "common/Logger.h"
 #include "common/Types.h"
 
 namespace rts {
@@ -20,8 +19,6 @@ class EntityFactory {
  private:
   EntityFactory();
   ~EntityFactory();
-
-  LoggerPtr logger_;
 };
 };  // rts
 

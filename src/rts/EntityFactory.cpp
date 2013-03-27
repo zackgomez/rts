@@ -7,7 +7,6 @@
 namespace rts {
 
 EntityFactory::EntityFactory() {
-  logger_ = Logger::getLogger("EntityFactory");
 }
 
 EntityFactory::~EntityFactory() {
@@ -30,7 +29,7 @@ GameEntity * EntityFactory::construct(rts::id_t id, const std::string &cl,
   } else if (cl == CollisionObject::TYPE) {
     return new CollisionObject(id, name, params);
   } else {
-    logger_->warning() << "Trying to spawn unknown class " << cl <<
+    LOG(WARNING) << "Trying to spawn unknown class " << cl <<
                        " named " << name << " params: " << params << '\n';
     return nullptr;
   }

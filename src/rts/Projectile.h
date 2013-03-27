@@ -22,9 +22,6 @@ class Projectile : public GameEntity {
  protected:
   id_t targetID_;
   id_t ownerID_;
-
- private:
-  static LoggerPtr logger_;
 };
 };  // rts
 

@@ -14,7 +14,6 @@ NetPlayer::NetPlayer(id_t playerID, id_t teamID, const std::string &name,
     localPlayerID_(-1),
     ready_(false) {
   assert(connection_);
-  logger_ = Logger::getLogger("NetPlayer");
 }
 
 NetPlayer::~NetPlayer() {
