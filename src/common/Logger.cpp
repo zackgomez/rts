@@ -1,4 +1,5 @@
 #include "common/Logger.h"
+#include <stdarg.h>
 
 static const size_t MAX_MESSAGE_LENGTH = 512;
 Logger * Logger::instance_ = nullptr;
