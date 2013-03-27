@@ -3,6 +3,7 @@
 #include <boost/crc.hpp>
 #include <istream>
 #include <json/json.h>
+#include "common/Logger.h"
 
 typedef uint32_t checksum_t;
 

@@ -31,7 +31,7 @@ void ParamReader::loadFile(const char *filename) {
   // Checksum entire file
   file.clear();
   file.seekg(std::ios::beg);
-  fileChecksum_ = Checksum().process(file).getChecksum();
+  fileChecksum_ = Checksum().process((std::istream&)file).getChecksum();
   LOG(INFO) << "Params file '" << filename << "' checksum: "
     << Checksum::checksumToString(fileChecksum_) << '\n';
 

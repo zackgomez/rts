@@ -73,9 +73,10 @@ class Matchmaker {
   void connectToPlayer(const std::string &ip, const std::string &port);
   void acceptConnections(const std::string &port, int numConnections);
   void connectP2P(
-      const std::vector<std::string> &publicIP,
-      const std::vector<std::string> &privateIP,
-      bool connect,
+      const std::string &publicIP,
+      const std::string &privateIP,
+      const std::string &connectPort,
+      const std::string &listenPort,
       double timeout);
 
   std::string name_;

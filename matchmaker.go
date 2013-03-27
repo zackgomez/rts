@@ -2,9 +2,11 @@ package main
 
 import (
 	"net"
+  "fmt"
 	"log"
 	"bytes"
 	"flag"
+  "math/rand"
 	"encoding/json"
 	"encoding/binary"
 )
@@ -13,6 +15,7 @@ type Player struct {
 	Name string
   LocalAddr string
 	Conn *net.TCPConn
+  Ports []int
 }
 
 type GameInfo map[string]interface{}
@@ -68,6 +71,15 @@ func makeMatch(numPlayers int, mapName string, playerChan chan Player, gameChan 
 			players = append(players, player)
 		}
 
+    // TODO(zack) move this to separate function, ensure uniqueness
+    // Generate ports
+    for key, player := range(players) {
+      for i := 0; i < numPlayers - 1; i++ {
+        player.Ports = append(player.Ports, 50000 + rand.Intn(5000))
+      }
+      players[key] = player
+    }
+
 		// Send match info
 		for i, player := range(players) {
 			// Fill up game info message
@@ -78,19 +90,28 @@ func makeMatch(numPlayers int, mapName string, playerChan chan Player, gameChan 
 				"pid": uint64(100 + i),
 				"tid": uint64(200 + i % 2), // alternate teams
 			}
-			ips := make([]string, 0, numPlayers - 1)
+			peers := make([]interface{}, 0, numPlayers - 1)
+      portIdx := 0
+      remoteIdx := 0
 			for j := 0; j < numPlayers; j++ {
         if j == i {
           continue
         }
-        prefix := "L:"
-        if (j < i) {
-          prefix = "C:";
+        remoteAddr, _, _ := net.SplitHostPort(players[j].Conn.RemoteAddr().String())
+        localPort := player.Ports[portIdx]
+        portIdx++
+        remotePort := players[j].Ports[remoteIdx]
+        remoteIdx++
+        peer := map[string]interface{} {
+          "remoteAddr": remoteAddr,
+          "localAddr": players[j].LocalAddr,
+          // expects a string, w/e
+          "localPort": fmt.Sprintf("%d", localPort),
+          "remotePort": fmt.Sprintf("%d", remotePort),
         }
-        ipstr := prefix + players[j].Conn.RemoteAddr().String() + ":" + players[j].LocalAddr
-				ips = append(ips, ipstr)
+				peers = append(peers, peer)
 			}
-			gameInfo["ips"] = ips
+			gameInfo["peers"] = peers
 
 			msg, err := json.Marshal(gameInfo)
 			if err != nil {
@@ -115,7 +136,6 @@ func handleConnection(conn *net.TCPConn, playerChan chan Player, gameChan chan G
 	if err != nil {
 		log.Println("unable to read message from", conn.RemoteAddr(), err);
 	}
-  log.Println("read buf", buf)
 
   // Parse message
 	var player Player

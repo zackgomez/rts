@@ -78,7 +78,9 @@ std::vector<Player *> Matchmaker::waitPlayers() {
   if (mode_ == MODE_SINGLEPLAYER) {
     return doDebugSetup();
   } else if (mode_ == MODE_MATCHMAKING) {
-    return doServerSetup("zackgomez.com", "11100");
+    return doServerSetup(
+        strParam("local.matchmakingHost"),
+        strParam("local.matchmakingPort"));
   }
 }
 
@@ -145,7 +147,7 @@ std::vector<Player *> Matchmaker::doServerSetup(
   // First connect to matchmaker
   NetConnectionPtr server;
   try {
-    server = attemptConnection(ip, port, listenPort_);
+    server = attemptConnection(ip, port);
   } catch (std::exception &e) {
     matchmakerStatusCallback_("Failed to connect to matchmaker.");
     return std::vector<Player *>();
@@ -160,11 +162,11 @@ std::vector<Player *> Matchmaker::doServerSetup(
   Json::Value mmdata;
   mmdata["name"] = name_;
   mmdata["version"] = strParam("game.version");
-  mmdata["localAddr"] = localAddr + ":" + localPort;
+  mmdata["localAddr"] = localAddr;
   server->sendPacket(mmdata);
 
   LOG(INFO) << "waiting for matchmaker responses...\n";
-  Json::Value ips;
+  Json::Value peers;
   // Wait for responses until we're ready
   while (pid_ == NO_PLAYER) {
     Json::Value msg = server->readNext();
@@ -176,7 +178,7 @@ std::vector<Player *> Matchmaker::doServerSetup(
       invariant(msg.isMember("tid"), "Expected tid in game setup message");
       invariant(msg.isMember("numPlayers"),
           "Expected numPlayers in game setup message");
-      invariant(msg.isMember("ips"), "Expected ips in game setup message");
+      invariant(msg.isMember("peers"), "Expected ips in game setup message");
       invariant(msg.isMember("mapName"),
           "Expected mapName in game setup message");
 
@@ -184,7 +186,7 @@ std::vector<Player *> Matchmaker::doServerSetup(
       tid_ = toID(msg["tid"]);
       mapName_ = msg["mapName"].asString();
       numPlayers_ = msg["numPlayers"].asLargestUInt();
-      ips = msg["ips"];
+      peers = msg["peers"];
     }
   } 
   
@@ -197,25 +199,24 @@ std::vector<Player *> Matchmaker::doServerSetup(
   // Get remaining players
   std::unique_lock<std::mutex> lock(playerMutex_);
   std::vector<std::thread> workers;
+  double timeout = intParam("network.connectAttempts")
+    * fltParam("network.connectInterval");
   // connect P2P to every peer
-  for (const Json::Value& ipval : ips) {
-    std::string ipstr = ipval.asString();
-    std::vector<std::string> msgparts, publicaddr, privateaddr;
-    boost::split(msgparts, ipstr, boost::is_any_of(":"));
-    invariant(msgparts.size() == 5, "expected {L,C}:ip:port:privip:privport");
-    bool connect = msgparts[0] == "C";
-    publicaddr.assign(msgparts.begin() + 1, msgparts.begin() + 3);
-    privateaddr.assign(msgparts.begin() + 3, msgparts.begin() + 5);
-    LOG(INFO) << "Trying " << publicaddr[0] << ":" << publicaddr[1]
-        << "//" << privateaddr[0] << ":" << privateaddr[1] << '\n';
-        double timeout = intParam("network.connectAttempts")
-          * fltParam("network.connectInterval");
+  for (const Json::Value& peer : peers) {
+    // TODO(zack): error checking on these
+    std::string publicaddr = peer["remoteAddr"].asString();
+    std::string privateaddr = peer["localAddr"].asString();
+    std::string connectport = peer["remotePort"].asString();
+    std::string listenport = peer["localPort"].asString();
+    LOG(INFO) << "Trying [" << publicaddr << "|" << privateaddr << "]:" << connectport
+      << " from port " << listenport << '\n';
     workers.push_back(std::thread(std::bind(
       &Matchmaker::connectP2P,
       this,
       publicaddr,
       privateaddr,
-      connect,
+      connectport,
+      listenport,
       timeout)));
   }
 
@@ -295,31 +296,30 @@ void Matchmaker::acceptConnections(
 }
 
 void Matchmaker::connectP2P(
-    const std::vector<std::string> &publicAddr,
-    const std::vector<std::string> &privateAddr,
-    bool connect,
+    const std::string &publicAddr,
+    const std::string &privateAddr,
+    const std::string &connectPort,
+    const std::string &listenPort,
     double timeout) {
-  invariant(publicAddr.size() == 2, "expected ip:port");
-  invariant(privateAddr.size() == 2, "expected ip:port");
   kissnet::socket_set sockset;
 
   // TODO(zack): don't keep these as variables, just let the sockset keep track
   auto public_connect_sock = kissnet::tcp_socket::create();
   public_connect_sock = kissnet::tcp_socket::create();
-  public_connect_sock->bind(listenPort_);
-  public_connect_sock->nonblockingConnect(publicAddr[0], publicAddr[1]);
+  public_connect_sock->bind(listenPort);
+  public_connect_sock->nonblockingConnect(publicAddr, connectPort);
   sockset.add_write_socket(public_connect_sock);
 
   auto private_connect_sock = kissnet::tcp_socket::create();
-  if (publicAddr[0] != privateAddr[0]) {
+  if (publicAddr != privateAddr) {
     private_connect_sock = kissnet::tcp_socket::create();
-    private_connect_sock->bind(listenPort_);
-    private_connect_sock->nonblockingConnect(privateAddr[0], privateAddr[1]);
+    private_connect_sock->bind(listenPort);
+    private_connect_sock->nonblockingConnect(privateAddr, connectPort);
     sockset.add_write_socket(private_connect_sock);
   }
 
   auto listen_sock = kissnet::tcp_socket::create();
-  listen_sock->listen(listenPort_, 11);
+  listen_sock->listen(listenPort, 11);
   sockset.add_read_socket(listen_sock);
 
   kissnet::tcp_socket_ptr ret;
@@ -341,19 +341,15 @@ void Matchmaker::connectP2P(
           LOG(DEBUG) << "SOCK ERROR: " << strerror(sockerr) << " || public " <<
               (sock == public_connect_sock) << '\n';
           sockset.remove_socket(sock);
-          // If just listening, don't retry to connect
-          if (!connect) {
-            continue;
-          }
           // A connect error occured, retry connect after short timeout
           delay = true;
           if (sock == public_connect_sock) {
             try {
               public_connect_sock = kissnet::tcp_socket::create();
-              public_connect_sock->bind(listenPort_);
+              public_connect_sock->bind(listenPort);
               public_connect_sock->nonblockingConnect(
-                  publicAddr[0],
-                  publicAddr[1]);
+                  publicAddr,
+                  connectPort);
               sockset.add_write_socket(public_connect_sock);
             } catch (kissnet::socket_exception &e) {
               sockset.remove_socket(public_connect_sock);
@@ -362,10 +358,10 @@ void Matchmaker::connectP2P(
           } else if (sock == private_connect_sock) {
             try {
               private_connect_sock = kissnet::tcp_socket::create();
-              private_connect_sock->bind(listenPort_);
+              private_connect_sock->bind(listenPort);
               private_connect_sock->nonblockingConnect(
-                  privateAddr[0],
-                  privateAddr[1]);
+                  privateAddr,
+                  connectPort);
               sockset.add_write_socket(private_connect_sock);
             } catch (kissnet::socket_exception &e) {
               sockset.remove_socket(private_connect_sock);
@@ -378,8 +374,6 @@ void Matchmaker::connectP2P(
     if (delay && !ret) {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
       timeout -= 0.5;
-      sockset.remove_socket(listen_sock);
-      listen_sock->close();
     }
   }
   if (ret) {
@@ -391,6 +385,7 @@ void Matchmaker::connectP2P(
     NetPlayer *np = handshake(conn);
     players_.push_back(np);
   } else {
+    LOG(ERROR) << "unable to connect to " << publicAddr << '\n';
     error_ = true;
   }
   doneCondVar_.notify_one();
