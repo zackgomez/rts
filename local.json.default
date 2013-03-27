@@ -3,7 +3,7 @@
   "player" : {
     "name" : "DefaultPlayer",
     "color" : [0.1, 0.1, 0.8],
-    "port" : "10111"
+    "port" : "10110"
   },
 
   // Game Preferences
@@ -17,5 +17,9 @@
   "framerate" : 80.0,
   "cameraRotSpeed" : 0.3,
   "keyZoomSpeed" : 0.1,
-  "mouseZoomSpeed" : 1.0
+  "mouseZoomSpeed" : 1.0,
+
+  // Server preferences
+  "matchmakingHost" : "zackgomez.com",
+  "matchmakingPort" : "11100"
 }
