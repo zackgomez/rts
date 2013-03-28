@@ -81,6 +81,7 @@ func makeMatch(numPlayers int, mapName string, playerChan chan Player, gameChan 
     }
 
 		// Send match info
+    remoteIdx := 0
 		for i, player := range(players) {
 			// Fill up game info message
 			var gameInfo = GameInfo {
@@ -92,16 +93,17 @@ func makeMatch(numPlayers int, mapName string, playerChan chan Player, gameChan 
 			}
 			peers := make([]interface{}, 0, numPlayers - 1)
       portIdx := 0
-      remoteIdx := 0
 			for j := 0; j < numPlayers; j++ {
         if j == i {
+          if i != 0 {
+            remoteIdx++
+          }
           continue
         }
         remoteAddr, _, _ := net.SplitHostPort(players[j].Conn.RemoteAddr().String())
         localPort := player.Ports[portIdx]
         portIdx++
         remotePort := players[j].Ports[remoteIdx]
-        remoteIdx++
         peer := map[string]interface{} {
           "remoteAddr": remoteAddr,
           "localAddr": players[j].LocalAddr,
