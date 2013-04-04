@@ -29,6 +29,7 @@ typedef std::chrono::microseconds microseconds;
 #define S__LINE__ S_(__LINE__)
 #define invariant(condition, message) __invariant(condition, \
     std::string() + __FILE__ ":" S__LINE__ " " #condition " - " + message)
+[[noreturn]] void invariant_violation(const std::string &message);
 
 void __invariant(bool condition, const std::string &message);
 

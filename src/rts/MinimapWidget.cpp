@@ -5,6 +5,7 @@
 #include "rts/Player.h"
 #include "rts/Map.h"
 #include "rts/Renderer.h"
+#include "rts/VisibilityMap.h"
 #include "rts/UI.h"
 
 namespace rts {
@@ -13,9 +14,37 @@ MinimapWidget::MinimapWidget(const std::string &name, id_t localPlayerID)
   : SizedWidget(name),
     localPlayerID_(localPlayerID),
     name_(name) {
+
+  glGenTextures(1, &visibilityTex_);
 }
 
 MinimapWidget::~MinimapWidget() {
+  //glDeleteTextures(1, &visibilityTex_);
+}
+
+void MinimapWidget::renderBase(float dt) {
+  const glm::vec4 &mapColor = Game::get()->getMap()->getMinimapColor();
+
+  GLuint program = ResourceManager::get()->getShader("minimap");
+  glUseProgram(program);
+  GLuint colorUniform = glGetUniformLocation(program, "color");
+  glUniform4fv(colorUniform, 1, glm::value_ptr(mapColor));
+
+  GLuint textureUniform = glGetUniformLocation(program, "texture");
+  GLuint tcUniform = glGetUniformLocation(program, "texcoord");
+  glUniform1i(textureUniform, 0);
+  glUniform4fv(tcUniform, 1, glm::value_ptr(glm::vec4(0, 1, 1, 0)));
+
+  auto visibilityMap = Game::get()->getVisibilityMap(localPlayerID_);
+  visibilityTex_ = visibilityMap->fillTexture(visibilityTex_);
+
+  glActiveTexture(GL_TEXTURE0);
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, visibilityTex_);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  drawShaderCenter(getCenter(), getSize());
 }
 
 void MinimapWidget::render(float dt) {
@@ -25,8 +54,7 @@ void MinimapWidget::render(float dt) {
   // TODO(connor) support other aspect ratios so they don't stretch or distort
 
   // Render base image
-  const glm::vec4 &mapColor = Game::get()->getMap()->getMinimapColor();
-  drawRectCenter(getCenter(), getSize(), mapColor);
+  renderBase(dt);
 
   // Render viewport
   /*
@@ -65,11 +93,16 @@ void MinimapWidget::render(float dt) {
   
   const LocalPlayer *localPlayer = (LocalPlayer *)Game::get()->getPlayer(localPlayerID_);
   id_t teamID_ = localPlayer->getTeamID();
+  auto visibilityMap = Game::get()->getVisibilityMap(localPlayerID_);
     
   // render actors
   for (const auto &pair : Renderer::get()->getEntities()) {
     const GameEntity *e = (const GameEntity *)pair.second;
     if (!e->hasProperty(GameEntity::P_ACTOR)) {
+      continue;
+    }
+    // TODO(zack): readd me!
+    if (!visibilityMap->locationVisible(e->getPosition2())) {
       continue;
     }
     glm::vec2 pos = worldToMinimap(e->getPosition(Renderer::get()->getSimDT()));

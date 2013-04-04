@@ -1,7 +1,9 @@
 #version 120
 
 varying vec2 fragPos;
+varying vec2 frag_texcoord;
 
+uniform sampler2D texture;
 uniform vec4 color;
 uniform vec2 gridDim;
 
@@ -13,5 +15,10 @@ void main()
   float u = min(abs(sin(gridPos.x * PI)), abs(sin(gridPos.y * PI)));
   u = smoothstep(0, 0.1, u);
 
-  gl_FragColor = u * color;
+	float visible = texture2D(texture, frag_texcoord).a;
+	if (visible == 0.f) {
+		u /= 2;
+	}
+
+  gl_FragColor = vec4(u * color.rgb, color.a);
 }

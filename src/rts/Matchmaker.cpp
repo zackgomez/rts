@@ -81,6 +81,8 @@ std::vector<Player *> Matchmaker::waitPlayers() {
     return doServerSetup(
         strParam("local.matchmakingHost"),
         strParam("local.matchmakingPort"));
+  } else {
+    invariant_violation("Unknown matchmaking mode");
   }
 }
 

@@ -4,6 +4,8 @@
 
 namespace rts {
 
+class VisibilityMap;
+
 class MinimapWidget : public SizedWidget {
  public:
   MinimapWidget(const std::string &name, id_t localPlayerID);
@@ -15,6 +17,9 @@ class MinimapWidget : public SizedWidget {
   id_t localPlayerID_;
   std::string name_;
 
+  GLuint visibilityTex_;
+
+  void renderBase(float dt);
   glm::vec2 worldToMinimap(const glm::vec3 &world) const;
 };
 

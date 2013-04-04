@@ -27,6 +27,9 @@ class GameController : public Controller {
   virtual void keyPress(SDL_keysym key);
   virtual void keyRelease(SDL_keysym key);
 
+	virtual bool isEntityVisible(const ModelEntity *e) const;
+	virtual void updateMapProgram(GLuint mapProgram) const;
+
   // Accessors
   // returns glm::vec4(HUGE_VAL) for no rect, or glm::vec4(start, end)
   glm::vec4 getDragRect() const;
@@ -57,6 +60,8 @@ class GameController : public Controller {
   // TODO(zack): move to renderer/engine as a camera velocity
   glm::vec2 cameraPanDir_;
   float zoom_;
+
+	GLuint visTex_;
 
 
   void minimapUpdateCamera(const glm::vec2 &screenCoord);

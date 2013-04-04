@@ -16,6 +16,7 @@ namespace rts {
 
 class Map;
 class Player;
+class VisibilityMap;
 struct PlayerResources {
   float requisition;
 };
@@ -73,6 +74,7 @@ class Game {
 
   const PlayerResources& getResources(id_t pid) const;
   float getVictoryPoints(id_t tid) const;
+  const VisibilityMap* getVisibilityMap(id_t tid) const;
 
   typedef std::function<void(const Message&)> ChatListener;
   void setChatListener(ChatListener cl) {
@@ -98,6 +100,8 @@ class Game {
   std::map<id_t, float> victoryPoints_;
   tick_t tick_;
   tick_t tickOffset_;
+
+  std::map<id_t, VisibilityMap*> visibilityMaps_;
 
   // holds checksums before the tick specified by the index
   // checksums_[3] == checksum at the end of tick 2/beginning of tick 3

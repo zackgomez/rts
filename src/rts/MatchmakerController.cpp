@@ -71,4 +71,11 @@ void MatchmakerController::keyPress(SDL_keysym keysym) {
     Renderer::get()->signalShutdown();
   }
 }
+
+bool MatchmakerController::isEntityVisible(const ModelEntity *) const {
+	return true;
+}
+
+void MatchmakerController::updateMapProgram(GLuint mapProgram) const {
+}
 };  // rts

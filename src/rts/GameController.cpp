@@ -15,6 +15,7 @@
 #include "rts/Player.h"
 #include "rts/PlayerAction.h"
 #include "rts/Renderer.h"
+#include "rts/VisibilityMap.h"
 #include "rts/UI.h"
 #include "rts/Widgets.h"
 
@@ -81,6 +82,9 @@ GameController::~GameController() {
 }
 
 void GameController::onCreate() {
+	// TODO(zack): delete texture
+	glGenTextures(1, &visTex_);
+
   createWidgets("ui.widgets");
 
   using namespace std::placeholders;
@@ -679,5 +683,24 @@ void renderEntity(
   glEnable(GL_DEPTH_TEST);
 }
 
+bool GameController::isEntityVisible(const ModelEntity *e) const {
+	return Game::get()->getVisibilityMap(player_->getPlayerID())
+		->locationVisible(e->getPosition2());
+}
+
+void GameController::updateMapProgram(GLuint mapProgram) const {
+	auto visibilityMap = Game::get()->getVisibilityMap(player_->getPlayerID());
+
+  visibilityMap->fillTexture(visTex_);
+
+  GLuint textureUniform = glGetUniformLocation(mapProgram, "texture");
+  glUniform1i(textureUniform, 0);
+
+  glActiveTexture(GL_TEXTURE0);
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, visTex_);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+}
 
 };  // rts

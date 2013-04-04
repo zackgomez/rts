@@ -4,13 +4,17 @@
 
 void __invariant(bool condition, const std::string &message) {
   if (!condition) {
-    LOG(FATAL) << "invariant error: " << message << '\n';
-    assert(false);
-    // TODO(zack): investigate benefits of using an exception
-    // assert gives stack context in debugger for threads... exceptions
-    // don't always.
-    // throw violation_exception(message);
+    invariant_violation(message);
   }
+}
+
+void invariant_violation(const std::string &message) {
+  LOG(FATAL) << "invariant error: " << message << '\n';
+  assert(false);
+  // TODO(zack): investigate benefits of using an exception
+  // assert gives stack context in debugger for threads... exceptions
+  // don't always.
+  // throw violation_exception(message);
 }
 
 std::ostream& operator<< (std::ostream &os, const glm::vec2 &v) {

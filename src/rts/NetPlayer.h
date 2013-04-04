@@ -22,6 +22,8 @@ class NetPlayer : public Player {
     localPlayerID_ = playerID;
   }
 
+  bool visibleEntity(const GameEntity *) const { return false; }
+
  private:
   NetConnectionPtr connection_;
   std::mutex mutex_;

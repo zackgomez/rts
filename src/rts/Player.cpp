@@ -48,6 +48,10 @@ std::vector<PlayerAction> LocalPlayer::getActions() {
   return ret;
 }
 
+bool LocalPlayer::visibleEntity(const GameEntity *entity) const {
+  return entity->getPlayerID() == playerID_;
+}
+
 void LocalPlayer::playerAction(id_t playerID, const PlayerAction &action) {
   if (playerID == playerID_) {
     std::unique_lock<std::mutex> lock(actionMutex_);

@@ -21,7 +21,7 @@ glm::vec2 uiVec2Param(const std::string &name) {
   } else if (raw[0].isInt() && raw[1].isInt()) {
     return toVec2(raw);
   } else {
-    invariant(false, "unexpected ui pos array element");
+    invariant_violation("unexpected ui pos array element");
   }
 }
 
@@ -49,7 +49,7 @@ glm::vec2 uiSizeParam(const std::string &name) {
   } else if (raw[0].isInt() && raw[1].isInt()) {
     return toVec2(raw);
   } else {
-    invariant(false, "unexpected ui pos array element");
+    invariant_violation("unexpected ui pos array element");
   }
 }
 
@@ -71,7 +71,7 @@ UIWidget *createWidget(const std::string &paramName) {
   } else if (type == "CommandWidget") {
     return new CommandWidget(paramName);
   } else {
-    invariant(false, "No widget found for type " + type);
+    invariant_violation("No widget found for type " + type);
   }
 }
 

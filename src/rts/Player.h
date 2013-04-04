@@ -14,6 +14,8 @@
 namespace rts {
 
 class Game;
+class GameEntity;
+class VisibilityMap;
 class Player {
  public:
   explicit Player(id_t playerID, id_t teamID, const std::string &name,
@@ -23,7 +25,8 @@ class Player {
     assertPid(playerID_);
     assertTid(teamID_);
   }
-  virtual ~Player() {}
+
+  virtual ~Player() { }
 
   void setGame(Game *game) {
     game_ = game;
@@ -62,6 +65,12 @@ class Player {
    * @param action The action itself.
    */
   virtual void playerAction(id_t playerID, const PlayerAction &action) = 0;
+
+  /**
+   * Called to determine if the given GameEntity contributes to this player's
+   * vision.
+   */
+  virtual bool visibleEntity(const GameEntity *entity) const = 0;
 
   /* Returns this player's color. */
   glm::vec3 getColor() const {
@@ -102,6 +111,7 @@ class LocalPlayer : public Player {
   const std::set<id_t>& getSelection() const {
     return selection_;
   }
+  virtual bool visibleEntity(const GameEntity *entity) const;
 
  private:
   void addAction(const PlayerAction &a);
@@ -118,6 +128,7 @@ class DummyPlayer : public Player {
   virtual void startTick(tick_t tick);
   virtual bool isReady() const { return true; }
   virtual void playerAction(id_t playerID, const PlayerAction &action) { }
+  virtual bool visibleEntity(const GameEntity *) const { return false; }
 
  private:
   std::queue<PlayerAction> actions_;

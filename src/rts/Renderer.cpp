@@ -146,6 +146,9 @@ void Renderer::renderEntity(ModelEntity *entity) {
   if (!entity->hasProperty(ModelEntity::P_RENDERABLE)) {
       return;
   }
+	if (controller_ && !controller_->isEntityVisible(entity)) {
+			return;
+	}
   entity->render(simdt_);
 }
 
@@ -154,6 +157,9 @@ void Renderer::renderEntityOverlay(ModelEntity *entity) {
   if (!entity->hasProperty(ModelEntity::P_RENDERABLE)) {
       return;
   }
+	if (controller_ && !controller_->isEntityVisible(entity)) {
+			return;
+	}
   UI::get()->renderEntity(entity, simdt_);
 }
 
@@ -177,6 +183,10 @@ void Renderer::renderMap() {
   glUniform4fv(colorUniform, 1, glm::value_ptr(mapColor_));
   glUniform2fv(mapSizeUniform, 1, glm::value_ptr(mapSize_));
   glUniform2fv(gridDimUniform, 1, glm::value_ptr(gridDim));
+
+	if (controller_) {
+		controller_->updateMapProgram(mapProgram);
+	}
 
   // TODO(zack): render map with height/terrain map
   glm::mat4 transform =

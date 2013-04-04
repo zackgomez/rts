@@ -10,12 +10,15 @@ class CommandWidget;
 
 class MatchmakerController : public Controller {
  public:
-   MatchmakerController(Matchmaker *mm);
-   ~MatchmakerController();
+  MatchmakerController(Matchmaker *mm);
+  ~MatchmakerController();
 
-   float getTimeElapsed() {
-     return elapsedTime_;
-   }
+  float getTimeElapsed() {
+    return elapsedTime_;
+  }
+
+	virtual bool isEntityVisible(const ModelEntity *e) const;
+	virtual void updateMapProgram(GLuint mapProgram) const;
 
   virtual void onCreate();
   virtual void onDestroy();

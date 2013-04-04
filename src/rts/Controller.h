@@ -1,9 +1,12 @@
 #ifndef SRC_RTS_CONTROLLER_H_
 #define SRC_RTS_CONTROLLER_H_
+#include <GL/glew.h>
 #include <SDL/SDL.h>
 #include "common/util.h"
 
 namespace rts {
+
+class ModelEntity;
 
 class Controller {
  public:
@@ -13,6 +16,10 @@ class Controller {
 
   virtual void onCreate() { }
   virtual void onDestroy() { }
+
+	// TODO(zack): this is a bit hacky, fine for now
+	virtual bool isEntityVisible(const ModelEntity *entity) const = 0;
+	virtual void updateMapProgram(GLuint mapProgram) const = 0;
 
   //
   // Input handler functions
