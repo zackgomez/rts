@@ -17,7 +17,6 @@ class MatchmakerController : public Controller {
     return elapsedTime_;
   }
 
-	virtual bool isEntityVisible(const ModelEntity *e) const;
 	virtual void updateMapProgram(GLuint mapProgram) const;
 
   virtual void onCreate();

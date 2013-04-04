@@ -102,8 +102,8 @@ void MinimapWidget::render(float dt) {
     if (!e->hasProperty(GameEntity::P_ACTOR)) {
       continue;
     }
-    // TODO(zack): readd me!
-    if (!visibilityMap->locationVisible(e->getPosition2())) {
+    //if (!visibilityMap->locationVisible(e->getPosition2())) {
+    if (!e->isVisible()) {
       continue;
     }
     glm::vec2 pos = worldToMinimap(e->getPosition(Renderer::get()->getSimDT()));

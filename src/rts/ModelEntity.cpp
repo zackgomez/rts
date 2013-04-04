@@ -14,7 +14,8 @@ ModelEntity::ModelEntity(id_t id)
     speed_(0.f),
     turnSpeed_(0.f),
     material_(nullptr),
-    scale_(1.f) {
+    scale_(1.f),
+    visible_(true) {
 }
 
 ModelEntity::~ModelEntity() {
@@ -47,6 +48,10 @@ void ModelEntity::setSpeed(float speed) {
   speed_ = speed;
 }
 
+void ModelEntity::setVisible(bool visible) {
+  visible_ = visible;
+}
+
 void ModelEntity::setMaterial(Material *material) {
   freeMaterial(material_);
   material_ = material;
@@ -69,6 +74,9 @@ void ModelEntity::addExtraEffect(const RenderFunction &func) {
 }
 
 void ModelEntity::render(float dt) {
+  if (!visible_) {
+    return;
+  }
   if (meshName_.empty()) {
     return;
   }

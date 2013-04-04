@@ -72,10 +72,6 @@ void MatchmakerController::keyPress(SDL_keysym keysym) {
   }
 }
 
-bool MatchmakerController::isEntityVisible(const ModelEntity *) const {
-	return true;
-}
-
 void MatchmakerController::updateMapProgram(GLuint mapProgram) const {
 }
 };  // rts

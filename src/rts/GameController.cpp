@@ -189,6 +189,16 @@ void GameController::renderUpdate(float dt) {
     return;
   }
 
+  // update visibility
+  // TODO(zack): this should be done once per tick instead of once per render
+  auto visibilityMap = Game::get()->getVisibilityMap(player_->getPlayerID());
+  for (auto it : Renderer::get()->getEntities()) {
+    auto e = it.second;
+    if (e->hasProperty(GameEntity::P_ACTOR) && !e->hasProperty(GameEntity::P_CAPPABLE)) {
+      e->setVisible(visibilityMap->locationVisible(e->getPosition2()));
+    }
+  }
+
   // Remove done highlights
   for (size_t i = 0; i < highlights_.size(); ) {
     if (highlights_[i].remaining <= 0.f) {
@@ -533,7 +543,7 @@ id_t GameController::selectEntity(const glm::vec2 &screenCoord) const {
   // Find the best entity
   for (const auto& pair : Renderer::get()->getEntities()) {
     auto entity = pair.second;
-    if (!entity->hasProperty(GameEntity::P_ACTOR)) {
+    if (!entity->hasProperty(GameEntity::P_ACTOR) || !entity->isVisible()) {
       continue;
     }
     auto gameEntity = (GameEntity *) entity;
@@ -569,7 +579,7 @@ std::set<id_t> GameController::selectEntities(
   for (const auto &pair : Renderer::get()->getEntities()) {
     auto e = pair.second;
     // Must be an actor owned by the passed player
-    if (!e->hasProperty(GameEntity::P_ACTOR)) {
+    if (!e->hasProperty(GameEntity::P_ACTOR) && e->isVisible()) {
       continue;
     }
     auto ge = (GameEntity *) e;
@@ -598,7 +608,7 @@ void renderEntity(
     const std::map<id_t, float>& entityHighlights,
     const ModelEntity *e,
     float dt) {
-  if (!e->hasProperty(GameEntity::P_ACTOR)) {
+  if (!e->hasProperty(GameEntity::P_ACTOR) || !e->isVisible()) {
     return;
   }
   auto transform = glm::translate(glm::mat4(1.f), e->getPosition(dt));
@@ -684,11 +694,6 @@ void renderEntity(
     drawRectCenter(pos, size, glm::vec4(0, 0, 1, 1));
   }
   glEnable(GL_DEPTH_TEST);
-}
-
-bool GameController::isEntityVisible(const ModelEntity *e) const {
-	return Game::get()->getVisibilityMap(player_->getPlayerID())
-		->locationVisible(e->getPosition2());
 }
 
 void GameController::updateMapProgram(GLuint mapProgram) const {

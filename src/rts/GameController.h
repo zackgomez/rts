@@ -27,7 +27,6 @@ class GameController : public Controller {
   virtual void keyPress(SDL_keysym key);
   virtual void keyRelease(SDL_keysym key);
 
-	virtual bool isEntityVisible(const ModelEntity *e) const;
 	virtual void updateMapProgram(GLuint mapProgram) const;
 
   // Accessors

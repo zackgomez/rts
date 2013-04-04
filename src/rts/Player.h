@@ -19,7 +19,7 @@ class VisibilityMap;
 class Player {
  public:
   explicit Player(id_t playerID, id_t teamID, const std::string &name,
-                  const glm::vec3 &color)
+      const glm::vec3 &color)
       : playerID_(playerID), teamID_(teamID), name_(name), color_(color),
         game_(nullptr) {
     assertPid(playerID_);

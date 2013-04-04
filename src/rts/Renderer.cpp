@@ -144,11 +144,11 @@ void Renderer::render() {
 void Renderer::renderEntity(ModelEntity *entity) {
   record_section("renderEntity");
   if (!entity->hasProperty(ModelEntity::P_RENDERABLE)) {
-      return;
+    return;
   }
-	if (controller_ && !controller_->isEntityVisible(entity)) {
-			return;
-	}
+  if (!entity->isVisible()) {
+    return;
+  }
   entity->render(simdt_);
 }
 
@@ -157,7 +157,7 @@ void Renderer::renderEntityOverlay(ModelEntity *entity) {
   if (!entity->hasProperty(ModelEntity::P_RENDERABLE)) {
       return;
   }
-	if (controller_ && !controller_->isEntityVisible(entity)) {
+	if (!entity->isVisible()) {
 			return;
 	}
   UI::get()->renderEntity(entity, simdt_);
@@ -306,12 +306,12 @@ glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
   if (terrain.x < -mapExtent.x) {
     terrain.x = -HUGE_VAL;
   } else if (terrain.x > mapExtent.x) {
-     terrain.x = HUGE_VAL;
+    terrain.x = HUGE_VAL;
   }
   if (terrain.y < -mapExtent.y) {
-      terrain.y = -HUGE_VAL;
+    terrain.y = -HUGE_VAL;
   } else if (terrain.y > mapExtent.y) {
-      terrain.y = HUGE_VAL;
+    terrain.y = HUGE_VAL;
   }
 
   return glm::vec3(terrain);

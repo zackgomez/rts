@@ -68,12 +68,20 @@ public:
   void setTurnSpeed(float turn_speed);
   void setSpeed(float speed);
 
+
+  // Graphics setters
+  void setVisible(bool visible);
   void setMaterial(Material *material);
   void setMeshName(const std::string &meshName);
   void setMeshName(std::string &&meshName);
   void setScale(const glm::vec3 &scale);
   typedef std::function<void(float)> RenderFunction;
   void addExtraEffect(const RenderFunction &func);
+
+  // graphics getters
+  bool isVisible() const {
+    return visible_;
+  }
 
   void render(float dt);
   // Integrates position using velocities and timestep
@@ -94,6 +102,8 @@ private:
 
   float speed_;
   float turnSpeed_;
+
+  bool visible_;
 
   std::string meshName_;
   Material *material_;

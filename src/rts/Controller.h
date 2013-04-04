@@ -18,7 +18,6 @@ class Controller {
   virtual void onDestroy() { }
 
 	// TODO(zack): this is a bit hacky, fine for now
-	virtual bool isEntityVisible(const ModelEntity *entity) const = 0;
 	virtual void updateMapProgram(GLuint mapProgram) const = 0;
 
   //
