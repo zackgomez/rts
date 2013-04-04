@@ -16,9 +16,7 @@ void main()
   u = smoothstep(0, 0.1, u);
 
 	float visible = texture2D(texture, frag_texcoord).a;
-	if (visible == 0.f) {
-		u /= 2;
-	}
+  visible = 0.5f + 0.5f * smoothstep(0.0, 1.0, visible);
 
-  gl_FragColor = vec4(u * color.rgb, color.a);
+  gl_FragColor = vec4(u * color.rgb * visible, color.a);
 }

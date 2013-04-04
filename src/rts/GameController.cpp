@@ -84,6 +84,9 @@ GameController::~GameController() {
 void GameController::onCreate() {
 	// TODO(zack): delete texture
 	glGenTextures(1, &visTex_);
+  glBindTexture(GL_TEXTURE_2D, visTex_);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   createWidgets("ui.widgets");
 
@@ -699,8 +702,6 @@ void GameController::updateMapProgram(GLuint mapProgram) const {
   glActiveTexture(GL_TEXTURE0);
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, visTex_);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
 };  // rts

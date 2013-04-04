@@ -8,11 +8,7 @@ void main()
 {
     vec2 tc = vec2(frag_texcoord.x, frag_texcoord.y);
     float visible = texture2D(texture, tc).a;
+    visible = 0.5 + 0.5f * smoothstep(0, 1, visible);
 
-    vec4 finalColor = color;
-    if (visible == 0.f) {
-      finalColor.rgb *= 0.5f;
-    }
-
-    gl_FragColor = finalColor;
+    gl_FragColor = vec4(visible * color.rgb, color.a);
 }

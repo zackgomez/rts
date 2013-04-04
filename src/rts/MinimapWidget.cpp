@@ -16,6 +16,9 @@ MinimapWidget::MinimapWidget(const std::string &name, id_t localPlayerID)
     name_(name) {
 
   glGenTextures(1, &visibilityTex_);
+  glBindTexture(GL_TEXTURE_2D, visibilityTex_);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
 MinimapWidget::~MinimapWidget() {
@@ -41,8 +44,6 @@ void MinimapWidget::renderBase(float dt) {
   glActiveTexture(GL_TEXTURE0);
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, visibilityTex_);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
   drawShaderCenter(getCenter(), getSize());
 }
