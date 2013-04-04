@@ -54,6 +54,7 @@
     <ClCompile Include="..\..\src\rts\ResourceManager.cpp" />
     <ClCompile Include="..\..\src\rts\UI.cpp" />
     <ClCompile Include="..\..\src\rts\Unit.cpp" />
+    <ClCompile Include="..\..\src\rts\VisibilityMap.cpp" />
     <ClCompile Include="..\..\src\rts\Weapon.cpp" />
     <ClCompile Include="..\..\src\rts\Widgets.cpp" />
   </ItemGroup>
@@ -98,6 +99,7 @@
     <ClInclude Include="..\..\src\rts\ResourceManager.h" />
     <ClInclude Include="..\..\src\rts\UI.h" />
     <ClInclude Include="..\..\src\rts\Unit.h" />
+    <ClInclude Include="..\..\src\rts\VisibilityMap.h" />
     <ClInclude Include="..\..\src\rts\Weapon.h" />
     <ClInclude Include="..\..\src\rts\Widgets.h" />
   </ItemGroup>
