@@ -22,7 +22,7 @@ MinimapWidget::MinimapWidget(const std::string &name, id_t localPlayerID)
 }
 
 MinimapWidget::~MinimapWidget() {
-  //glDeleteTextures(1, &visibilityTex_);
+  glDeleteTextures(1, &visibilityTex_);
 }
 
 void MinimapWidget::renderBase(float dt) {

@@ -181,6 +181,7 @@ void GameController::onCreate() {
 void GameController::onDestroy() {
   UI::get()->clearWidgets();
   UI::get()->setEntityOverlayRenderer(UI::EntityOverlayRenderer());
+	glDeleteTextures(1, &visTex_);
 }
 
 void GameController::renderUpdate(float dt) {

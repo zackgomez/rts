@@ -73,13 +73,11 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
     }
   }
 
-  // Clean up
-  {
-    auto lock = Renderer::get()->lockEngine();
+  UI::get()->postToMainThread([=] () {
     Renderer::get()->clearEntities();
-    delete game;
     Renderer::get()->setController(nullptr);
-  }
+    delete game;
+  });
 
   // TODO(zack): move to score screen menu
   std::thread mmthread(matchmakerThread);
