@@ -98,13 +98,13 @@
   {
     "debugMap" :
     {
-      "size" : [25, 25],
+      "size" : [40, 40],
       "players" : 2,
       "height" : 0.0,
       "minimapColor" : [0.25, 0.2, 0.15, 1.0],
       "startingPositions" : [
-        [0, 11],
-        [0, -11]
+        [0, 18],
+        [0, -18]
       ],
       "startingDirections" : [
         [0, -1],
@@ -112,34 +112,38 @@
       ],
 
       "victoryPoints" : [
-        [-8, 0],
+        [-15, -9],
         [0, 0],
-        [8, 0]
+        [15, 9]
       ],
       "reqPoints" : [
-        [-4, -4],
-        [-4, 4],
-        [4, 4],
-        [4, -4]
+        [-8, 1],
+        [8, -1],
+
+        [-15, 12],
+        [-15, 8],
+
+        [15, -12],
+        [15, -8]
       ],
       "collisionObjects" : [
         {
-          "pos"   : [6, 6],
+          "pos"   : [10, 10],
           "size"  : [1, 4],
           "angle" : 45.0
         },
         {
-          "pos"   : [8, -8],
+          "pos"   : [14, -13],
           "size"  : [4, 7],
           "angle" : 5.0
         },
         {
-          "pos"   : [-9, 6],
+          "pos"   : [-12, 8],
           "size"  : [6, 6],
           "angle" : 60.0
         },
         {
-          "pos"   : [-8, -9],
+          "pos"   : [-16, -13],
           "size"  : [8, 2],
           "angle" : 145.0
         }
@@ -213,8 +217,8 @@
     "meleeWeapon"  : "basic_knife",
     "sight"        : 8.0,
     "cost" : {
-      "time" : 2.0,
-      "requisition" : 10.0
+      "time" : 5.0,
+      "requisition" : 100.0
     }
   },
 
@@ -253,8 +257,8 @@
     "sight"       : 7.0,
     "meleeWeapon" : "quick_knife",
     "cost" : {
-      "time" : 1.5,
-      "requisition" : 7.0
+      "time" : 2.5,
+      "requisition" : 70.0
     }
   },
 
