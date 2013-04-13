@@ -75,6 +75,37 @@ bool pointInPolygon(const glm::vec3 &point,
   return result;
 }
 
+float rayAABBIntersection(
+    const glm::vec3 &origin,
+    const glm::vec3 &dir,
+    const glm::vec3 &center,
+    const glm::vec3 &size) {
+  auto min = center - size/2.f;
+  auto max = center + size/2.f;
+  float tnear = -HUGE_VAL;
+  float tfar = HUGE_VAL;
+  for (int i = 0; i < 3; i++) {
+    if (dir[i] == 0.f && (origin[i] < min[i] || origin[i] > max[i])) {
+      return NO_INTERSECTION;
+    }
+    float t1 = (min[i] - origin[i]) / dir[i];
+    float t2 = (max[i] - origin[i]) / dir[i];
+    if (t1 > t2) std::swap(t1, t2);
+    if (t1 > tnear) tnear = t1;
+    if (t2 < tfar) tfar = t2;
+    if (tnear > tfar) return NO_INTERSECTION;
+    if (tfar < 0) return NO_INTERSECTION;
+  }
+
+  return tnear;
+}
+
+float rayBoxIntersection(
+    const glm::vec3 &origin,
+    const glm::vec3 &dir,
+    const Rect &box) {
+}
+
 float boxBoxCollision(
     const Rect &rect1,
     const glm::vec2 &v1,

@@ -36,7 +36,22 @@ bool pointInPolygon(const glm::vec3 &point,
 
 const float NO_INTERSECTION = -1.f;
 
-// Returns the time of intersection in [0, dt] or -1 if no intersection
+// returns time of intersection or NO_INTERSECTION
+// NOTE this will not return an intersection if the origin lies on
+// a box plane
+float rayBoxIntersection(
+    const glm::vec3 &origin,
+    const glm::vec3 &dir,
+    const Rect &box);
+
+// returns time of intersection or NO_INTERSECTION
+float rayAABBIntersection(
+    const glm::vec3 &origin,
+    const glm::vec3 &dir,
+    const glm::vec3 &center,
+    const glm::vec3 &size);
+
+// Returns the time of intersection in [0, dt] or NO_INTERESECTION
 float boxBoxCollision(
     const Rect &r1,
     const glm::vec2 &v1,

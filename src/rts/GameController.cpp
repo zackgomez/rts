@@ -526,7 +526,6 @@ void GameController::keyRelease(SDL_keysym keysym) {
 }
 
 void GameController::minimapUpdateCamera(const glm::vec2 &screenCoord) {
-  // TODO(zack): fix this up
   auto minimapWidget = (MinimapWidget *)UI::get()->getWidget("ui.widgets.minimap");
   const glm::vec2 minimapPos = minimapWidget->getCenter();
   const glm::vec2 minimapDim = minimapWidget->getSize();
@@ -541,25 +540,16 @@ void GameController::minimapUpdateCamera(const glm::vec2 &screenCoord) {
 }
 
 id_t GameController::selectEntity(const glm::vec2 &screenCoord) const {
-  glm::vec2 pos = glm::vec2(Renderer::get()->screenToTerrain(screenCoord));
-  id_t eid = NO_ENTITY;
-  float bestDist = HUGE_VAL;
-  // Find the best entity
-  for (const auto& pair : Renderer::get()->getEntities()) {
-    auto entity = pair.second;
-    if (!entity->hasProperty(GameEntity::P_ACTOR) || !entity->isVisible()) {
-      continue;
-    }
-    auto gameEntity = (GameEntity *) entity;
-    auto rect = gameEntity->getRect(Renderer::get()->getSimDT());
-    float dist = glm::distance2(pos, rect.pos);
-    if (rect.contains(pos) && dist < bestDist) {
-      bestDist = dist;
-      eid = pair.first;
-    }
-  }
+  glm::vec3 origin, dir;
+  std::tie(origin, dir) = Renderer::get()->screenToRay(screenCoord);
+  auto entity = Renderer::get()->castRay(
+      origin,
+      dir,
+      [](const GameEntity *e) {
+        return e->isVisible() && e->hasProperty(GameEntity::P_ACTOR);
+      });
 
-  return eid;
+  return entity ? entity->getID() : NO_ENTITY;
 }
 
 std::set<id_t> GameController::selectEntities(

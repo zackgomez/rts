@@ -234,6 +234,30 @@ void Renderer::endRender() {
   SDL_GL_SwapBuffers();
 }
 
+const GameEntity *Renderer::castRay(
+    const glm::vec3 &origin,
+    const glm::vec3 &dir,
+    std::function<bool(const GameEntity *)> filter) const {
+  float bestTime = HUGE_VAL;
+  const GameEntity *ret = nullptr;
+  for (auto pair : entities_) {
+    auto entity = pair.second;
+    float time = rayAABBIntersection(
+      origin,
+      dir,
+      entity->getPosition(),
+      glm::vec3(entity->getSize(), entity->getHeight()));
+    if (time != NO_INTERSECTION) {
+      if (time < bestTime && (!filter || filter(entity))) {
+        bestTime = time;
+        ret = entity;
+      }
+    }
+  }
+
+  return ret;
+}
+
 id_t Renderer::newEntityID() {
   // TODO(synchronze here)
   return nextEntityID_++;
@@ -287,9 +311,9 @@ void Renderer::setCameraLookAt(const glm::vec3 &pos) {
       glm::vec3(mapExtent.x, mapExtent.y, 20.f)));
 }
 
-glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
+std::tuple<glm::vec3, glm::vec3> Renderer::screenToRay(
+    const glm::vec2 &screenCoord) const {
   glm::vec3 ndc = screenToNDC(screenCoord);
-
   auto inverseProjMat = glm::inverse(getProjectionStack().current());
   auto inverseViewMat = glm::inverse(getViewStack().current());
   glm::vec3 cameraDir = glm::normalize(
@@ -297,6 +321,13 @@ glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
   glm::vec3 worldDir = glm::normalize(
       applyMatrix(inverseViewMat, cameraDir, false));
   glm::vec3 worldPos = applyMatrix(inverseViewMat, glm::vec3(0.f));
+
+  return std::make_tuple(worldPos, worldDir);
+}
+
+glm::vec3 Renderer::screenToTerrain(const glm::vec2 &screenCoord) const {
+  glm::vec3 worldPos, worldDir;
+  std::tie(worldPos, worldDir) = screenToRay(screenCoord);
 
   // for now, just project into the ground
   float t = (0.f - worldPos.z) / worldDir.z;

@@ -59,6 +59,16 @@ class Renderer {
   const std::map<id_t, GameEntity *>& getEntities() const {
     return entities_;
   }
+  /*
+  GameEntity * castRay(
+      const glm::vec3 &origin,
+      const glm::vec3 &dir,
+      std::function<bool(const GameEntity *)> filter);
+      */
+  const GameEntity * castRay(
+      const glm::vec3 &origin,
+      const glm::vec3 &dir,
+      std::function<bool(const GameEntity *)> filter) const;
   // Internally synchronized
   id_t newEntityID();
   void spawnEntity(Entity *ent);
@@ -80,8 +90,12 @@ class Renderer {
     mapColor_ = mapColor;
   }
   void setCameraLookAt(const glm::vec3 &pos);
-  // @param rot.x theta rotation in degrees
-  // @param rot.y phi rotation in degrees
+  void updateCamera(const glm::vec3 &delta);
+  /*
+   * Set camera rotation
+   * @param rot.x theta rotation in degrees
+   * @param rot.y phi rotation in degrees
+   */
   void rotateCamera(const glm::vec2 &rot);
   void resetCameraRotation();
   void zoomCamera(float delta);
@@ -89,8 +103,8 @@ class Renderer {
   void setController(Controller *controller);
   void clearController();
 
+
   void startMainloop();
-  void updateCamera(const glm::vec3 &delta);
   std::unique_lock<std::mutex> lockEngine() {
     return std::unique_lock<std::mutex>(mutex_);
   }
@@ -100,6 +114,7 @@ class Renderer {
 
   // Returns the terrain location at the given screen coord.  If the coord
   // is not on the map returns glm::vec3(HUGE_VAL).
+  std::tuple<glm::vec3, glm::vec3> screenToRay(const glm::vec2 &screenCoord) const;
   glm::vec3 screenToTerrain(const glm::vec2 &screenCoord) const;
 
   // Returns the entity that scores the LOWEST with the given scoring function.
