@@ -211,7 +211,7 @@ void Renderer::startRender() {
 
   // Set up matrices
   float aspect = resolution_.x / resolution_.y;
-  float fov = 90.f;
+  float fov = 60.f;
   getProjectionStack().clear();
   getProjectionStack().current() = glm::perspective(fov, aspect, 0.1f, 100.f);
   getViewStack().clear();
@@ -271,11 +271,12 @@ void Renderer::rotateCamera(const glm::vec2 &rot) {
 }
 void Renderer::resetCameraRotation() {
   camera_.setTheta(0.f);
-  camera_.setPhi(70.f);
+  camera_.setPhi(55.f);
+  camera_.setZoom(15.f);
 }
 
 void Renderer::zoomCamera(float delta) {
-  camera_.setZoom(glm::clamp(camera_.getZoom() + delta, 1.5f, 10.f));
+  camera_.setZoom(glm::clamp(camera_.getZoom() + delta, 1.5f, 25.f));
 }
 
 void Renderer::setCameraLookAt(const glm::vec3 &pos) {
