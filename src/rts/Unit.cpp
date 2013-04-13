@@ -155,15 +155,12 @@ const GameEntity * Unit::getTarget(id_t lastTargetID) const {
   }
   // Last target doesn't exist or isn't viable, find a new one
   if (!target) {
-    // Explanation: this creates a lambda function, the [&] is so it captures
-    // this, the arg is a const GameEntity *, and it returns a float
-    // In vim, these {} are marked as errors, that's just because vim doesn't
-    // know c++11
     target = Renderer::get()->findEntity(
       [&](const GameEntity *e) -> float {
         if (e->getPlayerID() != NO_PLAYER
             && e->getTeamID() != getTeamID()
-            && e->hasProperty(P_TARGETABLE)) {
+            && e->hasProperty(P_TARGETABLE)
+            && !e->hasProperty(P_CAPPABLE)) {
           float dist = glm::distance(
             getPosition2(),
             e->getPosition2());
