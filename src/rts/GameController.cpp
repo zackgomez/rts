@@ -176,6 +176,7 @@ void GameController::onCreate() {
         return std::string() + FontManager::makeColorCode(color)
         + "FPS: " + std::to_string(fps);
     });
+  Renderer::get()->resetCameraRotation();
 }
 
 void GameController::onDestroy() {

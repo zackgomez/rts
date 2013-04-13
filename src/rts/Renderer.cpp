@@ -271,7 +271,7 @@ void Renderer::rotateCamera(const glm::vec2 &rot) {
 }
 void Renderer::resetCameraRotation() {
   camera_.setTheta(0.f);
-  camera_.setPhi(45.f);
+  camera_.setPhi(70.f);
 }
 
 void Renderer::zoomCamera(float delta) {
