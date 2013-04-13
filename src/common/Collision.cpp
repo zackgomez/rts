@@ -104,6 +104,7 @@ float rayBoxIntersection(
     const glm::vec3 &origin,
     const glm::vec3 &dir,
     const Rect &box) {
+  return NO_INTERSECTION;
 }
 
 float boxBoxCollision(
