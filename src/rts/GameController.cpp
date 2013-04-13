@@ -612,7 +612,8 @@ void renderEntity(
   if (!e->hasProperty(GameEntity::P_ACTOR) || !e->isVisible()) {
     return;
   }
-  auto transform = glm::translate(glm::mat4(1.f), e->getPosition(dt));
+  auto pos = e->getPosition(dt);
+  auto transform = glm::translate(glm::mat4(1.f), pos);
   record_section("renderActorInfo");
   // TODO(zack): only render for actors currently on screen/visible
   auto entitySize = e->getSize();
@@ -695,6 +696,16 @@ void renderEntity(
     drawRectCenter(pos, size, glm::vec4(0, 0, 1, 1));
   }
   glEnable(GL_DEPTH_TEST);
+
+  // Render path if selected
+  if (localPlayer->isSelected(actor->getID())) {
+    auto pathQueue = actor->getPathQueue();
+    if (!pathQueue.empty()) {
+      auto target = pathQueue.front();
+      // TODO(zack): remove z hack
+      renderLineColor(pos + glm::vec3(0, 0, 0.05f), target, glm::vec4(1.f));
+    }
+  }
 }
 
 void GameController::updateMapProgram(GLuint mapProgram) const {

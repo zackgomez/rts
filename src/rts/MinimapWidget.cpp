@@ -94,7 +94,6 @@ void MinimapWidget::render(float dt) {
   
   const LocalPlayer *localPlayer = (LocalPlayer *)Game::get()->getPlayer(localPlayerID_);
   id_t teamID_ = localPlayer->getTeamID();
-  auto visibilityMap = Game::get()->getVisibilityMap(localPlayerID_);
     
   // render actors
   for (const auto &pair : Renderer::get()->getEntities()) {

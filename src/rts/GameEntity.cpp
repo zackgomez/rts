@@ -39,15 +39,6 @@ GameEntity::GameEntity(
 
   // Make sure we did it right
   assertPid(playerID_);
-
-  addExtraEffect([&](float dt) {
-    if (pathQueue_.empty()) {
-      return;
-    }
-    auto target = pathQueue_.front();
-    auto pos = glm::vec3(glm::vec2(getPosition(dt)), 0.05f);
-    renderLineColor(pos, target, glm::vec4(1.f));
-  });
 }
 
 GameEntity::~GameEntity() {

@@ -66,6 +66,10 @@ class GameEntity : public ModelEntity {
   // Moves towards position as fast as possible (probably rotates)
   void moveTowards(const glm::vec2 &pos, float dt);
 
+  const std::queue<glm::vec3>& getPathQueue() const {
+    return pathQueue_;
+  }
+
  protected:
 
   float param(const std::string &p) const;
