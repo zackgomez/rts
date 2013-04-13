@@ -526,11 +526,13 @@ void GameController::keyRelease(SDL_keysym keysym) {
 
 void GameController::minimapUpdateCamera(const glm::vec2 &screenCoord) {
   // TODO(zack): fix this up
-  const glm::vec2 minimapPos = UI::convertUIPos(vec2Param("ui.widgets.minimap.pos"));
-  const glm::vec2 minimapDim = vec2Param("ui.widgets.minimap.dim");
+  auto minimapWidget = (MinimapWidget *)UI::get()->getWidget("ui.widgets.minimap");
+  const glm::vec2 minimapPos = minimapWidget->getCenter();
+  const glm::vec2 minimapDim = minimapWidget->getSize();
   glm::vec2 mapCoord = screenCoord;
+  // [-minimapDim/2, minimapDim/2]
   mapCoord -= minimapPos;
-  mapCoord -= glm::vec2(minimapDim.x / 2, minimapDim.y / 2);
+  // [-mapSize/2, mapSize/2]
   mapCoord *= Renderer::get()->getMapSize() / minimapDim;
   mapCoord.y *= -1;
   glm::vec3 finalPos(mapCoord, Renderer::get()->getCameraPos().z);
