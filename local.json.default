@@ -21,5 +21,10 @@
 
   // Server preferences
   "matchmakingHost" : "zackgomez.com",
-  "matchmakingPort" : "11100"
+  "matchmakingPort" : "11100",
+
+  // Debug preferences
+  "debug" : {
+    "renderBoundingBox" : 0
+  }
 }

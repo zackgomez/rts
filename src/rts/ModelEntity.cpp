@@ -1,4 +1,5 @@
 #include "rts/ModelEntity.h"
+#include "common/ParamReader.h"
 #include "rts/Game.h"
 #include "rts/Map.h"
 #include "rts/ResourceManager.h"
@@ -85,10 +86,24 @@ void ModelEntity::render(float dt) {
   // TODO(zack): make this part of a model object
   GLuint meshProgram = ResourceManager::get()->getShader("unit");
   glUseProgram(meshProgram);
-
   // TODO(zack): make this part of a model object
   Mesh * mesh = ResourceManager::get()->getMesh(meshName_);
-  ::renderMesh(transform, mesh, material_);
+  ::renderMeshMaterial(transform, mesh, material_);
+
+  if (fltParam("local.debug.renderBoundingBox")) {
+    GLuint program = ResourceManager::get()->getShader("color");
+    glUseProgram(program);
+
+    GLuint colorUniform = glGetUniformLocation(program, "color");
+    glUniform4fv(colorUniform, 1, glm::value_ptr(glm::vec4(0.8f, 0.3f, 0.3f, 0.6f)));
+
+    auto pos = getPosition(dt) + glm::vec3(0.f, 0.f, getHeight()/2.f);
+    ::renderMesh(
+        glm::scale(
+          glm::translate(glm::mat4(1.f), pos),
+          0.5f * glm::vec3(getSize(), getHeight())),
+        ResourceManager::get()->getMesh("cube"));
+  }
 
   // Now render additional effects
   for (auto&& renderer : renderFuncs_) {

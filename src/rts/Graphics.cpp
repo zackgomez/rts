@@ -208,8 +208,7 @@ void renderRectangleProgram(const glm::mat4 &modelMatrix) {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m,
-    const Material *mt) {
+void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m) {
   record_section("renderMesh");
   GLuint program;
   glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*) &program);
@@ -227,40 +226,23 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m,
   GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
   GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
   GLuint normalUniform = glGetUniformLocation(program, "normalMatrix");
-  GLuint baseColorUniform = glGetUniformLocation(program, "baseColor");
-  GLuint shininessUniform = glGetUniformLocation(program, "shininess");
-  GLuint useTextureUniform = glGetUniformLocation(program, "useTexture");
-  GLuint textureUniform = glGetUniformLocation(resources.texProgram, "texture");
   // Attributes
   GLuint positionAttrib = glGetAttribLocation(program, "position");
   GLuint normalAttrib   = glGetAttribLocation(program, "normal");
   GLuint texcoordAttrib = glGetAttribLocation(program, "texcoord");
   // Enable program and set up values
-  glUseProgram(program);
   glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE,
       glm::value_ptr(modelViewMatrix));
   glUniformMatrix4fv(projectionUniform, 1, GL_FALSE,
       glm::value_ptr(projMatrix));
   glUniformMatrix4fv(normalUniform, 1, GL_FALSE,
       glm::value_ptr(normalMatrix));
-  glUniform1i(useTextureUniform, 0);
-  if (mt) {
-    glUniform3fv(baseColorUniform, 1, glm::value_ptr(mt->baseColor));
-    glUniform1f(shininessUniform, mt->shininess);
-    if (mt->texture) {
-      glUniform1i(useTextureUniform, 1);
-      glActiveTexture(GL_TEXTURE0);
-      glEnable(GL_TEXTURE);
-      glBindTexture(GL_TEXTURE_2D, mt->texture);
-      glUniform1i(textureUniform, 0);
-    }
-  }
   auto lightPos = vec3Param("renderer.lightPos");
   GLuint lightPosUniform = glGetUniformLocation(program, "lightPos");
+  glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos));
   GLuint ambientUniform = glGetUniformLocation(program, "ambientColor");
   GLuint diffuseUniform = glGetUniformLocation(program, "diffuseColor");
   GLuint specularUniform = glGetUniformLocation(program, "specularColor");
-  glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos));
   glUniform3fv(ambientUniform, 1, glm::value_ptr(vec3Param("renderer.light.ambient")));
   glUniform3fv(diffuseUniform, 1, glm::value_ptr(vec3Param("renderer.light.diffuse")));
   glUniform3fv(specularUniform, 1, glm::value_ptr(vec3Param("renderer.light.specular")));
@@ -285,6 +267,36 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m,
   glDisableVertexAttribArray(positionAttrib);
   glDisableVertexAttribArray(normalAttrib);
   glDisableVertexAttribArray(texcoordAttrib);
+}
+
+void renderMeshMaterial(const glm::mat4 &modelMatrix, const Mesh *m,
+    const Material *mt) {
+  GLuint program;
+  glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*) &program);
+  if (!program) {
+    LOG(WARNING) << "No active program on call to " << __FUNCTION__
+      << "\n";
+    return;
+  }
+  GLuint baseColorUniform = glGetUniformLocation(program, "baseColor");
+  GLuint shininessUniform = glGetUniformLocation(program, "shininess");
+  GLuint useTextureUniform = glGetUniformLocation(program, "useTexture");
+  GLuint textureUniform = glGetUniformLocation(resources.texProgram, "texture");
+  if (mt) {
+    glUniform3fv(baseColorUniform, 1, glm::value_ptr(mt->baseColor));
+    glUniform1f(shininessUniform, mt->shininess);
+    if (mt->texture) {
+      glUniform1i(useTextureUniform, 1);
+      glActiveTexture(GL_TEXTURE0);
+      glEnable(GL_TEXTURE);
+      glBindTexture(GL_TEXTURE_2D, mt->texture);
+      glUniform1i(textureUniform, 0);
+    }
+  } else {
+    glUniform1i(useTextureUniform, 0);
+  }
+
+  renderMesh(modelMatrix, m);
 }
 
 void drawRectCenter(

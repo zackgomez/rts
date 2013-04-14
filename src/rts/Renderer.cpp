@@ -245,7 +245,7 @@ const GameEntity *Renderer::castRay(
     float time = rayAABBIntersection(
       origin,
       dir,
-      entity->getPosition(),
+      entity->getPosition() + glm::vec3(0.f, 0.f, entity->getHeight() / 2.f),
       glm::vec3(entity->getSize(), entity->getHeight()));
     if (time != NO_INTERSECTION) {
       if (time < bestTime && (!filter || filter(entity))) {

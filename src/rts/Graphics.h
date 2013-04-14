@@ -60,6 +60,9 @@ void renderRectangleProgram(
 // Uses the currently bound program
 void renderMesh(
     const glm::mat4 &modelMatrix,
+    const Mesh *mesh);
+void renderMeshMaterial(
+    const glm::mat4 &modelMatrix,
     const Mesh *mesh,
     const Material *m);
 
