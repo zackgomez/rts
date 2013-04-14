@@ -19,7 +19,7 @@ void Controller::processInput(float dt) {
       break;
     case SDL_MOUSEBUTTONDOWN:
       screenCoord = glm::vec2(event.button.x, event.button.y);
-      if (UI::get()->handleMousePress(screenCoord)) {
+      if (UI::get()->handleMousePress(screenCoord, event.button.button)) {
         break;
       }
       mouseDown(screenCoord, event.button.button);

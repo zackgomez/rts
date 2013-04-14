@@ -37,7 +37,7 @@ class UI {
   UIWidget *getWidget(const std::string &name);
   void clearWidgets();
 
-  bool handleMousePress(const glm::vec2 &loc);
+  bool handleMousePress(const glm::vec2 &loc, int button);
   bool handleKeyPress(SDL_keysym keysym);
 
   void render(float dt);

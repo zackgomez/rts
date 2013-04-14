@@ -54,7 +54,11 @@ void UI::addWidget(const std::string &name, UIWidget *widget) {
   widgets_[name] = widget;
 }
 
-bool UI::handleMousePress(const glm::vec2 &screenCoord) {
+bool UI::handleMousePress(const glm::vec2 &screenCoord, int button) {
+  // TODO(zack): send button to widget as well
+  if (button != SDL_BUTTON_LEFT) {
+    return false;
+  }
   for (auto&& pair : widgets_) {
     if (pair.second->isClick(screenCoord)) {
       if (pair.second->handleClick(screenCoord)) {
