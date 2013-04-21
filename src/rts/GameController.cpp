@@ -701,13 +701,12 @@ void renderEntity(
   }
 }
 
-void GameController::updateMapProgram(GLuint mapProgram) const {
+void GameController::updateMapShader(Shader *shader) const {
 	auto visibilityMap = Game::get()->getVisibilityMap(player_->getPlayerID());
 
   visibilityMap->fillTexture(visTex_);
 
-  GLuint textureUniform = glGetUniformLocation(mapProgram, "texture");
-  glUniform1i(textureUniform, 0);
+  shader->uniform1i("texture", 0);
 
   glActiveTexture(GL_TEXTURE0);
   glEnable(GL_TEXTURE_2D);

@@ -98,18 +98,16 @@ void ModelEntity::render(float dt) {
   glm::mat4 transform = getTransform(dt);
 
   // TODO(zack): make this part of a model object
-  GLuint meshProgram = ResourceManager::get()->getShader("unit");
-  glUseProgram(meshProgram);
+  auto meshShader = ResourceManager::get()->getShader("unit");
+  meshShader->makeActive();
   // TODO(zack): make this part of a model object
   Mesh * mesh = ResourceManager::get()->getMesh(meshName_);
   ::renderMeshMaterial(transform, mesh, material_);
 
   if (fltParam("local.debug.renderBoundingBox")) {
-    GLuint program = ResourceManager::get()->getShader("color");
-    glUseProgram(program);
-
-    GLuint colorUniform = glGetUniformLocation(program, "color");
-    glUniform4fv(colorUniform, 1, glm::value_ptr(glm::vec4(0.8f, 0.3f, 0.3f, 0.6f)));
+    auto shader = ResourceManager::get()->getShader("color");
+    shader->makeActive();
+    shader->uniform4f("color", glm::vec4(0.8f, 0.3f, 0.3f, 0.6f));
 
     auto pos = getPosition(dt) + glm::vec3(0.f, 0.f, getHeight()/2.f);
     ::renderMesh(

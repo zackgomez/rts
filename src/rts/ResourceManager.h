@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 #include "common/Logger.h"
 #include "rts/Graphics.h"
+#include "rts/Shader.h"
 
 class ResourceManager {
  public:
@@ -16,9 +17,9 @@ class ResourceManager {
 
   void loadResources();
 
-  Mesh * getMesh(const std::string &name);
+  Mesh* getMesh(const std::string &name);
   GLuint getTexture(const std::string &name);
-  GLuint getShader(const std::string &name);
+  Shader* getShader(const std::string &name);
   DepthField *getDepthField(const std::string &name);
 
  private:
@@ -27,7 +28,7 @@ class ResourceManager {
 
   std::map<std::string, Mesh*> meshes_;
   std::map<std::string, GLuint> textures_;
-  std::map<std::string, GLuint> shaders_;
+  std::map<std::string, Shader*> shaders_;
   std::map<std::string, DepthField*> depthFields_;
 };
 

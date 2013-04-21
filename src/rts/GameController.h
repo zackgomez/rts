@@ -2,6 +2,7 @@
 #define SRC_RTS_GAMECONTROLLER_H_
 
 #include "rts/Controller.h"
+#include <GL/glew.h>
 
 namespace rts {
 
@@ -27,7 +28,7 @@ class GameController : public Controller {
   virtual void keyPress(SDL_keysym key);
   virtual void keyRelease(SDL_keysym key);
 
-	virtual void updateMapProgram(GLuint mapProgram) const;
+	virtual void updateMapShader(Shader *shader) const;
 
   // Accessors
   // returns glm::vec4(HUGE_VAL) for no rect, or glm::vec4(start, end)

@@ -28,15 +28,11 @@ MinimapWidget::~MinimapWidget() {
 void MinimapWidget::renderBase(float dt) {
   const glm::vec4 &mapColor = Game::get()->getMap()->getMinimapColor();
 
-  GLuint program = ResourceManager::get()->getShader("minimap");
-  glUseProgram(program);
-  GLuint colorUniform = glGetUniformLocation(program, "color");
-  glUniform4fv(colorUniform, 1, glm::value_ptr(mapColor));
-
-  GLuint textureUniform = glGetUniformLocation(program, "texture");
-  GLuint tcUniform = glGetUniformLocation(program, "texcoord");
-  glUniform1i(textureUniform, 0);
-  glUniform4fv(tcUniform, 1, glm::value_ptr(glm::vec4(0, 1, 1, 0)));
+  auto shader = ResourceManager::get()->getShader("minimap");
+  shader->makeActive();
+  shader->uniform4f("color", mapColor);
+  shader->uniform1f("texture", 0);
+  shader->uniform4f("texcoord", glm::vec4(0, 1, 1, 0));
 
   auto visibilityMap = Game::get()->getVisibilityMap(localPlayerID_);
   visibilityTex_ = visibilityMap->fillTexture(visibilityTex_);

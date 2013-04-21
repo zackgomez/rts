@@ -72,6 +72,6 @@ void MatchmakerController::keyPress(SDL_keysym keysym) {
   }
 }
 
-void MatchmakerController::updateMapProgram(GLuint mapProgram) const {
+void MatchmakerController::updateMapShader(Shader *shader) const {
 }
 };  // rts

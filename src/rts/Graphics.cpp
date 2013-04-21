@@ -399,15 +399,11 @@ void drawDepthField(
     const glm::vec4 &color,
     const DepthField *depthField) {
   auto program = ResourceManager::get()->getShader("depthfield");
-  glUseProgram(program);
-  GLuint colorUniform = glGetUniformLocation(program, "color");
-  GLuint tcUniform = glGetUniformLocation(program, "texcoord");
-  GLuint minDistUniform = glGetUniformLocation(program, "minDist");
-  GLuint maxDistUniform = glGetUniformLocation(program, "maxDist");
-  glUniform4fv(tcUniform, 1, glm::value_ptr(glm::vec4(0.f, 0.f, 1.f, 1.f)));
-  glUniform4fv(colorUniform, 1, glm::value_ptr(color));
-  glUniform1f(minDistUniform, depthField->minDist);
-  glUniform1f(maxDistUniform, depthField->maxDist);
+  program->makeActive();
+  program->uniform4f("color", color);
+  program->uniform1f("minDist", depthField->minDist);
+  program->uniform1f("maxDist", depthField->maxDist);
+  program->uniform4f("texcoord", glm::vec4(0.f, 0.f, 1.f, 1.f));
 
   glActiveTexture(GL_TEXTURE0);
   glEnable(GL_TEXTURE_2D);
@@ -632,8 +628,10 @@ static void loadResources() {
       intParam("engine.circle_segments"));
 
   // Create solid color program for renderRectangleColor
-  resources.colorProgram = ResourceManager::get()->getShader("color");
-  resources.texProgram = ResourceManager::get()->getShader("texsimple");
+  resources.colorProgram =
+    ResourceManager::get()->getShader("color")->getRawProgram();
+  resources.texProgram =
+    ResourceManager::get()->getShader("texsimple")->getRawProgram();
 }
 
 struct facevert {

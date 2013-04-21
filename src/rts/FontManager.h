@@ -6,6 +6,8 @@
 #include <string>
 #include <stb_truetype.h>
 
+class Shader;
+
 class FontManager {
  public:
   static FontManager * get();
@@ -32,7 +34,7 @@ class FontManager {
 
   void initialize();
   float drawCharacter(char c, const glm::vec2 &pos, float height,
-      GLuint tcUniform);
+      Shader *program);
   glm::vec3 parseColor(const std::string &s, size_t i);
 
   float glyphSize_;

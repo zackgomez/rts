@@ -175,17 +175,16 @@ void Renderer::renderMap() {
   }
   auto gridDim = mapSize_ * 2.f;
 
-  GLuint mapProgram = ResourceManager::get()->getShader("map");
-  glUseProgram(mapProgram);
-  GLuint colorUniform = glGetUniformLocation(mapProgram, "color");
-  GLuint mapSizeUniform = glGetUniformLocation(mapProgram, "mapSize");
-  GLuint gridDimUniform = glGetUniformLocation(mapProgram, "gridDim");
-  glUniform4fv(colorUniform, 1, glm::value_ptr(mapColor_));
-  glUniform2fv(mapSizeUniform, 1, glm::value_ptr(mapSize_));
-  glUniform2fv(gridDimUniform, 1, glm::value_ptr(gridDim));
+  auto mapShader = ResourceManager::get()->getShader("map");
+  mapShader->makeActive();
+  mapShader->uniform4f("color", mapColor_);
+  mapShader->uniform2f("mapSize", mapSize_);
+  mapShader->uniform2f("gridDim", gridDim);
 
+  // TODO(zack): HACK ALERT this is for fog of war, render as a separate
+  // step instead
 	if (controller_) {
-		controller_->updateMapProgram(mapProgram);
+		controller_->updateMapShader(mapShader);
 	}
 
   // TODO(zack): render map with height/terrain map

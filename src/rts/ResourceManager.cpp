@@ -18,9 +18,9 @@ void ResourceManager::unloadResources() {
   for (auto texture = textures_.begin(); texture != textures_.end(); texture++) {
     freeTexture(texture->second);
   }
-  // TODO(connor) implement this once freeProgram has been implemented.
-  // for (auto shader = shaders_.begin(); shader != shaders_.end(); shader++)
-  //   freeProgram(shader->second);
+  for (auto shader = shaders_.begin(); shader != shaders_.end(); shader++) {
+    delete (shader->second);
+  }
 
   meshes_.clear();
   textures_.clear();
@@ -52,8 +52,9 @@ void ResourceManager::loadResources() {
 
   for (Json::ValueIterator shader = shaders.begin();
           shader != shaders.end(); shader++) {
-    shaders_[shader.key().asString()] =
+    GLuint program =
       loadProgram((*shader)["vert"].asString(), (*shader)["frag"].asString());
+    shaders_[shader.key().asString()] = new Shader(program);
   }
 
   for (Json::ValueIterator dfdesc = dfdescs.begin();
@@ -76,7 +77,7 @@ GLuint ResourceManager::getTexture(const std::string &name) {
   return textures_[name];
 }
 
-GLuint ResourceManager::getShader(const std::string &name) {
+Shader* ResourceManager::getShader(const std::string &name) {
   invariant(shaders_.count(name), "cannot find shader: " + name);
   return shaders_[name];
 }

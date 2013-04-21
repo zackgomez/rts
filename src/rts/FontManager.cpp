@@ -27,12 +27,10 @@ FontManager::~FontManager() {
 void FontManager::drawString(const std::string &s, const glm::vec2 &pos,
     float height) {
   glm::vec4 color(0.f, 0.f, 0.f, 1.f);
+
   auto program = ResourceManager::get()->getShader("font");
-  GLuint colorUniform = glGetUniformLocation(program, "color");
-  GLuint tcUniform = glGetUniformLocation(program, "texcoord");
-  glUseProgram(program);
-  glUniform4fv(colorUniform, 1, glm::value_ptr(color));
-  glUniform1i(colorUniform, 0);
+  program->makeActive();
+  program->uniform4f("color", color);
 
   glActiveTexture(GL_TEXTURE0);
   glEnable(GL_TEXTURE_2D);
@@ -45,12 +43,12 @@ void FontManager::drawString(const std::string &s, const glm::vec2 &pos,
     char c = s[i];
     if (c == COLOR_CNTRL_CH) {
       color = glm::vec4(parseColor(s, i + 1), 1.f);
-      glUniform4fv(colorUniform, 1, glm::value_ptr(color));
+      program->uniform4f("color", color);
       // advance past next 3 characters
       i += 3;
       continue;
     }
-    p.x += drawCharacter(c, p, fact, tcUniform);
+    p.x += drawCharacter(c, p, fact, program);
   }
 }
 
@@ -78,7 +76,7 @@ glm::vec3 FontManager::parseColor(const std::string &s, size_t i) {
 }
 
 float FontManager::drawCharacter(char c, const glm::vec2 &pos, float fact,
-    GLuint tcUniform) {
+    Shader *program) {
   invariant(c >= 32 && c < 32 + 96, "invalid character to render");
   stbtt_bakedchar bc = cdata_[c - 32];
 
@@ -87,7 +85,7 @@ float FontManager::drawCharacter(char c, const glm::vec2 &pos, float fact,
   glm::vec2 offset = fact * glm::vec2(bc.xoff, bc.yoff);
   float advance = fact * bc.xadvance;
 
-  glUniform4fv(tcUniform, 1, glm::value_ptr(texcoord));
+  program->uniform4f("texcoord", texcoord);
   drawShader(pos + offset, size);
 
   return advance;

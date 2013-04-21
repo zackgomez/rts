@@ -17,7 +17,7 @@ class MatchmakerController : public Controller {
     return elapsedTime_;
   }
 
-	virtual void updateMapProgram(GLuint mapProgram) const;
+	virtual void updateMapShader(Shader *shader) const;
 
   virtual void onCreate();
   virtual void onDestroy();

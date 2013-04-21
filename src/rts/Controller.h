@@ -1,8 +1,9 @@
 #ifndef SRC_RTS_CONTROLLER_H_
 #define SRC_RTS_CONTROLLER_H_
-#include <GL/glew.h>
 #include <SDL/SDL.h>
 #include "common/util.h"
+
+class Shader;
 
 namespace rts {
 
@@ -18,7 +19,7 @@ class Controller {
   virtual void onDestroy() { }
 
 	// TODO(zack): this is a bit hacky, fine for now
-	virtual void updateMapProgram(GLuint mapProgram) const = 0;
+	virtual void updateMapShader(Shader *shader) const = 0;
 
   //
   // Input handler functions
