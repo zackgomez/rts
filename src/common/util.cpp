@@ -116,6 +116,10 @@ float frand() {
   return rand() / static_cast<float>(RAND_MAX);
 }
 
+glm::vec2 randDir2() {
+  return glm::normalize(glm::vec2(frand() * 2.f - 1.f, frand() * 2.f - 1.f));
+}
+
 float addAngles(float a, float b) {
   float ret = a + b;
   while (ret > 180.f) {

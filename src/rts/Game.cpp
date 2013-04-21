@@ -234,15 +234,16 @@ void Game::update(float dt) {
       if (!e2->hasProperty(GameEntity::P_COLLIDABLE)) {
         continue;
       }
-      if (boxBoxCollision(
+      float time;
+      if ((time = boxBoxCollision(
             e1->getRect(),
-            e1->getVelocity(),
+            glm::vec2(e1->getVelocity()),
             e2->getRect(),
-            e2->getVelocity(),
-            dt) != NO_INTERSECTION) {
+            glm::vec2(e2->getVelocity()),
+            dt)) != NO_INTERSECTION) {
         // TODO(zack): include time of intersection in message
-        MessageHub::get()->sendCollisionMessage(it->first, it2->first);
-        MessageHub::get()->sendCollisionMessage(it2->first, it->first);
+        MessageHub::get()->sendCollisionMessage(it->first, it2->first, time);
+        MessageHub::get()->sendCollisionMessage(it2->first, it->first, time);
       }
     }
   }

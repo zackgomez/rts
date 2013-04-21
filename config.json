@@ -92,7 +92,9 @@
     "captureRange"  : 1.0,
     "defaultColor"  : [1, 1, 1],
     "pointsToWin"   : 100,
-    "startingRequisition" : 100
+    "startingRequisition" : 100,
+
+    "bumpSpeed" : 1.0
   },
 
   "maps" :

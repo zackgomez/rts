@@ -68,7 +68,7 @@ void Map::init(const std::vector<Player *> &players) {
 
     // Spawn starting units
     // TODO(zack): get rid of these hardcoded numbers (2.0f, 1.5f)
-    pos += dir * 2.0f;
+    pos += dir * 4.0f;
     pos -= tangent * 1.5f;
     for (int i = 0; i < 3; i++) {
       Json::Value params;

@@ -54,6 +54,7 @@ id_t GameEntity::getTeamID() const {
 }
 
 void GameEntity::update(float dt) {
+  setBumpVel(glm::vec3(0.f));
   setTurnSpeed(0.f);
   setSpeed(0.f);
 }

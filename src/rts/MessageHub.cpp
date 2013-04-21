@@ -118,11 +118,12 @@ void MessageHub::sendVPMessage(
   sendMessage(msg);
 }
 
-void MessageHub::sendCollisionMessage(id_t from, id_t to) {
+void MessageHub::sendCollisionMessage(id_t from, id_t to, float time) {
   Message msg;
   msg["to"] = toJson(to);
   msg["from"] = toJson(from);
   msg["type"] = MessageTypes::COLLISION;
+  msg["intersection_time"] = time;
 
   sendMessage(msg);
 }

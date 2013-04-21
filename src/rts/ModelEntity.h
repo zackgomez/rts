@@ -41,20 +41,20 @@ public:
     return height_;
   }
   // Bounding rectangle
-  Rect getRect() const {
-    return Rect(glm::vec2(pos_), size_, glm::radians(angle_));
-  }
-  const glm::vec2 getVelocity() const {
-    return getDirection() * speed_;
-  }
+  Rect getRect() const;
+  const glm::vec3 getVelocity() const;
   float getSpeed() const {
     return speed_;
   }
   float getTurnSpeed() const {
     return turnSpeed_;
   }
+  const glm::vec3& getBumpVel() const {
+    return bumpVel_;
+  }
 
   // Interpolation functions
+  glm::vec2 getPosition2(float dt) const;
   glm::vec3 getPosition(float dt) const;
   float getAngle(float dt) const;
   glm::mat4 getTransform(float dt) const;
@@ -67,6 +67,8 @@ public:
   void setHeight(float height);
   void setTurnSpeed(float turn_speed);
   void setSpeed(float speed);
+  void setBumpVel(const glm::vec3 &vel);
+  void addBumpVel(const glm::vec3 &delta);
 
 
   // Graphics setters
@@ -99,6 +101,9 @@ private:
   float angle_;
   glm::vec2 size_;
   float height_;
+
+  // velocity not related to forward movement
+  glm::vec3 bumpVel_;
 
   float speed_;
   float turnSpeed_;

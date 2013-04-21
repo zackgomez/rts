@@ -14,6 +14,7 @@ ModelEntity::ModelEntity(id_t id)
     size_(glm::vec2(0.f)),
     speed_(0.f),
     turnSpeed_(0.f),
+    bumpVel_(0.f),
     material_(nullptr),
     scale_(1.f),
     visible_(true) {
@@ -23,8 +24,15 @@ ModelEntity::~ModelEntity() {
   freeMaterial(material_);
 }
 
+Rect ModelEntity::getRect() const {
+  return Rect(glm::vec2(pos_), size_, glm::radians(angle_));
+}
 const Rect ModelEntity::getRect(float dt) const {
   return Rect(glm::vec2(getPosition(dt)), size_, glm::radians(getAngle(dt)));
+}
+
+const glm::vec3 ModelEntity::getVelocity() const {
+  return glm::vec3(getDirection() * speed_, 0.f) + bumpVel_;
 }
 
 void ModelEntity::setPosition(const glm::vec2 &pos) {
@@ -47,6 +55,12 @@ void ModelEntity::setTurnSpeed(float turn_speed) {
 }
 void ModelEntity::setSpeed(float speed) {
   speed_ = speed;
+}
+void ModelEntity::setBumpVel(const glm::vec3 &bumpVel) {
+  bumpVel_ = bumpVel;
+}
+void ModelEntity::addBumpVel(const glm::vec3 &delta) {
+  bumpVel_ += delta;
 }
 
 void ModelEntity::setVisible(bool visible) {
@@ -112,6 +126,8 @@ void ModelEntity::render(float dt) {
 }
 
 void ModelEntity::integrate(float dt) {
+  pos_ = getPosition(dt);
+
   // rotate
   angle_ += turnSpeed_ * dt;
   // clamp to [0, 360]
@@ -121,10 +137,6 @@ void ModelEntity::integrate(float dt) {
   while (angle_ < 0.f) {
     angle_ += 360.f;
   }
-
-  // move
-  glm::vec3 vel = glm::vec3(speed_ * getDirection(angle_), 0.f);
-  pos_ += vel * dt;
 }
 
 glm::mat4 ModelEntity::getTransform(float dt) const {
@@ -140,9 +152,12 @@ glm::mat4 ModelEntity::getTransform(float dt) const {
       glm::vec3(scale_));
 }
 
+glm::vec2 ModelEntity::getPosition2(float dt) const {
+  return glm::vec2(getPosition(dt));
+}
+
 glm::vec3 ModelEntity::getPosition(float dt) const {
-  glm::vec3 vel = glm::vec3(speed_ * getDirection(getAngle(dt)), 0.f);
-  return pos_ + vel * dt;
+  return pos_ + getVelocity() * dt;
 }
 
 float ModelEntity::getAngle(float dt) const {

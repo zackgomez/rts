@@ -50,6 +50,7 @@ void Actor::handleMessage(const Message &msg) {
     invariant(msg.isMember("damage"), "malformed attack message");
     invariant(msg.isMember("damage_type"), "malformed attack message");
     
+    // For graphics purpose, move if possible
     setTookDamage();
 
     // TODO(zack) figure out how to deal with this case (friendly fire)
@@ -68,6 +69,30 @@ void Actor::handleMessage(const Message &msg) {
     }
   } else if (msg["type"] == MessageTypes::ORDER) {
     handleOrder(msg);
+  } else if (msg["type"] == MessageTypes::COLLISION) {
+    auto* collider = Game::get()->getEntity(toID(msg["from"]));
+    if (!collider->hasProperty(P_ACTOR)
+        || collider->getPlayerID() != getPlayerID()) {
+      return;
+    }
+
+    // if either entity is moving forward, just ignore the message
+    if (getSpeed() != 0.f || collider->getSpeed() != 0.f) {
+      return;
+    }
+
+    // get difference between positions at time of intersection
+    float dt = msg["intersection_time"].asFloat();
+    auto diff = getPosition2(dt) - collider->getPosition2(dt);
+    float overlap_dist = glm::length(diff);
+
+    // seperate away, or randomly if exactly the same pos
+    auto dir = (overlap_dist > 1e-6f)
+      ? diff / overlap_dist
+      : randDir2();
+
+    float bumpSpeed = fltParam("global.bumpSpeed");
+    addBumpVel(glm::vec3(dir * bumpSpeed, 0.f));
   } else {
     GameEntity::handleMessage(msg);
   }
