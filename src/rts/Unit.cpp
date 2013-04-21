@@ -103,7 +103,7 @@ bool Unit::canAttack(const GameEntity *e) const {
 }
 
 bool Unit::canCapture(const Building *e) const {
-  float dist = glm::distance(e->getPosition2(), getPosition2());
+  float dist = distanceToEntity(e);
   return e->canCapture(getID())
       && dist <= fltParam("global.captureRange");
 }
@@ -161,9 +161,7 @@ const GameEntity * Unit::getTarget(id_t lastTargetID) const {
             && e->getTeamID() != getTeamID()
             && e->hasProperty(P_TARGETABLE)
             && !e->hasProperty(P_CAPPABLE)) {
-          float dist = glm::distance(
-            getPosition2(),
-            e->getPosition2());
+          float dist = distanceToEntity(e);
           // Only take ones that are within attack range, sort
           // by distance
           return dist < getSight() ? dist : HUGE_VAL;

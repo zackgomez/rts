@@ -42,6 +42,7 @@ class Actor : public GameEntity {
 
   virtual void handleMessage(const Message &msg);
   virtual void update(float dt);
+  float distanceToEntity(const GameEntity *e) const;
   virtual std::queue<Production> getProductionQueue() const {
     return production_queue_;
   }

@@ -15,7 +15,6 @@ VisibilityMap::VisibilityMap(
   auto gridRes = fltParam("game.visibility_grid_res");
   gridDim_ = gridRes * mapSize_;
   gridDim_ = gridDim_ - (gridDim_ % 4) + 4;
-  Logger::get()->log("grid dim %d %d\n", gridDim_.x, gridDim_.y);
 
   grid_ = new uint8_t[gridDim_.x * gridDim_.y];
 }
@@ -45,11 +44,6 @@ void VisibilityMap::processEntity(const GameEntity *entity) {
     auto sight = actor->getSight();
     glm::ivec2 min = glm::max(worldToGrid(pos - sight), 0);
     glm::ivec2 max = glm::min(worldToGrid(pos + sight), gridDim_);
-
-    /*
-    Logger::get()->log("area (%d %d) -> (%d %d)\n",
-        min.x, min.y, max.x, max.y);
-        */
 
     for (size_t y = min.y; y < max.y; y++) {
       size_t idx = y * gridDim_.x;

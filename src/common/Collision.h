@@ -39,10 +39,17 @@ const float NO_INTERSECTION = -1.f;
 // returns time of intersection or NO_INTERSECTION
 // NOTE this will not return an intersection if the origin lies on
 // a box plane
-float rayBoxIntersection(
-    const glm::vec3 &origin,
-    const glm::vec3 &dir,
+float rayBox2Intersection(
+    const glm::vec2 &origin,
+    const glm::vec2 &dir,
     const Rect &box);
+
+float rayAABB2Intersection(
+    const glm::vec2 &origin,
+    const glm::vec2 &dir,
+    const glm::vec2 &center,
+    const glm::vec2 &size);
+
 
 // returns time of intersection or NO_INTERSECTION
 float rayAABBIntersection(

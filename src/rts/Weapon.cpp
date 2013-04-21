@@ -1,12 +1,13 @@
 #include "rts/Weapon.h"
 #include "common/ParamReader.h"
+#include "rts/Actor.h"
 #include "rts/GameEntity.h"
 #include "rts/MessageHub.h"
 #include "rts/Projectile.h"
 
 namespace rts {
 
-Weapon::Weapon(const std::string &name, const GameEntity *owner)
+Weapon::Weapon(const std::string &name, const Actor *owner)
     : name_(name),
     owner_(owner),
     state_(READY),
@@ -104,12 +105,11 @@ void Weapon::interrupt() {
 }
 
 bool Weapon::canAttack(const GameEntity *target) const {
-  glm::vec2 targetPos = target->getPosition2();
-  glm::vec2 delta = targetPos - owner_->getPosition2();
+  glm::vec2 delta = target->getPosition2() - owner_->getPosition2();
   float targetAngle = rad2deg(atan2(delta.y , delta.x));
   // difference between facing and target
   float arc = addAngles(targetAngle, -owner_->getAngle());
-  float dist = glm::length(delta);
+  float dist = owner_->distanceToEntity(target);
 
   // Need to be in range and in arc
   return (dist < getMaxRange() && fabs(arc) < getArc() / 2.f);

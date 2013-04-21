@@ -75,16 +75,21 @@ bool pointInPolygon(const glm::vec3 &point,
   return result;
 }
 
-float rayAABBIntersection(
-    const glm::vec3 &origin,
-    const glm::vec3 &dir,
-    const glm::vec3 &center,
-    const glm::vec3 &size) {
-  auto min = center - size/2.f;
-  auto max = center + size/2.f;
+template<int N>
+float rayAABBNIntersection(
+    const float *origin,
+    const float *dir,
+    const float *center,
+    const float *size) {
+  float min[N];
+  float max[N];
+  for (int i = 0; i < N; i++) {
+    min[i] = center[i] - size[i]/2.f;
+    max[i] = center[i] + size[i]/2.f;
+  }
   float tnear = -HUGE_VAL;
   float tfar = HUGE_VAL;
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < N; i++) {
     if (dir[i] == 0.f && (origin[i] < min[i] || origin[i] > max[i])) {
       return NO_INTERSECTION;
     }
@@ -100,11 +105,35 @@ float rayAABBIntersection(
   return tnear;
 }
 
-float rayBoxIntersection(
+float rayAABBIntersection(
     const glm::vec3 &origin,
     const glm::vec3 &dir,
+    const glm::vec3 &center,
+    const glm::vec3 &size) {
+  return rayAABBNIntersection<3>(&origin[0], &dir[0], &center[0], &size[0]);
+}
+
+float rayBox2Intersection(
+    const glm::vec2 &origin,
+    const glm::vec2 &dir,
     const Rect &box) {
-  return NO_INTERSECTION;
+  float radians = -box.angle;
+  glm::mat2 rotationMat = glm::mat2(
+    cos(radians), -sin(radians),
+    sin(radians), cos(radians));
+  // rotate position around the box's center by box's angle
+  glm::vec2 rotatedOrigin = box.pos + rotationMat * (origin - box.pos);
+  glm::vec2 rotatedDir = rotationMat * dir;
+
+  return rayAABB2Intersection(rotatedOrigin, rotatedDir, box.pos, box.size);
+}
+
+float rayAABB2Intersection(
+    const glm::vec2 &origin,
+    const glm::vec2 &dir,
+    const glm::vec2 &center,
+    const glm::vec2 &size) {
+  return rayAABBNIntersection<2>(&origin[0], &dir[0], &center[0], &size[0]);
 }
 
 float boxBoxCollision(

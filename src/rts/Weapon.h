@@ -8,6 +8,7 @@
 
 namespace rts {
 
+class Actor;
 class GameEntity;
 
 /* This class represents a weapon, melee or ranged, and is intended for use in
@@ -16,7 +17,7 @@ class GameEntity;
  */
 class Weapon {
  public:
-  Weapon(const std::string &name, const GameEntity *owner);
+  Weapon(const std::string &name, const Actor *owner);
 
   // State transitions
   // READY -> fire() -> WINDUP -> actually fire -> WINDDOWN -> COOLDOWN
@@ -59,7 +60,7 @@ class Weapon {
   void sendMessage();
 
   const std::string name_;
-  const GameEntity *owner_;
+  const Actor *owner_;
   WeaponState state_;
   float t_;
   id_t target_;

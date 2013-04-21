@@ -129,4 +129,11 @@ void Actor::update(float dt) {
     }
   }
 }
+
+float Actor::distanceToEntity(const GameEntity *e) const {
+  return rayBox2Intersection(
+    getPosition2(),
+    glm::normalize(e->getPosition2() - getPosition2()),
+    e->getRect());
+}
 };  // rts
