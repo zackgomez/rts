@@ -237,6 +237,8 @@ void renderMesh(const glm::mat4 &modelMatrix, const Mesh *m) {
       glm::value_ptr(projMatrix));
   glUniformMatrix4fv(normalUniform, 1, GL_FALSE,
       glm::value_ptr(normalMatrix));
+
+  // Lighting
   auto lightPos = vec3Param("renderer.lightPos");
   GLuint lightPosUniform = glGetUniformLocation(program, "lightPos");
   glUniform3fv(lightPosUniform, 1, glm::value_ptr(lightPos));
@@ -281,7 +283,9 @@ void renderMeshMaterial(const glm::mat4 &modelMatrix, const Mesh *m,
   GLuint baseColorUniform = glGetUniformLocation(program, "baseColor");
   GLuint shininessUniform = glGetUniformLocation(program, "shininess");
   GLuint useTextureUniform = glGetUniformLocation(program, "useTexture");
-  GLuint textureUniform = glGetUniformLocation(resources.texProgram, "texture");
+  GLuint textureUniform = glGetUniformLocation(program, "texture");
+  // Default to no texture
+  glUniform1i(useTextureUniform, 0);
   if (mt) {
     glUniform3fv(baseColorUniform, 1, glm::value_ptr(mt->baseColor));
     glUniform1f(shininessUniform, mt->shininess);
@@ -292,8 +296,6 @@ void renderMeshMaterial(const glm::mat4 &modelMatrix, const Mesh *m,
       glBindTexture(GL_TEXTURE_2D, mt->texture);
       glUniform1i(textureUniform, 0);
     }
-  } else {
-    glUniform1i(useTextureUniform, 0);
   }
 
   renderMesh(modelMatrix, m);
