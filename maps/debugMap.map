@@ -17,7 +17,7 @@
     {
       "type": "starting_location",
       "pos" : [0, -18],
-      "angle" : 270,
+      "angle" : 90,
       "player" : 2
     },
     {
