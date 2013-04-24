@@ -21,6 +21,7 @@ class ResourceManager {
   GLuint getTexture(const std::string &name);
   Shader* getShader(const std::string &name);
   DepthField *getDepthField(const std::string &name);
+  Json::Value getMapDefinition(const std::string &name);
 
  private:
   ResourceManager();
@@ -30,6 +31,7 @@ class ResourceManager {
   std::map<std::string, GLuint> textures_;
   std::map<std::string, Shader*> shaders_;
   std::map<std::string, DepthField*> depthFields_;
+  std::map<std::string, Json::Value> maps_;
 };
 
 #endif  // SRC_RTS_RESOURCEMANAGER_H_

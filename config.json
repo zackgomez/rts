@@ -43,7 +43,7 @@
       "minimap"    : "images/UI/minimap_underlay.png",
       "unit_panel" : "images/UI/actor_underlay.png",
       "topbar"     : "images/UI/top_bar_1280.png",
-      "vp"     : "images/vp-tex-1024.png",
+      "vp"         : "images/vp-tex-1024.png",
       "collision-tex" : "images/collision-tex-1024.png"
     },
     "depthFields" : {
@@ -97,118 +97,14 @@
     "bumpSpeed" : 1.0
   },
 
-  "maps" :
+  "collision_object" :
   {
-    "debugMap" :
-    {
-      "size" : [40, 40],
-      "players" : 2,
-      "height" : 0.0,
-      "minimapColor" : [0.25, 0.2, 0.15, 1.0],
-      "startingPositions" : [
-        [0, 18],
-        [0, -18]
-      ],
-      "startingDirections" : [
-        [0, -1],
-        [0, 1]
-      ],
-
-      "victoryPoints" : [
-        [-15, -9],
-        [0, 0],
-        [15, 9]
-      ],
-      "reqPoints" : [
-        [-8, 1],
-        [8, -1],
-
-        [-15, 12],
-        [-15, 8],
-
-        [15, -12],
-        [15, -8]
-      ],
-      "collisionObjects" : [
-        {
-          "pos"   : [10, 10],
-          "size"  : [1, 4],
-          "angle" : 45.0
-        },
-        {
-          "pos"   : [14, -13],
-          "size"  : [4, 7],
-          "angle" : 5.0
-        },
-        {
-          "pos"   : [-12, 8],
-          "size"  : [6, 6],
-          "angle" : 60.0
-        },
-        {
-          "pos"   : [-16, -13],
-          "size"  : [8, 2],
-          "angle" : 145.0
-        }
-      ]
-    },
-    "bigMap" :
-    {
-      "size" : [50, 50],
-      "players" : 4,
-      "height" : 0.0,
-      "minimapColor" : [0.25, 0.2, 0.15, 1.0],
-      "startingPositions" : [
-        [-22, 22],
-        [-22, -22],
-        [22, 22],
-        [22, -22]
-      ],
-      "startingDirections" : [
-        [1, -1],
-        [1, 1],
-        [-1, -1],
-        [1, -1]
-      ],
-
-      "victoryPoints" : [
-        [-8, 0],
-        [0, 0],
-        [8, 0]
-      ],
-      "reqPoints" : [
-        [-4, -4],
-        [-4, 4],
-        [4, 4],
-        [4, -4]
-      ],
-      "collisionObjects" : [
-        {
-          "pos"   : [6, 6],
-          "size"  : [1, 4],
-          "angle" : 45.0
-        },
-        {
-          "pos"   : [8, -8],
-          "size"  : [4, 7],
-          "angle" : 5.0
-        },
-        {
-          "pos"   : [-9, 6],
-          "size"  : [6, 6],
-          "angle" : 60.0
-        },
-        {
-          "pos"   : [-8, -9],
-          "size"  : [8, 2],
-          "angle" : 145.0
-        }
-      ]
-    }
+    "class"        : "Collision"
   },
 
   "unit" :
   {
+    "class"        : "Unit",
     "model"        : "unit",
     "modelSize"    : 0.8,
     "speed"        : 3.0,
@@ -239,6 +135,7 @@
 
   "basic_bullet" :
   {
+    "class"        : "Projectile",
     // projectile params
     "model"  : "basic_bullet",
     "modelSize"    : 1.0,
@@ -250,6 +147,7 @@
 
   "melee_unit" :
   {
+    "class"       : "Unit",
     "model"       : "melee_unit",
     "modelSize"   : 1.0,
     "speed"       : 4.5,
@@ -289,6 +187,7 @@
 
   "building" :
   {
+    "class"  : "Building",
     "model"  : "building",
     "modelSize"    : 4.0,
     "size"   : [2.5, 2.5],
@@ -301,6 +200,7 @@
 
   "victory_point" :
   {
+    "class"       : "Building",
     "model"       : "victory_point",
     "modelSize"   : 0.6,
     "texture"     : "vp",
@@ -315,6 +215,7 @@
 
   "req_point" :
   {
+    "class"       : "Building",
     "model"       : "req_point",
     "modelSize"   : 2.0,
     "size"        : [0.9, 0.9],

@@ -13,8 +13,10 @@ class EntityFactory {
  public:
   static EntityFactory *get();
 
-  GameEntity * construct(id_t id, const std::string &cl,
-                     const std::string &name, const Json::Value &params);
+  GameEntity * construct(
+      id_t id,
+      const std::string &name,
+      const Json::Value &params);
 
  private:
   EntityFactory();

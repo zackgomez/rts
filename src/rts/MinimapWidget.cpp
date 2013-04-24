@@ -26,7 +26,7 @@ MinimapWidget::~MinimapWidget() {
 }
 
 void MinimapWidget::renderBase(float dt) {
-  const glm::vec4 &mapColor = Game::get()->getMap()->getMinimapColor();
+  auto mapColor = Game::get()->getMap()->getColor();
 
   auto shader = ResourceManager::get()->getShader("minimap");
   shader->makeActive();

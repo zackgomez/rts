@@ -1,0 +1,93 @@
+{
+  "name" : "debugMap",
+  "players" : 2,
+
+  // geometry
+  "size" : [40, 40],
+  "height" : 0.0,
+  "color" : [0.25, 0.2, 0.15, 1.0],
+
+  "entities" : [
+    {
+      "type" : "starting_location",
+      "pos" : [0, 18],
+      "angle" : 270,
+      "player" : 1
+    },
+    {
+      "type": "starting_location",
+      "pos" : [0, -18],
+      "angle" : 270,
+      "player" : 2
+    },
+    {
+      "type" : "victory_point",
+      "pos" : [-15, -9],
+      "angle": 270
+    },
+    {
+      "type" : "victory_point",
+      "pos" : [0, 0],
+      "angle": 270
+    },
+    {
+      "type" : "victory_point",
+      "pos" : [15, 9],
+      "angle": 90
+    },
+    {
+      "type" : "req_point",
+      "pos" : [-8, 1],
+      "angle": 0
+    },
+    {
+      "type" : "req_point",
+      "pos" : [8, 1],
+      "angle": 0
+    },
+    {
+      "type" : "req_point",
+      "pos" : [-15, 121],
+      "angle": -15
+    },
+    {
+      "type" : "req_point",
+      "pos" : [-15, 8],
+      "angle": 0
+    },
+    {
+      "type" : "req_point",
+      "pos" : [15, -12],
+      "angle": 0
+    },
+    {
+      "type" : "req_point",
+      "pos" : [15, -8],
+      "angle": 0
+    },
+    {
+      "type"  : "collision_object",
+      "pos"   : [10, 10],
+      "size"  : [1, 4],
+      "angle" : 45.0
+    },
+    {
+      "type"  : "collision_object",
+      "pos"   : [14, -13],
+      "size"  : [4, 7],
+      "angle" : 5.0
+    },
+    {
+      "type"  : "collision_object",
+      "pos"   : [-12, 8],
+      "size"  : [6, 6],
+      "angle" : 60.0
+    },
+    {
+      "type"  : "collision_object",
+      "pos"   : [-16, -13],
+      "size"  : [8, 2],
+      "angle" : 145.0
+    }
+  ]
+}

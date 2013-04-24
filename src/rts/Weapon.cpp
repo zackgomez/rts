@@ -79,7 +79,6 @@ void Weapon::sendMessage() {
     params["projectile_owner"] = toJson(owner_->getID());
     MessageHub::get()->sendSpawnMessage(
         owner_->getID(),
-        Projectile::TYPE,
         strParam("projectile"),
         params);
   } else if (type == "melee") {

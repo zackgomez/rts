@@ -21,6 +21,7 @@
 #include "rts/Matchmaker.h"
 #include "rts/MatchmakerController.h"
 #include "rts/Renderer.h"
+#include "rts/ResourceManager.h"
 #include "rts/Player.h"
 #include "rts/Unit.h"
 #include "rts/UI.h"
@@ -117,7 +118,8 @@ void matchmakerThread() {
     }
   }
 
-  Map *map = new Map(matchmaker.getMapName());
+  Map *map = new Map(
+      ResourceManager::get()->getMapDefinition(matchmaker.getMapName()));
   Game *game = new Game(map, players);
 
   std::thread gamet(gameThread, game, matchmaker.getLocalPlayerID());

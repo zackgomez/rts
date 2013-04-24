@@ -152,7 +152,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>..\..\src;..\..\lib\stb_truetype;..\..\lib\boost_1_50_0;..\..\lib\kissnet;..\..\lib\glew-1.7.0\include;..\..\lib\SDL-1.2.15\include;..\..\lib\glm-0.9.2.7;..\..\lib\jsoncpp;..\..\lib\glew-1.7.0\include\GL;..\fmod\inc;..\..\lib\stbi;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\lib\jsoncpp;..\..\lib\SDL-1.2.15\lib\x86;..\..\lib\glew-1.7.0\lib;..\fmod\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>D:\My Documents\Programming\rts\lib\boost_1_50_msvc_32;..\..\lib\jsoncpp;..\..\lib\SDL-1.2.15\lib\x86;..\..\lib\glew-1.7.0\lib;..\fmod\lib;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Matchmaking|Win32'">

@@ -11,16 +11,22 @@
 
 namespace rts {
 
-Map::Map(const std::string &mapName)
-  : name_("maps." + mapName),
-    size_(vec2Param(name_ + ".size")),
-    color_(vec4Param(name_ + ".minimapColor")) {
+Map::Map(const Json::Value &definition)
+  : definition_(definition) {
+}
+
+glm::vec2 Map::getSize() const {
+  return toVec2(definition_["size"]);
+}
+
+glm::vec4 Map::getColor() const {
+  return toVec4(definition_["color"]);
 }
 
 float Map::getMapHeight(const glm::vec2 &pos) const {
-  // TODO(zack): maps that have dynamic terrian will need to override this
+  // TODO(zack): maps that have dynamic terrain will need to override this
   // to return the height at the passed in position
-  return fltParam(name_ + ".height");
+  return definition_["height"].asFloat();
 }
 
 void Map::update(float dt) {
@@ -31,96 +37,80 @@ void Map::init(const std::vector<Player *> &players) {
   // TODO(zack) have it read this from a map file
   // we should also create a "base" macro that expands into a headquarters
   // building and starting hero/unit/base defenses unicorns etc
+  LOG(DEBUG) << "Here:\n" << definition_ << '\n';
 
-  invariant(players.size() <= intParam(name_ + ".players"),
+  invariant(players.size() <= definition_["players"].asInt(),
       "too many players for map");
 
-  Renderer::get()->setMapSize(size_);
-  Renderer::get()->setMapColor(color_);
+  Renderer::get()->setMapSize(getSize());
+  Renderer::get()->setMapColor(getColor());
 
-  for (int i = 0; i < players.size(); i++) {
-    const Player *p = players[i];
-    id_t pid = p->getPlayerID();
-    int ind = pid - STARTING_PID;
-
-    glm::vec3 pos = glm::vec3(
-        toVec2(getParam(name_ + ".startingPositions")[ind]), 0);
-    glm::vec3 dir = glm::vec3(glm::normalize(
-      toVec2(getParam(name_ + ".startingDirections")[ind])), 0);
-    glm::vec3 tangent = glm::cross(glm::vec3(0, 0, 1), dir);
-    float angle = rad2deg(acosf(glm::dot(glm::vec3(1, 0, 0), dir)));
-    float sign =
-      glm::dot(glm::cross(glm::vec3(0, 0, 1), glm::vec3(1, 0, 0)), dir);
-    if (sign < 0) {
-      angle = -angle;
+  Json::Value entities = definition_["entities"];
+  for (int i = 0; i < entities.size(); i++) {
+    Json::Value entity_def = entities[i];
+    std::string type = entity_def["type"].asString();
+    if (type == "starting_location") {
+      spawnStartingLocation(entity_def, players);
+      continue;
     }
+    Json::Value params;
+    params["entity_pid"] = toJson(NO_PLAYER);
+    if (entity_def.isMember("pos")) {
+      params["entity_pos"] = entity_def["pos"];
+    }
+    if (entity_def.isMember("size")) {
+      params["entity_size"] = entity_def["size"];
+    }
+    if (entity_def.isMember("angle")) {
+      params["entity_angle"] = entity_def["angle"];
+    }
+    invariant(entity_def.isMember("type"), "missing type param");
+    MessageHub::get()->sendSpawnMessage(
+        MAP_ID,
+        type,
+        params);
+  }
 
-    // Spawn starting building
+  LOG(DEBUG) << "done\n";
+}
+
+void Map::spawnStartingLocation(const Json::Value &definition,
+    const std::vector<Player *> players) {
+  invariant(definition.isMember("player"),
+      "missing player for starting pos defintion");
+  id_t pid = players[definition["player"].asInt() - 1]->getPlayerID();
+
+  glm::vec2 pos = toVec2(definition["pos"]);
+  float angle = definition["angle"].asFloat();
+
+  // Spawn starting building
+  Json::Value params;
+  params["entity_pid"] = toJson(pid);
+  params["entity_pos"] = toJson(pos);
+  params["entity_angle"] = angle;
+  MessageHub::get()->sendSpawnMessage(
+      MAP_ID,
+      "building",
+      params);
+
+  float radians = deg2rad(angle);
+  glm::vec2 dir(cos(radians), sin(radians));
+  glm::vec2 tangent(dir.y, dir.x);
+
+  // Starting units
+  // TODO(zack): make this part of the definition
+  pos += dir * 4.0f;
+  pos -= tangent * 1.5f;
+  for (int i = 0; i < 3; i++) {
     Json::Value params;
     params["entity_pid"] = toJson(pid);
     params["entity_pos"] = toJson(pos);
     params["entity_angle"] = angle;
     MessageHub::get()->sendSpawnMessage(
-      MAP_ID,
-      Building::TYPE,
-      "building",
-      params);
-
-    // Spawn starting units
-    // TODO(zack): get rid of these hardcoded numbers (2.0f, 1.5f)
-    pos += dir * 4.0f;
-    pos -= tangent * 1.5f;
-    for (int i = 0; i < 3; i++) {
-      Json::Value params;
-      params["entity_pid"] = toJson(pid);
-      params["entity_pos"] = toJson(pos);
-      params["entity_angle"] = angle;
-      MessageHub::get()->sendSpawnMessage(
         MAP_ID,  // from
-        Unit::TYPE,  // class
         "melee_unit",  // name
         params);
-      pos += tangent * 1.5f;
-    }
-  }
-
-  Json::Value victoryPoints = getParam(name_ + ".victoryPoints");
-  for (int i = 0; i < victoryPoints.size(); i++) {
-    glm::vec2 pos = toVec2(victoryPoints[i]);
-    Json::Value params;
-    params["entity_pid"] = toJson(NO_PLAYER);
-    params["entity_pos"] = toJson(pos);
-    MessageHub::get()->sendSpawnMessage(
-        MAP_ID,
-        Building::TYPE,
-        "victory_point",
-        params);
-  }
-  Json::Value reqPoints = getParam(name_ + ".reqPoints");
-  for (int i = 0; i < reqPoints.size(); i++) {
-    glm::vec2 pos = toVec2(reqPoints[i]);
-    Json::Value params;
-    params["entity_pid"] = toJson(NO_PLAYER);
-    params["entity_pos"] = toJson(pos);
-    MessageHub::get()->sendSpawnMessage(
-        MAP_ID,
-        Building::TYPE,
-        "req_point",
-        params);
-  }
-  Json::Value collisionObjects = getParam(name_ + ".collisionObjects");
-  for (int i = 0; i < collisionObjects.size(); i++) {
-    Json::Value cobj = collisionObjects[i];
-    Json::Value params;
-    params["entity_pid"] = toJson(NO_PLAYER);
-    params["entity_pos"] = cobj["pos"];
-    params["entity_size"] = cobj["size"];
-    params["entity_angle"] = cobj["angle"];
-    MessageHub::get()->sendSpawnMessage(
-        MAP_ID,
-        CollisionObject::TYPE,
-        "collisionObject",
-        params);
+    pos += tangent * 1.5f;
   }
 }
 };  // rts

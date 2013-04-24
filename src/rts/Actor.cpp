@@ -132,7 +132,6 @@ void Actor::produce(const std::string &prod_name) {
 
   MessageHub::get()->sendSpawnMessage(
     getID(),
-    Unit::TYPE,
     prod_name,
     params);
 }

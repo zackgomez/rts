@@ -2,6 +2,10 @@
 #include "common/ParamReader.h"
 #include "common/util.h"
 
+#define BOOST_FILESYSTEM_NO_DEPRECATED
+#include "boost/filesystem/operations.hpp"
+#include "boost/filesystem/path.hpp"
+
 ResourceManager *ResourceManager::instance_ = NULL;
 
 ResourceManager::ResourceManager() {
@@ -65,6 +69,42 @@ void ResourceManager::loadResources() {
     df->maxDist = (*dfdesc)["maxDist"].asFloat();
     depthFields_[dfdesc.key().asString()] = df;
   }
+
+  namespace fs = boost::filesystem;
+  boost::system::error_code ec;
+  fs::path maps_path("maps");
+  auto status = fs::status(maps_path);
+  invariant(
+    fs::exists(status) && fs::is_directory(status),
+    "missing maps directory");
+
+  Json::Reader reader;
+  auto it = fs::directory_iterator(maps_path);
+  for ( ; it != fs::directory_iterator(); it++) {
+    auto dir_ent = *it;
+    if (fs::is_regular_file(dir_ent.status())) {
+      auto filepath = dir_ent.path().filename();
+      auto filename = filepath.string();
+      // TODO(zack): some logging here
+      if (filepath.extension() != ".map" || filename.empty() || filename[0] == '.') {
+        continue;
+      }
+      std::ifstream f(dir_ent.path().c_str());
+      if (!f) {
+        continue;
+      }
+      Json::Value mapDef;
+      if (!reader.parse(f, mapDef)) {
+        LOG(FATAL) << "Cannot parse param file " << filename << " : "
+          << reader.getFormattedErrorMessages() << '\n';
+        invariant_violation("Couldn't parse " + dir_ent.path().string());
+      }
+      invariant(mapDef.isMember("name"), "map missing name");
+      auto mapName = mapDef["name"].asString();
+      LOG(INFO) << "Read map " << mapName << " from file " << filename << '\n';
+      maps_[mapName] = mapDef;
+    }
+  }
 }
 
 Mesh * ResourceManager::getMesh(const std::string &name) {
@@ -85,4 +125,9 @@ Shader* ResourceManager::getShader(const std::string &name) {
 DepthField *ResourceManager::getDepthField(const std::string &name) {
   invariant(depthFields_.count(name), "cannot find DepthField: " + name);
   return depthFields_[name];
+}
+
+Json::Value ResourceManager::getMapDefinition(const std::string &name) {
+  invariant(maps_.count(name), "cannot find Map: " + name);
+  return maps_[name];
 }
