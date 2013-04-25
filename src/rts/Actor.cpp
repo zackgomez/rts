@@ -28,16 +28,30 @@ Actor::Actor(id_t id, const std::string &name, const Json::Value &params,
   health_ = getMaxHealth();
 
   setMeshName(strParam("model"));
-  setScale(glm::vec3(param("modelSize")));
+  setScale(glm::vec3(fltParam("modelSize")));
   resetTexture();
 }
 
 Actor::~Actor() {
 }
 
+bool Actor::hasProperty(uint32_t property) const {
+  if (property == P_ACTOR) {
+    return true;
+  }
+  return GameEntity::hasProperty(property);
+}
+
+Json::Value Actor::getActions() const {
+  if (!hasParam("actions")) {
+    return Json::Value();
+  }
+  return getParam("actions");
+}
+
 void Actor::resetTexture() {
   const Player *player = Game::get()->getPlayer(getPlayerID());
-  auto color = player ? player->getColor() : vec3Param("global.defaultColor");
+  auto color = player ? player->getColor() : ::vec3Param("global.defaultColor");
   GLuint texture = hasParam("texture")
     ? ResourceManager::get()->getTexture(strParam("texture"))
     : 0;
@@ -65,7 +79,7 @@ void Actor::handleMessage(const Message &msg) {
 
     // If melee then we have to not melee
     if (msg["damage_type"] == "melee") {
-      melee_timer_ = fltParam("global.meleeCooldown");
+      melee_timer_ = ::fltParam("global.meleeCooldown");
     }
   } else if (msg["type"] == MessageTypes::ORDER) {
     handleOrder(msg);
@@ -91,7 +105,7 @@ void Actor::handleMessage(const Message &msg) {
       ? diff / overlap_dist
       : randDir2();
 
-    float bumpSpeed = fltParam("global.bumpSpeed");
+    float bumpSpeed = ::fltParam("global.bumpSpeed");
     addBumpVel(glm::vec3(dir * bumpSpeed, 0.f));
   } else {
     GameEntity::handleMessage(msg);
@@ -100,25 +114,51 @@ void Actor::handleMessage(const Message &msg) {
 void Actor::handleOrder(const Message &order) {
   invariant(order["type"] == MessageTypes::ORDER, "unknown message type");
   invariant(order.isMember("order_type"), "missing order type");
-  if (order["order_type"] == OrderTypes::ENQUEUE) {
-    enqueue(order);
+  if (order["order_type"] == OrderTypes::ACTION) {
+    auto actions = getActions();
+    invariant(
+        order.isMember("action_idx") && order["action_idx"].asInt() < actions.size(),
+        "Bad action index");
+    auto action = actions[order["action_idx"].asInt()];
+    handleAction(action);
   } else {
     LOG(WARNING) << "Actor got unknown order: "
       << order.toStyledString() << '\n';
   }
 }
 
-void Actor::enqueue(const Message &queue_order) {
-  invariant(queue_order.isMember("prod"), "missing production type");
-  std::string prod_name = queue_order["prod"].asString();
+void Actor::handleAction(const Json::Value &action) {
+  invariant(action.isMember("type"), "missing action type");
 
-  // TODO(zack) confirm that prod_name is something this Actor can produce
+  if (action["type"] == "production") {
+    invariant(action.isMember("prod_name"), "missing production type");
+    invariant(action.isMember("time_cost"), "missing production time cost");
+    invariant(action.isMember("req_cost"), "missing production req cost");
+    std::string prod_name = action["prod_name"].asString();
+    float prod_time = action["time_cost"].asFloat();
+    float req_cost = action["req_cost"].asFloat();
 
-  Production prod;
-  prod.max_time = fltParam(prod_name + ".cost.time");
-  prod.time = prod.max_time;
-  prod.name = prod_name;
-  production_queue_.push(prod);
+    // Enough resources?
+    if (Game::get()->getResources(getPlayerID()).requisition < req_cost) {
+      return;
+    }
+
+    // Pay for it
+    MessageHub::get()->sendResourceMessage(
+        getID(),
+        getPlayerID(),
+        ResourceTypes::REQUISITION,
+        -req_cost);
+
+    Production prod;
+    prod.max_time = prod_time;
+    prod.time = prod_time;
+    prod.name = prod_name;
+    production_queue_.push(prod);
+  } else {
+    invariant_violation(
+        "unknown action type in message " + action.toStyledString());
+  }
 }
 
 void Actor::produce(const std::string &prod_name) {

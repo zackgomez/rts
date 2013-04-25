@@ -34,7 +34,7 @@ class Building : public Actor {
     return capAmount_;
   }
   float getMaxCap() const {
-    return hasProperty(P_CAPPABLE) ? param("captureTime") : 0.f;
+    return hasProperty(P_CAPPABLE) ? fltParam("captureTime") : 0.f;
   }
   id_t getCapperID() const {
     return capperID_;

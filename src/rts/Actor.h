@@ -18,7 +18,7 @@ const std::string ATTACK = "ATTACK";
 const std::string CAPTURE = "CAPTURE";
 const std::string ATTACK_MOVE = "AMOVE";
 const std::string STOP = "STOP";
-const std::string ENQUEUE = "ENQUEUE";
+const std::string ACTION = "ACTION";
 };
 
 class Actor : public GameEntity {
@@ -33,17 +33,18 @@ class Actor : public GameEntity {
         bool targetable = true, bool collidable = true);
   virtual ~Actor();
 
-  virtual bool hasProperty(uint32_t property) const {
-    if (property == P_ACTOR) {
-      return true;
-    }
-    return GameEntity::hasProperty(property);
-  }
+  virtual bool hasProperty(uint32_t property) const;
 
   virtual void handleMessage(const Message &msg);
   virtual void update(float dt);
+
   float distanceToEntity(const GameEntity *e) const;
-  virtual std::queue<Production> getProductionQueue() const {
+
+  Json::Value getActions() const;
+  // TODO(zack)
+  // protected virtual Json::Value getExtraActions() const;
+
+  std::queue<Production> getProductionQueue() const {
     return production_queue_;
   }
 
@@ -51,12 +52,12 @@ class Actor : public GameEntity {
     return health_;
   }
   float getMaxHealth() const {
-    return param("health");
+    return fltParam("health");
   }
 
   // Returns sight radius
   float getSight() const {
-    return param("sight");
+    return fltParam("sight");
   }
 
   Clock::time_point getLastTookDamage() const {
@@ -70,7 +71,7 @@ class Actor : public GameEntity {
  protected:
   virtual void handleOrder(const Message &order);
 
-  void enqueue(const Message &queue_order);
+  void handleAction(const Json::Value &action);
   void produce(const std::string &prod_name);
 
   void resetTexture();

@@ -36,7 +36,7 @@ void Building::handleMessage(const Message &msg) {
     if (getPlayerID() == NO_PLAYER) {
       if (lastCappingPlayerID_ == toID(msg["pid"])) {
         capAmount_ += msg["cap"].asFloat();
-        float max_cap = param("captureTime");
+        float max_cap = fltParam("captureTime");
         if (capAmount_ >= max_cap) {
           setPlayerID(toID(msg["pid"]));
           capAmount_ = max_cap;
@@ -85,13 +85,13 @@ void Building::update(float dt) {
       getID(),
       getPlayerID(),
       ResourceTypes::REQUISITION,
-      param("reqGen") * dt);
+      fltParam("reqGen") * dt);
   }
   if (hasParam("victoryGen"))
     MessageHub::get()->sendVPMessage(
       getID(),
       getTeamID(),
-      param("victoryGen") * dt);
+      fltParam("victoryGen") * dt);
 }
 
 bool Building::canCapture(id_t eid) const {

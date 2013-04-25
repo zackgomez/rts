@@ -72,7 +72,8 @@ class GameEntity : public ModelEntity {
 
  protected:
 
-  float param(const std::string &p) const;
+  Json::Value getParam(const std::string &p) const;
+  float fltParam(const std::string &p) const;
   std::string strParam(const std::string &p) const;
   glm::vec2 vec2Param(const std::string &p) const;
   bool hasParam(const std::string &p) const;

@@ -34,7 +34,7 @@ GameEntity::GameEntity(
     setAngle(params["entity_angle"].asFloat());
   }
   if (hasParam("height")) {
-    setHeight(param("height"));
+    setHeight(fltParam("height"));
   }
 
   // Make sure we did it right
@@ -77,7 +77,7 @@ void GameEntity::remainStationary() {
 void GameEntity::turnTowards(const glm::vec2 &targetPos, float dt) {
   float desired_angle = angleToTarget(targetPos);
   float delAngle = addAngles(desired_angle, -getAngle());
-  float turnRate = param("turnRate");
+  float turnRate = fltParam("turnRate");
   // rotate
   // only rotate when not close enough
   // Would overshoot, just move directly there
@@ -94,7 +94,7 @@ void GameEntity::moveTowards(const glm::vec2 &targetPos, float dt) {
   pathQueue_ = std::queue<glm::vec3>();
   pathQueue_.push(glm::vec3(targetPos, 0.f));
   float dist = glm::length(targetPos - getPosition2());
-  float speed = param("speed");
+  float speed = fltParam("speed");
   // rotate
   turnTowards(targetPos, dt);
   // move
@@ -124,8 +124,12 @@ std::queue<glm::vec3> GameEntity::getPathNodes() const {
   return pathQueue_;
 }
 
-float GameEntity::param(const std::string &p) const {
-  return fltParam(name_ + "." + p);
+Json::Value GameEntity::getParam(const std::string &p) const {
+  return ::getParam(name_ + "." + p);
+}
+
+float GameEntity::fltParam(const std::string &p) const {
+  return ::fltParam(name_ + "." + p);
 }
 
 std::string GameEntity::strParam(const std::string &p) const {

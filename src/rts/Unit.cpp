@@ -105,7 +105,7 @@ bool Unit::canAttack(const GameEntity *e) const {
 bool Unit::canCapture(const Building *e) const {
   float dist = distanceToEntity(e);
   return e->canCapture(getID())
-      && dist <= fltParam("global.captureRange");
+      && dist <= ::fltParam("global.captureRange");
 }
 
 bool Unit::withinRange(const GameEntity *e) const {

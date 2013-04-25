@@ -427,15 +427,9 @@ void Game::handleAction(id_t playerID, const PlayerAction &action) {
       msg["order_type"] = OrderTypes::STOP;
 
       MessageHub::get()->sendMessage(msg);
-    } else if (action["type"] == ActionTypes::ENQUEUE) {
-      msg["order_type"] = OrderTypes::ENQUEUE;
-      msg["prod"] = action["prod"];
-
-      float cost = fltParam(msg["prod"].asString() + ".cost.requisition");
-      if (cost > resources_[playerID].requisition) {
-        return;
-      }
-      resources_[playerID].requisition -= cost;
+    } else if (action["type"] == ActionTypes::ACTION) {
+      msg["order_type"] = OrderTypes::ACTION;
+      msg["action_idx"] = action["action_idx"];
 
       MessageHub::get()->sendMessage(msg);
     } else {

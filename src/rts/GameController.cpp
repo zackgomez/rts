@@ -474,33 +474,18 @@ void GameController::keyPress(SDL_keysym keysym) {
         action["pid"] = toJson(player_->getPlayerID());
         MessageHub::get()->addAction(action);
       } else {
+        // TODO(zack): use a map here
         for (unsigned int i = 0; i < 4; i++) {
           if (key == MAIN_KEYS[i]) {
-            // TODO(zack): this assumption that head of selection is always
-            // the unit we're building on is not good
+            // Send the action to the unit at the 'head' of the selection
             auto sel = player_->getSelection().begin();
-            const GameEntity *ent = Game::get()->getEntity(*sel);
-            // The main action of a building is production
-            if (ent->getType() == "BUILDING") {
-              std::vector<std::string> prod = arrParam(ent->getName() +
-                  ".prod");
-              if (i < prod.size()) {
-                std::string prodName = prod[i];
-                float cost = fltParam(prodName + ".cost.requisition");
-                auto &resources = Game::get()
-                    ->getResources(player_->getPlayerID());
+            auto eid = *sel;
+            action["type"] = ActionTypes::ACTION;
+            action["entity"] = toJson(eid);
+            action["pid"] = toJson(player_->getPlayerID());
+            action["action_idx"] = i;
 
-                if (cost <= resources.requisition) {
-                  action["type"] = ActionTypes::ENQUEUE;
-                  action["entity"] = toJson(*sel);
-                  action["pid"] = toJson(player_->getPlayerID());
-                  action["prod"] = prod[i];
-                  MessageHub::get()->addAction(action);
-                }
-                // TODO(zack): else send a message telling the player they
-                // don't have enough of resource X (that annoying voice...)
-              }
-            }
+            MessageHub::get()->addAction(action);
             break;
           }
         }

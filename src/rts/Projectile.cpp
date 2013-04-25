@@ -36,7 +36,7 @@ void Projectile::update(float dt) {
   setAngle(angleToTarget(targetPos));
 
   float dist = glm::length(targetPos - getPosition2());
-  setSpeed(param("speed"));
+  setSpeed(fltParam("speed"));
 
   // If we would hit, then don't overshoot and send message (deal damage)
   if (dist < getSpeed() * dt) {
@@ -46,7 +46,7 @@ void Projectile::update(float dt) {
     msg["from"] = toJson(ownerID_);
     msg["type"] = MessageTypes::ATTACK;
     msg["pid"] = toJson(getPlayerID());
-    msg["damage"] = param("damage");
+    msg["damage"] = fltParam("damage");
     msg["damage_type"] = "ranged";
     MessageHub::get()->sendMessage(msg);
     MessageHub::get()->sendRemovalMessage(this);

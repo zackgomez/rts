@@ -10,7 +10,7 @@ Grenade::Grenade(id_t id, const std::string &name, const Json::Value &params)
 
   invariant(params.isMember("target_pos"), "missing target pos");
   targetPos_ = toVec3(params["target_pos"]);
-  explodeTimer_ = param("fuse");
+  explodeTimer_ = fltParam("fuse");
 }
 
 void Grenade::update(float dt) {
