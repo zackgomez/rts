@@ -5,6 +5,7 @@
 #include <glm/gtx/norm.hpp>
 #include "common/util.h"
 #include "common/ParamReader.h"
+#include "rts/ActionWidget.h"
 #include "rts/Building.h"
 #include "rts/CommandWidget.h"
 #include "rts/Game.h"
@@ -101,6 +102,27 @@ void GameController::onCreate() {
       leftDragMinimap_ = true;
       return true;
     });
+
+  auto actionFunc = [=]() -> std::vector<UIAction> {
+    std::vector<UIAction> ret;
+
+    auto selection = player_->getSelection();
+    if (!selection.empty()) {
+      auto *entity = (Actor *)Game::get()->getEntity(*selection.begin());
+      int i = 0;
+      for (auto action : entity->getActions()) {
+        ret.push_back(UIAction{ action, i++ });
+      }
+    }
+    return ret;
+  };
+  auto actionExecutor = [=](const UIAction &action) {
+    handleUIAction(action);
+  };
+
+  auto actionWidget = new ActionWidget("ui.widgets.action", actionFunc, actionExecutor);
+  UI::get()->addWidget("ui.widgets.action", actionWidget);
+  actionWidget->setClickable();
 
   auto chatWidget = new CommandWidget("ui.chat");
   chatWidget->setCloseOnSubmit(true);
@@ -698,4 +720,16 @@ void GameController::updateMapShader(Shader *shader) const {
   glBindTexture(GL_TEXTURE_2D, visTex_);
 }
 
+
+void GameController::handleUIAction(const UIAction &action) {
+  Json::Value player_action;
+  auto sel = player_->getSelection().begin();
+  auto eid = *sel;
+  player_action["type"] = ActionTypes::ACTION;
+  player_action["entity"] = toJson(eid);
+  player_action["pid"] = toJson(player_->getPlayerID());
+  player_action["action_idx"] = action.action_idx;
+
+  MessageHub::get()->addAction(player_action);
+}
 };  // rts

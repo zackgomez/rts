@@ -7,6 +7,7 @@
 namespace rts {
 
 class LocalPlayer;
+struct UIAction;
 
 struct MapHighlight {
   glm::vec2 pos;
@@ -65,6 +66,7 @@ class GameController : public Controller {
 
 
   void minimapUpdateCamera(const glm::vec2 &screenCoord);
+	void handleUIAction(const UIAction &action);
   // returns NO_ENTITY if no acceptable entity near click
   id_t selectEntity(const glm::vec2 &screenCoord) const;
   std::set<id_t> selectEntities(const glm::vec2 &start,

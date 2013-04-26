@@ -57,8 +57,10 @@ void createWidgets(const std::string &widgetGroupName) {
   Json::Value group = ParamReader::get()->getParam(widgetGroupName);
   for (auto it = group.begin(); it != group.end(); it++) {
     auto name = widgetGroupName + '.' + it.memberName();
-    auto widget = createWidget(name);
-    UI::get()->addWidget(name, widget);
+    auto *widget = createWidget(name);
+    if (widget) {
+      UI::get()->addWidget(name, widget);
+    }
   }
 }
 
@@ -70,16 +72,16 @@ UIWidget *createWidget(const std::string &paramName) {
     return new TextureWidget(paramName);
   } else if (type == "CommandWidget") {
     return new CommandWidget(paramName);
+  } else if (type == "CustomWidget") {
+    return nullptr;
   } else {
     invariant_violation("No widget found for type " + type);
   }
 }
 
 
-
 UIWidget::UIWidget()
-  : clickable_(false),
-    pos_(-1.f), size_(0.f) {
+  : clickable_(false) {
 }
 
 UIWidget* UIWidget::setClickable() {
@@ -101,8 +103,16 @@ UIWidget * UIWidget::setOnClickListener(UIWidget::OnClickListener l) {
 
 
 SizedWidget::SizedWidget(const std::string &name) {
+  invariant(
+      hasParam(name + ".pos") ^ hasParam(name + ".center"),
+      "widgets should specify only pos or center");
+
   size_ = uiSizeParam(name + ".dim");
-  center_ = uiPosParam(name + ".pos") + size_/2.f;
+  if (hasParam(name + ".center")) {
+    center_ = uiPosParam(name + ".center");
+  } else {
+    center_ = uiPosParam(name + ".pos") + size_/2.f;
+  }
 }
 
 bool SizedWidget::isClick(const glm::vec2 &pos) const {

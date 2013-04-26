@@ -37,7 +37,6 @@ class UIWidget {
  private:
    bool clickable_;
    OnClickListener onClickListener_;
-   glm::vec2 pos_, size_;
 };
 
 class SizedWidget : public UIWidget {
@@ -118,5 +117,7 @@ template<typename T>
 CustomWidget<T>* createCustomWidget(T&& func) {
   return new CustomWidget<T>(func);
 }
+glm::vec2 uiPosParam(const std::string &name);
+glm::vec2 uiSizeParam(const std::string &name);
 };  // rts
 #endif  // SRC_RTS_WIDGETS_H_
