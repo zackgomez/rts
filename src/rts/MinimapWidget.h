@@ -4,8 +4,6 @@
 
 namespace rts {
 
-class VisibilityMap;
-
 class MinimapWidget : public SizedWidget {
  public:
   MinimapWidget(const std::string &name, id_t localPlayerID);

@@ -16,9 +16,9 @@ class ActionWidget : public UIWidget {
       ActionExecutor executor);
   virtual ~ActionWidget();
 
-  void render(float dt);
+  virtual void render(float dt) override;
 
-  virtual bool isClick(const glm::vec2 &pos) const;
+  virtual bool handleClick(const glm::vec2 &pos) override;
 
  private:
   ActionFunc actionsFunc_;
@@ -27,7 +27,6 @@ class ActionWidget : public UIWidget {
   glm::vec2 size_;
   glm::vec4 bgcolor_;
 
-  bool handleRealClick(const glm::vec2 &pos) const;
 };
 
 };  // rts

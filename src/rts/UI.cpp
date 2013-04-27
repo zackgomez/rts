@@ -60,10 +60,8 @@ bool UI::handleMousePress(const glm::vec2 &screenCoord, int button) {
     return false;
   }
   for (auto&& pair : widgets_) {
-    if (pair.second->isClick(screenCoord)) {
-      if (pair.second->handleClick(screenCoord)) {
-        return true;
-      }
+    if (pair.second->handleClick(screenCoord)) {
+      return true;
     }
   }
 

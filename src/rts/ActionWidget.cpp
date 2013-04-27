@@ -13,8 +13,6 @@ ActionWidget::ActionWidget(
     size_(uiSizeParam(name + ".size")),
     center_(uiPosParam(name + ".center")),
     bgcolor_(vec4Param(name + ".bgcolor")) {
-  setOnClickListener(
-      std::bind(&ActionWidget::handleRealClick, this, std::placeholders::_1));
 }
  
 ActionWidget::~ActionWidget() {
@@ -42,13 +40,14 @@ void ActionWidget::render(float dt) {
   }
 }
 
-bool ActionWidget::isClick(const glm::vec2 &pos) const {
-  auto num_actions = actionsFunc_().size();
-  return pointInBox(pos, center_, glm::vec2(size_.x * num_actions, size_.y), 0.f);
-}
-
-bool ActionWidget::handleRealClick(const glm::vec2 &pos) const {
+bool ActionWidget::handleClick(const glm::vec2 &pos) {
   auto actions = actionsFunc_();
+  auto num_actions = actions.size();
+
+  if (!pointInBox(pos, center_, glm::vec2(size_.x * num_actions, size_.y), 0.f)) {
+    return false;
+  }
+
   int idx = 1 / size_.x * (pos.x - center_.x + actions.size() * size_.x / 2);
 
   actionExecutor_(actions[idx]);

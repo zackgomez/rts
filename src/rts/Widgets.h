@@ -14,45 +14,39 @@ void createWidgets(const std::string &widgetGroupName);
 
 class UIWidget {
  public:
-  UIWidget();
   virtual ~UIWidget() { }
 
-  virtual bool isClick(const glm::vec2 &pos) const {
-    return false;
-  }
-  bool handleClick(const glm::vec2 &pos);
-
-  typedef std::function<bool(const glm::vec2 &)> OnClickListener;
-
-  UIWidget* setOnClickListener(OnClickListener onClickListener);
-  UIWidget* setClickable();
-  UIWidget* setUnClickable();
-  bool isClickable() const {
-    return clickable_;
-  }
-
-
+  // Return true if the click has been handled
+  virtual bool handleClick(const glm::vec2 &pos) = 0;
   virtual void render(float dt) = 0;
-
- private:
-   bool clickable_;
-   OnClickListener onClickListener_;
 };
 
-class SizedWidget : public UIWidget {
+class ClickableWidget : public UIWidget {
+ public:
+  typedef std::function<bool(const glm::vec2 &)> OnClickListener;
+
+  virtual bool handleClick(const glm::vec2 &pos) override final;
+
+  ClickableWidget* setOnClickListener(OnClickListener onClickListener);
+
+ protected:
+  virtual bool isClick(const glm::vec2 &pos) const = 0;
+  OnClickListener onClickListener_;
+};
+
+class SizedWidget : public ClickableWidget {
  public:
   SizedWidget(const std::string &name);
 
-  virtual bool isClick(const glm::vec2 &pos) const;
-
-  const glm::vec2 &getCenter() const { return
-    center_;
+  const glm::vec2 &getCenter() const {
+    return center_;
+  }
+  const glm::vec2 &getSize() const {
+    return size_;
   }
 
-  const glm::vec2 &getSize() const { return
-    size_;
-  }
-
+ protected:
+  virtual bool isClick(const glm::vec2 &pos) const override final;
 
  private:
   glm::vec2 center_;
@@ -63,7 +57,7 @@ class TextureWidget : public SizedWidget {
  public:
   TextureWidget(const std::string &name);
 
-  void render(float dt);
+  void render(float dt) override;
 
  private:
   std::string texName_;
@@ -106,6 +100,10 @@ public:
 
   void render(float dt) {
     func_(dt);
+  }
+
+  virtual bool handleClick(const glm::vec2 &pos) override final {
+    return false;
   }
 
 private:

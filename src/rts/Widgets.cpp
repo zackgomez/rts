@@ -79,28 +79,17 @@ UIWidget *createWidget(const std::string &paramName) {
   }
 }
 
-
-UIWidget::UIWidget()
-  : clickable_(false) {
-}
-
-UIWidget* UIWidget::setClickable() {
-  clickable_ = true;
-  return this;
-}
-
-bool UIWidget::handleClick(const glm::vec2 &pos) {
-  if (!onClickListener_) {
-    return false;
-  }
-  return onClickListener_(pos);
-}
-
-UIWidget * UIWidget::setOnClickListener(UIWidget::OnClickListener l) {
+ClickableWidget * ClickableWidget::setOnClickListener(ClickableWidget::OnClickListener l) {
   onClickListener_ = l;
   return this;
 }
 
+bool ClickableWidget::handleClick(const glm::vec2 &pos) {
+  if (!isClick(pos) || !onClickListener_) {
+    return false;
+  }
+  return onClickListener_(pos);
+}
 
 SizedWidget::SizedWidget(const std::string &name) {
   invariant(
@@ -116,7 +105,7 @@ SizedWidget::SizedWidget(const std::string &name) {
 }
 
 bool SizedWidget::isClick(const glm::vec2 &pos) const {
-  return isClickable() && pointInBox(pos, center_, size_, 0.f);
+  return pointInBox(pos, center_, size_, 0.f);
 }
 
 TextureWidget::TextureWidget(const std::string &name) 
