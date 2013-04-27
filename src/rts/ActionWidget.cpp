@@ -11,7 +11,8 @@ ActionWidget::ActionWidget(
   : actionsFunc_(actions),
     actionExecutor_(executor),
     size_(uiSizeParam(name + ".size")),
-    center_(uiPosParam(name + ".center")) {
+    center_(uiPosParam(name + ".center")),
+    bgcolor_(vec4Param(name + ".bgcolor")) {
   setOnClickListener(
       std::bind(&ActionWidget::handleRealClick, this, std::placeholders::_1));
 }
@@ -27,9 +28,15 @@ void ActionWidget::render(float dt) {
   glm::vec2 center = center_ - glm::vec2(size_.x * 0.5f * (num_actions - 1), 0.f);
 
   for (auto action : actions) {
-    // TODO(zack) draw something representative... with a tooltip or something
-    drawRectCenter(center, size_, glm::vec4(0.3, 0.8, 0.1, 0.65));
-    drawRectCenter(center, size_ - glm::vec2(5.f), glm::vec4(0, 0, 0, 1));
+    drawRectCenter(center, size_, bgcolor_);
+    invariant(
+        action.actor_action.isMember("texture"),
+        "missing texture for action");
+    drawTextureCenter(
+        center,
+        size_ - glm::vec2(5.f),
+        ResourceManager::get()->getTexture(action.actor_action["texture"].asString()),
+        glm::vec4(0, 0, 1, 1));
 
     center.x += size_.x;
   }
@@ -42,7 +49,7 @@ bool ActionWidget::isClick(const glm::vec2 &pos) const {
 
 bool ActionWidget::handleRealClick(const glm::vec2 &pos) const {
   auto actions = actionsFunc_();
-  int idx = (pos.x - center_.x + actions.size() * size_.x) / size_.x;
+  int idx = 1 / size_.x * (pos.x - center_.x + actions.size() * size_.x / 2);
 
   actionExecutor_(actions[idx]);
   return true;

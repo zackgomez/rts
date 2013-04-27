@@ -44,7 +44,9 @@
       "unit_panel" : "images/UI/actor_underlay.png",
       "topbar"     : "images/UI/top_bar_1280.png",
       "vp"         : "images/vp-tex-1024.png",
-      "collision-tex" : "images/collision-tex-1024.png"
+      "collision-tex" : "images/collision-tex-1024.png",
+      "melee_icon"  : "images/melee_icon.png",
+      "ranged_icon" : "images/ranged_icon.png"
     },
     "depthFields" : {
       "steamLogo"  : {
@@ -193,13 +195,15 @@
         "type" : "production",
         "prod_name" : "unit",
         "req_cost" : 100,
-        "time_cost" : 5.0
+        "time_cost" : 5.0,
+        "texture" : "ranged_icon"
       },
       {
         "type" : "production",
         "prod_name" : "melee_unit",
         "req_cost" : 70.0,
-        "time_cost" : 2.5
+        "time_cost" : 2.5,
+        "texture" : "melee_icon"
       }
     ]
   },
@@ -306,7 +310,8 @@
       "action" : {
         "type"    : "CustomWidget",
         "center"  : [50.0, 94.0],
-        "size"    : [10.0, 10.0]
+        "size"    : [10.0, 10.0],
+        "bgcolor" : [0.5, 0.5, 0.5, 0.5]
       },
       "perfinfo" : {
         "type"       : "TextWidget",

@@ -25,6 +25,7 @@ class ActionWidget : public UIWidget {
   ActionExecutor actionExecutor_;
   glm::vec2 center_;
   glm::vec2 size_;
+  glm::vec4 bgcolor_;
 
   bool handleRealClick(const glm::vec2 &pos) const;
 };

@@ -396,7 +396,8 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
 void GameController::mouseUp(const glm::vec2 &screenCoord, int button) {
   if (button == SDL_BUTTON_LEFT) {
     std::set<id_t> newSelect;
-    if (glm::distance(leftStart_, screenCoord) > fltParam("hud.minDragDistance")) {
+    if (leftDrag_ &&
+        glm::distance(leftStart_, screenCoord) > fltParam("hud.minDragDistance")) {
       auto selection = player_->getSelection();
       newSelect = selectEntities(
         leftStart_,
