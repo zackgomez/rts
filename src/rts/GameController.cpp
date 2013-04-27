@@ -111,7 +111,7 @@ void GameController::onCreate() {
       auto *entity = (Actor *)Game::get()->getEntity(*selection.begin());
       int i = 0;
       for (auto action : entity->getActions()) {
-        ret.push_back(UIAction{ action, i++ });
+        ret.push_back(UIAction(action, i++));
       }
     }
     return ret;
