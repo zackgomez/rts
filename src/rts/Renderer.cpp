@@ -63,12 +63,16 @@ Renderer::Renderer()
 #endif  // USE_FMOD
   // Initialize font manager, if necessary
   FontManager::get();
-  UI::get();
 }
 
 Renderer::~Renderer() {
   clearController();
   clearEntities();
+}
+
+void Renderer::postToMainThread(const PostableFunction &func) {
+  std::unique_lock<std::mutex> lock(funcMutex_);
+  funcQueue_.push_back(func);
 }
 
 void Renderer::clearEntities() {
@@ -105,6 +109,15 @@ void Renderer::startMainloop() {
   Clock::time_point last = Clock::now();
   while (running_) {
     std::unique_lock<std::mutex> lock(mutex_);
+
+    // Run 'posted' functions
+    std::unique_lock<std::mutex> fqueueLock(funcMutex_);
+    for (auto&& func : funcQueue_) {
+      func();
+    }
+    funcQueue_.clear();
+    fqueueLock.unlock();
+
     if (controller_) {
       controller_->processInput(fps);
     }
@@ -134,8 +147,10 @@ void Renderer::render() {
   for (auto &it : entities_) {
     renderEntity(it.second);
   }
-  for (auto &it : entities_) {
-    renderEntityOverlay(it.second);
+  if (entityOverlayRenderer_) {
+    for (auto &it : entities_) {
+      renderEntityOverlay(it.second);
+    }
   }
 
   endRender();
@@ -160,12 +175,14 @@ void Renderer::renderEntityOverlay(ModelEntity *entity) {
 	if (!entity->isVisible()) {
 			return;
 	}
-  UI::get()->renderEntity(entity, simdt_);
+  entityOverlayRenderer_(entity, simdt_);
 }
 
 void Renderer::renderUI() {
   record_section("renderUI");
-  UI::get()->render(renderdt_);
+  if (controller_) {
+    controller_->render(renderdt_);
+  }
 }
 
 void Renderer::renderMap() {
@@ -258,7 +275,7 @@ const GameEntity *Renderer::castRay(
 }
 
 id_t Renderer::newEntityID() {
-  // TODO(synchronze here)
+  // this is an atomic variable, safe!
   return nextEntityID_++;
 }
 

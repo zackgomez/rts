@@ -1,42 +1,46 @@
 #define GLM_SWIZZLE_XYZW
+#include <functional>
 #include "rts/Controller.h"
 #include "rts/UI.h"
 
 namespace rts {
+
+Controller::Controller() {
+  ui_ = new UI();
+}
+
+Controller::~Controller() {
+  delete ui_;
+}
+
 void Controller::processInput(float dt) {
-  glm::vec2 screenCoord;
+  using namespace std::placeholders;
+
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
-    switch (event.type) {
-    case SDL_KEYDOWN:
-      if (UI::get()->handleKeyPress(event.key.keysym)) {
-        break;
-      }
-      keyPress(event.key.keysym);
-      break;
-    case SDL_KEYUP:
-      keyRelease(event.key.keysym);
-      break;
-    case SDL_MOUSEBUTTONDOWN:
-      screenCoord = glm::vec2(event.button.x, event.button.y);
-      if (UI::get()->handleMousePress(screenCoord, event.button.button)) {
-        break;
-      }
-      mouseDown(screenCoord, event.button.button);
-      break;
-    case SDL_MOUSEBUTTONUP:
-      screenCoord = glm::vec2(event.button.x, event.button.y);
-      mouseUp(screenCoord, event.button.button);
-      break;
-    case SDL_MOUSEMOTION:
-      screenCoord = glm::vec2(event.button.x, event.button.y);
-      mouseMotion(screenCoord);
-      break;
-    case SDL_QUIT:
-      quitEvent();
-      break;
-    }
+    interpretSDLEvent(
+      event,
+      [=] (const glm::vec2 &p, int button) {
+        if (ui_->handleMousePress(p, button)) {
+          return;
+        }
+        mouseDown(p, button);
+      },
+      std::bind(&Controller::mouseUp, this, _1, _2),
+      std::bind(&Controller::mouseMotion, this, _1),
+      [=] (SDL_keysym keysym) {
+        if (ui_->handleKeyPress(keysym)) {
+          return;
+        }
+        keyPress(keysym);
+      },
+      std::bind(&Controller::keyRelease, this, _1),
+      std::bind(&Controller::quitEvent, this));
   }
-  renderUpdate(dt);
+  frameUpdate(dt);
+}
+
+void Controller::render(float dt) {
+  ui_->render(dt);
 }
 };  // rts

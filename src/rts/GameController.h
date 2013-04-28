@@ -19,15 +19,15 @@ class GameController : public Controller {
   explicit GameController(LocalPlayer *player);
   ~GameController();
 
-  virtual void onCreate();
-  virtual void onDestroy();
+  virtual void onCreate() override;
+  virtual void onDestroy() override;
 
-  virtual void quitEvent();
-  virtual void mouseDown(const glm::vec2 &screenCoord, int button);
-  virtual void mouseUp(const glm::vec2 &screenCoord, int button);
-  virtual void mouseMotion(const glm::vec2 &screenCoord);
-  virtual void keyPress(SDL_keysym key);
-  virtual void keyRelease(SDL_keysym key);
+  virtual void quitEvent() override;
+  virtual void mouseDown(const glm::vec2 &screenCoord, int button) override;
+  virtual void mouseUp(const glm::vec2 &screenCoord, int button) override;
+  virtual void mouseMotion(const glm::vec2 &screenCoord) override;
+  virtual void keyPress(SDL_keysym key) override;
+  virtual void keyRelease(SDL_keysym key) override;
 
 	virtual void updateMapShader(Shader *shader) const;
 
@@ -36,7 +36,7 @@ class GameController : public Controller {
   glm::vec4 getDragRect() const;
 
  protected:
-  virtual void renderUpdate(float dt);
+  virtual void frameUpdate(float dt) override;
 
  private:
   //

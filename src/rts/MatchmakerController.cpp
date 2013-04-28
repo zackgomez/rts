@@ -26,38 +26,32 @@ MatchmakerController::~MatchmakerController() {
 }
 
 void MatchmakerController::onCreate() {
-  createWidgets("matchmaker_menu");
+  createWidgets(getUI(), "matchmaker_menu");
 
-  infoWidget_ = ((CommandWidget *)UI::get()->getWidget("matchmaker_menu.info_display"));
+  infoWidget_ = ((CommandWidget *)getUI()->getWidget("matchmaker_menu.info_display"));
   infoWidget_->show(HUGE_VAL);
   infoWidget_->addMessage("Info Window.");
 
-  ((SizedWidget*)UI::get()->getWidget("matchmaker_menu.single_player_button"))
+  ((SizedWidget*)getUI()->getWidget("matchmaker_menu.single_player_button"))
     ->setOnClickListener([&] (const glm::vec2 &pos) -> bool {
         matchmaker_->signalReady(Matchmaker::MODE_SINGLEPLAYER);
         return true;
         });
 
-  ((SizedWidget*)UI::get()->getWidget("matchmaker_menu.matchmaking_button"))
+  ((SizedWidget*)getUI()->getWidget("matchmaker_menu.matchmaking_button"))
     ->setOnClickListener([&] (const glm::vec2 &pos) -> bool {
         matchmaker_->signalReady(Matchmaker::MODE_MATCHMAKING);
         return true;
         });
         
-  matchmaker_->registerListener([&] (const std::string &s) {
-    UI::get()->postToMainThread([=] () {
-      infoWidget_->addMessage(s);
-    });
+  matchmaker_->registerListener([=] (const std::string &s) {
+    infoWidget_->addMessage(s);
   });
 
-  UI::get()->addWidget("testwidget", createCustomWidget(renderSteamLOL));
+  getUI()->addWidget("testwidget", createCustomWidget(renderSteamLOL));
 }
 
 void MatchmakerController::onDestroy() {
-  UI::get()->clearWidgets();
-}
-
-void MatchmakerController::renderUpdate(float dt) {
 }
 
 void MatchmakerController::quitEvent() {
@@ -68,8 +62,5 @@ void MatchmakerController::keyPress(SDL_keysym keysym) {
   if (keysym.sym == SDLK_ESCAPE) {
     Renderer::get()->signalShutdown();
   }
-}
-
-void MatchmakerController::updateMapShader(Shader *shader) const {
 }
 };  // rts

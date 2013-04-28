@@ -20,9 +20,6 @@
 
 namespace rts {
 
-UI* UI::instance_ = nullptr;
-
-
 glm::vec2 UI::convertUIPos(const glm::vec2 &pos) {
   auto resolution = Renderer::get()->getResolution();
   return glm::vec2(
@@ -31,15 +28,10 @@ glm::vec2 UI::convertUIPos(const glm::vec2 &pos) {
 }
 
 UI::UI() {
-  invariant(!instance_, "Multiple UIs?");
-  instance_ = this;
 }
 
 UI::~UI() {
-  for (auto pair : widgets_) {
-    delete pair.second;
-  }
-  instance_ = nullptr;
+  clearWidgets();
 }
 
 UIWidget* UI::getWidget(const std::string &name) {
@@ -52,6 +44,7 @@ UIWidget* UI::getWidget(const std::string &name) {
 
 void UI::addWidget(const std::string &name, UIWidget *widget) {
   widgets_[name] = widget;
+  widget->setUI(this);
 }
 
 bool UI::handleMousePress(const glm::vec2 &screenCoord, int button) {
@@ -85,13 +78,6 @@ void UI::clearWidgets() {
 void UI::render(float dt) {
   glDisable(GL_DEPTH_TEST);
 
-  std::unique_lock<std::mutex> lock(funcMutex_);
-  for (auto&& func : funcQueue_) {
-    func();
-  }
-  funcQueue_.clear();
-  lock.unlock();
-
   for (auto&& pair : widgets_) {
     pair.second->render(dt);
   }
@@ -99,14 +85,38 @@ void UI::render(float dt) {
   glEnable(GL_DEPTH_TEST);
 }
 
-void UI::renderEntity(const ModelEntity *e, float dt) {
-  if (entityOverlayRenderer_) {
-    entityOverlayRenderer_(e, dt);
-  }
-}
+void interpretSDLEvent(
+    const SDL_Event &event,
+    std::function<void(const glm::vec2 &, int)> mouseDownHandler,
+    std::function<void(const glm::vec2 &, int)> mouseUpHandler,
+    std::function<void(const glm::vec2 &)> mouseMotionHandler,
+    std::function<void(SDL_keysym)> keyPressHandler,
+    std::function<void(SDL_keysym)> keyReleaseHandler,
+    std::function<void()> quitEventHandler) {
+  glm::vec2 screenCoord;
 
-void UI::postToMainThread(const PostableFunction &func) {
-  std::unique_lock<std::mutex> lock(funcMutex_);
-  funcQueue_.push_back(func);
+  switch (event.type) {
+  case SDL_KEYDOWN:
+    keyPressHandler(event.key.keysym);
+    break;
+  case SDL_KEYUP:
+    keyReleaseHandler(event.key.keysym);
+    break;
+  case SDL_MOUSEBUTTONDOWN:
+    screenCoord = glm::vec2(event.button.x, event.button.y);
+    mouseDownHandler(screenCoord, event.button.button);
+    break;
+  case SDL_MOUSEBUTTONUP:
+    screenCoord = glm::vec2(event.button.x, event.button.y);
+    mouseUpHandler(screenCoord, event.button.button);
+    break;
+  case SDL_MOUSEMOTION:
+    screenCoord = glm::vec2(event.button.x, event.button.y);
+    mouseMotionHandler(screenCoord);
+    break;
+  case SDL_QUIT:
+    quitEventHandler();
+    break;
+  }
 }
 };  // rts

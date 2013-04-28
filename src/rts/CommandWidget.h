@@ -19,6 +19,7 @@ class CommandWidget : public SizedWidget {
     closeOnSubmit_ = close;
   }
 
+  // TODO(zack): make this synchronized
   CommandWidget* addMessage(const std::string &msg);
 
   typedef std::function<void(const std::string &newText)> OnTextSubmittedHandler;

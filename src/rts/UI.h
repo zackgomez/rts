@@ -19,6 +19,17 @@ class ModelEntity;
 class UIWidget;
 struct MapHighlight;
 
+// Dispatches the event to the specified handler
+// Vec2 params are [0, resolution] with 0,0 being the top left corner
+void interpretSDLEvent(
+    const SDL_Event &event,
+    std::function<void(const glm::vec2 &, int)> mouseDownHandler,
+    std::function<void(const glm::vec2 &, int)> mouseUpHandler,
+    std::function<void(const glm::vec2 &)> mouseMotionHandler,
+    std::function<void(SDL_keysym)> keyPressHandler,
+    std::function<void(SDL_keysym)> keyReleaseHandler,
+    std::function<void()> quitEventHandler);
+
 class UI {
  public:
   static glm::vec2 convertUIPos(const glm::vec2 &pos);
@@ -26,29 +37,18 @@ class UI {
   UI();
   ~UI();
 
-  static UI* get() {
-    if (!instance_) {
-      instance_ = new UI;
-    }
-    return instance_;
-  }
+  void render(float dt);
 
+  // Widget functions
   void addWidget(const std::string &name, UIWidget *widget);
   UIWidget *getWidget(const std::string &name);
   void clearWidgets();
 
+  // Input handling
   bool handleMousePress(const glm::vec2 &loc, int button);
   bool handleKeyPress(SDL_keysym keysym);
 
-  void render(float dt);
-  void renderEntity(const ModelEntity *e, float dt);
-
-  typedef std::function<void(const ModelEntity *, float)>
-      EntityOverlayRenderer;
-  void setEntityOverlayRenderer(EntityOverlayRenderer r) {
-    entityOverlayRenderer_ = r;
-  }
-
+  // Key capturing
   typedef std::function<bool(SDL_keysym keysym)> KeyCapturer;
   void setKeyCapturer(KeyCapturer kc) {
     capturer_ = kc;
@@ -62,16 +62,8 @@ class UI {
     SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
   }
 
-  typedef std::function<void()> PostableFunction;
-  void postToMainThread(const PostableFunction& func);
-
  private:
-  static UI* instance_;
-
-  EntityOverlayRenderer entityOverlayRenderer_;
   std::map<std::string, UIWidget *> widgets_;
-  std::vector<PostableFunction> funcQueue_;
-  std::mutex funcMutex_;
   KeyCapturer capturer_;
 };
 };  // rts

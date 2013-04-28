@@ -13,25 +13,11 @@ class MatchmakerController : public Controller {
   MatchmakerController(Matchmaker *mm);
   ~MatchmakerController();
 
-  float getTimeElapsed() {
-    return elapsedTime_;
-  }
+  virtual void onCreate() override;
+  virtual void onDestroy() override;
 
-	virtual void updateMapShader(Shader *shader) const;
-
-  virtual void onCreate();
-  virtual void onDestroy();
-
-  virtual void quitEvent();
-  virtual void keyPress(SDL_keysym key);
-
-  virtual void mouseDown(const glm::vec2 &screenCoord, int button) { }
-  virtual void mouseUp(const glm::vec2 &screenCoord, int button) { }
-  virtual void mouseMotion(const glm::vec2 &screenCoord) { }
-  virtual void keyRelease(SDL_keysym key) { }
-
- protected:
-  virtual void renderUpdate(float dt);
+  virtual void quitEvent() override;
+  virtual void keyPress(SDL_keysym key) override;
 
  private:
    Matchmaker *matchmaker_;

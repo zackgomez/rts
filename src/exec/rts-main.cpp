@@ -24,14 +24,12 @@
 #include "rts/ResourceManager.h"
 #include "rts/Player.h"
 #include "rts/Unit.h"
-#include "rts/UI.h"
 
 using rts::Game;
 using rts::Renderer;
 using rts::Map;
 using rts::Matchmaker;
 using rts::Player;
-using rts::UI;
 
 void render();
 void handleInput(float dt);
@@ -50,7 +48,7 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
 
   auto controller = new rts::GameController(
     (rts::LocalPlayer *) Game::get()->getPlayer(localPlayerID));
-  UI::get()->postToMainThread([=] () {
+  Renderer::get()->postToMainThread([=] () {
     Renderer::get()->setController(controller);
   });
 
@@ -74,7 +72,7 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
     }
   }
 
-  UI::get()->postToMainThread([=] () {
+  Renderer::get()->postToMainThread([=] () {
     Renderer::get()->clearEntities();
     Renderer::get()->setController(nullptr);
     delete game;
@@ -106,7 +104,7 @@ void matchmakerThread() {
 
   rts::MatchmakerController *controller =
     new rts::MatchmakerController(&matchmaker);
-  UI::get()->postToMainThread([=] () {
+  Renderer::get()->postToMainThread([=] () {
     Renderer::get()->setController(controller);
   });
 

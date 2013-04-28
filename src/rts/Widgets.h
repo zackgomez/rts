@@ -8,9 +8,10 @@
 
 namespace rts {
 
+class UI;
 class UIWidget;
 UIWidget *createWidget(const std::string &paramName);
-void createWidgets(const std::string &widgetGroupName);
+void createWidgets(UI *ui, const std::string &widgetGroupName);
 
 class UIWidget {
  public:
@@ -19,6 +20,16 @@ class UIWidget {
   // Return true if the click has been handled
   virtual bool handleClick(const glm::vec2 &pos) = 0;
   virtual void render(float dt) = 0;
+
+  UI *getUI() {
+    return ui_;
+  }
+  void setUI(UI *ui) {
+    ui_ = ui;
+  }
+
+ private:
+  UI *ui_ = nullptr;
 };
 
 class ClickableWidget : public UIWidget {

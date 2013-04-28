@@ -89,13 +89,13 @@ void GameController::onCreate() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  createWidgets("ui.widgets");
+  createWidgets(getUI(), "ui.widgets");
 
   using namespace std::placeholders;
 
   auto minimapWidget =
       new MinimapWidget("ui.widgets.minimap", player_->getPlayerID());
-  UI::get()->addWidget("ui.widgets.minimap", minimapWidget);
+  getUI()->addWidget("ui.widgets.minimap", minimapWidget);
   minimapWidget->setOnClickListener(
     [&](const glm::vec2 &pos) -> bool {
       leftDragMinimap_ = true;
@@ -120,7 +120,7 @@ void GameController::onCreate() {
   };
 
   auto actionWidget = new ActionWidget("ui.widgets.action", actionFunc, actionExecutor);
-  UI::get()->addWidget("ui.widgets.action", actionWidget);
+  getUI()->addWidget("ui.widgets.action", actionWidget);
 
   auto chatWidget = new CommandWidget("ui.chat");
   chatWidget->setCloseOnSubmit(true);
@@ -143,14 +143,14 @@ void GameController::onCreate() {
       MessageHub::get()->addAction(msg);
     }
   });
-  UI::get()->addWidget("ui.widgets.chat", chatWidget);
-  UI::get()->addWidget("ui.widgets.highlights",
+  getUI()->addWidget("ui.widgets.chat", chatWidget);
+  getUI()->addWidget("ui.widgets.highlights",
     createCustomWidget(std::bind(
         renderHighlights,
         std::ref(highlights_),
         std::ref(entityHighlights_),
         _1)));
-  UI::get()->addWidget("ui.widgets.dragRect",
+  getUI()->addWidget("ui.widgets.dragRect",
     createCustomWidget(std::bind(
       renderDragRect,
       std::ref(leftDrag_),
@@ -168,28 +168,28 @@ void GameController::onCreate() {
         ss << " (all)";
       }
       ss << ": " << m["chat"].asString();
-      ((CommandWidget *)UI::get()->getWidget("ui.widgets.chat"))
+      ((CommandWidget *)getUI()->getWidget("ui.widgets.chat"))
         ->addMessage(ss.str())
         ->show(fltParam("ui.chat.chatDisplayTime"));
     } // Note: When we add whisper, append additional conditional
   });
 
-  UI::get()->setEntityOverlayRenderer(
+  Renderer::get()->setEntityOverlayRenderer(
       std::bind(renderEntity, player_, std::ref(entityHighlights_), _1, _2));
 
-  ((TextWidget *)UI::get()->getWidget("ui.widgets.vicdisplay-1"))
+  ((TextWidget *)getUI()->getWidget("ui.widgets.vicdisplay-1"))
     ->setTextFunc(std::bind(getVPString, STARTING_TID));
 
-  ((TextWidget *)UI::get()->getWidget("ui.widgets.vicdisplay-2"))
+  ((TextWidget *)getUI()->getWidget("ui.widgets.vicdisplay-2"))
     ->setTextFunc(std::bind(getVPString, STARTING_TID + 1));
 
-  ((TextWidget *)UI::get()->getWidget("ui.widgets.reqdisplay"))
+  ((TextWidget *)getUI()->getWidget("ui.widgets.reqdisplay"))
     ->setTextFunc([&]() -> std::string {
       int req = Game::get()->getResources(player_->getPlayerID()).requisition;
       return "Req: " + std::to_string(req);
     });
 
-  ((TextWidget *)UI::get()->getWidget("ui.widgets.perfinfo"))
+  ((TextWidget *)getUI()->getWidget("ui.widgets.perfinfo"))
     ->setTextFunc([]() -> std::string {
         glm::vec3 color(0.1f, 1.f, 0.1f);
         int fps = Renderer::get()->getAverageFPS();
@@ -200,12 +200,12 @@ void GameController::onCreate() {
 }
 
 void GameController::onDestroy() {
-  UI::get()->clearWidgets();
-  UI::get()->setEntityOverlayRenderer(UI::EntityOverlayRenderer());
+  Renderer::get()->setEntityOverlayRenderer(Renderer::EntityOverlayRenderer());
+  getUI()->clearWidgets();
 	glDeleteTextures(1, &visTex_);
 }
 
-void GameController::renderUpdate(float dt) {
+void GameController::frameUpdate(float dt) {
   // No input while game is paused, not even camera motion
   if (Game::get()->isPaused()) {
     return;
@@ -380,14 +380,12 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
     Renderer::get()->zoomCamera(fltParam("local.mouseZoomSpeed"));
   }
 
-  if (Game::get()->isPaused()) {
-    return;
-  }
-
-  // Mutate, if game isn't paused
-  player_->setSelection(newSelect);
-  if (action.isMember("type")) {
-    MessageHub::get()->addAction(action);
+  if (!Game::get()->isPaused()) {
+    // Mutate, if game isn't paused
+    player_->setSelection(newSelect);
+    if (action.isMember("type")) {
+      MessageHub::get()->addAction(action);
+    }
   }
 }
 
@@ -462,7 +460,7 @@ void GameController::keyPress(SDL_keysym keysym) {
   } else if (state_ == PlayerState::DEFAULT) {
     if (key == SDLK_RETURN) {
       std::string prefix = (shift_) ? "/all " : "";
-      ((CommandWidget *)UI::get()->getWidget("ui.widgets.chat"))
+      ((CommandWidget *)getUI()->getWidget("ui.widgets.chat"))
         ->captureText(prefix);
     } else if (key == SDLK_ESCAPE) {
       // ESC clears out current states
@@ -532,7 +530,7 @@ void GameController::keyRelease(SDL_keysym keysym) {
 }
 
 void GameController::minimapUpdateCamera(const glm::vec2 &screenCoord) {
-  auto minimapWidget = (MinimapWidget *)UI::get()->getWidget("ui.widgets.minimap");
+  auto minimapWidget = (MinimapWidget *)getUI()->getWidget("ui.widgets.minimap");
   const glm::vec2 minimapPos = minimapWidget->getCenter();
   const glm::vec2 minimapDim = minimapWidget->getSize();
   glm::vec2 mapCoord = screenCoord;

@@ -53,13 +53,13 @@ glm::vec2 uiSizeParam(const std::string &name) {
   }
 }
 
-void createWidgets(const std::string &widgetGroupName) {
+void createWidgets(UI *ui, const std::string &widgetGroupName) {
   Json::Value group = ParamReader::get()->getParam(widgetGroupName);
   for (auto it = group.begin(); it != group.end(); it++) {
     auto name = widgetGroupName + '.' + it.memberName();
     auto *widget = createWidget(name);
     if (widget) {
-      UI::get()->addWidget(name, widget);
+      ui->addWidget(name, widget);
     }
   }
 }

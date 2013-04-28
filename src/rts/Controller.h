@@ -8,33 +8,44 @@ class Shader;
 namespace rts {
 
 class ModelEntity;
+class UI;
 
 class Controller {
  public:
-   virtual ~Controller() { }
+  Controller();
+  virtual ~Controller();
+
   // @param dt the elapsed time in seconds since the last call
   void processInput(float dt);
+  void render(float dt);
 
   virtual void onCreate() { }
   virtual void onDestroy() { }
 
-	// TODO(zack): this is a bit hacky, fine for now
-	virtual void updateMapShader(Shader *shader) const = 0;
+	// TODO(zack): this is a bit hacky
+	virtual void updateMapShader(Shader *shader) const { }
 
   //
   // Input handler functions
   //
-  virtual void quitEvent() = 0;
+  virtual void quitEvent() { }
   // @param button the SDL_BUTTON description of the pressed button
-  virtual void mouseDown(const glm::vec2 &screenCoord, int button) = 0;
+  virtual void mouseDown(const glm::vec2 &screenCoord, int button) { }
   // @param button the SDL_BUTTON description of the released button
-  virtual void mouseUp(const glm::vec2 &screenCoord, int button) = 0;
-  virtual void mouseMotion(const glm::vec2 &screenCoord) = 0;
-  virtual void keyPress(SDL_keysym key) = 0;
-  virtual void keyRelease(SDL_keysym key) = 0;
+  virtual void mouseUp(const glm::vec2 &screenCoord, int button) { }
+  virtual void mouseMotion(const glm::vec2 &screenCoord) { }
+  virtual void keyPress(SDL_keysym key) { }
+  virtual void keyRelease(SDL_keysym key) { }
 
  protected:
-  virtual void renderUpdate(float dt) = 0;
+  virtual void frameUpdate(float dt) { }
+
+  UI *getUI() {
+    return ui_;
+  }
+
+ private:
+  UI *ui_;
 };
 };  // rts
 #endif  // SRC_RTS_CONTROLLER_H_

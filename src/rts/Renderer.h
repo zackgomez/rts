@@ -100,8 +100,18 @@ class Renderer {
   void resetCameraRotation();
   void zoomCamera(float delta);
 
+  typedef std::function<void()> PostableFunction;
+  void postToMainThread(const PostableFunction& func);
+
+  // Only run these functions from the main thread
   void setController(Controller *controller);
   void clearController();
+
+  typedef std::function<void(const ModelEntity *, float)>
+      EntityOverlayRenderer;
+  void setEntityOverlayRenderer(EntityOverlayRenderer r) {
+    entityOverlayRenderer_ = r;
+  }
 
 
   void startMainloop();
@@ -140,7 +150,10 @@ class Renderer {
   std::map<id_t, GameEntity *> entities_;
   std::atomic<id_t> nextEntityID_;
 
+  std::mutex funcMutex_;
+  std::vector<PostableFunction> funcQueue_;
   Controller *controller_;
+  EntityOverlayRenderer entityOverlayRenderer_;
 
 #ifdef USE_FMOD
   FMOD::System *system_;

@@ -35,13 +35,13 @@ CommandWidget* CommandWidget::hide() {
 
 void CommandWidget::stopCapturing() {
   capturing_ = false;
-  UI::get()->clearKeyCapturer();
+  getUI()->clearKeyCapturer();
 }
 
 CommandWidget* CommandWidget::captureText(const std::string &prefix) {
   capturing_ = true;
   buffer_ = prefix;
-  UI::get()->setKeyCapturer([&](SDL_keysym keysym) -> bool {
+  getUI()->setKeyCapturer([&](SDL_keysym keysym) -> bool {
     if (keysym.sym == SDLK_ESCAPE) {
       stopCapturing();
       return true;
@@ -61,8 +61,6 @@ CommandWidget* CommandWidget::captureText(const std::string &prefix) {
       return false;
     }
     return true;
-    /*
-    */
   });
   return this;
 }
