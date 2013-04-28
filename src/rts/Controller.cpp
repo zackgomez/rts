@@ -42,5 +42,7 @@ void Controller::processInput(float dt) {
 
 void Controller::render(float dt) {
   ui_->render(dt);
+
+  renderExtra(dt);
 }
 };  // rts

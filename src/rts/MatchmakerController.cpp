@@ -47,8 +47,10 @@ void MatchmakerController::onCreate() {
   matchmaker_->registerListener([=] (const std::string &s) {
     infoWidget_->addMessage(s);
   });
+}
 
-  getUI()->addWidget("testwidget", createCustomWidget(renderSteamLOL));
+void MatchmakerController::renderExtra(float dt) {
+  renderSteamLOL(dt);
 }
 
 void MatchmakerController::onDestroy() {

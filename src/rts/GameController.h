@@ -37,6 +37,7 @@ class GameController : public Controller {
 
  protected:
   virtual void frameUpdate(float dt) override;
+  virtual void renderExtra(float dt) override;
 
  private:
   //

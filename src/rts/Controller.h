@@ -39,6 +39,7 @@ class Controller {
 
  protected:
   virtual void frameUpdate(float dt) { }
+  virtual void renderExtra(float dt) { }
 
   UI *getUI() {
     return ui_;

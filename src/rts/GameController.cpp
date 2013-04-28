@@ -144,19 +144,6 @@ void GameController::onCreate() {
     }
   });
   getUI()->addWidget("ui.widgets.chat", chatWidget);
-  getUI()->addWidget("ui.widgets.highlights",
-    createCustomWidget(std::bind(
-        renderHighlights,
-        std::ref(highlights_),
-        std::ref(entityHighlights_),
-        _1)));
-  getUI()->addWidget("ui.widgets.dragRect",
-    createCustomWidget(std::bind(
-      renderDragRect,
-      std::ref(leftDrag_),
-      std::ref(leftStart_),
-      std::ref(lastMousePos_),
-      _1)));
 
   Game::get()->setChatListener([&](const Message &m) {
     const Player* from = Game::get()->getPlayer(toID(m["pid"]));
@@ -203,6 +190,11 @@ void GameController::onDestroy() {
   Renderer::get()->setEntityOverlayRenderer(Renderer::EntityOverlayRenderer());
   getUI()->clearWidgets();
 	glDeleteTextures(1, &visTex_);
+}
+
+void GameController::renderExtra(float dt) {
+  renderDragRect(leftDrag_, leftStart_, lastMousePos_, dt);
+  renderHighlights(highlights_, entityHighlights_, dt);
 }
 
 void GameController::frameUpdate(float dt) {

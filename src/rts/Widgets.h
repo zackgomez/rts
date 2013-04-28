@@ -102,30 +102,6 @@ class TextWidget : public SizedWidget {
   std::string text_;
 };
 
-template<class T>
-class CustomWidget : public UIWidget {
-public:
-  CustomWidget(T func)
-    : func_(func) {
-  }
-
-  void render(float dt) {
-    func_(dt);
-  }
-
-  virtual bool handleClick(const glm::vec2 &pos) override final {
-    return false;
-  }
-
-private:
-  T func_;
-};
-// This does template type deduction so you don't have to figure out wtf T is
-// when you want to make a custom widget
-template<typename T>
-CustomWidget<T>* createCustomWidget(T&& func) {
-  return new CustomWidget<T>(func);
-}
 glm::vec2 uiPosParam(const std::string &name);
 glm::vec2 uiSizeParam(const std::string &name);
 };  // rts

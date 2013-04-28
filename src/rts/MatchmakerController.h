@@ -19,6 +19,9 @@ class MatchmakerController : public Controller {
   virtual void quitEvent() override;
   virtual void keyPress(SDL_keysym key) override;
 
+ protected:
+  virtual void renderExtra(float dt) override;
+
  private:
    Matchmaker *matchmaker_;
    CommandWidget *infoWidget_;
