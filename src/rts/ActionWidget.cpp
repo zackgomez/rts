@@ -54,4 +54,12 @@ bool ActionWidget::handleClick(const glm::vec2 &pos) {
   return true;
 }
 
+glm::vec2 ActionWidget::getCenter() const {
+  return center_;
+}
+
+glm::vec2 ActionWidget::getSize() const {
+  return glm::vec2(size_.x * actionsFunc_().size(), size_.y);
+}
+
 };  // rts

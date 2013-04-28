@@ -7,7 +7,7 @@
 
 namespace rts {
 CommandWidget::CommandWidget(const std::string &name)
-  : SizedWidget(name),
+  : StaticWidget(name),
     name_(name),
     capturing_(false),
     closeOnSubmit_(false),

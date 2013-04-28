@@ -20,6 +20,9 @@ class ActionWidget : public UIWidget {
 
   virtual bool handleClick(const glm::vec2 &pos) override;
 
+  virtual glm::vec2 getCenter() const override final;
+  virtual glm::vec2 getSize() const override final;
+
  private:
   ActionFunc actionsFunc_;
   ActionExecutor actionExecutor_;

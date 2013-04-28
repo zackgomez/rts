@@ -79,19 +79,7 @@ UIWidget *createWidget(const std::string &paramName) {
   }
 }
 
-ClickableWidget * ClickableWidget::setOnClickListener(ClickableWidget::OnClickListener l) {
-  onClickListener_ = l;
-  return this;
-}
-
-bool ClickableWidget::handleClick(const glm::vec2 &pos) {
-  if (!isClick(pos) || !onClickListener_) {
-    return false;
-  }
-  return onClickListener_(pos);
-}
-
-SizedWidget::SizedWidget(const std::string &name) {
+StaticWidget::StaticWidget(const std::string &name) {
   invariant(
       hasParam(name + ".pos") ^ hasParam(name + ".center"),
       "widgets should specify only pos or center");
@@ -104,12 +92,19 @@ SizedWidget::SizedWidget(const std::string &name) {
   }
 }
 
-bool SizedWidget::isClick(const glm::vec2 &pos) const {
+bool StaticWidget::handleClick(const glm::vec2 &pos) {
+  if (!isClick(pos) || !onPressListener_) {
+    return false;
+  }
+  return onPressListener_();
+}
+
+bool StaticWidget::isClick(const glm::vec2 &pos) const {
   return pointInBox(pos, center_, size_, 0.f);
 }
 
 TextureWidget::TextureWidget(const std::string &name) 
-  : SizedWidget(name),
+  : StaticWidget(name),
     texName_(strParam(name + ".texture")) {
 }
 
@@ -119,11 +114,11 @@ void TextureWidget::render(float dt) {
 }
 
 TextWidget::TextWidget(const std::string &name)
-  : SizedWidget(name),
+  : StaticWidget(name),
     height_(fltParam(name + ".fontHeight")),
     bgcolor_(vec4Param(name + ".bgcolor")) {
   if (hasParam(name + ".text")) {
-    setText(strParam(name + ".text"));
+    setTextFunc([=]() -> std::string { return strParam(name + ".text"); });
   }
 }
 
@@ -132,16 +127,11 @@ TextWidget *TextWidget::setTextFunc(const TextFunc &func) {
   return this;
 }
 
-TextWidget *TextWidget::setText(const std::string &text) {
-  text_ = text;
-  return this;
-}
-
 void TextWidget::render(float dt) {
-  std::string text = text_;
-  if (textFunc_) {
-    text = textFunc_();
+  if (!textFunc_) {
+    return;
   }
+  std::string text = textFunc_();
   drawRectCenter(getCenter(), getSize(), bgcolor_);
   FontManager::get()->drawString(text, getCenter() - getSize()/2.f, height_);
 }

@@ -32,14 +32,14 @@ void MatchmakerController::onCreate() {
   infoWidget_->show(HUGE_VAL);
   infoWidget_->addMessage("Info Window.");
 
-  ((SizedWidget*)getUI()->getWidget("matchmaker_menu.single_player_button"))
-    ->setOnClickListener([&] (const glm::vec2 &pos) -> bool {
+  ((StaticWidget*)getUI()->getWidget("matchmaker_menu.single_player_button"))
+    ->setOnPressListener([=] () -> bool {
         matchmaker_->signalReady(Matchmaker::MODE_SINGLEPLAYER);
         return true;
         });
 
-  ((SizedWidget*)getUI()->getWidget("matchmaker_menu.matchmaking_button"))
-    ->setOnClickListener([&] (const glm::vec2 &pos) -> bool {
+  ((StaticWidget*)getUI()->getWidget("matchmaker_menu.matchmaking_button"))
+    ->setOnPressListener([=] () -> bool {
         matchmaker_->signalReady(Matchmaker::MODE_MATCHMAKING);
         return true;
         });

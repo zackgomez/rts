@@ -11,7 +11,7 @@
 namespace rts {
 
 MinimapWidget::MinimapWidget(const std::string &name, id_t localPlayerID)
-  : SizedWidget(name),
+  : StaticWidget(name),
     localPlayerID_(localPlayerID),
     name_(name) {
 
@@ -23,6 +23,18 @@ MinimapWidget::MinimapWidget(const std::string &name, id_t localPlayerID)
 
 MinimapWidget::~MinimapWidget() {
   glDeleteTextures(1, &visibilityTex_);
+}
+
+bool MinimapWidget::handleClick(const glm::vec2 &pos) {
+  if (!isClick(pos)) {
+    return false;
+  }
+  if (listener_) {
+    glm::vec2 minimap_pos = (pos - getCenter()) / getSize();
+    listener_(minimap_pos);
+  }
+
+  return true;
 }
 
 void MinimapWidget::renderBase(float dt) {

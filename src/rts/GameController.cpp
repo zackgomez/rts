@@ -96,10 +96,9 @@ void GameController::onCreate() {
   auto minimapWidget =
       new MinimapWidget("ui.widgets.minimap", player_->getPlayerID());
   getUI()->addWidget("ui.widgets.minimap", minimapWidget);
-  minimapWidget->setOnClickListener(
-    [&](const glm::vec2 &pos) -> bool {
+  minimapWidget->setMinimapListener(
+    [&](const glm::vec2 &pos) {
       leftDragMinimap_ = true;
-      return true;
     });
 
   auto actionFunc = [=]() -> std::vector<UIAction> {

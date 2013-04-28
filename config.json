@@ -300,8 +300,7 @@
   "ui" : {
     "widgets" : {
       "minimap" : {
-        "type"    : "TextureWidget",
-        "texture" : "minimap",
+        "type"    : "CustomWidget",
         "pos"     : [0.0, -33.0],
         "dim"     : [33.0, 33.0],
         "viewportLineColor" : [1, 1, 1, 1],

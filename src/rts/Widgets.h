@@ -21,6 +21,9 @@ class UIWidget {
   virtual bool handleClick(const glm::vec2 &pos) = 0;
   virtual void render(float dt) = 0;
 
+  virtual glm::vec2 getCenter() const = 0;
+  virtual glm::vec2 getSize() const = 0;
+
   UI *getUI() {
     return ui_;
   }
@@ -32,39 +35,34 @@ class UIWidget {
   UI *ui_ = nullptr;
 };
 
-class ClickableWidget : public UIWidget {
+class StaticWidget : public UIWidget {
  public:
-  typedef std::function<bool(const glm::vec2 &)> OnClickListener;
+  StaticWidget(const std::string &name);
 
-  virtual bool handleClick(const glm::vec2 &pos) override final;
-
-  ClickableWidget* setOnClickListener(OnClickListener onClickListener);
-
- protected:
-  virtual bool isClick(const glm::vec2 &pos) const = 0;
-  OnClickListener onClickListener_;
-};
-
-class SizedWidget : public ClickableWidget {
- public:
-  SizedWidget(const std::string &name);
-
-  const glm::vec2 &getCenter() const {
+  virtual glm::vec2 getCenter() const override final {
     return center_;
   }
-  const glm::vec2 &getSize() const {
+  virtual glm::vec2 getSize() const override final {
     return size_;
   }
 
+  virtual bool handleClick(const glm::vec2 &pos) override;
+
+  typedef std::function<bool()> OnPressListener;
+  void setOnPressListener(OnPressListener l) {
+    onPressListener_ = l;
+  }
+
  protected:
-  virtual bool isClick(const glm::vec2 &pos) const override final;
+  bool isClick(const glm::vec2 &pos) const;
 
  private:
   glm::vec2 center_;
   glm::vec2 size_;
+  OnPressListener onPressListener_;
 };
 
-class TextureWidget : public SizedWidget {
+class TextureWidget : public StaticWidget {
  public:
   TextureWidget(const std::string &name);
 
@@ -74,7 +72,7 @@ class TextureWidget : public SizedWidget {
   std::string texName_;
 };
 
-class DepthFieldWidget : public SizedWidget {
+class DepthFieldWidget : public StaticWidget {
  public:
    DepthFieldWidget(const std::string &name);
 
@@ -84,14 +82,13 @@ class DepthFieldWidget : public SizedWidget {
    DepthField *depthField_;
 };
 
-class TextWidget : public SizedWidget {
+class TextWidget : public StaticWidget {
  public:
   typedef std::function<std::string()> TextFunc;
 
   TextWidget(const std::string &name);
 
   TextWidget *setTextFunc(const TextFunc &func);
-  TextWidget *setText(const std::string &s);
 
   void render(float dt);
 
@@ -99,7 +96,6 @@ class TextWidget : public SizedWidget {
   float height_;
   glm::vec4 bgcolor_;
   TextFunc textFunc_;
-  std::string text_;
 };
 
 glm::vec2 uiPosParam(const std::string &name);

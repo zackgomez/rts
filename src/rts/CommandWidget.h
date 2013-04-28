@@ -4,7 +4,7 @@
 
 namespace rts {
 
-class CommandWidget : public SizedWidget {
+class CommandWidget : public StaticWidget {
  public:
   CommandWidget(const std::string &name);
   virtual ~CommandWidget();
