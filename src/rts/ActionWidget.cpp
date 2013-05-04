@@ -1,4 +1,5 @@
 #include "rts/ActionWidget.h"
+#include <SDL/SDL.h>
 #include "common/Collision.h"
 #include "common/ParamReader.h"
 
@@ -26,7 +27,12 @@ void ActionWidget::render(float dt) {
   glm::vec2 center = center_ - glm::vec2(size_.x * 0.5f * (num_actions - 1), 0.f);
 
   for (auto action : actions) {
-    drawRectCenter(center, size_, bgcolor_);
+    glm::vec4 color = bgcolor_;
+    if (hover_ && pointInBox(hoverPos_, center, size_, 0)) {
+      float fact = press_ ? 0.8f : 1.2f;
+      color *= glm::vec4(fact, fact, fact, 1.f);
+    }
+    drawRectCenter(center, size_, color);
     invariant(
         action.actor_action.isMember("texture"),
         "missing texture for action");
@@ -40,18 +46,20 @@ void ActionWidget::render(float dt) {
   }
 }
 
-bool ActionWidget::handleClick(const glm::vec2 &pos) {
-  auto actions = actionsFunc_();
-  auto num_actions = actions.size();
+void ActionWidget::update(const glm::vec2 &pos, int buttons) {
+  hover_ = pointInBox(pos, getCenter(), getSize(), 0.f);
+  hoverPos_ = pos;
 
-  if (!pointInBox(pos, center_, glm::vec2(size_.x * num_actions, size_.y), 0.f)) {
-    return false;
+  if (!(buttons & SDL_BUTTON(1))) {
+    if (press_ & hover_) {
+      auto actions = actionsFunc_();
+      int idx = 1 / size_.x * (pos.x - center_.x + actions.size() * size_.x / 2);
+      actionExecutor_(actions[idx]);
+    }
+    press_ = false;
+  } else if (hover_) {
+    press_ = true;
   }
-
-  int idx = 1 / size_.x * (pos.x - center_.x + actions.size() * size_.x / 2);
-
-  actionExecutor_(actions[idx]);
-  return true;
 }
 
 glm::vec2 ActionWidget::getCenter() const {

@@ -16,6 +16,10 @@ Controller::~Controller() {
 void Controller::processInput(float dt) {
   using namespace std::placeholders;
 
+  int x, y, buttons;
+  buttons = SDL_GetMouseState(&x, &y);
+  ui_->update(glm::vec2(x, y), buttons);
+
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
     interpretSDLEvent(
@@ -27,7 +31,9 @@ void Controller::processInput(float dt) {
         mouseDown(p, button);
       },
       std::bind(&Controller::mouseUp, this, _1, _2),
-      std::bind(&Controller::mouseMotion, this, _1),
+      [=] (const glm::vec2 &pos, int buttons) {
+        mouseMotion(pos);
+      },
       [=] (SDL_keysym keysym) {
         if (ui_->handleKeyPress(keysym)) {
           return;

@@ -18,7 +18,8 @@ class UIWidget {
   virtual ~UIWidget() { }
 
   // Return true if the click has been handled
-  virtual bool handleClick(const glm::vec2 &pos) = 0;
+  virtual bool handleClick(const glm::vec2 &pos, int button) = 0;
+  virtual void update(const glm::vec2 &pos, int buttons) = 0;
   virtual void render(float dt) = 0;
 
   virtual glm::vec2 getCenter() const = 0;
@@ -46,7 +47,8 @@ class StaticWidget : public UIWidget {
     return size_;
   }
 
-  virtual bool handleClick(const glm::vec2 &pos) override;
+  virtual void update(const glm::vec2 &pos, int buttons) override { }
+  virtual bool handleClick(const glm::vec2 &pos, int button) override;
 
   typedef std::function<bool()> OnPressListener;
   void setOnPressListener(OnPressListener l) {

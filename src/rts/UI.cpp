@@ -47,14 +47,20 @@ void UI::addWidget(const std::string &name, UIWidget *widget) {
   widget->setUI(this);
 }
 
-bool UI::handleMousePress(const glm::vec2 &screenCoord, int button) {
-  // TODO(zack): send button to widget as well
-  if (button != SDL_BUTTON_LEFT) {
-    return false;
+void UI::update(const glm::vec2 &screenCoord, int buttons) {
+  for (auto pair : widgets_) {
+    pair.second->update(screenCoord, buttons);
   }
+}
+
+bool UI::handleMousePress(const glm::vec2 &screenCoord, int button) {
   for (auto&& pair : widgets_) {
-    if (pair.second->handleClick(screenCoord)) {
-      return true;
+    auto widget = pair.second;
+
+    if (pointInBox(screenCoord, widget->getCenter(), widget->getSize(), 0.f)) {
+      if (widget->handleClick(screenCoord, button)) {
+        return true;
+      }
     }
   }
 
@@ -89,7 +95,7 @@ void interpretSDLEvent(
     const SDL_Event &event,
     std::function<void(const glm::vec2 &, int)> mouseDownHandler,
     std::function<void(const glm::vec2 &, int)> mouseUpHandler,
-    std::function<void(const glm::vec2 &)> mouseMotionHandler,
+    std::function<void(const glm::vec2 &, int)> mouseMotionHandler,
     std::function<void(SDL_keysym)> keyPressHandler,
     std::function<void(SDL_keysym)> keyReleaseHandler,
     std::function<void()> quitEventHandler) {
@@ -111,8 +117,8 @@ void interpretSDLEvent(
     mouseUpHandler(screenCoord, event.button.button);
     break;
   case SDL_MOUSEMOTION:
-    screenCoord = glm::vec2(event.button.x, event.button.y);
-    mouseMotionHandler(screenCoord);
+    screenCoord = glm::vec2(event.motion.x, event.motion.y);
+    mouseMotionHandler(screenCoord, event.motion.state);
     break;
   case SDL_QUIT:
     quitEventHandler();

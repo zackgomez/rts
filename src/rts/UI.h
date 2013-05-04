@@ -25,7 +25,8 @@ void interpretSDLEvent(
     const SDL_Event &event,
     std::function<void(const glm::vec2 &, int)> mouseDownHandler,
     std::function<void(const glm::vec2 &, int)> mouseUpHandler,
-    std::function<void(const glm::vec2 &)> mouseMotionHandler,
+    // parameter is bitmask of buttons
+    std::function<void(const glm::vec2 &, int)> mouseMotionHandler,
     std::function<void(SDL_keysym)> keyPressHandler,
     std::function<void(SDL_keysym)> keyReleaseHandler,
     std::function<void()> quitEventHandler);
@@ -45,6 +46,7 @@ class UI {
   void clearWidgets();
 
   // Input handling
+  void update(const glm::vec2 &loc, int buttons);
   bool handleMousePress(const glm::vec2 &loc, int button);
   bool handleKeyPress(SDL_keysym keysym);
 

@@ -16,9 +16,9 @@ class ActionWidget : public UIWidget {
       ActionExecutor executor);
   virtual ~ActionWidget();
 
+  virtual bool handleClick(const glm::vec2 &pos, int button) override { return true; }
   virtual void render(float dt) override;
-
-  virtual bool handleClick(const glm::vec2 &pos) override;
+  virtual void update(const glm::vec2 &pos, int buttons) override;
 
   virtual glm::vec2 getCenter() const override final;
   virtual glm::vec2 getSize() const override final;
@@ -30,6 +30,9 @@ class ActionWidget : public UIWidget {
   glm::vec2 size_;
   glm::vec4 bgcolor_;
 
+  bool hover_ = false;
+  bool press_ = false;
+  glm::vec2 hoverPos_ = glm::vec2(0.f);
 };
 
 };  // rts

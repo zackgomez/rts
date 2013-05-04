@@ -9,11 +9,11 @@ class MinimapWidget final : public StaticWidget {
   MinimapWidget(const std::string &name, id_t localPlayerID);
   virtual ~MinimapWidget();
 
+  virtual bool handleClick(const glm::vec2 &pos, int button) override;
   void render(float dt);
-  virtual bool handleClick(const glm::vec2 &pos) override;
 
   // called with position [0,1] in minimap coordinates
-  typedef std::function<void(const glm::vec2 &)> MinimapListener;
+  typedef std::function<void(const glm::vec2 &, int button)> MinimapListener;
   void setMinimapListener(MinimapListener l) {
     listener_ = l;
   }

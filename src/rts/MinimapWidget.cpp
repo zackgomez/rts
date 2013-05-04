@@ -25,13 +25,10 @@ MinimapWidget::~MinimapWidget() {
   glDeleteTextures(1, &visibilityTex_);
 }
 
-bool MinimapWidget::handleClick(const glm::vec2 &pos) {
-  if (!isClick(pos)) {
-    return false;
-  }
+bool MinimapWidget::handleClick(const glm::vec2 &pos, int button) {
   if (listener_) {
     glm::vec2 minimap_pos = (pos - getCenter()) / getSize();
-    listener_(minimap_pos);
+    listener_(minimap_pos, button);
   }
 
   return true;

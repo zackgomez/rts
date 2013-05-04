@@ -92,8 +92,8 @@ StaticWidget::StaticWidget(const std::string &name) {
   }
 }
 
-bool StaticWidget::handleClick(const glm::vec2 &pos) {
-  if (!isClick(pos) || !onPressListener_) {
+bool StaticWidget::handleClick(const glm::vec2 &pos, int button) {
+  if (!isClick(pos) || !onPressListener_ || button != SDL_BUTTON_LEFT) {
     return false;
   }
   return onPressListener_();
