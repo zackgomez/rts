@@ -33,6 +33,7 @@ class ActionWidget : public UIWidget {
   bool hover_ = false;
   bool press_ = false;
   glm::vec2 hoverPos_ = glm::vec2(0.f);
+  float hoverTimer_ = 0.f;
 };
 
 };  // rts

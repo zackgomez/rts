@@ -1,7 +1,10 @@
 #include "rts/ActionWidget.h"
+#include <boost/algorithm/string.hpp>
 #include <SDL/SDL.h>
 #include "common/Collision.h"
 #include "common/ParamReader.h"
+#include "rts/FontManager.h"
+#include "rts/UIAction.h"
 
 namespace rts {
 
@@ -26,9 +29,12 @@ void ActionWidget::render(float dt) {
   // Center of the first box
   glm::vec2 center = center_ - glm::vec2(size_.x * 0.5f * (num_actions - 1), 0.f);
 
+  hoverTimer_ = hover_ ? hoverTimer_ + dt : 0.f;
+
   for (auto action : actions) {
     glm::vec4 color = bgcolor_;
-    if (hover_ && pointInBox(hoverPos_, center, size_, 0)) {
+    bool action_hover = hover_ && pointInBox(hoverPos_, center, size_, 0);
+    if (action_hover) {
       float fact = press_ ? 0.8f : 1.2f;
       color *= glm::vec4(fact, fact, fact, 1.f);
     }
@@ -41,6 +47,33 @@ void ActionWidget::render(float dt) {
         size_ - glm::vec2(5.f),
         ResourceManager::get()->getTexture(action.actor_action["texture"].asString()),
         glm::vec4(0, 0, 1, 1));
+
+    if (action_hover && hoverTimer_ > fltParam("local.tooltipDelay")) {
+      float tooltip_font_height = fltParam("local.tooltipFontHeight");
+      float tooltip_width = size_.x * 2.f;
+
+      auto tooltip = action.getTooltip();
+      std::vector<std::string> tooltipLines;
+      boost::split(tooltipLines, tooltip, boost::is_any_of("\n"));
+      glm::vec2 pos = hoverPos_ -
+        glm::vec2(0.f, (tooltipLines.size() + 1)* tooltip_font_height);
+
+      glm::vec2 tooltip_rect_size = glm::vec2(
+        tooltip_width,
+        tooltip_font_height * tooltipLines.size() + tooltip_font_height / 2.f);
+
+      drawRect(pos,
+          tooltip_rect_size,
+          glm::vec4(0.6f));
+
+      for (auto& line : tooltipLines) {
+        FontManager::get()->drawString(
+            line,
+            pos,
+            tooltip_font_height);
+        pos.y += tooltip_font_height;
+      }
+    }
 
     center.x += size_.x;
   }

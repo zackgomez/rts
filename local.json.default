@@ -6,15 +6,20 @@
     "port" : "10110"
   },
 
-  // Game Preferences
+  // Graphics
   "resolution" : [1280, 800],
-  "camera.panthresh" : 50,
+  "framerate" : 80.0,
+
+  // Game Preferences
   "minimap_color_scheme" : 1, 
     //0 = player colors (red player is red...)
     //1 = ally (you are green, allies blue, enemies red...)
+  "tooltipDelay" : 0.3,
+	"tooltipFontHeight" : 20.0,
 
-  // Framerate CAP
-  "framerate" : 80.0,
+
+	// Camera preferences
+  "camera.panthresh" : 50,
   "cameraRotSpeed" : 0.3,
   "keyZoomSpeed" : 0.1,
   "mouseZoomSpeed" : 1.0,

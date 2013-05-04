@@ -8,6 +8,8 @@ struct UIAction {
   : actor_action(action), action_idx(idx)
   {}
 
+  std::string getTooltip() const;
+
   Json::Value actor_action;
   int action_idx;
 };
