@@ -34,11 +34,6 @@ void Map::update(float dt) {
 }
 
 void Map::init(const std::vector<Player *> &players) {
-  // TODO(zack) have it read this from a map file
-  // we should also create a "base" macro that expands into a headquarters
-  // building and starting hero/unit/base defenses unicorns etc
-  LOG(DEBUG) << "Here:\n" << definition_ << '\n';
-
   invariant(players.size() <= definition_["players"].asInt(),
       "too many players for map");
 
@@ -70,8 +65,6 @@ void Map::init(const std::vector<Player *> &players) {
         type,
         params);
   }
-
-  LOG(DEBUG) << "done\n";
 }
 
 void Map::spawnStartingLocation(const Json::Value &definition,

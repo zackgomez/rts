@@ -31,6 +31,8 @@ void ActionWidget::render(float dt) {
 
   hoverTimer_ = hover_ ? hoverTimer_ + dt : 0.f;
 
+  bool draw_tooltip = false;
+  std::string tooltip;
   for (auto action : actions) {
     glm::vec4 color = bgcolor_;
     bool action_hover = hover_ && pointInBox(hoverPos_, center, size_, 0);
@@ -49,33 +51,36 @@ void ActionWidget::render(float dt) {
         glm::vec4(0, 0, 1, 1));
 
     if (action_hover && hoverTimer_ > fltParam("local.tooltipDelay")) {
-      float tooltip_font_height = fltParam("local.tooltipFontHeight");
-      float tooltip_width = size_.x * 2.f;
-
-      auto tooltip = action.getTooltip();
-      std::vector<std::string> tooltipLines;
-      boost::split(tooltipLines, tooltip, boost::is_any_of("\n"));
-      glm::vec2 pos = hoverPos_ -
-        glm::vec2(0.f, (tooltipLines.size() + 1)* tooltip_font_height);
-
-      glm::vec2 tooltip_rect_size = glm::vec2(
-        tooltip_width,
-        tooltip_font_height * tooltipLines.size() + tooltip_font_height / 2.f);
-
-      drawRect(pos,
-          tooltip_rect_size,
-          glm::vec4(0.6f));
-
-      for (auto& line : tooltipLines) {
-        FontManager::get()->drawString(
-            line,
-            pos,
-            tooltip_font_height);
-        pos.y += tooltip_font_height;
-      }
+      tooltip = action.getTooltip();
+      draw_tooltip = true;
     }
 
     center.x += size_.x;
+  }
+  if (draw_tooltip) {
+    float tooltip_font_height = fltParam("local.tooltipFontHeight");
+    float tooltip_width = size_.x * 2.f;
+
+    std::vector<std::string> tooltipLines;
+    boost::split(tooltipLines, tooltip, boost::is_any_of("\n"));
+    glm::vec2 pos = hoverPos_ -
+      glm::vec2(0.f, (tooltipLines.size() + 1)* tooltip_font_height);
+
+    glm::vec2 tooltip_rect_size = glm::vec2(
+      tooltip_width,
+      tooltip_font_height * tooltipLines.size() + tooltip_font_height / 2.f);
+
+    drawRect(pos,
+        tooltip_rect_size,
+        glm::vec4(0.6f));
+
+    for (auto& line : tooltipLines) {
+      FontManager::get()->drawString(
+          line,
+          pos,
+          tooltip_font_height);
+      pos.y += tooltip_font_height;
+    }
   }
 }
 

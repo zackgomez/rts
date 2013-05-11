@@ -4,6 +4,7 @@
 namespace rts {
 
 struct UIAction {
+  UIAction() {}
   UIAction(const Json::Value &action, int idx)
   : actor_action(action), action_idx(idx)
   {}
