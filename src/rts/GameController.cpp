@@ -438,6 +438,13 @@ void GameController::keyPress(SDL_keysym keysym) {
 	  if (ctrl_) {
 	    savedSelection_[ctrlIndex] = player_->getSelection();
     } else {
+      // center camera for double tapping
+      if (player_->getSelection() == savedSelection_[ctrlIndex]) {
+        id_t eid = (*player_->getSelection().begin());
+        auto entity = Game::get()->getEntity(eid);
+        glm::vec3 pos = entity->getPosition();
+        Renderer::get()->setCameraLookAt(pos);
+      }
       player_->setSelection(savedSelection_[ctrlIndex]);
     }
   } else if (key == SDLK_DOWN) {

@@ -33,7 +33,7 @@ class UIWidget {
   }
 
  private:
-  UI *ui_ = nullptr;
+  UI *ui_;
 };
 
 class StaticWidget : public UIWidget {

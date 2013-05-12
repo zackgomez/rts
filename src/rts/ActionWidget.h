@@ -30,10 +30,10 @@ class ActionWidget : public UIWidget {
   glm::vec2 size_;
   glm::vec4 bgcolor_;
 
-  bool hover_ = false;
-  bool press_ = false;
-  glm::vec2 hoverPos_ = glm::vec2(0.f);
-  float hoverTimer_ = 0.f;
+  bool hover_;
+  bool press_;
+  glm::vec2 hoverPos_;
+  float hoverTimer_;
 };
 
 };  // rts
