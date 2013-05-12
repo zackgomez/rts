@@ -109,7 +109,6 @@ void Actor::handleMessage(const Message &msg) {
     float bumpSpeed = ::fltParam("global.bumpSpeed");
     addBumpVel(glm::vec3(dir * bumpSpeed, 0.f));
   } else if (msg["type"] == MessageTypes::ADD_STAT) {
-    LOG(DEBUG) << "Received stat message" << msg << '\n';
     if (msg.isMember("healing")) {
       health_ += msg["healing"].asFloat();
       health_ = std::min(health_, getMaxHealth());
