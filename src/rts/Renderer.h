@@ -59,16 +59,15 @@ class Renderer {
   const std::map<id_t, GameEntity *>& getEntities() const {
     return entities_;
   }
-  /*
-  GameEntity * castRay(
-      const glm::vec3 &origin,
-      const glm::vec3 &dir,
-      std::function<bool(const GameEntity *)> filter);
-      */
   const GameEntity * castRay(
       const glm::vec3 &origin,
       const glm::vec3 &dir,
       std::function<bool(const GameEntity *)> filter) const;
+  // callback should return false when done
+  void getNearbyEntities(
+      const glm::vec3& pos,
+      float radius,
+      std::function<bool(const GameEntity *)> callback) const;
   // Internally synchronized
   id_t newEntityID();
   void spawnEntity(Entity *ent);

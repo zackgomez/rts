@@ -128,4 +128,14 @@ void MessageHub::sendCollisionMessage(id_t from, id_t to, float time) {
 
   sendMessage(msg);
 }
+
+void MessageHub::sendHealMessage(id_t from, id_t to, float amount) {
+  Message msg;
+  msg["to"] = toJson(to);
+  msg["from"] = toJson(from);
+  msg["type"] = MessageTypes::ADD_STAT;
+  msg["healing"] = amount;
+
+  sendMessage(msg);
+}
 };  // rts

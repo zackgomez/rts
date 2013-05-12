@@ -205,6 +205,13 @@
         "time_cost" : 2.5,
         "texture" : "melee_icon"
       }
+    ],
+    "auras" : [
+      {
+        "type" : "healing",
+        "radius" : 5.0,
+        "amount" : 5.0
+      }
     ]
   },
 

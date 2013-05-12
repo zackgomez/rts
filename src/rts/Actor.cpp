@@ -8,6 +8,7 @@
 #include "rts/ResourceManager.h"
 #include "rts/Unit.h"
 #include "rts/Weapon.h"
+#include "rts/Renderer.h"
 
 namespace rts {
 
@@ -107,6 +108,12 @@ void Actor::handleMessage(const Message &msg) {
 
     float bumpSpeed = ::fltParam("global.bumpSpeed");
     addBumpVel(glm::vec3(dir * bumpSpeed, 0.f));
+  } else if (msg["type"] == MessageTypes::ADD_STAT) {
+    LOG(DEBUG) << "Received stat message" << msg << '\n';
+    if (msg.isMember("healing")) {
+      health_ += msg["healing"].asFloat();
+      health_ = std::min(health_, getMaxHealth());
+    }
   } else {
     GameEntity::handleMessage(msg);
   }
@@ -190,6 +197,30 @@ void Actor::update(float dt) {
     if (production_queue_.front().time <= 0) {
       produce(production_queue_.front().name);
       production_queue_.pop();
+    }
+  }
+
+  // Auraus
+  if (hasParam("auras")) {
+    auto auras = getParam("auras");
+    for (int i = 0; i < auras.size(); i++) {
+      auto aura = auras[i];
+      invariant(aura.isMember("type"), "missing aura type");
+      invariant(aura.isMember("radius"), "missing aura radius");
+      float radius = aura["radius"].asFloat();
+      if (aura["type"].asString() == "healing") {
+        float amount = dt * aura["amount"].asFloat();
+        Renderer::get()->getNearbyEntities(
+            getPosition(),
+            radius,
+            [&] (const GameEntity *e) -> bool {
+              if (e->getID() != getID() && e->getPlayerID() == getPlayerID()) {
+                MessageHub::get()->sendHealMessage(getID(), e->getID(), amount);
+              }
+              return true;
+            }
+        );
+      }
     }
   }
 }

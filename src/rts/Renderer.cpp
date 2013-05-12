@@ -274,6 +274,23 @@ const GameEntity *Renderer::castRay(
   return ret;
 }
 
+void Renderer::getNearbyEntities(
+    const glm::vec3 &pos,
+    float radius,
+    std::function<bool(const GameEntity *)> callback) const {
+  float radius2 = radius * radius;
+  for (auto pair : entities_) {
+    auto entity = pair.second;
+    glm::vec3 diff = entity->getPosition() - pos;
+    float dist2 = glm::dot(diff, diff);
+    if (dist2 < radius2) {
+      if (!callback(entity)) {
+        return;
+      }
+    }
+  }
+}
+
 id_t Renderer::newEntityID() {
   // this is an atomic variable, safe!
   return nextEntityID_++;
