@@ -496,15 +496,12 @@ void GameController::keyPress(SDL_keysym keysym) {
         // TODO(zack): use a map here
         for (unsigned int i = 0; i < 4; i++) {
           if (key == MAIN_KEYS[i]) {
-            // Send the action to the unit at the 'head' of the selection
             auto sel = player_->getSelection().begin();
-            auto eid = *sel;
-            action["type"] = ActionTypes::ACTION;
-            action["entity"] = toJson(eid);
-            action["pid"] = toJson(player_->getPlayerID());
-            action["action_idx"] = i;
-
-            MessageHub::get()->addAction(action);
+            auto entity = (const Actor *)Game::get()->getEntity(*sel);
+            auto actions = entity->getActions();
+            if (i < actions.size()) {
+              handleUIAction(UIAction(actions[i], i));
+            }
             break;
           }
         }

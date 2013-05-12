@@ -290,6 +290,19 @@ void Renderer::getNearbyEntities(
     }
   }
 }
+std::vector<const GameEntity *> Renderer::getNearbyEntitiesArray(
+    const glm::vec3& pos,
+    float radius) {
+  std::vector<const GameEntity *> ret;
+  getNearbyEntities(
+      pos,
+      radius,
+      [&ret] (const GameEntity *e) {
+        ret.push_back(e);
+        return true;
+      });
+  return ret;
+}
 
 id_t Renderer::newEntityID() {
   // this is an atomic variable, safe!

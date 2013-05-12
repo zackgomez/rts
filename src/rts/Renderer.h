@@ -68,6 +68,10 @@ class Renderer {
       const glm::vec3& pos,
       float radius,
       std::function<bool(const GameEntity *)> callback) const;
+  // Prefer the callback version
+  std::vector<const GameEntity *> getNearbyEntitiesArray(
+      const glm::vec3& pos,
+      float radius);
   // Internally synchronized
   id_t newEntityID();
   void spawnEntity(Entity *ent);
