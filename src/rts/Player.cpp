@@ -49,7 +49,7 @@ std::vector<PlayerAction> LocalPlayer::getActions() {
 }
 
 bool LocalPlayer::visibleEntity(const GameEntity *entity) const {
-  return entity->getPlayerID() == playerID_;
+  return entity->getTeamID() == teamID_;
 }
 
 void LocalPlayer::playerAction(id_t playerID, const PlayerAction &action) {

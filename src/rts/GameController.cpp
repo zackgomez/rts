@@ -477,6 +477,10 @@ void GameController::keyPress(SDL_keysym keysym) {
       alt_ = true;
     } else if (key == SDLK_BACKSPACE) {
       Renderer::get()->resetCameraRotation();
+    } else if (key == SDLK_b) {
+      std::set<id_t> newsel;
+      newsel.insert(player_->getBaseID());
+      player_->setSelection(newsel);
     } else if (key == SDLK_g) {
       // Debug commands
       SDL_WM_GrabInput(SDL_GRAB_ON);
@@ -714,16 +718,22 @@ void GameController::updateMapShader(Shader *shader) const {
   glBindTexture(GL_TEXTURE_2D, visTex_);
 }
 
-
-void GameController::handleUIAction(const UIAction &action) {
-  Json::Value player_action;
+void GameController::sendUIAction(const UIAction &action, Json::Value msg) {
   auto sel = player_->getSelection().begin();
   auto eid = *sel;
-  player_action["type"] = ActionTypes::ACTION;
-  player_action["entity"] = toJson(eid);
-  player_action["pid"] = toJson(player_->getPlayerID());
-  player_action["action_idx"] = action.action_idx;
+  msg["type"] = ActionTypes::ACTION;
+  msg["entity"] = toJson(eid);
+  msg["pid"] = toJson(player_->getPlayerID());
+  msg["action_idx"] = action.action_idx;
 
-  MessageHub::get()->addAction(player_action);
+  MessageHub::get()->addAction(msg);
+}
+
+void GameController::handleUIAction(const UIAction &action) {
+  if (action.getTargeting() == UIAction::TargetingType::NONE) {
+    sendUIAction(action);
+  } else {
+    invariant_violation("Unknown targetting type");
+  }
 }
 };  // rts

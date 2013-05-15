@@ -68,6 +68,7 @@ class Game {
   void addAction(id_t pid, const PlayerAction &act);
 
   const GameEntity * getEntity(id_t eid) const;
+  const GameEntity * findEntity(std::function<bool(const GameEntity *)> f) const;
   const Player * getPlayer(id_t pid) const;
   const std::vector<Player *>& getPlayers() const { return players_; }
   const std::set<id_t> getTeams() const { return teams_; }

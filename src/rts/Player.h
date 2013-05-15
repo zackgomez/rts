@@ -72,6 +72,13 @@ class Player {
    */
   virtual bool visibleEntity(const GameEntity *entity) const = 0;
 
+  id_t getBaseID() const {
+    return baseID_;
+  }
+  void setBaseID(id_t id) {
+    baseID_ = id;
+  }
+
   /* Returns this player's color. */
   glm::vec3 getColor() const {
     return color_;
@@ -82,6 +89,9 @@ class Player {
   id_t teamID_;
   const std::string name_;
   glm::vec3 color_;
+
+  // units
+  id_t baseID_;
 
   Game *game_;
 };

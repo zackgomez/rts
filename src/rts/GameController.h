@@ -68,6 +68,7 @@ class GameController : public Controller {
 
   void minimapUpdateCamera(const glm::vec2 &screenCoord);
 	void handleUIAction(const UIAction &action);
+	void sendUIAction(const UIAction &action, Json::Value msg = Json::Value());
   // returns NO_ENTITY if no acceptable entity near click
   id_t selectEntity(const glm::vec2 &screenCoord) const;
   std::set<id_t> selectEntities(const glm::vec2 &start,

@@ -353,6 +353,18 @@ const GameEntity * Game::getEntity(id_t eid) const {
   return it == entities.end() ? nullptr : it->second;
 }
 
+const GameEntity * Game::findEntity(
+    std::function<bool(const GameEntity *)> f) const {
+  auto entities = Renderer::get()->getEntities();
+  for (auto pair : entities) {
+    if (f(pair.second)) {
+      return pair.second;
+    }
+  }
+
+  return nullptr;
+}
+
 const Player * Game::getPlayer(id_t pid) const {
   if (pid == NO_PLAYER) {
     return nullptr;

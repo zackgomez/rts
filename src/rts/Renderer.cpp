@@ -297,7 +297,7 @@ std::vector<const GameEntity *> Renderer::getNearbyEntitiesArray(
   getNearbyEntities(
       pos,
       radius,
-      [&ret] (const GameEntity *e) {
+      [&ret] (const GameEntity *e) -> bool {
         ret.push_back(e);
         return true;
       });

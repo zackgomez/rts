@@ -71,7 +71,8 @@ void Map::spawnStartingLocation(const Json::Value &definition,
     const std::vector<Player *> players) {
   invariant(definition.isMember("player"),
       "missing player for starting pos defintion");
-  id_t pid = players[definition["player"].asInt() - 1]->getPlayerID();
+  auto player = players[definition["player"].asInt() - 1];
+  id_t pid = player->getPlayerID();
 
   glm::vec2 pos = toVec2(definition["pos"]);
   float angle = definition["angle"].asFloat();
@@ -85,6 +86,12 @@ void Map::spawnStartingLocation(const Json::Value &definition,
       MAP_ID,
       "building",
       params);
+
+  auto base = Game::get()->findEntity([=](const GameEntity *e) {
+      return e->getPlayerID() == player->getPlayerID() && e->getName() == "building";
+  });
+  invariant(base, "must have base");
+  player->setBaseID(base->getID());
 
   float radians = deg2rad(angle);
   glm::vec2 dir(cos(radians), sin(radians));

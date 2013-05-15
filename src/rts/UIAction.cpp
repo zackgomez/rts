@@ -16,4 +16,8 @@ std::string UIAction::getTooltip() const {
   return ss.str();
 }
 
+UIAction::TargetingType UIAction::getTargeting() const {
+  return UIAction::TargetingType::NONE;
+}
+
 };  // rts

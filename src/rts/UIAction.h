@@ -10,6 +10,12 @@ struct UIAction {
   {}
 
   std::string getTooltip() const;
+  enum class TargetingType {
+    NONE,
+    LOCATION,
+  };
+  TargetingType getTargeting() const;
+
 
   Json::Value actor_action;
   int action_idx;
