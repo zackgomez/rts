@@ -78,20 +78,6 @@ void Building::update(float dt) {
 
   if (capperID_ == NO_ENTITY) capAmount_ += dt;
   if (capAmount_ > getMaxCap()) capAmount_ = getMaxCap();
-
-  // Building generates resources
-  if (hasParam("reqGen")) {
-    MessageHub::get()->sendResourceMessage(
-      getID(),
-      getPlayerID(),
-      ResourceTypes::REQUISITION,
-      fltParam("reqGen") * dt);
-  }
-  if (hasParam("victoryGen"))
-    MessageHub::get()->sendVPMessage(
-      getID(),
-      getTeamID(),
-      fltParam("victoryGen") * dt);
 }
 
 bool Building::canCapture(id_t eid) const {

@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 #include "common/Clock.h"
+#include "rts/Effect.h"
 #include "rts/GameEntity.h"
-#include "common/Logger.h"
 
 namespace rts {
 
@@ -85,6 +85,7 @@ class Actor : public GameEntity {
   Weapon *rangedWeapon_, *meleeWeapon_;
 
   std::queue<Production> production_queue_;
+  std::map<std::string, Effect> effects_;
 };
 };  // namespace rts
 

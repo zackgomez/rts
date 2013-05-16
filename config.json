@@ -133,7 +133,7 @@
 
   "basic_bullet" :
   {
-    "class"        : "Projectile",
+    "class"  : "Projectile",
     // projectile params
     "model"  : "basic_bullet",
     "modelSize"    : 1.0,
@@ -141,6 +141,35 @@
     "size"   : [0.6, 0.6],
     "damage" : 10.0,
     "height" : 0.3
+  },
+
+  "effects" :
+  {
+    "vp_gen" :
+    {
+      "type": "resource",
+      "resource_type" : "victory_point",
+      "amount" : 1.0
+    },
+    "req_gen" :
+    {
+      "type": "resource",
+      "resource_type" : "requisition",
+      "amount" : 1.0
+    },
+    "base_req_gen" :
+    {
+      "type": "resource",
+      "resource_type" : "requisition",
+      "amount" : 1.0
+    },
+    "base_healing" :
+    {
+      "type" : "aura",
+      "aura_type" : "healing",
+      "radius" : 5.0,
+      "amount" : 5.0
+    }
   },
 
   "melee_unit" :
@@ -189,7 +218,6 @@
     "health" : 700.0,
     "sight"  : 5.0,
     "prod"   : ["unit", "melee_unit"],
-    "reqGen" : 1.0,
     "actions" : [
       {
         "type" : "production",
@@ -206,12 +234,9 @@
         "texture" : "melee_icon"
       }
     ],
-    "auras" : [
-      {
-        "type" : "healing",
-        "radius" : 5.0,
-        "amount" : 5.0
-      }
+    "effects" : [
+      "base_healing",
+      "base_req_gen"
     ]
   },
 
@@ -226,8 +251,10 @@
     "health"      : 100.0,
     "sight"       : 2.0,
     "prod"        : [],
-    "victoryGen"  : 1.0,
-    "captureTime" : 5.0
+    "captureTime" : 5.0,
+    "effects" : [
+      "vp_gen"
+    ]
   },
 
   "req_point" :
@@ -240,8 +267,10 @@
     "health"      : 100.0,
     "sight"       : 2.0,
     "prod"        : [],
-    "reqGen"      : 1.0,
-    "captureTime" : 5.0
+    "captureTime" : 5.0,
+    "effects" : [
+      "vp_gen"
+    ]
   },
 
   "colors" :
@@ -297,11 +326,6 @@
       "size" : 64.0,
       "texsize" : 1024
     }
-  },
-
-  "effects" :
-  {
-    "damageRenderDuration" : 0.4
   },
 
   "ui" : {

@@ -31,6 +31,14 @@ Actor::Actor(id_t id, const std::string &name, const Json::Value &params,
   setMeshName(strParam("model"));
   setScale(glm::vec3(fltParam("modelSize")));
   resetTexture();
+
+  if (hasParam("effects")) {
+    auto effects = getParam("effects");
+    for (int i = 0; i < effects.size(); i++) {
+      const std::string effect_name = effects[i].asString();
+      effects_[effect_name] = createEffect(effect_name);
+    }
+  }
 }
 
 Actor::~Actor() {
@@ -199,27 +207,11 @@ void Actor::update(float dt) {
     }
   }
 
-  // Auraus
-  if (hasParam("auras")) {
-    auto auras = getParam("auras");
-    for (int i = 0; i < auras.size(); i++) {
-      auto aura = auras[i];
-      invariant(aura.isMember("type"), "missing aura type");
-      invariant(aura.isMember("radius"), "missing aura radius");
-      float radius = aura["radius"].asFloat();
-      if (aura["type"].asString() == "healing") {
-        float amount = dt * aura["amount"].asFloat();
-        Renderer::get()->getNearbyEntities(
-            getPosition(),
-            radius,
-            [&] (const GameEntity *e) -> bool {
-              if (e->getID() != getID() && e->getPlayerID() == getPlayerID()) {
-                MessageHub::get()->sendHealMessage(getID(), e->getID(), amount);
-              }
-              return true;
-            }
-        );
-      }
+  for (auto it = effects_.begin(); it != effects_.end();) {
+    if (!it->second(this, dt)) {
+      it = effects_.erase(it);
+    } else {
+      it++;
     }
   }
 }
