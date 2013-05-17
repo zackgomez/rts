@@ -11,8 +11,6 @@
 
 namespace rts {
 
-const std::string Unit::TYPE = "UNIT";
-
 Unit::Unit(id_t id, const std::string &name, const Json::Value &params)
   : Actor(id, name, params, true),
     weapon_(nullptr),
@@ -95,8 +93,8 @@ void Unit::update(float dt) {
 }
 
 bool Unit::canAttack(const GameEntity *e) const {
-  if (e->getType() == Building::TYPE) {
-    return !((Building*)e)->canCapture(getID()) && weapon_->canAttack(e);
+  if (e->hasProperty(GameEntity::P_CAPPABLE)) {
+    return false;
   } else {
     return weapon_->canAttack(e);
   }
@@ -347,8 +345,9 @@ UnitState * AttackMoveState::stop(UnitState *next) {
 CaptureState::CaptureState(id_t targetID, Unit *unit)
   : UnitState(unit),
     targetID_(targetID) {
-  invariant(Game::get()->getEntity(targetID_)->getType() == Building::TYPE,
-            "capture target must be a building");
+  invariant(
+      Game::get()->getEntity(targetID_)->hasProperty(GameEntity::P_CAPPABLE),
+      "capture target must be cappable");
 }
 
 CaptureState::~CaptureState() {
@@ -361,7 +360,7 @@ void CaptureState::update(float dt) {
   if (!target) {
     return;
   }
-  invariant(target->getType() == Building::TYPE,
+  invariant(target->hasProperty(GameEntity::P_CAPPABLE),
       "capture target must be a building");
   const Building *btarget = (const Building *) target;
 

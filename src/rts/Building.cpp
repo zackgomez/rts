@@ -9,9 +9,6 @@
 
 namespace rts {
 
-LoggerPtr Building::logger_;
-const std::string Building::TYPE = "BUILDING";
-
 Building::Building(id_t id, const std::string &name, const Json::Value &params)
   : Actor(id, name, params),
     capAmount_(0.f),
@@ -26,7 +23,6 @@ void Building::handleMessage(const Message &msg) {
     invariant(msg.isMember("cap"), "malformed attack message");
     invariant(toID(msg["pid"]) != getPlayerID(),
         "cannot capture own structures");
-    invariant(getType() == Building::TYPE, "can only capture structures");
     invariant(hasProperty(P_CAPPABLE), "structure not capturable");
 
     // Tells us the unit is still capping the point.

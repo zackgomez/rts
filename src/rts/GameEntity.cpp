@@ -63,7 +63,7 @@ void GameEntity::handleMessage(const Message &msg) {
   if (msg["type"] == MessageTypes::COLLISION) {
     invariant(collidable_, "Got collision for noncollidable object!");
   } else {
-    LOG(INFO) << "Entity of type " << getType()
+    LOG(INFO) << "Entity named " << name_
       << " received unknown message type: " << msg["type"] << '\n';
   }
 }

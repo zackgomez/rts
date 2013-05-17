@@ -10,9 +10,6 @@
 
 #define LOG(str) std::cout << __FILE__ << ":" <<  __LINE__ << " "#str << " - "
 
-class Logger;
-typedef std::auto_ptr<Logger> LoggerPtr;
-
 class Logger {
  public:
   static void initLogger();

@@ -5,9 +5,6 @@
 
 namespace rts {
 
-LoggerPtr CollisionObject::logger_;
-const std::string CollisionObject::TYPE = "COLLISION_OBJECT";
-
 CollisionObject::CollisionObject(
     id_t id,
     const std::string &name,

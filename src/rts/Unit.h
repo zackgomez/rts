@@ -14,11 +14,6 @@ class Unit : public Actor {
   explicit Unit(id_t id, const std::string &name, const Json::Value &params);
   virtual ~Unit();
 
-  static const std::string TYPE;
-  virtual const std::string getType() const {
-    return TYPE;
-  }
-
   virtual void handleMessage(const Message &msg);
   virtual void update(float dt);
 

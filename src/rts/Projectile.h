@@ -11,11 +11,6 @@ class Projectile : public GameEntity {
   Projectile(id_t id, const std::string &name, const Json::Value &params);
   virtual ~Projectile() {}
 
-  static const std::string TYPE;
-  virtual const std::string getType() const {
-    return TYPE;
-  }
-
   virtual void update(float dt);
   virtual void handleMessage(const Message &msg);
 

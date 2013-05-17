@@ -4,8 +4,6 @@
 
 namespace rts {
 
-const std::string Projectile::TYPE = "PROJECTILE";
-
 Projectile::Projectile(id_t id, const std::string &name, const Json::Value &params)
   : GameEntity(id, name, params, false, false),
     targetID_(NO_ENTITY) {

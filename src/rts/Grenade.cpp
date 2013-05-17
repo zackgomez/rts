@@ -3,8 +3,6 @@
 
 namespace rts {
 
-const std::string Grenade::TYPE = "GRENADE";
-
 Grenade::Grenade(id_t id, const std::string &name, const Json::Value &params)
   : GameEntity(id, name, params, false, false) {
 
