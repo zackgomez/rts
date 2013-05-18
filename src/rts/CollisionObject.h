@@ -11,9 +11,8 @@ class CollisionObject : public GameEntity {
   explicit CollisionObject(id_t id, const std::string &name, const Json::Value &params);
   virtual ~CollisionObject() { }
 
-  virtual void handleMessage(const Message &msg);
-  virtual void update(float dt);
-  virtual bool needsRemoval() const;
+  virtual void handleMessage(const Message &msg) override;
+  virtual void update(float dt) override;
 };
 };  // namespace rts
 

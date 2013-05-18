@@ -41,13 +41,10 @@ void ActionWidget::render(float dt) {
       color *= glm::vec4(fact, fact, fact, 1.f);
     }
     drawRectCenter(center, size_, color);
-    invariant(
-        action.actor_action.isMember("texture"),
-        "missing texture for action");
     drawTextureCenter(
         center,
         size_ - glm::vec2(5.f),
-        ResourceManager::get()->getTexture(action.actor_action["texture"].asString()),
+        ResourceManager::get()->getTexture(action.getIconTextureName()),
         glm::vec4(0, 0, 1, 1));
 
     if (action_hover && hoverTimer_ > fltParam("local.tooltipDelay")) {

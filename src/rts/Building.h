@@ -10,11 +10,10 @@ class Building : public Actor {
   explicit Building(id_t id, const std::string &name, const Json::Value &params);
   virtual ~Building() { }
 
-  virtual void handleMessage(const Message &msg);
-  virtual void update(float dt);
-  virtual bool needsRemoval() const;
+  virtual void handleMessage(const Message &msg) override;
+  virtual void update(float dt) override;
 
-  virtual bool hasProperty(uint32_t property) const {
+  virtual bool hasProperty(uint32_t property) const override {
     if (property == P_CAPPABLE) {
       return hasParam("captureTime");
     }

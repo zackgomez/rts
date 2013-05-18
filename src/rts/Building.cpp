@@ -82,8 +82,4 @@ bool Building::canCapture(id_t eid) const {
   return hasProperty(P_CAPPABLE) && pid != getPlayerID() &&
     (capperID_ == NO_ENTITY || eid == capperID_);
 }
-
-bool Building::needsRemoval() const {
-  return health_ <= 0.f;
-}
 };  // rts

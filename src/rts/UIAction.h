@@ -3,11 +3,18 @@
 
 namespace rts {
 
-struct UIAction {
-  UIAction() {}
-  UIAction(const Json::Value &action, int idx)
-  : actor_action(action), action_idx(idx)
+class UIAction {
+ public:
+  explicit UIAction(id_t owner, const Json::Value &def)
+  : owner_(owner), def_(def)
   {}
+
+  id_t getOwner() const {
+    return owner_;
+  }
+  const Json::Value &getRawDefinition() const {
+    return def_;
+  }
 
   std::string getTooltip() const;
   enum class TargetingType {
@@ -16,9 +23,12 @@ struct UIAction {
   };
   TargetingType getTargeting() const;
 
+  std::string getName() const;
+  std::string getIconTextureName() const;
 
-  Json::Value actor_action;
-  int action_idx;
+ private:
+  id_t owner_;
+  Json::Value def_;
 };
 
 };

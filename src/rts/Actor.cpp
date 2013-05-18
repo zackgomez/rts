@@ -39,6 +39,13 @@ Actor::Actor(id_t id, const std::string &name, const Json::Value &params,
       effects_[effect_name] = createEffect(effect_name);
     }
   }
+
+  if (hasParam("actions")) {
+    auto actions = getParam("actions");
+    for (int i = 0; i < actions.size(); i++) {
+      actions_.emplace_back(getID(), actions[i]);
+    }
+  }
 }
 
 Actor::~Actor() {
@@ -51,11 +58,8 @@ bool Actor::hasProperty(uint32_t property) const {
   return GameEntity::hasProperty(property);
 }
 
-Json::Value Actor::getActions() const {
-  if (!hasParam("actions")) {
-    return Json::Value();
-  }
-  return getParam("actions");
+const std::vector<UIAction> &Actor::getActions() const {
+  return actions_;
 }
 
 void Actor::resetTexture() {
@@ -129,12 +133,17 @@ void Actor::handleOrder(const Message &order) {
   invariant(order["type"] == MessageTypes::ORDER, "unknown message type");
   invariant(order.isMember("order_type"), "missing order type");
   if (order["order_type"] == OrderTypes::ACTION) {
-    auto actions = getActions();
-    invariant(
-        order.isMember("action_idx") && order["action_idx"].asInt() < actions.size(),
-        "Bad action index");
-    auto action = actions[order["action_idx"].asInt()];
-    handleAction(action);
+    LOG(DEBUG) << order << '\n';
+    invariant(order.isMember("action"), "missing action name");
+    std::string action_name = order["action"].asString();
+    for (int i = 0; i < actions_.size(); i++) {
+      if (actions_[i].getName() == action_name) {
+        handleAction(actions_[i].getRawDefinition());
+        return;
+      }
+    }
+    LOG(WARNING) << "Actor got unknown action order: "
+      << order.toStyledString() << '\n';
   } else {
     LOG(WARNING) << "Actor got unknown order: "
       << order.toStyledString() << '\n';

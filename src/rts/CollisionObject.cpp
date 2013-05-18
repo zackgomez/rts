@@ -28,8 +28,4 @@ void CollisionObject::handleMessage(const Message &msg) {
 void CollisionObject::update(float dt) {
   GameEntity::update(dt);
 }
-
-bool CollisionObject::needsRemoval() const {
-  return false;
-}
 };  // rts

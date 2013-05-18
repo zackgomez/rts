@@ -7,6 +7,7 @@
 #include "common/Clock.h"
 #include "rts/Effect.h"
 #include "rts/GameEntity.h"
+#include "rts/UIAction.h"
 
 namespace rts {
 
@@ -40,9 +41,7 @@ class Actor : public GameEntity {
 
   float distanceToEntity(const GameEntity *e) const;
 
-  Json::Value getActions() const;
-  // TODO(zack)
-  // protected virtual Json::Value getExtraActions() const;
+  const std::vector<UIAction> &getActions() const;
 
   std::queue<Production> getProductionQueue() const {
     return production_queue_;
@@ -86,6 +85,7 @@ class Actor : public GameEntity {
 
   std::queue<Production> production_queue_;
   std::map<std::string, Effect> effects_;
+  std::vector<UIAction> actions_;
 };
 };  // namespace rts
 

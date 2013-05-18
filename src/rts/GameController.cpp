@@ -104,17 +104,12 @@ void GameController::onCreate() {
     });
 
   auto actionFunc = [=]() -> std::vector<UIAction> {
-    std::vector<UIAction> ret;
-
     auto selection = player_->getSelection();
-    if (!selection.empty()) {
-      auto *entity = (Actor *)Game::get()->getEntity(*selection.begin());
-      int i = 0;
-      for (auto action : entity->getActions()) {
-        ret.push_back(UIAction(action, i++));
-      }
+    if (selection.empty()) {
+      return std::vector<UIAction>();
     }
-    return ret;
+    auto *actor = (Actor *)Game::get()->getEntity(*selection.begin());
+    return actor->getActions();
   };
   auto actionExecutor = [=](const UIAction &action) {
     handleUIAction(action);
@@ -499,14 +494,14 @@ void GameController::keyPress(SDL_keysym keysym) {
         action["pid"] = toJson(player_->getPlayerID());
         MessageHub::get()->addAction(action);
       } else {
-        // TODO(zack): use a map here
+        // TODO(zack): use a map for MAIN_KEYS here
         for (unsigned int i = 0; i < 4; i++) {
           if (key == MAIN_KEYS[i]) {
             auto sel = player_->getSelection().begin();
-            auto entity = (const Actor *)Game::get()->getEntity(*sel);
-            auto actions = entity->getActions();
+            auto actor = (const Actor *)Game::get()->getEntity(*sel);
+            auto actions = actor->getActions();
             if (i < actions.size()) {
-              handleUIAction(UIAction(actions[i], i));
+              handleUIAction(actions[i]);
             }
             break;
           }
@@ -720,22 +715,19 @@ void GameController::updateMapShader(Shader *shader) const {
   glBindTexture(GL_TEXTURE_2D, visTex_);
 }
 
-void GameController::sendUIAction(const UIAction &action, Json::Value msg) {
-  auto sel = player_->getSelection().begin();
-  auto eid = *sel;
-  msg["type"] = ActionTypes::ACTION;
-  msg["entity"] = toJson(eid);
-  msg["pid"] = toJson(player_->getPlayerID());
-  msg["action_idx"] = action.action_idx;
-
-  MessageHub::get()->addAction(msg);
-}
-
 void GameController::handleUIAction(const UIAction &action) {
+  Json::Value msg;
+  msg["type"] = ActionTypes::ACTION;
+  msg["entity"] = action.getOwner();
+  msg["pid"] = toJson(player_->getPlayerID());
+  msg["action"] = action.getName();
+
   if (action.getTargeting() == UIAction::TargetingType::NONE) {
-    sendUIAction(action);
+    // No extra params
   } else {
     invariant_violation("Unknown targetting type");
   }
+
+  MessageHub::get()->addAction(msg);
 }
 };  // rts
