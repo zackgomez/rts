@@ -10,9 +10,9 @@ STBI=lib/stbi
 STBTT=lib/stb_truetype
 FMOD=macosx/fmod
 BOOSTDIR=lib/boost_1_50_0
-V8DIR=lib/v8-osx
+V8DIR=lib/v8
 LDFLAGS=-lGLEW -framework SDL -framework Cocoa -framework OpenGL \
-				-lboost_system -lboost_filesystem $(V8DIR)/*.a
+				-lboost_system -lboost_filesystem $(V8DIR)/lib-macosx/*.a
 OBJDIR=obj
 SRCDIR=src
 EXECDIR=$(SRCDIR)/exec
