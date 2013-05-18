@@ -63,20 +63,6 @@ void MessageHub::sendMessage(const Message &msg) {
   }
 }
 
-void MessageHub::sendSpawnMessage(
-    id_t from,
-    const std::string &ename,
-    const Json::Value &eparams) {
-  Message msg;
-  msg["to"]   = toJson(GAME_ID);
-  msg["from"] = toJson(from);
-  msg["type"] = MessageTypes::SPAWN_ENTITY;
-  msg["entity_name"]  = ename;
-  msg["params"] = eparams;
-
-  sendMessage(msg);
-}
-
 void MessageHub::sendRemovalMessage(const GameEntity *e) {
   assert(e);
 

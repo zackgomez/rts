@@ -60,10 +60,7 @@ void Map::init(const std::vector<Player *> &players) {
       params["entity_angle"] = entity_def["angle"];
     }
     invariant(entity_def.isMember("type"), "missing type param");
-    MessageHub::get()->sendSpawnMessage(
-        MAP_ID,
-        type,
-        params);
+    Game::get()->spawnEntity(type, params);
   }
 }
 
@@ -82,15 +79,7 @@ void Map::spawnStartingLocation(const Json::Value &definition,
   params["entity_pid"] = toJson(pid);
   params["entity_pos"] = toJson(pos);
   params["entity_angle"] = angle;
-  MessageHub::get()->sendSpawnMessage(
-      MAP_ID,
-      "building",
-      params);
-
-  auto base = Game::get()->findEntity([=](const GameEntity *e) {
-      return e->getPlayerID() == player->getPlayerID() && e->getName() == "building";
-  });
-  invariant(base, "must have base");
+  const GameEntity *base = Game::get()->spawnEntity("building", params);
   player->setBaseID(base->getID());
 
   float radians = deg2rad(angle);
@@ -106,10 +95,7 @@ void Map::spawnStartingLocation(const Json::Value &definition,
     params["entity_pid"] = toJson(pid);
     params["entity_pos"] = toJson(pos);
     params["entity_angle"] = angle;
-    MessageHub::get()->sendSpawnMessage(
-        MAP_ID,  // from
-        "melee_unit",  // name
-        params);
+    Game::get()->spawnEntity("melee_unit", params);
     pos += tangent * 1.5f;
   }
 }

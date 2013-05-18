@@ -18,10 +18,6 @@
 
 namespace rts {
 
-bool comparePlayerID(Player *p1, Player *p2) {
-  return p1->getPlayerID() < p2->getPlayerID();
-}
-
 Game* Game::instance_ = nullptr;
 
 Game::Game(Map *map, const std::vector<Player *> &players)
@@ -48,7 +44,11 @@ Game::Game(Map *map, const std::vector<Player *> &players)
     visibilityMaps_[player->getPlayerID()] = vismap;
   }
   // sort players to ensure consistency
-  std::sort(players_.begin(), players_.end(), comparePlayerID);
+  std::sort(
+      players_.begin(), players_.end(),
+      [](Player *p1, Player *p2) -> bool {
+        return p1->getPlayerID() < p2->getPlayerID();
+      });
 
   // Team init
   invariant(teams_.size() == 2, "game only supports exactly 2 teams");
@@ -293,22 +293,7 @@ void Game::sendMessage(id_t to, const Message &msg) {
 
 void Game::handleMessage(const Message &msg) {
   invariant(msg.isMember("type"), "malformed message");
-  if (msg["type"] == MessageTypes::SPAWN_ENTITY) {
-    invariant(msg.isMember("entity_name"),
-              "malformed SPAWN_ENTITY message");
-    invariant(msg.isMember("params"),
-              "malformed SPAWN_ENTITY message");
-    invariant(!msg.isMember("entity_class"), "fuckayou");
-
-    id_t eid = Renderer::get()->newEntityID();
-    GameEntity *ent = EntityFactory::get()->construct(
-        eid,
-        msg["entity_name"].asString(),
-        msg["params"]);
-    if (ent) {
-      Renderer::get()->spawnEntity(ent);
-    }
-  } else if (msg["type"] == MessageTypes::DESTROY_ENTITY) {
+  if (msg["type"] == MessageTypes::DESTROY_ENTITY) {
     invariant(msg.isMember("eid"), "malformed DESTROY_ENTITY message");
     deadEntities_.push_back(toID(msg["eid"]));
   } else if (msg["type"] == MessageTypes::ADD_RESOURCE) {
@@ -345,6 +330,17 @@ void Game::addAction(id_t pid, const PlayerAction &act) {
   for (auto& player : players_) {
     player->playerAction(pid, act);
   }
+}
+
+const GameEntity * Game::spawnEntity(
+    const std::string &name,
+    const Json::Value &params) {
+  id_t eid = Renderer::get()->newEntityID();
+  GameEntity *ent = EntityFactory::get()->construct(eid, name, params);
+  if (ent) {
+    Renderer::get()->spawnEntity(ent);
+  }
+  return ent;
 }
 
 const GameEntity * Game::getEntity(id_t eid) const {

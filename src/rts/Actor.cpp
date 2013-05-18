@@ -193,10 +193,7 @@ void Actor::produce(const std::string &prod_name) {
       ModelEntity::getPosition2() + ModelEntity::getDirection());
   params["entity_angle"] = ModelEntity::getAngle();
 
-  MessageHub::get()->sendSpawnMessage(
-    getID(),
-    prod_name,
-    params);
+  Game::get()->spawnEntity(prod_name, params);
 }
 
 void Actor::update(float dt) {
