@@ -55,54 +55,9 @@ void MessageHub::sendMessage(const Message &msg) {
   // If an array, send to each member
   for (int i = 0; i < rlmsg["to"].size(); i++) {
     id_t eid = toID(rlmsg["to"][i]);
-    if (eid == GAME_ID) {
-      game_->handleMessage(rlmsg);
-    } else {
-      game_->sendMessage(eid, rlmsg);
-    }
+    assertEid(eid);
+    game_->sendMessage(eid, rlmsg);
   }
-}
-
-void MessageHub::sendRemovalMessage(const GameEntity *e) {
-  assert(e);
-
-  Message msg;
-  msg["to"] = toJson(GAME_ID);
-  msg["from"] = toJson(e->getID());
-  msg["type"] = MessageTypes::DESTROY_ENTITY;
-  msg["eid"] = toJson(e->getID());
-
-  sendMessage(msg);
-}
-
-void MessageHub::sendResourceMessage(
-    id_t from,
-    id_t pid,
-    const std::string &resource,
-    float amount) {
-  Message msg;
-  msg["to"] = toJson(GAME_ID);
-  msg["from"] = toJson(from);
-  msg["type"] = MessageTypes::ADD_RESOURCE;
-  msg["pid"] = toJson(pid);
-  msg["resource"] = resource;
-  msg["amount"] = amount;
-
-  sendMessage(msg);
-}
-
-void MessageHub::sendVPMessage(
-    id_t from,
-    id_t tid,
-    float amount) {
-  Message msg;
-  msg["to"] = toJson(GAME_ID);
-  msg["from"] = toJson(from);
-  msg["type"] = MessageTypes::ADD_VP;
-  msg["tid"] = toJson(tid);
-  msg["amount"] = amount;
-
-  sendMessage(msg);
 }
 
 void MessageHub::sendHealMessage(id_t from, id_t to, float amount) {

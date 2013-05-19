@@ -12,9 +12,6 @@ const std::string ORDER          = "ORDER";
 // For taking damage
 const std::string ATTACK         = "ATTACK";
 const std::string CAPTURE        = "CAPTURE";
-const std::string DESTROY_ENTITY = "DESTROY";
-const std::string ADD_RESOURCE   = "RESOURCE";
-const std::string ADD_VP         = "VP";
 const std::string ADD_STAT       = "STAT";
 };  // MessageTypes
 };  // rts

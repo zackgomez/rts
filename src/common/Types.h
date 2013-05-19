@@ -40,8 +40,8 @@ const id_t STARTING_EID = 300;
 // NULL position
 const glm::vec3 NO_POSITION = glm::vec3(HUGE_VAL);
 
-namespace ResourceTypes {
-const std::string REQUISITION = "REQUISITION";
+enum class ResourceType {
+  REQUISITION = 1,
 };
 };  // rts
 

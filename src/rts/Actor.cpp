@@ -111,7 +111,7 @@ void Actor::handleMessage(const Message &msg) {
     // Just take damage for now
     health_ -= msg["damage"].asFloat();
     if (health_ <= 0.f) {
-      MessageHub::get()->sendRemovalMessage(this);
+      Game::get()->destroyEntity(getID());
     }
 
     // If melee then we have to not melee
@@ -167,11 +167,8 @@ void Actor::handleAction(const Json::Value &action) {
     }
 
     // Pay for it
-    MessageHub::get()->sendResourceMessage(
-        getID(),
-        getPlayerID(),
-        ResourceTypes::REQUISITION,
-        -req_cost);
+    Game::get()->addResources(
+        getPlayerID(), ResourceType::REQUISITION, -req_cost, getID());
 
     Production prod;
     prod.max_time = prod_time;

@@ -63,13 +63,20 @@ class Game {
 
   // Does not block, should only be called from Game thread
   void sendMessage(id_t to, const Message &msg);
-  void handleMessage(const Message &msg);
-  const GameEntity * spawnEntity(
-      const std::string &name,
-      const Json::Value &params);
   // Can possibly block, but should never block long
   void addAction(id_t pid, const PlayerAction &act);
 
+  void addResources(
+      id_t pid,
+      ResourceType type,
+      float amount,
+      id_t from);
+  void addVPs(id_t tid, float amount, id_t from);
+
+  const GameEntity * spawnEntity(
+      const std::string &name,
+      const Json::Value &params);
+  void destroyEntity(id_t eid);
   const GameEntity * getEntity(id_t eid) const;
   const GameEntity * findEntity(std::function<bool(const GameEntity *)> f) const;
   const Player * getPlayer(id_t pid) const;

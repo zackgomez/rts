@@ -47,16 +47,13 @@ Effect createResourceEffect(const Json::Value &effect) {
       return true;
     }
     if (resource_type == "victory_point") {
-      MessageHub::get()->sendVPMessage(
-          a->getID(),
-          a->getTeamID(),
-          dt * amount);
+      Game::get()->addVPs(a->getTeamID(), dt * amount, a->getID());
     } else if (resource_type == "requisition") {
-      MessageHub::get()->sendResourceMessage(
-          a->getID(),
+      Game::get()->addResources(
           a->getPlayerID(),
-          ResourceTypes::REQUISITION,
-          dt * amount);
+          ResourceType::REQUISITION,
+          dt * amount,
+          a->getID());
     } else {
       invariant_violation("Unknown resource type " + resource_type);
     }

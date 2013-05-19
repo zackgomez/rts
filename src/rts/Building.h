@@ -12,6 +12,7 @@ class Building : public Actor {
 
   virtual void handleMessage(const Message &msg) override;
   virtual void update(float dt) override;
+  virtual void collide(const GameEntity *, float dt) override { }
 
   virtual bool hasProperty(uint32_t property) const override {
     if (property == P_CAPPABLE) {

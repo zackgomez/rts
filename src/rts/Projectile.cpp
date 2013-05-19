@@ -26,7 +26,7 @@ void Projectile::update(float dt) {
   const GameEntity *targetEnt = Game::get()->getEntity(targetID_);
   // If target doesn't exist for whatever reason, then I guess we're done
   if (!targetEnt) {
-    MessageHub::get()->sendRemovalMessage(this);
+    Game::get()->destroyEntity(getID());
     return;
   }
   // Always go directly towards target
@@ -47,7 +47,7 @@ void Projectile::update(float dt) {
     msg["damage"] = fltParam("damage");
     msg["damage_type"] = "ranged";
     MessageHub::get()->sendMessage(msg);
-    MessageHub::get()->sendRemovalMessage(this);
+    Game::get()->destroyEntity(getID());
   }
 }
 

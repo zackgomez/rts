@@ -290,33 +290,18 @@ void Game::sendMessage(id_t to, const Message &msg) {
   it->second->handleMessage(msg);
 }
 
-void Game::handleMessage(const Message &msg) {
-  invariant(msg.isMember("type"), "malformed message");
-  if (msg["type"] == MessageTypes::DESTROY_ENTITY) {
-    invariant(msg.isMember("eid"), "malformed DESTROY_ENTITY message");
-    deadEntities_.push_back(toID(msg["eid"]));
-  } else if (msg["type"] == MessageTypes::ADD_RESOURCE) {
-    invariant(msg.isMember("amount"), "malformed ADD_RESOURCE message");
-    invariant(msg.isMember("resource"), "malformed ADD_RESOURCE message");
-    invariant(msg.isMember("pid"), "malformed ADD_RESOURCE message");
-    id_t pid = assertPid(toID(msg["pid"]));
-    invariant(getPlayer(pid), "unknown player for ADD_RESOURCE message");
-    float amount = msg["amount"].asFloat();
-    if (msg["resource"] == ResourceTypes::REQUISITION) {
-      resources_[pid].requisition += amount;
-    }
-  } else if (msg["type"] == MessageTypes::ADD_VP) {
-    invariant(msg.isMember("tid"), "malformed ADD_VP message");
-    id_t tid = assertTid(toID(msg["tid"]));
-    invariant(victoryPoints_.count(tid), "unknown team for ADD_VP message");
-    invariant(msg.isMember("amount"), "malformed ADD_VP message");
-    float amount = msg["amount"].asFloat();
-    victoryPoints_[tid] += amount;
-  } else {
-    LOG(WARN) << "Game received unknown message type: " << msg;
-    // No other work, if unknown message
-    return;
+void Game::addResources(
+    id_t pid, ResourceType resource_type, float amount, id_t from) {
+  invariant(getPlayer(pid), "unknown player for ADD_RESOURCE message");
+  if (resource_type == ResourceType::REQUISITION) {
+    resources_[pid].requisition += amount;
   }
+}
+
+void Game::addVPs(id_t tid, float amount, id_t from) {
+  assertTid(tid);
+  invariant(victoryPoints_.count(tid), "unknown team for vp add");
+    victoryPoints_[tid] += amount;
 }
 
 void Game::addAction(id_t pid, const PlayerAction &act) {
@@ -340,6 +325,10 @@ const GameEntity * Game::spawnEntity(
     Renderer::get()->spawnEntity(ent);
   }
   return ent;
+}
+
+void Game::destroyEntity(id_t eid) {
+  deadEntities_.push_back(eid);
 }
 
 const GameEntity * Game::getEntity(id_t eid) const {

@@ -718,7 +718,7 @@ void GameController::updateMapShader(Shader *shader) const {
 void GameController::handleUIAction(const UIAction &action) {
   Json::Value msg;
   msg["type"] = ActionTypes::ACTION;
-  msg["entity"] = action.getOwner();
+  msg["entity"] = toJson(action.getOwner());
   msg["pid"] = toJson(player_->getPlayerID());
   msg["action"] = action.getName();
 
