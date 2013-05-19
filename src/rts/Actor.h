@@ -34,10 +34,11 @@ class Actor : public GameEntity {
         bool targetable = true, bool collidable = true);
   virtual ~Actor();
 
-  virtual bool hasProperty(uint32_t property) const;
+  virtual bool hasProperty(uint32_t property) const override;
 
-  virtual void handleMessage(const Message &msg);
-  virtual void update(float dt);
+  virtual void handleMessage(const Message &msg) override;
+  virtual void update(float dt) override;
+  virtual void collide(const GameEntity *other, float dt) override;
 
   float distanceToEntity(const GameEntity *e) const;
 

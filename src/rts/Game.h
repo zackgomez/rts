@@ -1,11 +1,11 @@
 #ifndef SRC_RTS_GAME_H_
 #define SRC_RTS_GAME_H_
 
-#include <glm/glm.hpp>
 #include <set>
 #include <vector>
 #include <mutex>
 #include <queue>
+#include <glm/glm.hpp>
 #include "common/Clock.h"
 #include "common/Checksum.h"
 #include "common/Logger.h"
@@ -86,6 +86,7 @@ class Game {
   }
 
  private:
+  void initScripts();
   void handleAction(id_t playerID, const PlayerAction &action);
   // Returns true if all the players have submitted input for the current tick_
   bool updatePlayers();

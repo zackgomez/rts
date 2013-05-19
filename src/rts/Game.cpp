@@ -230,7 +230,7 @@ void Game::update(float dt) {
         map_->getMapHeight(glm::vec2(e1->getPosition()))));
     auto it2 = it;
     for (it2++; it2 != entities.end(); it2++) {
-      const GameEntity *e2 = it2->second;
+      GameEntity *e2 = it2->second;
       if (!e2->hasProperty(GameEntity::P_COLLIDABLE)) {
         continue;
       }
@@ -241,9 +241,8 @@ void Game::update(float dt) {
             e2->getRect(),
             glm::vec2(e2->getVelocity()),
             dt)) != NO_INTERSECTION) {
-        // TODO(zack): include time of intersection in message
-        MessageHub::get()->sendCollisionMessage(it->first, it2->first, time);
-        MessageHub::get()->sendCollisionMessage(it2->first, it->first, time);
+        e1->collide(e2, time);
+        e2->collide(e1, time);
       }
     }
   }

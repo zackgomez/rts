@@ -48,9 +48,6 @@ void Building::handleMessage(const Message &msg) {
         capAmount_ *= -1;
       }
     }
-  } else if (msg["type"] == MessageTypes::COLLISION) {
-    // Buildings don't react to collisions
-    return;
   } else {
     Actor::handleMessage(msg);
   }

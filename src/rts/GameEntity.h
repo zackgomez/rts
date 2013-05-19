@@ -55,6 +55,8 @@ class GameEntity : public ModelEntity {
 
   std::queue<glm::vec3> getPathNodes() const;
 
+  virtual void collide(const GameEntity *other, float dt) = 0;
+
   // helper functions for update
   // Don't move or rotate
   void remainStationary();

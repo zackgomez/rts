@@ -11,8 +11,9 @@ class Projectile : public GameEntity {
   Projectile(id_t id, const std::string &name, const Json::Value &params);
   virtual ~Projectile() {}
 
-  virtual void update(float dt);
-  virtual void handleMessage(const Message &msg);
+  virtual void update(float dt) override;
+  virtual void handleMessage(const Message &msg) override;
+  virtual void collide(const GameEntity *, float) override { }
 
  protected:
   id_t targetID_;

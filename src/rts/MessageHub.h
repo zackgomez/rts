@@ -26,7 +26,6 @@ class MessageHub {
   void sendResourceMessage(id_t from, id_t pid, const std::string &resource,
       float amount);
   void sendVPMessage(id_t from, id_t tid, float amount);
-  void sendCollisionMessage(id_t from, id_t to, float time);
   void sendHealMessage(id_t from, id_t to, float amount);
 
  private:

@@ -13,6 +13,7 @@ class CollisionObject : public GameEntity {
 
   virtual void handleMessage(const Message &msg) override;
   virtual void update(float dt) override;
+  virtual void collide(const GameEntity *e, float dt) override { }
 };
 };  // namespace rts
 
