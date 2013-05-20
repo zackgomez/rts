@@ -11,6 +11,8 @@ public:
 private:
   v8::Persistent<v8::Context> context_;
   v8::Isolate *isolate_ = nullptr;
+
+  v8::Persistent<v8::ObjectTemplate> entityTemplate_;
 };
 
 };
