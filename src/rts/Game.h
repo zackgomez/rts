@@ -10,6 +10,7 @@
 #include "common/Checksum.h"
 #include "common/Logger.h"
 #include "rts/GameEntity.h"
+#include "rts/GameScript.h"
 #include "rts/PlayerAction.h"
 
 namespace rts {
@@ -77,6 +78,7 @@ class Game {
       const std::string &name,
       const Json::Value &params);
   void destroyEntity(id_t eid);
+  GameEntity * getEntity(id_t eid);
   const GameEntity * getEntity(id_t eid) const;
   const GameEntity * findEntity(std::function<bool(const GameEntity *)> f) const;
   const Player * getPlayer(id_t pid) const;
@@ -112,6 +114,8 @@ class Game {
   std::map<id_t, float> victoryPoints_;
   tick_t tick_;
   tick_t tickOffset_;
+
+  GameScript script_;
 
   std::map<id_t, VisibilityMap*> visibilityMaps_;
 

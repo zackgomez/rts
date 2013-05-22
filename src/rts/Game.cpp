@@ -99,6 +99,8 @@ void Game::start() {
   auto lock = std::unique_lock<std::mutex>(actionMutex_);
   pause();
 
+  script_.init();
+
   // Starting resources
   // TODO(zack): move to map init (spawn logical entities with correct
   // values)
@@ -323,12 +325,23 @@ const GameEntity * Game::spawnEntity(
   GameEntity *ent = EntityFactory::get()->construct(eid, name, params);
   if (ent) {
     Renderer::get()->spawnEntity(ent);
+    script_.wrapEntity(ent);
   }
   return ent;
 }
 
 void Game::destroyEntity(id_t eid) {
+  auto *entity = getEntity(eid);
+  if (entity) {
+    script_.destroyEntity(entity);
+  }
   deadEntities_.push_back(eid);
+}
+
+GameEntity * Game::getEntity(id_t eid) {
+  auto entities = Renderer::get()->getEntities();
+  auto it = entities.find(eid);
+  return it == entities.end() ? nullptr : it->second;
 }
 
 const GameEntity * Game::getEntity(id_t eid) const {

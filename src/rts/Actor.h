@@ -64,6 +64,9 @@ class Actor : public GameEntity {
     return lastTookDamage_;
   }
   
+  void setHealth(float health) {
+    health_ = health;
+  }
   void setTookDamage() {
     lastTookDamage_ = Clock::now();
   }

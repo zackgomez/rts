@@ -1,5 +1,6 @@
 #include "rts/GameScript.h"
 #include <v8.h>
+#include "rts/Actor.h"
 #include "rts/Game.h"
 
 using namespace v8;
@@ -10,8 +11,8 @@ static Handle<Value> jsSendMessage(const Arguments &args) {
   if (args.Length() < 2) return Undefined();
   HandleScope scope(args.GetIsolate());
 
-  Handle<Integer> to = Handle<Integer>::Cast(args[0]);
-  Handle<Object> msg = Handle<Object>::Cast(args[1]);
+  //Handle<Integer> to = Handle<Integer>::Cast(args[0]);
+  //Handle<Object> msg = Handle<Object>::Cast(args[1]);
 
   return Undefined();
 }
@@ -19,24 +20,45 @@ static Handle<Value> jsSendMessage(const Arguments &args) {
 static Handle<Value> entityGetHealth(
     Local<String> property,
     const AccessorInfo &info) {
-  // TODO
-  return Integer::New(0);
+  Local<Object> self = info.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  Actor *actor = static_cast<Actor *>(wrap->Value());
+  return Integer::New(actor->getHealth());
 }
 
 static void entitySetHealth(
     Local<String> property,
     Local<Value> value,
     const AccessorInfo &info) {
-  // TODO
+  if (!value->IsNumber())  return;
+
+  Local<Object> self = info.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  Actor *actor = static_cast<Actor *>(wrap->Value());
+  actor->setHealth(value->NumberValue());
 }
 
 GameScript::~GameScript() {
-  entityTemplate_.Dispose();
-  context_.Dispose(Isolate::GetCurrent());
+  {
+    Locker lock(isolate_);
+    HandleScope handle_scope(isolate_);
+    Context::Scope context_scope(isolate_, context_);
+
+    entityTemplate_.Dispose();
+    for (auto pair : scriptObjects_) {
+      pair.second.Dispose();
+    }
+    context_.Dispose(isolate_);
+  }
+  isolate_->Exit();
+  isolate_->Dispose();
 }
 
 void GameScript::init() {
-  isolate_ = Isolate::GetCurrent();
+  isolate_ = Isolate::New();
+  Locker lock(isolate_);
+  isolate_->Enter();
+
   HandleScope handle_scope(isolate_);
   
   Handle<ObjectTemplate> global = ObjectTemplate::New();
@@ -55,6 +77,29 @@ void GameScript::init() {
   entityTemplate_->SetAccessor(
       String::New("health"), entityGetHealth, entitySetHealth);
   // TODO(zack) the rest of the methods here)
+}
+
+void GameScript::wrapEntity(GameEntity *e) {
+  Locker lock(isolate_);
+  HandleScope handle_scope(isolate_);
+  Context::Scope context_scope(isolate_, context_);
+
+  Persistent<Object> wrapper = Persistent<Object>::New(
+      isolate_, entityTemplate_->NewInstance());
+  wrapper->SetInternalField(0, External::New(e));
+
+  scriptObjects_[e] = wrapper;
+}
+
+void GameScript::destroyEntity(GameEntity *e) {
+  Locker lock(isolate_);
+  HandleScope handle_scope(isolate_);
+  Context::Scope context_scope(isolate_, context_);
+
+  auto it = scriptObjects_.find(e);
+  invariant(it != scriptObjects_.end(), "destroying entity without wrapper");
+  it->second.Dispose();
+  scriptObjects_.erase(it);
 }
 
 };  // rts

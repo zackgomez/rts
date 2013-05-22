@@ -24,6 +24,7 @@
 #include "rts/ResourceManager.h"
 #include "rts/Player.h"
 #include "rts/Unit.h"
+#include <v8.h>
 
 using rts::Game;
 using rts::Renderer;
@@ -72,11 +73,12 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
     }
   }
 
-  Renderer::get()->postToMainThread([=] () {
+  Renderer::get()->postToMainThread([=]() {
     Renderer::get()->clearEntities();
     Renderer::get()->setController(nullptr);
-    delete game;
   });
+
+  delete game;
 
   // TODO(zack): move to score screen menu
   std::thread mmthread(matchmakerThread);
