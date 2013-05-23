@@ -29,6 +29,8 @@ COMMONSRC=$(wildcard $(COMMONDIR)/*.cpp)
 TESTSRC=$(wildcard $(TESTDIR)/*.cpp)
 RTSSRC=$(wildcard $(RTSDIR)/*.cpp)
 
+BOOSTDYLIBS=$(patsubst lib/boost_1_50_macosx/%,%,$(wildcard lib/boost_1_50_macosx/*.dylib))
+
 TESTOBJ = $(patsubst $(TESTDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(TESTSRC)))
 COMMONOBJ = $(patsubst $(COMMONDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(COMMONSRC))) $(JSON)/jsoncpp.o
 RTSOBJ = $(patsubst $(RTSDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(RTSSRC))) obj/rts-main.o
@@ -41,7 +43,7 @@ all: obj $(PROGRAM) depthfieldgen
 $(OBJDIR)/SDLMain.o: macosx/SDLMain.m
 	$(CXX) -g -O0 -Wall $^ -c -o $@
 
-$(PROGRAM): $(RTSOBJ) $(COMMONOBJ) local.json $(OBJDIR)/SDLMain.o
+$(PROGRAM): $(RTSOBJ) $(COMMONOBJ) local.json $(OBJDIR)/SDLMain.o $(BOOSTDYLIBS)
 	$(CXX) $(CXXFLAGS) -o $@ $(RTSOBJ) $(COMMONOBJ) $(LDFLAGS) $(OBJDIR)/SDLMain.o
 
 depthfieldgen: $(DEPTHGENOBJ) $(COMMONOBJ)
@@ -49,6 +51,9 @@ depthfieldgen: $(DEPTHGENOBJ) $(COMMONOBJ)
 
 tests: $(TESTOBJ) $(GTESTLIB) $(COMMONOBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $(TESTOBJ) $(COMMONOBJ) $(GTESTLIB) -lpthread
+
+libboost_%.dylib:
+	cp lib/boost_1_50_macosx/$@ $@
 
 $(OBJDIR)/%.o: $(RTSDIR)/%.cpp
 	$(CXX) -c $(CXXFLAGS) -o $(OBJDIR)/$*.o $<

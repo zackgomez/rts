@@ -6,6 +6,7 @@
 /tests
 /depthfieldgen
 /*.dll
+/*.dylib
 rts.exe
 *.o
 *.swp
