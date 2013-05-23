@@ -8,7 +8,6 @@
 /*.dll
 rts.exe
 *.o
-*.a
 *.swp
 tags
 lib/boost_1_50_0

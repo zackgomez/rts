@@ -11,7 +11,7 @@ STBTT=lib/stb_truetype
 FMOD=macosx/fmod
 BOOSTDIR=lib/boost_1_50_0
 LDFLAGS=-lGLEW -framework SDL -framework Cocoa -framework OpenGL \
-				-lboost_system -lboost_filesystem 
+				-Llib/boost_1_50_macosx -lboost_system -lboost_filesystem
 OBJDIR=obj
 SRCDIR=src
 EXECDIR=$(SRCDIR)/exec
@@ -40,7 +40,6 @@ all: obj $(PROGRAM) depthfieldgen
 
 $(OBJDIR)/SDLMain.o: macosx/SDLMain.m
 	$(CXX) -g -O0 -Wall $^ -c -o $@
-
 
 $(PROGRAM): $(RTSOBJ) $(COMMONOBJ) local.json $(OBJDIR)/SDLMain.o
 	$(CXX) $(CXXFLAGS) -o $@ $(RTSOBJ) $(COMMONOBJ) $(LDFLAGS) $(OBJDIR)/SDLMain.o
