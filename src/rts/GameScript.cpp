@@ -38,6 +38,10 @@ static void entitySetHealth(
   actor->setHealth(value->NumberValue());
 }
 
+GameScript::GameScript()
+  : isolate_(nullptr) {
+}
+
 GameScript::~GameScript() {
   {
     Locker lock(isolate_);

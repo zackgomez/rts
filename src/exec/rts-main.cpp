@@ -78,7 +78,10 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
     Renderer::get()->setController(nullptr);
   });
 
-  delete game;
+  {
+    auto lock = Renderer::get()->lockEngine();
+    delete game;
+  }
 
   // TODO(zack): move to score screen menu
   std::thread mmthread(matchmakerThread);

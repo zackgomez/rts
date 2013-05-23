@@ -1,5 +1,6 @@
 #pragma once
 #include <json/json.h>
+#include "common/Types.h"
 
 namespace rts {
 

@@ -282,6 +282,7 @@ void Renderer::getNearbyEntities(
   for (auto pair : entities_) {
     auto entity = pair.second;
     glm::vec3 diff = entity->getPosition() - pos;
+
     float dist2 = glm::dot(diff, diff);
     if (dist2 < radius2) {
       if (!callback(entity)) {
