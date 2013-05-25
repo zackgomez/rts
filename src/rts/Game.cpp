@@ -100,6 +100,8 @@ void Game::start() {
   pause();
 
   script_.init();
+  v8::Locker locker(script_.getIsolate());
+  v8::Context::Scope context_scope(script_.getContext());
 
   // Starting resources
   // TODO(zack): move to map init (spawn logical entities with correct
@@ -129,6 +131,8 @@ void Game::start() {
 void Game::update(float dt) {
   auto lock = Renderer::get()->lockEngine();
   auto& entities = Renderer::get()->getEntities();
+  v8::Locker locker(script_.getIsolate());
+  v8::Context::Scope context_scope(script_.getContext());
 
   // First update players
   // TODO(zack): less hacky dependence on paused_

@@ -116,7 +116,10 @@
     "height"       : 1.25,
     "rangedWeapon" : "basic_rifle",
     "meleeWeapon"  : "basic_knife",
-    "sight"        : 8.0
+    "sight"        : 8.0,
+    "effects"      : [
+      "test"
+    ]
   },
 
   "basic_rifle" :
@@ -169,6 +172,10 @@
       "aura_type" : "healing",
       "radius" : 5.0,
       "amount" : 5.0
+    },
+    "test" :
+    {
+     "type" : "test"
     }
   },
 

@@ -1,7 +1,9 @@
 #include "rts/GameScript.h"
 #include <v8.h>
+#include "common/util.h"
 #include "rts/Actor.h"
 #include "rts/Game.h"
+#include "rts/Renderer.h"
 
 using namespace v8;
 
@@ -17,25 +19,56 @@ static Handle<Value> jsSendMessage(const Arguments &args) {
   return Undefined();
 }
 
-static Handle<Value> entityGetHealth(
-    Local<String> property,
-    const AccessorInfo &info) {
-  Local<Object> self = info.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  Actor *actor = static_cast<Actor *>(wrap->Value());
-  return Integer::New(actor->getHealth());
+static Handle<Value> jsLog(const Arguments &args) {
+  HandleScope scope(args.GetIsolate());
+  for (int i = 0; i < args.Length(); i++) {
+    if (i != 0) std::cout << ' ';
+    std::cout << *String::AsciiValue(args[i]);
+  }
+  std::cout << '\n';
+
+  return Undefined();
 }
 
-static void entitySetHealth(
-    Local<String> property,
-    Local<Value> value,
-    const AccessorInfo &info) {
-  if (!value->IsNumber())  return;
+static Handle<Value> jsGetNearbyEntities(const Arguments &args) {
+  if (args.Length() < 3) return Undefined();
+  HandleScope scope(args.GetIsolate());
 
-  Local<Object> self = info.Holder();
+  id_t eid = args[0]->IntegerValue();
+  float radius = args[1]->NumberValue();
+  Handle<Function> callback = Handle<Function>::Cast(args[2]);
+
+  auto *e = Game::get()->getEntity(eid);
+  if (!e) return Undefined();
+  auto pos = e->getPosition();
+
+  const int argc = 1;
+  Renderer::get()->getNearbyEntities(pos, radius,
+      [&](const GameEntity *e) -> bool {
+        auto jsEntity = Game::get()->getScript()->getEntity(e->getID());
+        Handle<Value> argv[1] = {jsEntity};
+        auto ret = callback->Call(args.Holder(), argc, argv);
+        return ret->BooleanValue();
+      });
+
+  return Undefined();
+}
+
+static Handle<Value> entityGetHealth(const Arguments &args) {
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   Actor *actor = static_cast<Actor *>(wrap->Value());
-  actor->setHealth(value->NumberValue());
+  return scope.Close(Integer::New(actor->getHealth()));
+}
+
+static Handle<Value> entityGetID(const Arguments &args) {
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
+  Handle<Integer> ret = Integer::New(e->getID());
+  return scope.Close(ret);
 }
 
 GameScript::GameScript()
@@ -44,7 +77,7 @@ GameScript::GameScript()
 
 GameScript::~GameScript() {
   {
-    Locker lock(isolate_);
+    Locker locker(isolate_);
     HandleScope handle_scope(isolate_);
     Context::Scope context_scope(isolate_, context_);
 
@@ -60,7 +93,7 @@ GameScript::~GameScript() {
 
 void GameScript::init() {
   isolate_ = Isolate::New();
-  Locker lock(isolate_);
+  Locker locker(isolate_);
   isolate_->Enter();
 
   HandleScope handle_scope(isolate_);
@@ -70,21 +103,62 @@ void GameScript::init() {
   global->Set(
       String::New("SendMessage"),
       FunctionTemplate::New(jsSendMessage));
+  global->Set(
+      String::New("GetNearbyEntities"),
+      FunctionTemplate::New(jsGetNearbyEntities));
+  global->Set(
+      String::New("Log"),
+      FunctionTemplate::New(jsLog));
 
   context_.Reset(isolate_, Context::New(isolate_, nullptr, global));
-
   Context::Scope context_scope(isolate_, context_);
 
   entityTemplate_ =
       Persistent<ObjectTemplate>::New(isolate_, ObjectTemplate::New());
   entityTemplate_->SetInternalFieldCount(1);
-  entityTemplate_->SetAccessor(
-      String::New("health"), entityGetHealth, entitySetHealth);
+  entityTemplate_->Set(String::New("getHealth"), FunctionTemplate::New(entityGetHealth));
+  entityTemplate_->Set(String::New("getID"), FunctionTemplate::New(entityGetID));
   // TODO(zack) the rest of the methods here)
+  
+  loadScripts();
+}
+
+void GameScript::loadScripts() {
+  // TODO(zack): HACK ALERT
+  std::ifstream file("scripts/effects.js");
+  if (!file) {
+    throw file_exception("Unable to open script");
+  }
+  std::string text;
+  std::getline(file, text, (char)EOF);
+  file.close();
+
+  TryCatch try_catch;
+  Handle<Script> script = Script::Compile(String::New(text.c_str()));
+  if (script.IsEmpty()) {
+    String::AsciiValue e_str(try_catch.Exception());
+    LOG(ERROR) << "Unable to compile script: " << *e_str << '\n';
+  }
+
+  Handle<Value> result = script->Run();
+  if (result.IsEmpty()) {
+    String::AsciiValue e_str(try_catch.Exception());
+    LOG(ERROR) << "Unable to run script: " << *e_str << '\n';
+  }
+}
+
+Handle<Object> GameScript::getEntity(id_t eid) {
+  auto it = scriptObjects_.find(eid);
+  invariant(it != scriptObjects_.end(), "no wrapper found for entity");
+
+  return it->second;
+}
+
+Handle<Object> GameScript::getGlobal() {
+  return context_->Global();
 }
 
 void GameScript::wrapEntity(GameEntity *e) {
-  Locker lock(isolate_);
   HandleScope handle_scope(isolate_);
   Context::Scope context_scope(isolate_, context_);
 
@@ -92,15 +166,14 @@ void GameScript::wrapEntity(GameEntity *e) {
       isolate_, entityTemplate_->NewInstance());
   wrapper->SetInternalField(0, External::New(e));
 
-  scriptObjects_[e] = wrapper;
+  scriptObjects_[e->getID()] = wrapper;
 }
 
 void GameScript::destroyEntity(GameEntity *e) {
-  Locker lock(isolate_);
   HandleScope handle_scope(isolate_);
   Context::Scope context_scope(isolate_, context_);
 
-  auto it = scriptObjects_.find(e);
+  auto it = scriptObjects_.find(e->getID());
   invariant(it != scriptObjects_.end(), "destroying entity without wrapper");
   it->second.Dispose();
   scriptObjects_.erase(it);

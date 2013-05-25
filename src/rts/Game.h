@@ -61,6 +61,9 @@ class Game {
   TickChecksum getChecksum() const {
     return checksums_.back();
   }
+  GameScript* getScript() {
+    return &script_;
+  }
 
   // Does not block, should only be called from Game thread
   void sendMessage(id_t to, const Message &msg);

@@ -4,4 +4,4 @@ FILTER="+whitespace,+readability,-readability/streams,\
 -runtime/references,-runtime/sizeof,-runtime/printf,-build/include_order,\
 -build/include_what_you_use,-whitespace/newline"
 
-scripts/cpplint --filter=$FILTER -- $* 2>&1 || true
+tools/cpplint --filter=$FILTER -- $* 2>&1 || true

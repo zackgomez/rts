@@ -1,6 +1,9 @@
 #include "rts/Effect.h"
+#include <v8.h>
 #include "common/ParamReader.h"
 #include "rts/Actor.h"
+#include "rts/Game.h"
+#include "rts/GameScript.h"
 #include "rts/MessageHub.h"
 #include "rts/Renderer.h"
 
@@ -34,6 +37,22 @@ Effect createAuraEffect(const Json::Value &effect) {
       invariant_violation("unknown aura type " + type);
     }
     return true;
+  };
+}
+
+Effect createJSTestEffect(const Json::Value &effect) {
+  using namespace v8;
+  return [=](const Actor *a, float dt) -> bool {
+    auto script = Game::get()->getScript();
+    HandleScope handle_scope(script->getIsolate());
+
+    Handle<Object> global = Game::get()->getScript()->getGlobal();
+    const int argc = 2;
+    Handle<Value> argv[argc] = {script->getEntity(a->getID()), Number::New(dt)};
+    auto fn = Handle<Function>::Cast(global->Get(String::New("testEffect")));
+
+    Handle<Value> result = fn->Call(global, argc, argv);
+    return result->BooleanValue();
   };
 }
 
@@ -71,6 +90,8 @@ Effect createEffect(const std::string &name) {
     return createAuraEffect(effect);
   } else if (type == "resource") {
     return createResourceEffect(effect);
+  } else if (type == "test") {
+    return createJSTestEffect(effect);
   } else {
     invariant_violation("unknown effect type " + type);
   }
