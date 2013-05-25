@@ -40,8 +40,11 @@ Effect createAuraEffect(const Json::Value &effect) {
   };
 }
 
-Effect createJSTestEffect(const Json::Value &effect) {
+Effect createJSEffect(const Json::Value &effect) {
   using namespace v8;
+  invariant(effect.isMember("function"), "missing function name");
+  std::string func_name = effect["function"].asString();
+
   return [=](const Actor *a, float dt) -> bool {
     auto script = Game::get()->getScript();
     HandleScope handle_scope(script->getIsolate());
@@ -49,9 +52,16 @@ Effect createJSTestEffect(const Json::Value &effect) {
     Handle<Object> global = Game::get()->getScript()->getGlobal();
     const int argc = 2;
     Handle<Value> argv[argc] = {script->getEntity(a->getID()), Number::New(dt)};
-    auto fn = Handle<Function>::Cast(global->Get(String::New("testEffect")));
 
+    TryCatch try_catch;
+    auto fn = Handle<Function>::Cast(global->Get(String::New(func_name.c_str())));
     Handle<Value> result = fn->Call(global, argc, argv);
+    if (result.IsEmpty()) {
+      LOG(ERROR) << "Error running effect: "
+        << *String::AsciiValue(try_catch.Exception());
+      return false;
+    }
+
     return result->BooleanValue();
   };
 }
@@ -90,8 +100,8 @@ Effect createEffect(const std::string &name) {
     return createAuraEffect(effect);
   } else if (type == "resource") {
     return createResourceEffect(effect);
-  } else if (type == "test") {
-    return createJSTestEffect(effect);
+  } else if (type == "script") {
+    return createJSEffect(effect);
   } else {
     invariant_violation("unknown effect type " + type);
   }

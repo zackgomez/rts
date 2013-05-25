@@ -30,17 +30,18 @@ static Handle<Value> jsLog(const Arguments &args) {
   return Undefined();
 }
 
-static Handle<Value> jsGetNearbyEntities(const Arguments &args) {
-  if (args.Length() < 3) return Undefined();
+static Handle<Value> entityGetNearbyEntities(const Arguments &args) {
+  if (args.Length() < 2) return Undefined();
   HandleScope scope(args.GetIsolate());
 
-  id_t eid = args[0]->IntegerValue();
-  float radius = args[1]->NumberValue();
-  Handle<Function> callback = Handle<Function>::Cast(args[2]);
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
 
-  auto *e = Game::get()->getEntity(eid);
-  if (!e) return Undefined();
-  auto pos = e->getPosition();
+  float radius = args[0]->NumberValue();
+  Handle<Function> callback = Handle<Function>::Cast(args[1]);
+
+  auto pos = entity->getPosition();
 
   const int argc = 1;
   Renderer::get()->getNearbyEntities(pos, radius,
@@ -68,6 +69,24 @@ static Handle<Value> entityGetID(const Arguments &args) {
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   GameEntity *e = static_cast<GameEntity *>(wrap->Value());
   Handle<Integer> ret = Integer::New(e->getID());
+  return scope.Close(ret);
+}
+
+static Handle<Value> entityGetPlayerID(const Arguments &args) {
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
+  Handle<Integer> ret = Integer::New(e->getPlayerID());
+  return scope.Close(ret);
+}
+
+static Handle<Value> entityGetTeamID(const Arguments &args) {
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
+  Handle<Integer> ret = Integer::New(e->getTeamID());
   return scope.Close(ret);
 }
 
@@ -104,9 +123,6 @@ void GameScript::init() {
       String::New("SendMessage"),
       FunctionTemplate::New(jsSendMessage));
   global->Set(
-      String::New("GetNearbyEntities"),
-      FunctionTemplate::New(jsGetNearbyEntities));
-  global->Set(
       String::New("Log"),
       FunctionTemplate::New(jsLog));
 
@@ -116,8 +132,21 @@ void GameScript::init() {
   entityTemplate_ =
       Persistent<ObjectTemplate>::New(isolate_, ObjectTemplate::New());
   entityTemplate_->SetInternalFieldCount(1);
-  entityTemplate_->Set(String::New("getHealth"), FunctionTemplate::New(entityGetHealth));
-  entityTemplate_->Set(String::New("getID"), FunctionTemplate::New(entityGetID));
+  entityTemplate_->Set(
+      String::New("getHealth"),
+      FunctionTemplate::New(entityGetHealth));
+  entityTemplate_->Set(
+      String::New("getID"),
+      FunctionTemplate::New(entityGetID));
+  entityTemplate_->Set(
+      String::New("getPlayerID"),
+      FunctionTemplate::New(entityGetPlayerID));
+  entityTemplate_->Set(
+      String::New("getTeamID"),
+      FunctionTemplate::New(entityGetTeamID));
+  entityTemplate_->Set(
+      String::New("getNearbyEntities"),
+      FunctionTemplate::New(entityGetNearbyEntities));
   // TODO(zack) the rest of the methods here)
   
   loadScripts();
