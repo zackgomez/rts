@@ -30,6 +30,32 @@ static Handle<Value> jsLog(const Arguments &args) {
   return Undefined();
 }
 
+static Handle<Value> jsAddRequisition(const Arguments &args) {
+  if (args.Length() < 3) return Undefined();
+  HandleScope scope(args.GetIsolate());
+
+  id_t pid = args[0]->IntegerValue();
+  float amount = args[1]->NumberValue();
+  id_t from_eid = args[2]->IntegerValue();
+  Game::get()->addResources(pid, ResourceType::REQUISITION, amount, from_eid);
+  LOG(DEBUG) << "Adding " << amount << " req from " << from_eid << '\n';
+
+  return Undefined();
+}
+
+static Handle<Value> jsAddVPs(const Arguments &args) {
+  if (args.Length() < 3) return Undefined();
+  HandleScope scope(args.GetIsolate());
+
+  id_t pid = args[0]->IntegerValue();
+  float amount = args[1]->NumberValue();
+  id_t from_eid = args[2]->IntegerValue();
+  LOG(DEBUG) << "Adding " << amount << " vps\n";
+  Game::get()->addVPs(pid, amount, from_eid);
+
+  return Undefined();
+}
+
 static Handle<Value> entityGetNearbyEntities(const Arguments &args) {
   if (args.Length() < 2) return Undefined();
   HandleScope scope(args.GetIsolate());
@@ -116,7 +142,7 @@ void GameScript::init() {
   isolate_->Enter();
 
   HandleScope handle_scope(isolate_);
-  
+
   Handle<ObjectTemplate> global = ObjectTemplate::New();
 
   global->Set(
@@ -125,6 +151,12 @@ void GameScript::init() {
   global->Set(
       String::New("Log"),
       FunctionTemplate::New(jsLog));
+  global->Set(
+      String::New("AddRequisition"),
+      FunctionTemplate::New(jsAddRequisition));
+  global->Set(
+      String::New("AddVPs"),
+      FunctionTemplate::New(jsAddVPs));
 
   context_.Reset(isolate_, Context::New(isolate_, nullptr, global));
   Context::Scope context_scope(isolate_, context_);

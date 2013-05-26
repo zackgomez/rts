@@ -66,30 +66,6 @@ Effect createJSEffect(const Json::Value &effect) {
   };
 }
 
-Effect createResourceEffect(const Json::Value &effect) {
-  invariant(effect.isMember("amount"), "missing resource rate");
-  invariant(effect.isMember("resource_type"), "missing resource type");
-  const float amount = effect["amount"].asFloat();
-  const auto resource_type = effect["resource_type"].asString();
-  return [=](const Actor *a, float dt) -> bool {
-    if (a->getPlayerID() == NO_PLAYER) {
-      return true;
-    }
-    if (resource_type == "victory_point") {
-      Game::get()->addVPs(a->getTeamID(), dt * amount, a->getID());
-    } else if (resource_type == "requisition") {
-      Game::get()->addResources(
-          a->getPlayerID(),
-          ResourceType::REQUISITION,
-          dt * amount,
-          a->getID());
-    } else {
-      invariant_violation("Unknown resource type " + resource_type);
-    }
-    return true;
-  };
-}
-
 Effect createEffect(const std::string &name) {
   auto effect = getParam("effects." + name);
 
@@ -98,8 +74,6 @@ Effect createEffect(const std::string &name) {
 
   if (type == "aura") {
     return createAuraEffect(effect);
-  } else if (type == "resource") {
-    return createResourceEffect(effect);
   } else if (type == "script") {
     return createJSEffect(effect);
   } else {

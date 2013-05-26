@@ -150,21 +150,18 @@
   {
     "vp_gen" :
     {
-      "type": "resource",
-      "resource_type" : "victory_point",
-      "amount" : 1.0
+      "type": "script",
+      "function" : "vpGenEffect"
     },
     "req_gen" :
     {
-      "type": "resource",
-      "resource_type" : "requisition",
-      "amount" : 1.0
+      "type": "script",
+      "function" : "reqGenEffect"
     },
     "base_req_gen" :
     {
-      "type": "resource",
-      "resource_type" : "requisition",
-      "amount" : 1.0
+      "type": "script",
+      "function" : "reqGenEffect"
     },
     "base_healing" :
     {
@@ -279,7 +276,7 @@
     "prod"        : [],
     "captureTime" : 5.0,
     "effects" : [
-      "vp_gen"
+      "req_gen"
     ]
   },
 
