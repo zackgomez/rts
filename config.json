@@ -165,10 +165,8 @@
     },
     "base_healing" :
     {
-      "type" : "aura",
-      "aura_type" : "healing",
-      "radius" : 5.0,
-      "amount" : 5.0
+      "type" : "script",
+      "function" : "baseHealingAura"
     },
     "test" :
     {

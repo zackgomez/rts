@@ -3,6 +3,7 @@
 #include "common/util.h"
 #include "rts/Actor.h"
 #include "rts/Game.h"
+#include "rts/MessageHub.h"
 #include "rts/Renderer.h"
 
 using namespace v8;
@@ -10,11 +11,31 @@ using namespace v8;
 namespace rts {
 
 static Handle<Value> jsSendMessage(const Arguments &args) {
-  if (args.Length() < 2) return Undefined();
+  if (args.Length() < 1) return Undefined();
   HandleScope scope(args.GetIsolate());
 
-  //Handle<Integer> to = Handle<Integer>::Cast(args[0]);
-  //Handle<Object> msg = Handle<Object>::Cast(args[1]);
+  Handle<Object> msg = Handle<Object>::Cast(args[0]);
+  Message json_msg;
+
+  Handle<Array> names = msg->GetPropertyNames();
+  for (int i = 0; i < names->Length(); i++) {
+    Handle<Value> val = msg->Get(names->Get(i));
+    const auto name = std::string(*String::AsciiValue(names->Get(i)));
+
+    if (val->IsUint32()) {
+      json_msg[name] = val->IntegerValue();
+    } else if (val->IsString()) {
+      json_msg[name] = *String::AsciiValue(val);
+    } else if (val->IsBoolean()) {
+      json_msg[name] = val->BooleanValue();
+    } else if (val->IsNumber()) {
+      json_msg[name] = val->NumberValue();
+    } else {
+      invariant_violation("Unsupported json value type for key " + name);
+    }
+  }
+
+  MessageHub::get()->sendMessage(json_msg);
 
   return Undefined();
 }
@@ -38,7 +59,6 @@ static Handle<Value> jsAddRequisition(const Arguments &args) {
   float amount = args[1]->NumberValue();
   id_t from_eid = args[2]->IntegerValue();
   Game::get()->addResources(pid, ResourceType::REQUISITION, amount, from_eid);
-  LOG(DEBUG) << "Adding " << amount << " req from " << from_eid << '\n';
 
   return Undefined();
 }
@@ -50,7 +70,6 @@ static Handle<Value> jsAddVPs(const Arguments &args) {
   id_t pid = args[0]->IntegerValue();
   float amount = args[1]->NumberValue();
   id_t from_eid = args[2]->IntegerValue();
-  LOG(DEBUG) << "Adding " << amount << " vps\n";
   Game::get()->addVPs(pid, amount, from_eid);
 
   return Undefined();

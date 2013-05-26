@@ -1,13 +1,22 @@
-function testEffect(entity, dt) {
+function __healingAura(radius, amount, entity, dt) {
   var radius = 5.0;
+  var amount = 5.0;
 
   entity.getNearbyEntities(radius, function (nearby_entity) {
-    Log('Entity', nearby_entity.getID(), 'is near', entity.getID());
+    SendMessage({
+      to: nearby_entity.getID(),
+      from: entity.getID(),
+      type: "STAT",
+      healing: dt * amount
+    });
+
     return true;
   });
 
   return true;
 }
+
+baseHealingAura = __healingAura.bind(undefined, 5.0, 5.0);
 
 function vpGenEffect(entity, dt) {
   if (!entity.getPlayerID()) {
