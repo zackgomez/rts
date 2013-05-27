@@ -9,10 +9,8 @@
 
 namespace rts {
 
-Effect createJSEffect(const Json::Value &effect) {
+Effect createEffect(const std::string &name) {
   using namespace v8;
-  invariant(effect.isMember("function"), "missing function name");
-  std::string func_name = effect["function"].asString();
 
   return [=](const Actor *a, float dt) -> bool {
     auto script = Game::get()->getScript();
@@ -23,29 +21,16 @@ Effect createJSEffect(const Json::Value &effect) {
     Handle<Value> argv[argc] = {script->getEntity(a->getID()), Number::New(dt)};
 
     TryCatch try_catch;
-    auto fn = Handle<Function>::Cast(global->Get(String::New(func_name.c_str())));
+    auto fn = Handle<Function>::Cast(global->Get(String::New(name.c_str())));
     Handle<Value> result = fn->Call(global, argc, argv);
     if (result.IsEmpty()) {
-      LOG(ERROR) << "Error running effect: "
-        << *String::AsciiValue(try_catch.Exception());
+      LOG(ERROR) << "Error running effect " << name << ": "
+        << *String::AsciiValue(try_catch.Exception()) << '\n';
       return false;
     }
 
     return result->BooleanValue();
   };
-}
-
-Effect createEffect(const std::string &name) {
-  auto effect = getParam("effects." + name);
-
-  invariant(effect.isMember("type"), "missing effects type");
-  const std::string type = effect["type"].asString();
-
-  if (type == "script") {
-    return createJSEffect(effect);
-  } else {
-    invariant_violation("unknown effect type " + type);
-  }
 }
 
 };  // rts

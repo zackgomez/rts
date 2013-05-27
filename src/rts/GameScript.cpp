@@ -14,30 +14,26 @@ static Handle<Value> jsSendMessage(const Arguments &args) {
   if (args.Length() < 1) return Undefined();
   HandleScope scope(args.GetIsolate());
 
-  Handle<Object> msg = Handle<Object>::Cast(args[0]);
-  Message json_msg;
-
-  Handle<Array> names = msg->GetPropertyNames();
-  for (int i = 0; i < names->Length(); i++) {
-    Handle<Value> val = msg->Get(names->Get(i));
-    const auto name = std::string(*String::AsciiValue(names->Get(i)));
-
-    if (val->IsUint32()) {
-      json_msg[name] = val->IntegerValue();
-    } else if (val->IsString()) {
-      json_msg[name] = *String::AsciiValue(val);
-    } else if (val->IsBoolean()) {
-      json_msg[name] = val->BooleanValue();
-    } else if (val->IsNumber()) {
-      json_msg[name] = val->NumberValue();
-    } else {
-      invariant_violation("Unsupported json value type for key " + name);
-    }
-  }
-
+  auto script = Game::get()->getScript();
+  Message json_msg = script->jsToJSON(args[0]);
   MessageHub::get()->sendMessage(json_msg);
 
   return Undefined();
+}
+
+static Handle<Value> jsSpawnEntity(const Arguments &args) {
+  if (args.Length() < 2) return Undefined();
+  HandleScope scope(args.GetIsolate());
+
+  auto script = Game::get()->getScript();
+  std::string name(*String::AsciiValue(args[0]));
+  Json::Value params = script->jsToJSON(Handle<Object>::Cast(args[1]));
+
+  const GameEntity *e = Game::get()->spawnEntity(name, params);
+  if (!e) {
+    return Null();
+  }
+  return scope.Close(Integer::New(e->getID()));
 }
 
 static Handle<Value> jsLog(const Arguments &args) {
@@ -49,6 +45,15 @@ static Handle<Value> jsLog(const Arguments &args) {
   std::cout << '\n';
 
   return Undefined();
+}
+
+static Handle<Value> jsGetRequisition(const Arguments &args) {
+  if (args.Length() < 1) return Undefined();
+  HandleScope scope(args.GetIsolate());
+
+  id_t pid = args[0]->IntegerValue();
+  return scope.Close(Number::New(
+        Game::get()->getResources(pid).requisition));
 }
 
 static Handle<Value> jsAddRequisition(const Arguments &args) {
@@ -135,6 +140,39 @@ static Handle<Value> entityGetTeamID(const Arguments &args) {
   return scope.Close(ret);
 }
 
+static Handle<Value> entityGetPosition2(const Arguments &args) {
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
+  auto pos2 = e->getPosition2();
+  Handle<Array> ret = Array::New(2);
+  ret->Set(0, Number::New(pos2.x));
+  ret->Set(1, Number::New(pos2.y));
+  return scope.Close(ret);
+}
+
+static Handle<Value> entityGetDirection(const Arguments &args) {
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
+  auto pos2 = e->getDirection();
+  Handle<Array> ret = Array::New(2);
+  ret->Set(0, Number::New(pos2.x));
+  ret->Set(1, Number::New(pos2.y));
+  return scope.Close(ret);
+}
+
+static Handle<Value> entityGetAngle(const Arguments &args) {
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
+  Handle<Value> ret = Number::New(e->getAngle());
+  return scope.Close(ret);
+}
+
 GameScript::GameScript()
   : isolate_(nullptr) {
 }
@@ -171,11 +209,17 @@ void GameScript::init() {
       String::New("Log"),
       FunctionTemplate::New(jsLog));
   global->Set(
+      String::New("GetRequisition"),
+      FunctionTemplate::New(jsGetRequisition));
+  global->Set(
       String::New("AddRequisition"),
       FunctionTemplate::New(jsAddRequisition));
   global->Set(
       String::New("AddVPs"),
       FunctionTemplate::New(jsAddVPs));
+  global->Set(
+      String::New("SpawnEntity"),
+      FunctionTemplate::New(jsSpawnEntity));
 
   context_.Reset(isolate_, Context::New(isolate_, nullptr, global));
   Context::Scope context_scope(isolate_, context_);
@@ -198,6 +242,15 @@ void GameScript::init() {
   entityTemplate_->Set(
       String::New("getNearbyEntities"),
       FunctionTemplate::New(entityGetNearbyEntities));
+  entityTemplate_->Set(
+      String::New("getPosition2"),
+      FunctionTemplate::New(entityGetPosition2));
+  entityTemplate_->Set(
+      String::New("getDirection"),
+      FunctionTemplate::New(entityGetDirection));
+  entityTemplate_->Set(
+      String::New("getAngle"),
+      FunctionTemplate::New(entityGetAngle));
   // TODO(zack) the rest of the methods here)
   
   loadScripts();
@@ -246,6 +299,11 @@ void GameScript::wrapEntity(GameEntity *e) {
       isolate_, entityTemplate_->NewInstance());
   wrapper->SetInternalField(0, External::New(e));
 
+  const int argc = 1;
+  Handle<Value> argv[argc] = {wrapper};
+  Handle<Function>::Cast(context_->Global()->Get(String::New("entityInit")))
+    ->Call(context_->Global(), argc, argv);
+
   scriptObjects_[e->getID()] = wrapper;
 }
 
@@ -257,6 +315,65 @@ void GameScript::destroyEntity(GameEntity *e) {
   invariant(it != scriptObjects_.end(), "destroying entity without wrapper");
   it->second.Dispose();
   scriptObjects_.erase(it);
+}
+
+Handle<Value> GameScript::jsonToJS(const Json::Value &json) const {
+  if (json.isArray()) {
+    Handle<Array> jsarr = Array::New();
+    for (int i = 0; i < json.size(); i++) {
+      jsarr->Set(i, jsonToJS(json[i]));
+    }
+    return jsarr;
+  } else if (json.isObject()) {
+    Handle<Object> jsobj = Object::New();
+    for (const auto &name : json.getMemberNames()) {
+      auto jsname = String::New(name.c_str());
+      jsobj->Set(jsname, jsonToJS(json[name]));
+    }
+    return jsobj;
+  } else if (json.isDouble()) {
+    return Number::New(json.asDouble());
+  } else if (json.isString()) {
+    return String::New(json.asCString());
+  } else if (json.isIntegral()) {
+    return Integer::New(json.asInt64());
+  } else if (json.isBool()) {
+    return Boolean::New(json.asBool());
+  } else {
+    invariant_violation("Unknown type to convert");
+  }
+}
+
+Json::Value GameScript::jsToJSON(const Handle<Value> js) const {
+  if (js->IsArray()) {
+    Json::Value ret;
+    auto jsarr = Handle<Array>::Cast(js);
+    for (int i = 0; i < jsarr->Length(); i++) {
+      ret[i] = jsToJSON(jsarr->Get(i));
+    }
+    return ret;
+  } else if (js->IsObject()) {
+    Json::Value ret;
+    auto jsobj = js->ToObject();
+    Handle<Array> names = jsobj->GetPropertyNames();
+    for (int i = 0; i < names->Length(); i++) {
+      ret[*String::AsciiValue(names->Get(i))] =
+        jsToJSON(jsobj->Get(names->Get(i)));
+    }
+    return ret;
+  } else if (js->IsNumber()) {
+    return js->NumberValue();
+  } else if (js->IsString()) {
+    return *String::AsciiValue(js);
+  } else if (js->IsInt32() || js->IsUint32()) {
+    return js->IntegerValue();
+  } else if (js->IsBoolean()) {
+    return js->BooleanValue();
+  } else if (js->IsNull()) {
+    return Json::Value();
+  } else {
+    invariant_violation("Unknown js type");
+  }
 }
 
 };  // rts

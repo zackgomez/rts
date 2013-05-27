@@ -219,6 +219,7 @@ void Game::update(float dt) {
   }
   // Remove deadEnts
   for (auto eid : deadEntities_) {
+    script_.destroyEntity(getEntity(eid));
     Renderer::get()->removeEntity(eid);
   }
   deadEntities_.clear();
@@ -335,10 +336,6 @@ const GameEntity * Game::spawnEntity(
 }
 
 void Game::destroyEntity(id_t eid) {
-  auto *entity = getEntity(eid);
-  if (entity) {
-    script_.destroyEntity(entity);
-  }
   deadEntities_.push_back(eid);
 }
 

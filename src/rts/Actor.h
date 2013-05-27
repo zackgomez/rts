@@ -24,12 +24,6 @@ const std::string ACTION = "ACTION";
 
 class Actor : public GameEntity {
  public:
-  struct Production {
-    std::string name;
-    float time;
-    float max_time;
-  };
-
   Actor(id_t id, const std::string &name, const Json::Value &params,
         bool targetable = true, bool collidable = true);
   virtual ~Actor();
@@ -43,10 +37,6 @@ class Actor : public GameEntity {
   float distanceToEntity(const GameEntity *e) const;
 
   const std::vector<UIAction> &getActions() const;
-
-  std::queue<Production> getProductionQueue() const {
-    return production_queue_;
-  }
 
   float getHealth() const {
     return health_;
@@ -75,7 +65,6 @@ class Actor : public GameEntity {
   virtual void handleOrder(const Message &order);
 
   void handleAction(const Json::Value &action);
-  void produce(const std::string &prod_name);
 
   void resetTexture();
 
@@ -87,7 +76,6 @@ class Actor : public GameEntity {
 
   Weapon *rangedWeapon_, *meleeWeapon_;
 
-  std::queue<Production> production_queue_;
   std::map<std::string, Effect> effects_;
   std::vector<UIAction> actions_;
 };

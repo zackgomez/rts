@@ -1,6 +1,7 @@
 #ifndef SRC_RTS_GAMESCRIPT_H_
 #define SRC_RTS_GAMESCRIPT_H_
 #include <v8.h>
+#include <json/json.h>
 #include <unordered_map>
 #include "common/Types.h"
 
@@ -25,6 +26,9 @@ public:
   void destroyEntity(GameEntity *e);
   v8::Handle<v8::Object> getEntity(id_t eid);
   v8::Handle<v8::Object> getGlobal();
+
+  v8::Handle<v8::Value> jsonToJS(const Json::Value &json) const;
+  Json::Value jsToJSON(const v8::Handle<v8::Value> json) const;
 
 private:
   v8::Persistent<v8::Context> context_;

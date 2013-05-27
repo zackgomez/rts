@@ -133,7 +133,6 @@ void Actor::handleOrder(const Message &order) {
   invariant(order["type"] == MessageTypes::ORDER, "unknown message type");
   invariant(order.isMember("order_type"), "missing order type");
   if (order["order_type"] == OrderTypes::ACTION) {
-    LOG(DEBUG) << order << '\n';
     invariant(order.isMember("action"), "missing action name");
     std::string action_name = order["action"].asString();
     for (int i = 0; i < actions_.size(); i++) {
@@ -151,64 +150,50 @@ void Actor::handleOrder(const Message &order) {
 }
 
 void Actor::handleAction(const Json::Value &action) {
-  invariant(action.isMember("type"), "missing action type");
+  using namespace v8;
+  auto *script = Game::get()->getScript();
+  HandleScope scope(script->getIsolate());
 
-  if (action["type"] == "production") {
-    invariant(action.isMember("prod_name"), "missing production type");
-    invariant(action.isMember("time_cost"), "missing production time cost");
-    invariant(action.isMember("req_cost"), "missing production req cost");
-    std::string prod_name = action["prod_name"].asString();
-    float prod_time = action["time_cost"].asFloat();
-    float req_cost = action["req_cost"].asFloat();
+  Handle<Object> jsaction = Handle<Object>::Cast(script->jsonToJS(action));
 
-    // Enough resources?
-    if (Game::get()->getResources(getPlayerID()).requisition < req_cost) {
-      return;
-    }
+  Handle<Object> global = script->getGlobal();
+  TryCatch try_catch;
 
-    // Pay for it
-    Game::get()->addResources(
-        getPlayerID(), ResourceType::REQUISITION, -req_cost, getID());
-
-    Production prod;
-    prod.max_time = prod_time;
-    prod.time = prod_time;
-    prod.name = prod_name;
-    production_queue_.push(prod);
-  } else {
-    invariant_violation(
-        "unknown action type in message " + action.toStyledString());
+  const int argc = 2;
+  Handle<Value> argv[argc] = {script->getEntity(getID()), jsaction};
+  Handle<Value> result =
+    Handle<Function>::Cast(global->Get(String::New("entityHandleAction")))
+    ->Call(global, argc, argv);
+  if (result.IsEmpty()) {
+    LOG(ERROR) << "error handling action: "
+      << *String::AsciiValue(try_catch.Exception()) << '\n';
   }
-}
 
-void Actor::produce(const std::string &prod_name) {
-  // TODO(zack) generalize this to also include upgrades etc
-  Json::Value params;
-  params["entity_pid"] = toJson(getPlayerID());
-  // TODO(zack) (make this a param)
-  params["entity_pos"] = toJson(
-      ModelEntity::getPosition2() + ModelEntity::getDirection());
-  params["entity_angle"] = ModelEntity::getAngle();
-
-  Game::get()->spawnEntity(prod_name, params);
+  return;
 }
 
 void Actor::update(float dt) {
   GameEntity::update(dt);
 
+  using namespace v8;
+  auto script = Game::get()->getScript();
+  HandleScope scope(script->getIsolate());
+  TryCatch try_catch;
+  auto global = script->getGlobal();
+  const int argc = 2;
+  Handle<Value> argv[] = {script->getEntity(getID()), Number::New(dt)};
+  Handle<Value> ret =
+    Handle<Function>::Cast(global->Get(String::New("entityUpdate")))
+    ->Call(global, argc, argv);
+  if (ret.IsEmpty()) {
+    LOG(ERROR) << "Error updating entity: "
+      << *String::AsciiValue(try_catch.Exception()) << '\n';
+  }
+
   // TODO(zack): dirty hack :-(
   resetTexture();
 
   melee_timer_ -= dt;
-
-  // Update production
-  if (!production_queue_.empty()) {
-    production_queue_.front().time -= dt;
-    if (production_queue_.front().time <= 0) {
-      produce(production_queue_.front().name);
-      production_queue_.pop();
-    }
-  }
 
   for (auto it = effects_.begin(); it != effects_.end();) {
     if (!it->second(this, dt)) {

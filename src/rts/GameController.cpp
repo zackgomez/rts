@@ -676,6 +676,8 @@ void renderEntity(
     drawRectCenter(pos, size, healthBarColor);
   }
 
+  // TODO(zack): readd this for JS production
+  /*
   auto queue = actor->getProductionQueue();
   if (!queue.empty() &&
 	  localPlayer->getPlayerID() == actor->getPlayerID()) {
@@ -690,6 +692,7 @@ void renderEntity(
     size.x *= prodFactor;
     drawRectCenter(pos, size, glm::vec4(0, 0, 1, 1));
   }
+  */
   glEnable(GL_DEPTH_TEST);
 
   // Render path if selected

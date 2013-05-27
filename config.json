@@ -116,10 +116,7 @@
     "height"       : 1.25,
     "rangedWeapon" : "basic_rifle",
     "meleeWeapon"  : "basic_knife",
-    "sight"        : 8.0,
-    "effects"      : [
-      "test"
-    ]
+    "sight"        : 8.0
   },
 
   "basic_rifle" :
@@ -144,35 +141,6 @@
     "size"   : [0.6, 0.6],
     "damage" : 10.0,
     "height" : 0.3
-  },
-
-  "effects" :
-  {
-    "vp_gen" :
-    {
-      "type": "script",
-      "function" : "vpGenEffect"
-    },
-    "req_gen" :
-    {
-      "type": "script",
-      "function" : "reqGenEffect"
-    },
-    "base_req_gen" :
-    {
-      "type": "script",
-      "function" : "reqGenEffect"
-    },
-    "base_healing" :
-    {
-      "type" : "script",
-      "function" : "baseHealingAura"
-    },
-    "test" :
-    {
-     "type" : "script",
-     "function" : "testEffect"
-    }
   },
 
   "melee_unit" :
@@ -240,8 +208,8 @@
       }
     ],
     "effects" : [
-      "base_healing",
-      "base_req_gen"
+      "reqGenEffect",
+      "baseHealingAura"
     ]
   },
 
@@ -258,7 +226,7 @@
     "prod"        : [],
     "captureTime" : 5.0,
     "effects" : [
-      "vp_gen"
+      "vpGenEffect"
     ]
   },
 
@@ -274,7 +242,7 @@
     "prod"        : [],
     "captureTime" : 5.0,
     "effects" : [
-      "req_gen"
+      "reqGenEffect"
     ]
   },
 
