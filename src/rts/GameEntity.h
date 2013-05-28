@@ -70,22 +70,16 @@ class GameEntity : public ModelEntity {
   }
 
  protected:
-
   Json::Value getParam(const std::string &p) const;
   float fltParam(const std::string &p) const;
   std::string strParam(const std::string &p) const;
   glm::vec2 vec2Param(const std::string &p) const;
   bool hasParam(const std::string &p) const;
 
-  // Used to change owners, e.g. for a capture
-  void setPlayerID(id_t pid) {
-    playerID_ = pid;
-  }
-
   std::queue<glm::vec3> pathQueue_;
+  id_t playerID_;
 
  private:
-  id_t playerID_;
   std::string name_;
 
   bool targetable_;

@@ -126,9 +126,26 @@ void Actor::handleMessage(const Message &msg) {
       health_ = std::min(health_, getMaxHealth());
     }
   } else {
-    GameEntity::handleMessage(msg);
+    using namespace v8;
+    auto *script = Game::get()->getScript();
+    HandleScope scope(script->getIsolate());
+    Handle<Object> global = script->getGlobal();
+    TryCatch try_catch;
+
+    Handle<Object> jsmsg = Handle<Object>::Cast(script->jsonToJS(msg));
+
+    const int argc = 2;
+    Handle<Value> argv[argc] = {script->getEntity(getID()), jsmsg};
+    Handle<Value> result =
+      Handle<Function>::Cast(global->Get(String::New("entityHandleMessage")))
+      ->Call(global, argc, argv);
+    if (result.IsEmpty()) {
+      LOG(ERROR) << "error handling action: "
+        << *String::AsciiValue(try_catch.Exception()) << '\n';
+    }
   }
 }
+
 void Actor::handleOrder(const Message &order) {
   invariant(order["type"] == MessageTypes::ORDER, "unknown message type");
   invariant(order.isMember("order_type"), "missing order type");
@@ -190,9 +207,6 @@ void Actor::update(float dt) {
       << *String::AsciiValue(try_catch.Exception()) << '\n';
   }
 
-  // TODO(zack): dirty hack :-(
-  resetTexture();
-
   melee_timer_ -= dt;
 
   for (auto it = effects_.begin(); it != effects_.end();) {
@@ -202,6 +216,8 @@ void Actor::update(float dt) {
       it++;
     }
   }
+
+  updateUIInfo();
 }
 
 float Actor::distanceToEntity(const GameEntity *e) const {
@@ -209,5 +225,43 @@ float Actor::distanceToEntity(const GameEntity *e) const {
     getPosition2(),
     glm::normalize(e->getPosition2() - getPosition2()),
     e->getRect());
+}
+
+void Actor::updateUIInfo() {
+  memset(&uiInfo_, 0, sizeof(uiInfo_));
+
+  using namespace v8;
+  auto script = Game::get()->getScript();
+  HandleScope scope(script->getIsolate());
+  TryCatch try_catch;
+  auto global = script->getGlobal();
+  const int argc = 1;
+  Handle<Value> argv[argc] = {script->getEntity(getID())};
+
+  Handle<Value> ret =
+    Handle<Function>::Cast(global->Get(String::New("entityGetUIInfo")))
+    ->Call(global, argc, argv);
+  if (ret.IsEmpty()) {
+    LOG(ERROR) << "Error updating ui info entity: "
+      << *String::AsciiValue(try_catch.Exception()) << '\n';
+    return;
+  }
+
+  auto jsinfo = ret->ToObject();
+  auto prod = String::New("production");
+  if (jsinfo->Has(prod)) {
+    uiInfo_.production = script->jsToVec2(
+        Handle<Array>::Cast(jsinfo->Get(prod)));
+  }
+  auto health = String::New("health");
+  if (jsinfo->Has(health)) {
+    uiInfo_.health = script->jsToVec2(
+        Handle<Array>::Cast(jsinfo->Get(health)));
+  }
+  auto capture = String::New("capture");
+  if (jsinfo->Has(capture)) {
+    uiInfo_.capture = script->jsToVec2(
+        Handle<Array>::Cast(jsinfo->Get(capture)));
+  }
 }
 };  // rts

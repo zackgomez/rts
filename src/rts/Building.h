@@ -5,13 +5,12 @@
 
 namespace rts {
 
+	// TODO(zack): move this entirely into JS
 class Building : public Actor {
  public:
   explicit Building(id_t id, const std::string &name, const Json::Value &params);
   virtual ~Building() { }
 
-  virtual void handleMessage(const Message &msg) override;
-  virtual void update(float dt) override;
   virtual void collide(const GameEntity *, float dt) override { }
 
   virtual bool hasProperty(uint32_t property) const override {
@@ -23,32 +22,6 @@ class Building : public Actor {
 
   // Returns if unit uid can capture this building
   bool canCapture(id_t uid) const;
-
-  float getCap() const {
-    return capAmount_;
-  }
-  float getMaxCap() const {
-    return hasProperty(P_CAPPABLE) ? fltParam("captureTime") : 0.f;
-  }
-  id_t getCapperID() const {
-    return capperID_;
-  }
-  void setCapperID(id_t id) {
-    capperID_ = id;
-  }
-  id_t getLastCappingPlayerID() const {
-    return lastCappingPlayerID_;
-  }
-
- private:
-  float capAmount_;
-  id_t capperID_;
-  id_t lastCappingPlayerID_;
-
-  int capResetDelay_;
-
- protected:
-  void enqueue(const Message &queue_order);
 };
 };  // namespace rts
 

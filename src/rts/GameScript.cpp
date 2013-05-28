@@ -4,6 +4,7 @@
 #include "rts/Actor.h"
 #include "rts/Game.h"
 #include "rts/MessageHub.h"
+#include "rts/Player.h"
 #include "rts/Renderer.h"
 
 using namespace v8;
@@ -105,12 +106,30 @@ static Handle<Value> entityGetNearbyEntities(const Arguments &args) {
   return Undefined();
 }
 
+static Handle<Value> entityHasProperty(const Arguments &args) {
+  if (args.Length() < 1) return Undefined();
+
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  Actor *actor = static_cast<Actor *>(wrap->Value());
+  return scope.Close(Boolean::New(actor->hasProperty(args[0]->Uint32Value())));
+}
+
 static Handle<Value> entityGetHealth(const Arguments &args) {
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   Actor *actor = static_cast<Actor *>(wrap->Value());
   return scope.Close(Integer::New(actor->getHealth()));
+}
+
+static Handle<Value> entityGetMaxHealth(const Arguments &args) {
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  Actor *actor = static_cast<Actor *>(wrap->Value());
+  return scope.Close(Integer::New(actor->getMaxHealth()));
 }
 
 static Handle<Value> entityGetID(const Arguments &args) {
@@ -173,6 +192,20 @@ static Handle<Value> entityGetAngle(const Arguments &args) {
   return scope.Close(ret);
 }
 
+static Handle<Value> entitySetPlayerID(const Arguments &args) {
+  if (args.Length() < 1) return Undefined();
+
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  Actor *e = static_cast<Actor *>(wrap->Value());
+  auto player = Game::get()->getPlayer(args[0]->IntegerValue());
+  if (player) {
+    e->setPlayerID(player->getPlayerID());
+  }
+  return Undefined();
+}
+
 GameScript::GameScript()
   : isolate_(nullptr) {
 }
@@ -228,8 +261,14 @@ void GameScript::init() {
       Persistent<ObjectTemplate>::New(isolate_, ObjectTemplate::New());
   entityTemplate_->SetInternalFieldCount(1);
   entityTemplate_->Set(
+      String::New("hasProperty"),
+      FunctionTemplate::New(entityHasProperty));
+  entityTemplate_->Set(
       String::New("getHealth"),
       FunctionTemplate::New(entityGetHealth));
+  entityTemplate_->Set(
+      String::New("getMaxHealth"),
+      FunctionTemplate::New(entityGetMaxHealth));
   entityTemplate_->Set(
       String::New("getID"),
       FunctionTemplate::New(entityGetID));
@@ -251,6 +290,9 @@ void GameScript::init() {
   entityTemplate_->Set(
       String::New("getAngle"),
       FunctionTemplate::New(entityGetAngle));
+  entityTemplate_->Set(
+      String::New("setPlayerID"),
+      FunctionTemplate::New(entitySetPlayerID));
   // TODO(zack) the rest of the methods here)
   
   loadScripts();
@@ -376,4 +418,17 @@ Json::Value GameScript::jsToJSON(const Handle<Value> js) const {
   }
 }
 
+glm::vec2 GameScript::jsToVec2(const Handle<Array> arr) const {
+  glm::vec2 ret;
+
+  if (arr->Length() != 2) {
+    LOG(WARNING) << "Trying to convert array of size "
+      << arr->Length() << " to vec2\n";
+    return ret;
+  }
+
+  ret.x = arr->Get(0)->NumberValue();
+  ret.y = arr->Get(1)->NumberValue();
+  return ret;
+}
 };  // rts

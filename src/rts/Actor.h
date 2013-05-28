@@ -60,6 +60,22 @@ class Actor : public GameEntity {
   void setTookDamage() {
     lastTookDamage_ = Clock::now();
   }
+  // Used to change owners, e.g. for a capture
+  void setPlayerID(id_t pid) {
+    playerID_ = pid;
+    resetTexture();
+  }
+
+
+  struct UIInfo {
+    glm::vec2 health;
+    glm::vec2 production;
+    glm::vec2 capture;
+  };
+
+  const UIInfo& getUIInfo() const {
+    return uiInfo_;
+  }
 
  protected:
   virtual void handleOrder(const Message &order);
@@ -70,6 +86,9 @@ class Actor : public GameEntity {
 
   float health_;
   float melee_timer_;
+
+  void updateUIInfo();
+  UIInfo uiInfo_;
 
   // Used by the render
   Clock::time_point lastTookDamage_;

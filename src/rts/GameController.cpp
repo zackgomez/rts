@@ -109,6 +109,9 @@ void GameController::onCreate() {
       return std::vector<UIAction>();
     }
     auto *actor = (Actor *)Game::get()->getEntity(*selection.begin());
+    if (!actor) {
+      return std::vector<UIAction>();
+    }
     return actor->getActions();
   };
   auto actionExecutor = [=](const UIAction &action) {
@@ -635,25 +638,22 @@ void renderEntity(
   auto resolution = Renderer::get()->getResolution();
   auto coord = (glm::vec2(ndc.x, -ndc.y) / 2.f + 0.5f) * resolution;
   auto actor = (const Actor *)e;
+  const auto ui_info = actor->getUIInfo();
 
   // Cap status
-  if (actor->hasProperty(GameEntity::P_CAPPABLE)) {
-    Building *building = (Building*)actor;
-    if (building->getCap() > 0.f &&
-        building->getCap() < building->getMaxCap()) {
-      float capFact = glm::max(
-          building->getCap() / building->getMaxCap(),
-          0.f);
-      glm::vec2 size = vec2Param("hud.actor_cap.dim");
-      glm::vec2 pos = coord - vec2Param("hud.actor_cap.pos");
-      // Black underneath
-      drawRectCenter(pos, size, glm::vec4(0, 0, 0, 1));
-      pos.x -= size.x * (1.f - capFact) / 2.f;
-      size.x *= capFact;
-      const glm::vec4 cap_color = vec4Param("hud.actor_cap.color");
-      drawRectCenter(pos, size, cap_color);
-    }
-  } else {
+  if (ui_info.capture[1]) {
+    float capFact = glm::max(ui_info.capture[0] / ui_info.capture[1], 0.f);
+    glm::vec2 size = vec2Param("hud.actor_cap.dim");
+    glm::vec2 pos = coord - vec2Param("hud.actor_cap.pos");
+    // Black underneath
+    drawRectCenter(pos, size, glm::vec4(0, 0, 0, 1));
+    pos.x -= size.x * (1.f - capFact) / 2.f;
+    size.x *= capFact;
+    const glm::vec4 cap_color = vec4Param("hud.actor_cap.color");
+    drawRectCenter(pos, size, cap_color);
+  }
+
+  if (ui_info.health[1]) {
     // Display the health bar
     // Health bar flashes white on red (instead of green on red) when it has
     // recently taken damage.
@@ -665,7 +665,7 @@ void renderEntity(
 
     float healthFact = glm::max(
         0.f,
-        actor->getHealth() / actor->getMaxHealth());
+        ui_info.health[0] / ui_info.health[1]);
     glm::vec2 size = vec2Param("hud.actor_health.dim");
     glm::vec2 pos = coord - vec2Param("hud.actor_health.pos");
     // Red underneath for max health
@@ -676,13 +676,10 @@ void renderEntity(
     drawRectCenter(pos, size, healthBarColor);
   }
 
-  // TODO(zack): readd this for JS production
-  /*
-  auto queue = actor->getProductionQueue();
-  if (!queue.empty() &&
+  if (ui_info.production[1] &&
 	  localPlayer->getPlayerID() == actor->getPlayerID()) {
     // display production bar
-    float prodFactor = 1.f - queue.front().time / queue.front().max_time;
+    float prodFactor = ui_info.production[0] / ui_info.production[1];
     glm::vec2 size = vec2Param("hud.actor_prod.dim");
     glm::vec2 pos = coord - vec2Param("hud.actor_prod.pos");
     // Purple underneath for max time
@@ -692,9 +689,8 @@ void renderEntity(
     size.x *= prodFactor;
     drawRectCenter(pos, size, glm::vec4(0, 0, 1, 1));
   }
-  */
-  glEnable(GL_DEPTH_TEST);
 
+  glEnable(GL_DEPTH_TEST);
   // Render path if selected
   if (localPlayer->isSelected(actor->getID())) {
     auto pathQueue = actor->getPathQueue();

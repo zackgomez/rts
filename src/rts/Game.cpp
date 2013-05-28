@@ -212,7 +212,6 @@ void Game::update(float dt) {
   }
 
   // Update entities
-  std::vector<id_t> deadEnts;
   for (auto &it : entities) {
     GameEntity *entity = it.second;
     entity->update(dt);
