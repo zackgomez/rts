@@ -2,7 +2,6 @@
 #include <vector>
 #include "common/Collision.h"
 #include "common/ParamReader.h"
-#include "rts/Building.h"
 #include "rts/CollisionObject.h"
 #include "rts/MessageHub.h"
 #include "rts/Player.h"

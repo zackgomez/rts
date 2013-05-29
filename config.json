@@ -179,13 +179,12 @@
 
   "building" :
   {
-    "class"  : "Building",
+    "class"  : "Actor",
     "model"  : "building",
     "modelSize"    : 4.0,
     "size"   : [2.5, 2.5],
     "height" : 1.65,
     "sight"  : 5.0,
-    "prod"   : ["unit", "melee_unit"],
     "actions" : [
       {
         "name" : "prod_unit",
@@ -208,27 +207,23 @@
 
   "victory_point" :
   {
-    "class"       : "Building",
+    "class"       : "Actor",
     "model"       : "victory_point",
     "modelSize"   : 0.6,
     "texture"     : "vp",
     "size"        : [1.4, 1.4],
     "height"      : 0.5,
-    "sight"       : 2.0,
-    "prod"        : [],
-    "captureTime" : 5.0
+    "sight"       : 2.0
   },
 
   "req_point" :
   {
-    "class"       : "Building",
+    "class"       : "Actor",
     "model"       : "req_point",
     "modelSize"   : 2.0,
     "size"        : [0.9, 0.9],
     "height"      : 0.25,
-    "sight"       : 2.0,
-    "prod"        : [],
-    "captureTime" : 5.0
+    "sight"       : 2.0
   },
 
   "colors" :
@@ -250,7 +245,6 @@
       "neutral" : [0.4, 0.4, 0.4]
     }
   },
-  
  
 
   // GRAPHICS PARAMS

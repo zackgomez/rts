@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 #include "common/Clock.h"
-#include "rts/Effect.h"
 #include "rts/GameEntity.h"
 #include "rts/UIAction.h"
 
@@ -28,7 +27,7 @@ class Actor : public GameEntity {
         bool targetable = true, bool collidable = true);
   virtual ~Actor();
 
-  virtual bool hasProperty(uint32_t property) const override;
+  virtual bool hasProperty(uint32_t property) const final override;
 
   virtual void handleMessage(const Message &msg) override;
   virtual void update(float dt) override;
@@ -84,7 +83,6 @@ class Actor : public GameEntity {
 
   Weapon *rangedWeapon_, *meleeWeapon_;
 
-  std::map<std::string, Effect> effects_;
   std::vector<UIAction> actions_;
 };
 };  // namespace rts

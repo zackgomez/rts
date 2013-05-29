@@ -6,7 +6,7 @@
 #include "common/util.h"
 #include "common/ParamReader.h"
 #include "rts/ActionWidget.h"
-#include "rts/Building.h"
+#include "rts/Actor.h"
 #include "rts/CommandWidget.h"
 #include "rts/Game.h"
 #include "rts/Map.h"
@@ -207,7 +207,9 @@ void GameController::frameUpdate(float dt) {
   auto visibilityMap = Game::get()->getVisibilityMap(player_->getPlayerID());
   for (auto it : Renderer::get()->getEntities()) {
     auto e = it.second;
-    if (e->hasProperty(GameEntity::P_ACTOR) && !e->hasProperty(GameEntity::P_CAPPABLE)) {
+    if (e->hasProperty(GameEntity::P_CAPPABLE)) {
+      e->setVisible(true);
+    } else if (e->hasProperty(GameEntity::P_ACTOR)) {
       e->setVisible(visibilityMap->locationVisible(e->getPosition2()));
     }
   }

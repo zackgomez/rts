@@ -27,11 +27,9 @@ class GameEntity : public ModelEntity {
   virtual bool hasProperty(uint32_t property) const {
     if (property == P_TARGETABLE) {
       return targetable_;
-    }
-    else if (property == P_COLLIDABLE) {
+    } else if (property == P_COLLIDABLE) {
       return collidable_;
-    }
-    else if (property == P_RENDERABLE) {
+    } else if (property == P_RENDERABLE) {
       return true;
     }
     return false;

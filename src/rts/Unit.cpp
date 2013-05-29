@@ -2,7 +2,6 @@
 #include "rts/Unit.h"
 #include <cmath>
 #include "common/ParamReader.h"
-#include "rts/Building.h"
 #include "rts/Game.h"
 #include "rts/MessageHub.h"
 #include "rts/Projectile.h"
@@ -100,10 +99,11 @@ bool Unit::canAttack(const GameEntity *e) const {
   }
 }
 
-bool Unit::canCapture(const Building *e) const {
+bool Unit::canCapture(const GameEntity *e) const {
   float dist = distanceToEntity(e);
-  return e->canCapture(getID())
-      && dist <= ::fltParam("global.captureRange");
+  return e->hasProperty(GameEntity::P_CAPPABLE)
+    && e->getPlayerID() != getPlayerID()
+    && dist <= ::fltParam("global.captureRange");
 }
 
 bool Unit::withinRange(const GameEntity *e) const {
@@ -125,10 +125,9 @@ void Unit::attackTarget(const GameEntity *e) {
   weapon_->fire(e);
 }
 
-void Unit::captureTarget(const Building *e, float cap) {
+void Unit::captureTarget(const GameEntity *e, float cap) {
   assert(e);
-
-  invariant(e->canCapture(getID()), "should be able to cap");
+  invariant(canCapture(e), "should be able to cap");
 
   // TODO(zack): MessageHub::sendCaptureMessage
   Message msg;
@@ -362,14 +361,13 @@ void CaptureState::update(float dt) {
   }
   invariant(target->hasProperty(GameEntity::P_CAPPABLE),
       "capture target must be a building");
-  const Building *btarget = (const Building *) target;
 
   // If we can cap, do so.
-  if (unit_->canCapture(btarget)) {
-    unit_->captureTarget(btarget, dt);
+  if (unit_->canCapture(target)) {
+    unit_->captureTarget(target, dt);
   } else {
     // Otherwise move towards target
-    unit_->moveTowards(btarget->getPosition2(), dt);
+    unit_->moveTowards(target->getPosition2(), dt);
   }
 }
 

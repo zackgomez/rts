@@ -1,7 +1,6 @@
 #include "rts/Actor.h"
 #include "common/ParamReader.h"
 #include "common/util.h"
-#include "rts/Building.h"
 #include "rts/MessageHub.h"
 #include "rts/Player.h"
 #include "rts/Projectile.h"
@@ -159,9 +158,12 @@ void Actor::update(float dt) {
   auto script = Game::get()->getScript();
   HandleScope scope(script->getIsolate());
   TryCatch try_catch;
+
   auto global = script->getGlobal();
   const int argc = 2;
+
   Handle<Value> argv[] = {script->getEntity(getID()), Number::New(dt)};
+
   Handle<Value> ret =
     Handle<Function>::Cast(global->Get(String::New("entityUpdate")))
     ->Call(global, argc, argv);
@@ -171,14 +173,6 @@ void Actor::update(float dt) {
   }
 
   melee_timer_ -= dt;
-
-  for (auto it = effects_.begin(); it != effects_.end();) {
-    if (!it->second(this, dt)) {
-      it = effects_.erase(it);
-    } else {
-      it++;
-    }
-  }
 
   updateUIInfo();
 }

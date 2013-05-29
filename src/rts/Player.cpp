@@ -2,7 +2,6 @@
 #include <SDL/SDL.h>
 #include "common/Checksum.h"
 #include "common/ParamReader.h"
-#include "rts/Building.h"
 #include "rts/GameEntity.h"
 #include "rts/Game.h"
 #include "rts/MessageHub.h"

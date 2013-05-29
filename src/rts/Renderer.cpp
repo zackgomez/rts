@@ -12,7 +12,6 @@
 #include "common/FPSCalculator.h"
 #include "common/ParamReader.h"
 #include "common/util.h"
-#include "rts/Building.h"
 #include "rts/CollisionObject.h"
 #include "rts/Controller.h"
 #include "rts/Graphics.h"

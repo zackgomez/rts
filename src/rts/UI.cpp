@@ -5,7 +5,6 @@
 #include "common/Clock.h"
 #include "common/ParamReader.h"
 #include "rts/Actor.h"
-#include "rts/Building.h"
 #include "rts/Controller.h"
 #include "rts/GameController.h"
 #include "rts/Graphics.h"

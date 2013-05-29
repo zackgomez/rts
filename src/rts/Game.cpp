@@ -5,7 +5,6 @@
 #include "common/Checksum.h"
 #include "common/ParamReader.h"
 #include "common/util.h"
-#include "rts/Building.h"
 #include "rts/GameEntity.h"
 #include "rts/EntityFactory.h"
 #include "rts/Map.h"

@@ -7,7 +7,6 @@
 namespace rts {
 
 class UnitState;
-class Building;
 
 class Unit : public Actor {
  public:
@@ -21,13 +20,13 @@ class Unit : public Actor {
   // if the target is in range and within firing arc
   bool canAttack(const GameEntity *target) const;
   // if the unit is in range
-  bool canCapture(const Building *target) const;
+  bool canCapture(const GameEntity *target) const;
   // If this the target is within firing range
   bool withinRange(const GameEntity *target) const;
   // Attacks target if possible (within range, arc, cd available)
   void attackTarget(const GameEntity *target);
   // Captures target
-  void captureTarget(const Building *target, float cap);
+  void captureTarget(const GameEntity *target, float cap);
 
   const GameEntity *getTarget(id_t lastTargetID) const;
   glm::vec3 getTargetPos() const;
