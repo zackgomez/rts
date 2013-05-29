@@ -26,8 +26,6 @@ Actor::Actor(id_t id, const std::string &name, const Json::Value &params,
     rangedWeapon_ = new Weapon(strParam("rangedWeapon"), this);
   }
 
-  health_ = getMaxHealth();
-
   setMeshName(strParam("model"));
   setScale(glm::vec3(fltParam("modelSize")));
   resetTexture();
@@ -88,35 +86,8 @@ void Actor::collide(const GameEntity *collider, float dt) {
 }
 
 void Actor::handleMessage(const Message &msg) {
-  if (msg["type"] == MessageTypes::ATTACK) {
-    invariant(msg.isMember("pid"), "malformed attack message");
-    invariant(msg.isMember("damage"), "malformed attack message");
-    invariant(msg.isMember("damage_type"), "malformed attack message");
-    
-    // For graphics purpose, move if possible
-    setTookDamage();
-
-    // TODO(zack) figure out how to deal with this case (friendly fire)
-    // when we have from, we can work that in here too
-    invariant(toID(msg["pid"]) != getPlayerID(), "no friendly fire");
-
-    // Just take damage for now
-    health_ -= msg["damage"].asFloat();
-    if (health_ <= 0.f) {
-      Game::get()->destroyEntity(getID());
-    }
-
-    // If melee then we have to not melee
-    if (msg["damage_type"] == "melee") {
-      melee_timer_ = ::fltParam("global.meleeCooldown");
-    }
-  } else if (msg["type"] == MessageTypes::ORDER) {
+  if (msg["type"] == MessageTypes::ORDER) {
     handleOrder(msg);
-  } else if (msg["type"] == MessageTypes::ADD_STAT) {
-    if (msg.isMember("healing")) {
-      health_ += msg["healing"].asFloat();
-      health_ = std::min(health_, getMaxHealth());
-    }
   } else {
     using namespace v8;
     auto *script = Game::get()->getScript();

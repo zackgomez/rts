@@ -10,7 +10,7 @@ MessageTypes = {
   ORDER: 'ORDER',
   ATTACK: 'ATTACK',
   CAPTURE: 'CAPTURE',
-  ADD_STAT: 'ADD_STAT',
+  ADD_STAT: 'STAT',
 };
 
 // -- utility --
@@ -65,40 +65,61 @@ function reqGenEffect(entity, dt) {
 // -- Entity Definitions --
 var EntityDefs =
 {
+  unit:
+  {
+    health: 100.0,
+  },
+  melee_unit:
+  {
+    health: 50.0,
+  },
   building:
   {
+    health: 700.0,
     effects:
     {
-      'req_gen' : reqGenEffect,
-      'base_healing' : healingAura.bind(undefined, 5.0, 5.0)
-    }
+      req_gen: reqGenEffect,
+      base_healing: healingAura.bind(undefined, 5.0, 5.0),
+    },
   },
   victory_point:
   {
+    cap_time: 5.0,
     effects:
     {
-      'vp_gen': vpGenEffect
-    }
+      vp_gen: vpGenEffect,
+    },
   },
   req_point:
   {
+    cap_time: 5.0,
     effects:
     {
-      'req_gen': reqGenEffect
-    }
+      req_gen: reqGenEffect,
+    },
   },
 };
 
 // -- Entity Functions --
 function entityInit(entity) {
   entity.prodQueue_ = [];
-  entity.cappingPlayerID_ = null;
-  entity.capAmount_ = 0.0;
-  entity.capResetDelay_ = 0;
 
   var name = entity.getName();
-  if (EntityDefs[name]) {
-    entity.effects = EntityDefs[name].effects;
+  var def = EntityDefs[name];
+  if (def) {
+    if (def.effects) {
+      entity.effects_ = EntityDefs[name].effects;
+    }
+    if (def.health) {
+      entity.maxHealth_ = def.health;
+      entity.health_ = entity.maxHealth_;
+    }
+    if (def.cap_time) {
+      entity.capTime_ = def.cap_time;
+      entity.cappingPlayerID_ = null;
+      entity.capAmount_ = 0.0;
+      entity.capResetDelay_ = 0;
+    }
   }
 }
 
@@ -124,24 +145,45 @@ function entityUpdate(entity, dt) {
     entity.cappingPlayerID_ = null;
   }
 
-  for (var ename in entity.effects) {
-    var res = entity.effects[ename](entity, dt);
+  for (var ename in entity.effects_) {
+    var res = entity.effects_[ename](entity, dt);
     if (!res) {
-      delete entity.effects[ename];
+      delete entity.effects_[ename];
     }
   }
 }
 
 function entityHandleMessage(entity, msg) {
   if (msg.type == MessageTypes.CAPTURE) {
+    if (!entity.capTime_) {
+      Log('Uncappable entity received capture message');
+      return;
+    }
     if (!entity.cappingPlayerID_ || entity.cappingPlayerID_ === msg.pid) {
       entity.capResetDelay_ = 0;
       entity.cappingPlayerID_ = msg.pid;
       entity.capAmount_ += msg.cap;
-      // TODO(zack): make this a param
-      if (entity.capAmount_ >= 5.0) {
+      if (entity.capAmount_ >= entity.capTime_) {
         entity.setPlayerID(entity.cappingPlayerID_);
       }
+    }
+  } else if (msg.type == MessageTypes.ATTACK) {
+    if (!entity.maxHealth_) {
+      Log('Entity without health received attack message');
+      return;
+    }
+    entity.health_ -= msg.damage;
+    if (entity.health_ <= 0.0) {
+      entity.destroy();
+    }
+    // TODO(zack): melee timer
+    // TODO(zack): Compute this in UIInfo/update
+    entity.onTookDamage();
+  } else if (msg.type == MessageTypes.ADD_STAT) {
+    if (msg.healing) {
+      entity.health_ = Math.min(
+        entity.health_ + msg.healing,
+        entity.maxHealth_);
     }
   } else {
     Log('Unknown message of type', msg.type);
@@ -179,7 +221,9 @@ function entityGetUIInfo(entity) {
     ui_info.production = [prod.t, prod.endt];
   }
 
-  ui_info.health = [entity.getHealth(), entity.getMaxHealth()];
+  if (entity.maxHealth_) {
+    ui_info.health = [entity.health_, entity.maxHealth_];
+  }
 
   return ui_info;
 }

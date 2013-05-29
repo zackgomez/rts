@@ -106,6 +106,15 @@ static Handle<Value> entityGetNearbyEntities(const Arguments &args) {
   return Undefined();
 }
 
+static Handle<Value> entityDestroy(const Arguments &args) {
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  Actor *actor = static_cast<Actor *>(wrap->Value());
+  Game::get()->destroyEntity(actor->getID());
+  return Undefined();
+}
+
 static Handle<Value> entityHasProperty(const Arguments &args) {
   if (args.Length() < 1) return Undefined();
 
@@ -122,22 +131,6 @@ static Handle<Value> entityGetName(const Arguments &args) {
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   Actor *actor = static_cast<Actor *>(wrap->Value());
   return scope.Close(String::New(actor->getName().c_str()));
-}
-
-static Handle<Value> entityGetHealth(const Arguments &args) {
-  HandleScope scope(args.GetIsolate());
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  Actor *actor = static_cast<Actor *>(wrap->Value());
-  return scope.Close(Integer::New(actor->getHealth()));
-}
-
-static Handle<Value> entityGetMaxHealth(const Arguments &args) {
-  HandleScope scope(args.GetIsolate());
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  Actor *actor = static_cast<Actor *>(wrap->Value());
-  return scope.Close(Integer::New(actor->getMaxHealth()));
 }
 
 static Handle<Value> entityGetID(const Arguments &args) {
@@ -214,6 +207,15 @@ static Handle<Value> entitySetPlayerID(const Arguments &args) {
   return Undefined();
 }
 
+static Handle<Value> entityOnTookDamage(const Arguments &args) {
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  Actor *e = static_cast<Actor *>(wrap->Value());
+  e->setTookDamage();
+  return Undefined();
+}
+
 GameScript::GameScript()
   : isolate_(nullptr) {
 }
@@ -275,12 +277,6 @@ void GameScript::init() {
       String::New("hasProperty"),
       FunctionTemplate::New(entityHasProperty));
   entityTemplate_->Set(
-      String::New("getHealth"),
-      FunctionTemplate::New(entityGetHealth));
-  entityTemplate_->Set(
-      String::New("getMaxHealth"),
-      FunctionTemplate::New(entityGetMaxHealth));
-  entityTemplate_->Set(
       String::New("getID"),
       FunctionTemplate::New(entityGetID));
   entityTemplate_->Set(
@@ -290,9 +286,6 @@ void GameScript::init() {
       String::New("getTeamID"),
       FunctionTemplate::New(entityGetTeamID));
   entityTemplate_->Set(
-      String::New("getNearbyEntities"),
-      FunctionTemplate::New(entityGetNearbyEntities));
-  entityTemplate_->Set(
       String::New("getPosition2"),
       FunctionTemplate::New(entityGetPosition2));
   entityTemplate_->Set(
@@ -301,10 +294,21 @@ void GameScript::init() {
   entityTemplate_->Set(
       String::New("getAngle"),
       FunctionTemplate::New(entityGetAngle));
+
   entityTemplate_->Set(
       String::New("setPlayerID"),
       FunctionTemplate::New(entitySetPlayerID));
-  // TODO(zack) the rest of the methods here)
+  entityTemplate_->Set(
+      String::New("destroy"),
+      FunctionTemplate::New(entityDestroy));
+
+  entityTemplate_->Set(
+      String::New("getNearbyEntities"),
+      FunctionTemplate::New(entityGetNearbyEntities));
+
+  entityTemplate_->Set(
+      String::New("onTookDamage"),
+      FunctionTemplate::New(entityOnTookDamage));
   
   loadScripts();
 }

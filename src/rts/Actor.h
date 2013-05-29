@@ -38,13 +38,6 @@ class Actor : public GameEntity {
 
   const std::vector<UIAction> &getActions() const;
 
-  float getHealth() const {
-    return health_;
-  }
-  float getMaxHealth() const {
-    return fltParam("health");
-  }
-
   // Returns sight radius
   float getSight() const {
     return fltParam("sight");
@@ -54,9 +47,6 @@ class Actor : public GameEntity {
     return lastTookDamage_;
   }
   
-  void setHealth(float health) {
-    health_ = health;
-  }
   void setTookDamage() {
     lastTookDamage_ = Clock::now();
   }
@@ -84,7 +74,6 @@ class Actor : public GameEntity {
 
   void resetTexture();
 
-  float health_;
   float melee_timer_;
 
   void updateUIInfo();
