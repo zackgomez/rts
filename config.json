@@ -206,10 +206,6 @@
         "time_cost" : 2.5,
         "texture" : "melee_icon"
       }
-    ],
-    "effects" : [
-      "reqGenEffect",
-      "baseHealingAura"
     ]
   },
 
@@ -224,10 +220,7 @@
     "health"      : 100.0,
     "sight"       : 2.0,
     "prod"        : [],
-    "captureTime" : 5.0,
-    "effects" : [
-      "vpGenEffect"
-    ]
+    "captureTime" : 5.0
   },
 
   "req_point" :
@@ -240,10 +233,7 @@
     "health"      : 100.0,
     "sight"       : 2.0,
     "prod"        : [],
-    "captureTime" : 5.0,
-    "effects" : [
-      "reqGenEffect"
-    ]
+    "captureTime" : 5.0
   },
 
   "colors" :

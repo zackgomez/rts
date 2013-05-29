@@ -24,14 +24,82 @@ function vecAdd(v1, v2) {
   return ret;
 }
 
+// ------------- effects ----------------
+function healingAura(radius, amount, entity, dt) {
+  entity.getNearbyEntities(radius, function (nearby_entity) {
+    if (nearby_entity.getPlayerID() == entity.getPlayerID()) {
+      SendMessage({
+        to: nearby_entity.getID(),
+        from: entity.getID(),
+        type: "STAT",
+        healing: dt * amount
+      });
+    }
 
+    return true;
+  });
 
-// production
+  return true;
+}
+
+function vpGenEffect(entity, dt) {
+  if (entity.getTeamID() == NO_TEAM) {
+    return true;
+  }
+
+  var amount = 1.0;
+  AddVPs(entity.getTeamID(), dt * amount, entity.getID());
+  return true;
+}
+
+function reqGenEffect(entity, dt) {
+  if (entity.getPlayerID() == NO_PLAYER) {
+    return true;
+  }
+
+  var amount = 1.0;
+  AddRequisition(entity.getPlayerID(), dt * amount, entity.getID());
+  return true;
+}
+
+// -- Entity Definitions --
+var EntityDefs =
+{
+  building:
+  {
+    effects:
+    {
+      'req_gen' : reqGenEffect,
+      'base_healing' : healingAura.bind(undefined, 5.0, 5.0)
+    }
+  },
+  victory_point:
+  {
+    effects:
+    {
+      'vp_gen': vpGenEffect
+    }
+  },
+  req_point:
+  {
+    effects:
+    {
+      'req_gen': reqGenEffect
+    }
+  },
+};
+
+// -- Entity Functions --
 function entityInit(entity) {
   entity.prodQueue_ = [];
   entity.cappingPlayerID_ = null;
   entity.capAmount_ = 0.0;
   entity.capResetDelay_ = 0;
+
+  var name = entity.getName();
+  if (EntityDefs[name]) {
+    entity.effects = EntityDefs[name].effects;
+  }
 }
 
 function entityUpdate(entity, dt) {
@@ -54,6 +122,13 @@ function entityUpdate(entity, dt) {
   if (entity.getPlayerID() !== NO_PLAYER || entity.capResetDelay_ > 1) {
     entity.capAmount_ = 0.0;
     entity.cappingPlayerID_ = null;
+  }
+
+  for (var ename in entity.effects) {
+    var res = entity.effects[ename](entity, dt);
+    if (!res) {
+      delete entity.effects[ename];
+    }
   }
 }
 
@@ -107,48 +182,4 @@ function entityGetUIInfo(entity) {
   ui_info.health = [entity.getHealth(), entity.getMaxHealth()];
 
   return ui_info;
-}
-
-
-// ------------- effects ----------------
-function __healingAura(radius, amount, entity, dt) {
-  var radius = 5.0;
-  var amount = 5.0;
-
-  entity.getNearbyEntities(radius, function (nearby_entity) {
-    if (nearby_entity.getPlayerID() == entity.getPlayerID()) {
-      SendMessage({
-        to: nearby_entity.getID(),
-        from: entity.getID(),
-        type: "STAT",
-        healing: dt * amount
-      });
-    }
-
-    return true;
-  });
-
-  return true;
-}
-
-baseHealingAura = __healingAura.bind(undefined, 5.0, 5.0);
-
-function vpGenEffect(entity, dt) {
-  if (entity.getTeamID() == NO_TEAM) {
-    return true;
-  }
-
-  var amount = 1.0;
-  AddVPs(entity.getTeamID(), dt * amount, entity.getID());
-  return true;
-}
-
-function reqGenEffect(entity, dt) {
-  if (entity.getPlayerID() == NO_PLAYER) {
-    return true;
-  }
-
-  var amount = 1.0;
-  AddRequisition(entity.getPlayerID(), dt * amount, entity.getID());
-  return true;
 }

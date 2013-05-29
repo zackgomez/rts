@@ -32,14 +32,6 @@ Actor::Actor(id_t id, const std::string &name, const Json::Value &params,
   setScale(glm::vec3(fltParam("modelSize")));
   resetTexture();
 
-  if (hasParam("effects")) {
-    auto effects = getParam("effects");
-    for (int i = 0; i < effects.size(); i++) {
-      const std::string effect_name = effects[i].asString();
-      effects_[effect_name] = createEffect(effect_name);
-    }
-  }
-
   if (hasParam("actions")) {
     auto actions = getParam("actions");
     for (int i = 0; i < actions.size(); i++) {
