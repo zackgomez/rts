@@ -28,13 +28,6 @@ Actor::Actor(id_t id, const std::string &name, const Json::Value &params)
   setMeshName(strParam("model"));
   setScale(glm::vec3(fltParam("modelSize")));
   resetTexture();
-
-  if (hasParam("actions")) {
-    auto actions = getParam("actions");
-    for (int i = 0; i < actions.size(); i++) {
-      actions_.emplace_back(getID(), actions[i]);
-    }
-  }
 }
 
 Actor::~Actor() {
@@ -110,32 +103,25 @@ void Actor::handleOrder(const Message &order) {
   if (order["order_type"] == OrderTypes::ACTION) {
     invariant(order.isMember("action"), "missing action name");
     std::string action_name = order["action"].asString();
-    for (int i = 0; i < actions_.size(); i++) {
-      if (actions_[i].getName() == action_name) {
-        handleAction(actions_[i].getRawDefinition());
-        return;
-      }
-    }
-    LOG(WARNING) << "Actor got unknown action order: "
-      << order.toStyledString() << '\n';
+    handleAction(action_name);
   } else {
     LOG(WARNING) << "Actor got unknown order: "
       << order.toStyledString() << '\n';
   }
 }
 
-void Actor::handleAction(const Json::Value &action) {
+void Actor::handleAction(const std::string &action_name) {
   using namespace v8;
   auto *script = Game::get()->getScript();
   HandleScope scope(script->getIsolate());
-
-  Handle<Object> jsaction = Handle<Object>::Cast(script->jsonToJS(action));
 
   Handle<Object> global = script->getGlobal();
   TryCatch try_catch;
 
   const int argc = 2;
-  Handle<Value> argv[argc] = {script->getEntity(getID()), jsaction};
+  Handle<Value> argv[argc] = {
+    script->getEntity(getID()),
+    String::New(action_name.c_str())};
   Handle<Value> result =
     Handle<Function>::Cast(global->Get(String::New("entityHandleAction")))
     ->Call(global, argc, argv);
@@ -171,6 +157,7 @@ void Actor::update(float dt) {
   melee_timer_ -= dt;
 
   updateUIInfo();
+  updateActions();
 }
 
 float Actor::distanceToEntity(const GameEntity *e) const {
@@ -215,6 +202,43 @@ void Actor::updateUIInfo() {
   if (jsinfo->Has(capture)) {
     uiInfo_.capture = script->jsToVec2(
         Handle<Array>::Cast(jsinfo->Get(capture)));
+  }
+}
+
+void Actor::updateActions() {
+  actions_.clear();
+
+  using namespace v8;
+  auto script = Game::get()->getScript();
+  HandleScope scope(script->getIsolate());
+  TryCatch try_catch;
+  auto global = script->getGlobal();
+  const int argc = 1;
+  Handle<Value> argv[argc] = {script->getEntity(getID())};
+
+  Handle<Value> ret =
+    Handle<Function>::Cast(global->Get(String::New("entityGetActions")))
+    ->Call(global, argc, argv);
+  if (ret.IsEmpty()) {
+    LOG(ERROR) << "Error updating ui info entity: "
+      << *String::AsciiValue(try_catch.Exception()) << '\n';
+    return;
+  }
+
+  auto name = String::New("name");
+  auto icon = String::New("icon");
+  auto tooltip = String::New("tooltip");
+  Handle<Array> jsactions = Handle<Array>::Cast(ret);
+  for (int i = 0; i < jsactions->Length(); i++) {
+    Handle<Object> jsaction = Handle<Object>::Cast(jsactions->Get(i));
+    UIAction uiaction;
+    uiaction.owner = getID();
+    uiaction.name = *String::AsciiValue(jsaction->Get(name));
+    uiaction.icon = *String::AsciiValue(jsaction->Get(icon));
+    uiaction.tooltip = *String::AsciiValue(jsaction->Get(tooltip));
+    // TODO(zack): get this from JS!
+    uiaction.targeting = UIAction::TargetingType::NONE;
+    actions_.push_back(uiaction);
   }
 }
 };  // rts

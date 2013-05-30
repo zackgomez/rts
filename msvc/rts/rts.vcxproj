@@ -55,7 +55,6 @@
     <ClCompile Include="..\..\src\rts\ResourceManager.cpp" />
     <ClCompile Include="..\..\src\rts\Shader.cpp" />
     <ClCompile Include="..\..\src\rts\UI.cpp" />
-    <ClCompile Include="..\..\src\rts\UIAction.cpp" />
     <ClCompile Include="..\..\src\rts\Unit.cpp" />
     <ClCompile Include="..\..\src\rts\VisibilityMap.cpp" />
     <ClCompile Include="..\..\src\rts\Weapon.cpp" />

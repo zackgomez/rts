@@ -65,22 +65,22 @@ class Actor : public GameEntity {
 
  protected:
   virtual void handleOrder(const Message &order);
-
-  void handleAction(const Json::Value &action);
+  void handleAction(const std::string &action_name);
 
   void resetTexture();
 
   float melee_timer_;
 
-  void updateUIInfo();
   UIInfo uiInfo_;
+  void updateUIInfo();
+
+  std::vector<UIAction> actions_;
+  void updateActions();
 
   // Used by the render
   Clock::time_point lastTookDamage_;
 
   Weapon *rangedWeapon_, *meleeWeapon_;
-
-  std::vector<UIAction> actions_;
 };
 };  // namespace rts
 

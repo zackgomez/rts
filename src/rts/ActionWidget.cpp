@@ -44,11 +44,11 @@ void ActionWidget::render(float dt) {
     drawTextureCenter(
         center,
         size_ - glm::vec2(5.f),
-        ResourceManager::get()->getTexture(action.getIconTextureName()),
+        ResourceManager::get()->getTexture(action.icon),
         glm::vec4(0, 0, 1, 1));
 
     if (action_hover && hoverTimer_ > fltParam("local.tooltipDelay")) {
-      tooltip = action.getTooltip();
+      tooltip = action.tooltip;
       draw_tooltip = true;
     }
 

@@ -1,4 +1,4 @@
-// -- defines --
+// -- Defines/Constants --
 P_CAPPABLE = 815586235;
 P_TARGETABLE = 463132888;
 P_ACTOR = 913794634;
@@ -17,7 +17,7 @@ MessageTypes = {
   ADD_STAT: 'STAT',
 };
 
-// -- utility --
+// -- Utility --
 function vecAdd(v1, v2) {
   if (v1.length != v2.length) return undefined;
 
@@ -28,7 +28,7 @@ function vecAdd(v1, v2) {
   return ret;
 }
 
-// ------------- effects ----------------
+// -- Effects --
 function makeHealingAura(radius, amount) {
   return function(entity, dt) {
     entity.getNearbyEntities(radius, function (nearby_entity) {
@@ -110,6 +110,25 @@ var EntityDefs =
       P_RENDERABLE,
       P_COLLIDABLE,
     ],
+    actions:
+    {
+      prod_ranged:
+      {
+        type: 'production',
+        prod_name: 'unit',
+        req_cost: 100,
+        time_cost: 5.0,
+        icon: 'ranged_icon',
+      },
+      prod_melee:
+      {
+        type: 'production',
+        prod_name: 'melee_unit',
+        req_cost: 70,
+        time_cost: 2.5,
+        icon: 'melee_icon',
+      },
+    },
   },
   victory_point:
   {
@@ -143,6 +162,18 @@ var EntityDefs =
   },
 };
 
+// -- Entity Helper Functions --
+function getActionTooltip(action) {
+  if (action.type == 'production') {
+    return action.prod_name +
+      '\nreq: ' + action.req_cost +
+      '\ntime: ' + action.time_cost;
+  } else {
+    Log('No tooltip for action type', action.type);
+    throw new Error('No tooltip for action type ' + action.type);
+  }
+}
+
 // -- Entity Functions --
 function entityInit(entity) {
   entity.prodQueue_ = [];
@@ -150,8 +181,10 @@ function entityInit(entity) {
   var name = entity.getName();
   var def = EntityDefs[name];
   if (def) {
-    if (def.effects) {
-      entity.effects_ = EntityDefs[name].effects;
+    if (def.properties) {
+      for (var i = 0; i < def.properties.length; i++) {
+        entity.setProperty(def.properties[i], true);
+      }
     }
     if (def.health) {
       entity.maxHealth_ = def.health;
@@ -163,10 +196,11 @@ function entityInit(entity) {
       entity.capAmount_ = 0.0;
       entity.capResetDelay_ = 0;
     }
-    if (def.properties) {
-      for (var i = 0; i < def.properties.length; i++) {
-        entity.setProperty(def.properties[i], true);
-      }
+    if (def.effects) {
+      entity.effects_ = EntityDefs[name].effects;
+    }
+    if (def.actions) {
+      entity.actions_ = EntityDefs[name].actions;
     }
   }
 }
@@ -238,7 +272,11 @@ function entityHandleMessage(entity, msg) {
   }
 }
 
-function entityHandleAction(entity, action) {
+function entityHandleAction(entity, action_name) {
+  action = entity.actions_[action_name];
+  if (!action) {
+    Log(entity.getID(), 'got unknown action', action_name);
+  }
   if (action.type == 'production') {
     if (GetRequisition(entity.getPlayerID()) > action.req_cost) {
       var prod = {
@@ -253,6 +291,23 @@ function entityHandleAction(entity, action) {
   } else {
     Log(entity.getID(), 'unknown action type', action.type);
   }
+}
+
+function entityGetActions(entity) {
+  if (!entity.actions_) {
+    return [];
+  }
+  var actions = [];
+  for (var action_name in entity.actions_) {
+    var action = entity.actions_[action_name];
+    actions.push({
+      name: action_name,
+      icon: action.icon,
+      tooltip: getActionTooltip(action),
+    });
+  }
+
+  return actions;
 }
 
 function entityGetUIInfo(entity) {

@@ -719,11 +719,11 @@ void GameController::updateMapShader(Shader *shader) const {
 void GameController::handleUIAction(const UIAction &action) {
   Json::Value msg;
   msg["type"] = ActionTypes::ACTION;
-  msg["entity"] = toJson(action.getOwner());
+  msg["entity"] = toJson(action.owner);
   msg["pid"] = toJson(player_->getPlayerID());
-  msg["action"] = action.getName();
+  msg["action"] = action.name;
 
-  if (action.getTargeting() == UIAction::TargetingType::NONE) {
+  if (action.targeting == UIAction::TargetingType::NONE) {
     // No extra params
   } else {
     invariant_violation("Unknown targetting type");
