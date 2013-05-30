@@ -48,24 +48,27 @@ function makeHealingAura(radius, amount) {
   }
 }
 
-function vpGenEffect(entity, dt) {
-  if (entity.getTeamID() == NO_TEAM) {
+function makeVpGenEffect(amount) {
+  return function(entity, dt) {
+    if (entity.getTeamID() == NO_TEAM) {
+      return true;
+    }
+
+    AddVPs(entity.getTeamID(), dt * amount, entity.getID());
     return true;
   }
-
-  var amount = 1.0;
-  AddVPs(entity.getTeamID(), dt * amount, entity.getID());
-  return true;
 }
 
-function reqGenEffect(entity, dt) {
-  if (entity.getPlayerID() == NO_PLAYER) {
+function makeReqGenEffect(amount) {
+  return function(entity, dt) {
+    if (entity.getPlayerID() == NO_PLAYER) {
+      return true;
+    }
+
+    var amount = 1.0;
+    AddRequisition(entity.getPlayerID(), dt * amount, entity.getID());
     return true;
   }
-
-  var amount = 1.0;
-  AddRequisition(entity.getPlayerID(), dt * amount, entity.getID());
-  return true;
 }
 
 // -- Entity Definitions --
@@ -73,7 +76,6 @@ var EntityDefs =
 {
   unit:
   {
-    health: 100.0,
     properties:
     [
       P_ACTOR,
@@ -82,10 +84,10 @@ var EntityDefs =
       P_COLLIDABLE,
       P_MOBILE,
     ],
+    health: 100.0,
   },
   melee_unit:
   {
-    health: 50.0,
     properties:
     [
       P_ACTOR,
@@ -94,15 +96,10 @@ var EntityDefs =
       P_COLLIDABLE,
       P_MOBILE,
     ],
+    health: 50.0,
   },
   building:
   {
-    health: 700.0,
-    effects:
-    {
-      req_gen: reqGenEffect,
-      base_healing: makeHealingAura(5.0, 5.0),
-    },
     properties:
     [
       P_ACTOR,
@@ -110,6 +107,12 @@ var EntityDefs =
       P_RENDERABLE,
       P_COLLIDABLE,
     ],
+    health: 700.0,
+    effects:
+    {
+      req_gen: makeReqGenEffect(1.0),
+      base_healing: makeHealingAura(5.0, 5.0),
+    },
     actions:
     {
       prod_ranged:
@@ -132,11 +135,6 @@ var EntityDefs =
   },
   victory_point:
   {
-    cap_time: 5.0,
-    effects:
-    {
-      vp_gen: vpGenEffect,
-    },
     properties:
     [
       P_ACTOR,
@@ -144,14 +142,14 @@ var EntityDefs =
       P_RENDERABLE,
       P_COLLIDABLE,
     ],
+    cap_time: 5.0,
+    effects:
+    {
+      vp_gen: makeVpGenEffect(1.0),
+    },
   },
   req_point:
   {
-    cap_time: 5.0,
-    effects:
-    {
-      req_gen: reqGenEffect,
-    },
     properties:
     [
       P_ACTOR,
@@ -159,6 +157,11 @@ var EntityDefs =
       P_RENDERABLE,
       P_COLLIDABLE,
     ],
+    cap_time: 5.0,
+    effects:
+    {
+      req_gen: makeReqGenEffect(1.0),
+    },
   },
 };
 
