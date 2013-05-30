@@ -11,14 +11,12 @@ namespace rts {
 GameEntity::GameEntity(
     id_t id,
     const std::string &name,
-    const Json::Value &params,
-    bool targetable,
-    bool collidable)
+    const Json::Value &params)
   : ModelEntity(id),
     playerID_(NO_PLAYER),
-    name_(name),
-    targetable_(targetable),
-    collidable_(collidable) {
+    name_(name) {
+  setProperty(P_RENDERABLE, true);
+
   if (params.isMember("entity_pid")) {
     playerID_ = toID(params["entity_pid"]);
   }
@@ -107,7 +105,6 @@ void GameEntity::checksum(Checksum &chksum) const {
     .process(id)
     .process(playerID_)
     .process(name_)
-    .process(targetable_)
     .process(getPosition())
     .process(getAngle())
     .process(getSize())

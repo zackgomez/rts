@@ -2,6 +2,10 @@
 P_CAPPABLE = 815586235;
 P_TARGETABLE = 463132888;
 P_ACTOR = 913794634;
+P_RENDERABLE = 565038773;
+P_COLLIDABLE = 983556954;
+P_MOBILE = 1122719651;
+
 NO_PLAYER = 0;
 NO_ENTITY = 0;
 NO_TEAM = 0;
@@ -70,10 +74,26 @@ var EntityDefs =
   unit:
   {
     health: 100.0,
+    properties:
+    [
+      P_ACTOR,
+      P_TARGETABLE,
+      P_RENDERABLE,
+      P_COLLIDABLE,
+      P_MOBILE,
+    ],
   },
   melee_unit:
   {
     health: 50.0,
+    properties:
+    [
+      P_ACTOR,
+      P_TARGETABLE,
+      P_RENDERABLE,
+      P_COLLIDABLE,
+      P_MOBILE,
+    ],
   },
   building:
   {
@@ -83,6 +103,13 @@ var EntityDefs =
       req_gen: reqGenEffect,
       base_healing: makeHealingAura(5.0, 5.0),
     },
+    properties:
+    [
+      P_ACTOR,
+      P_TARGETABLE,
+      P_RENDERABLE,
+      P_COLLIDABLE,
+    ],
   },
   victory_point:
   {
@@ -91,6 +118,13 @@ var EntityDefs =
     {
       vp_gen: vpGenEffect,
     },
+    properties:
+    [
+      P_ACTOR,
+      P_CAPPABLE,
+      P_RENDERABLE,
+      P_COLLIDABLE,
+    ],
   },
   req_point:
   {
@@ -99,6 +133,13 @@ var EntityDefs =
     {
       req_gen: reqGenEffect,
     },
+    properties:
+    [
+      P_ACTOR,
+      P_CAPPABLE,
+      P_RENDERABLE,
+      P_COLLIDABLE,
+    ],
   },
 };
 
@@ -121,6 +162,11 @@ function entityInit(entity) {
       entity.cappingPlayerID_ = null;
       entity.capAmount_ = 0.0;
       entity.capResetDelay_ = 0;
+    }
+    if (def.properties) {
+      for (var i = 0; i < def.properties.length; i++) {
+        entity.setProperty(def.properties[i], true);
+      }
     }
   }
 }

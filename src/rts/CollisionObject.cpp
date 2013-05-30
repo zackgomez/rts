@@ -9,7 +9,8 @@ CollisionObject::CollisionObject(
     id_t id,
     const std::string &name,
     const Json::Value &params)
-  : GameEntity(id, name, params, false, true) {
+  : GameEntity(id, name, params) {
+
   setPosition(toVec2(params["entity_pos"]));
   setSize(toVec2(params["entity_size"]));
   setAngle(params["entity_angle"].asFloat());

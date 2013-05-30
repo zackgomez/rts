@@ -5,7 +5,7 @@
 namespace rts {
 
 Projectile::Projectile(id_t id, const std::string &name, const Json::Value &params)
-  : GameEntity(id, name, params, false, false),
+  : GameEntity(id, name, params),
     targetID_(NO_ENTITY) {
 
   invariant(params.isMember("projectile_target"), "missing target");

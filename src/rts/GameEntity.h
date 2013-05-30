@@ -16,23 +16,23 @@ namespace rts {
 class GameEntity : public ModelEntity {
  public:
   explicit GameEntity(id_t id,
-      const std::string &name, const Json::Value &params,
-      bool targetable = false, bool collidable = false);
+      const std::string &name, const Json::Value &params);
   virtual ~GameEntity();
 
   static const uint32_t P_TARGETABLE = 463132888;
   static const uint32_t P_CAPPABLE = 815586235;
   static const uint32_t P_ACTOR = 913794634;
+  static const uint32_t P_MOBILE = 1122719651;
 
-  virtual bool hasProperty(uint32_t property) const {
-    if (property == P_TARGETABLE) {
-      return targetable_;
-    } else if (property == P_COLLIDABLE) {
-      return collidable_;
-    } else if (property == P_RENDERABLE) {
-      return true;
+  virtual bool hasProperty(uint32_t property) const final override {
+    return properties_.count(property);
+  }
+  void setProperty(uint32_t property, bool val) {
+    if (val) {
+      properties_.insert(property);
+    } else {
+      properties_.erase(property);
     }
-    return false;
   }
 
   // The player than owns this entity, or NO_PLAYER
@@ -80,8 +80,7 @@ class GameEntity : public ModelEntity {
  private:
   std::string name_;
 
-  bool targetable_;
-  bool collidable_;
+  std::set<uint32_t> properties_;
 };
 };  // namespace rts
 

@@ -11,7 +11,7 @@
 namespace rts {
 
 Unit::Unit(id_t id, const std::string &name, const Json::Value &params)
-  : Actor(id, name, params, true),
+  : Actor(id, name, params),
     weapon_(nullptr),
     state_(new IdleState(this)) {
 

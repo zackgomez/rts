@@ -193,6 +193,16 @@ static Handle<Value> entityGetAngle(const Arguments &args) {
   return scope.Close(ret);
 }
 
+static Handle<Value> entitySetProperty(const Arguments &args) {
+  if (args.Length() < 2) return Undefined();
+
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
+  e->setProperty(args[0]->IntegerValue(), args[1]->BooleanValue());
+  return Undefined();
+}
 static Handle<Value> entitySetPlayerID(const Arguments &args) {
   if (args.Length() < 1) return Undefined();
 
@@ -295,6 +305,9 @@ void GameScript::init() {
       String::New("getAngle"),
       FunctionTemplate::New(entityGetAngle));
 
+  entityTemplate_->Set(
+      String::New("setProperty"),
+      FunctionTemplate::New(entitySetProperty));
   entityTemplate_->Set(
       String::New("setPlayerID"),
       FunctionTemplate::New(entitySetPlayerID));

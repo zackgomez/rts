@@ -11,12 +11,12 @@
 
 namespace rts {
 
-Actor::Actor(id_t id, const std::string &name, const Json::Value &params,
-             bool targetable, bool collidable)
-  : GameEntity(id, name, params, targetable, collidable),
+Actor::Actor(id_t id, const std::string &name, const Json::Value &params)
+  : GameEntity(id, name, params),
     melee_timer_(0.f),
     meleeWeapon_(nullptr),
     rangedWeapon_(nullptr) {
+  setProperty(P_ACTOR, true);
 
   if (hasParam("meleeWeapon")) {
     meleeWeapon_ = new Weapon(strParam("meleeWeapon"), this);
@@ -40,13 +40,6 @@ Actor::Actor(id_t id, const std::string &name, const Json::Value &params,
 Actor::~Actor() {
 }
 
-bool Actor::hasProperty(uint32_t property) const {
-  if (property == P_ACTOR) {
-    return true;
-  }
-  return GameEntity::hasProperty(property);
-}
-
 const std::vector<UIAction> &Actor::getActions() const {
   return actions_;
 }
@@ -61,6 +54,9 @@ void Actor::resetTexture() {
 }
 
 void Actor::collide(const GameEntity *collider, float dt) {
+  if (!hasProperty(P_MOBILE)) {
+    return;
+  }
   if (!collider->hasProperty(P_ACTOR)
       || collider->getPlayerID() != getPlayerID()) {
     return;

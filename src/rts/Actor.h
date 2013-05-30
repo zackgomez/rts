@@ -23,11 +23,8 @@ const std::string ACTION = "ACTION";
 
 class Actor : public GameEntity {
  public:
-  Actor(id_t id, const std::string &name, const Json::Value &params,
-        bool targetable = true, bool collidable = true);
+  Actor(id_t id, const std::string &name, const Json::Value &params);
   virtual ~Actor();
-
-  virtual bool hasProperty(uint32_t property) const final override;
 
   virtual void handleMessage(const Message &msg) override;
   virtual void update(float dt) override;
