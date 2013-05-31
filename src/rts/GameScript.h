@@ -22,7 +22,7 @@ public:
     return context_;
   }
 
-  void wrapEntity(GameEntity *e);
+  void wrapEntity(GameEntity *e, const Json::Value &params);
   void destroyEntity(GameEntity *e);
   v8::Handle<v8::Object> getEntity(id_t eid);
   v8::Handle<v8::Object> getGlobal();

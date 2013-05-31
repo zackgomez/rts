@@ -75,8 +75,7 @@ void Weapon::sendMessage() {
     Json::Value params;
     params["entity_pid"] = toJson(owner_->getPlayerID());
     params["entity_pos"] = toJson(owner_->getPosition2());
-    params["projectile_target"] = toJson(target_);
-    params["projectile_owner"] = toJson(owner_->getID());
+    params["target_id"] = toJson(target_);
     Game::get()->spawnEntity(strParam("projectile"), params);
   } else if (type == "melee") {
     Message msg;

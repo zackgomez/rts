@@ -16,8 +16,6 @@ Actor::Actor(id_t id, const std::string &name, const Json::Value &params)
     melee_timer_(0.f),
     meleeWeapon_(nullptr),
     rangedWeapon_(nullptr) {
-  setProperty(P_ACTOR, true);
-
   if (hasParam("meleeWeapon")) {
     meleeWeapon_ = new Weapon(strParam("meleeWeapon"), this);
   }

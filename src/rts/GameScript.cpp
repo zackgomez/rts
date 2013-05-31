@@ -22,6 +22,19 @@ static Handle<Value> jsSendMessage(const Arguments &args) {
   return Undefined();
 }
 
+static Handle<Value> jsGetEntity(const Arguments &args) {
+  if (args.Length() < 1) return Undefined();
+  HandleScope scope(args.GetIsolate());
+
+  auto script = Game::get()->getScript();
+
+  GameEntity *e = Game::get()->getEntity(args[0]->IntegerValue());
+  if (!e) {
+    return Null();
+  }
+  return scope.Close(script->getEntity(e->getID()));
+}
+
 static Handle<Value> jsSpawnEntity(const Arguments &args) {
   if (args.Length() < 2) return Undefined();
   HandleScope scope(args.GetIsolate());
@@ -271,6 +284,9 @@ void GameScript::init() {
       String::New("AddVPs"),
       FunctionTemplate::New(jsAddVPs));
   global->Set(
+      String::New("GetEntity"),
+      FunctionTemplate::New(jsGetEntity));
+  global->Set(
       String::New("SpawnEntity"),
       FunctionTemplate::New(jsSpawnEntity));
 
@@ -361,7 +377,7 @@ Handle<Object> GameScript::getGlobal() {
   return context_->Global();
 }
 
-void GameScript::wrapEntity(GameEntity *e) {
+void GameScript::wrapEntity(GameEntity *e, const Json::Value &params) {
   HandleScope handle_scope(isolate_);
   Context::Scope context_scope(isolate_, context_);
 
@@ -369,8 +385,8 @@ void GameScript::wrapEntity(GameEntity *e) {
       isolate_, entityTemplate_->NewInstance());
   wrapper->SetInternalField(0, External::New(e));
 
-  const int argc = 1;
-  Handle<Value> argv[argc] = {wrapper};
+  const int argc = 2;
+  Handle<Value> argv[argc] = {wrapper, jsonToJS(params)};
   Handle<Function>::Cast(context_->Global()->Get(String::New("entityInit")))
     ->Call(context_->Global(), argc, argv);
 

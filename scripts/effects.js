@@ -71,9 +71,25 @@ function makeReqGenEffect(amount) {
   }
 }
 
+// -- Entity States --
+function NullState() {
+  this.update = function (entity, dt) {};
+}
+
+function ProjectileState(params) {
+  this.targetID_ = params.target_id;
+
+  this.update = function (entity, dt)
+  {
+    var target = GetEntity(this.targetID_);
+    if (!target) {
+      Log('Target gone');
+    }
+  };
+}
+
 // -- Entity Definitions --
-var EntityDefs =
-{
+var EntityDefs = {
   unit:
   {
     properties:
@@ -163,6 +179,15 @@ var EntityDefs =
       req_gen: makeReqGenEffect(1.0),
     },
   },
+  basic_bullet:
+  {
+    properties:
+    [
+      P_RENDERABLE,
+      P_MOBILE,
+    ],
+    default_state: ProjectileState,
+  },
 };
 
 // -- Entity Helper Functions --
@@ -178,8 +203,9 @@ function getActionTooltip(action) {
 }
 
 // -- Entity Functions --
-function entityInit(entity) {
+function entityInit(entity, params) {
   entity.prodQueue_ = [];
+  entity.state_ = new NullState();
 
   var name = entity.getName();
   var def = EntityDefs[name];
@@ -188,6 +214,9 @@ function entityInit(entity) {
       for (var i = 0; i < def.properties.length; i++) {
         entity.setProperty(def.properties[i], true);
       }
+    }
+    if (def.default_state) {
+      entity.state_ = new def.default_state(params);
     }
     if (def.health) {
       entity.maxHealth_ = def.health;
@@ -205,6 +234,8 @@ function entityInit(entity) {
     if (def.actions) {
       entity.actions_ = EntityDefs[name].actions;
     }
+  } else {
+    Log('No def for', name);
   }
 }
 
@@ -229,6 +260,9 @@ function entityUpdate(entity, dt) {
     entity.capAmount_ = 0.0;
     entity.cappingPlayerID_ = null;
   }
+
+  // TODO(zack): some state change logic here
+  entity.state_.update(entity, dt);
 
   for (var ename in entity.effects_) {
     var res = entity.effects_[ename](entity, dt);

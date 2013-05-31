@@ -28,7 +28,7 @@ class Actor : public GameEntity {
 
   virtual void handleMessage(const Message &msg) override;
   virtual void update(float dt) override;
-  virtual void collide(const GameEntity *other, float dt) override;
+  virtual void collide(const GameEntity *other, float dt) override final;
 
   float distanceToEntity(const GameEntity *e) const;
 

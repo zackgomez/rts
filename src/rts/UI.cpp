@@ -83,7 +83,7 @@ void UI::clearWidgets() {
 void UI::render(float dt) {
   glDisable(GL_DEPTH_TEST);
 
-  for (auto&& pair : widgets_) {
+  for (const auto& pair : widgets_) {
     pair.second->render(dt);
   }
 

@@ -5,13 +5,11 @@
 namespace rts {
 
 Projectile::Projectile(id_t id, const std::string &name, const Json::Value &params)
-  : GameEntity(id, name, params),
+  : Actor(id, name, params),
     targetID_(NO_ENTITY) {
 
-  invariant(params.isMember("projectile_target"), "missing target");
-  targetID_ = toID(params["projectile_target"]);
-  invariant(params.isMember("projectile_owner"), "missing owner");
-  ownerID_ = toID(params["projectile_owner"]);
+  invariant(params.isMember("target_id"), "missing target");
+  targetID_ = toID(params["target_id"]);
 
   setPosition(glm::vec3(getPosition2(), 0.5f));
   setMeshName(strParam("model"));
@@ -21,7 +19,7 @@ Projectile::Projectile(id_t id, const std::string &name, const Json::Value &para
 }
 
 void Projectile::update(float dt) {
-  GameEntity::update(dt);
+  Actor::update(dt);
 
   const GameEntity *targetEnt = Game::get()->getEntity(targetID_);
   // If target doesn't exist for whatever reason, then I guess we're done
@@ -41,7 +39,7 @@ void Projectile::update(float dt) {
     setSpeed(dist / dt);
     Message msg;
     msg["to"] = toJson(targetID_);
-    msg["from"] = toJson(ownerID_);
+    msg["from"] = toJson(getPlayerID());
     msg["type"] = MessageTypes::ATTACK;
     msg["pid"] = toJson(getPlayerID());
     msg["damage"] = fltParam("damage");
@@ -49,9 +47,5 @@ void Projectile::update(float dt) {
     MessageHub::get()->sendMessage(msg);
     Game::get()->destroyEntity(getID());
   }
-}
-
-void Projectile::handleMessage(const Message &msg) {
-  GameEntity::handleMessage(msg);
 }
 };  // rts
