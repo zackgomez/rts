@@ -17,6 +17,12 @@ MessageTypes = {
   ADD_STAT: 'STAT',
 };
 
+TargetingTypes = {
+  NONE: 0,
+  LOCATION: 1,
+  ENTITY: 2,
+};
+
 // -- Utility --
 function vecAdd(v1, v2) {
   if (v1.length != v2.length) return undefined;
@@ -71,6 +77,32 @@ function makeReqGenEffect(amount) {
   }
 }
 
+function ProductionAction(params) {
+  this.prod_name = params.prod_name;
+  this.time_cost = params.time_cost;
+  this.req_cost = params.req_cost;
+  this.icon = params.icon;
+  this.targeting = TargetingTypes.NONE;
+  this.range = 0;
+
+  this.tooltip =  this.prod_name +
+    '\nreq: ' + this.req_cost +
+    '\ntime: ' + this.time_cost;
+
+  this.exec = function (entity, target) {
+    if (GetRequisition(entity.getPlayerID()) > this.req_cost) {
+      var prod = {
+        name: this.prod_name,
+        t: 0.0,
+        endt: this.time_cost
+      };
+      entity.prodQueue_.push(prod);
+      Log('Started production of', prod.name, 'for', prod.endt);
+      AddRequisition(entity.getPlayerID(), -this.req_cost, entity.getID());
+    }
+  };
+}
+
 // -- Entity States --
 function NullState(params) {
   this.update = function (entity, dt) {
@@ -88,6 +120,20 @@ function LegacyUnitState(params) {
   }
 }
 
+function LocationAbilityState(params) {
+  this.target = params.target;
+  this.action = params.action;
+  this.update = function (entity, dt) {
+    if (entity.distanceToPoint(this.target) < this.action.range) {
+      this.action.exec(entity, this.target);
+      return new entity.defaultState_;
+    }
+
+    entity.moveTowards(this.target, dt);
+    return null;
+  }
+}
+
 function ProjectileState(params) {
   this.targetID = params.target_id;
   this.damage = params.damage;
@@ -101,7 +147,6 @@ function ProjectileState(params) {
 
     var threshold = 1.0;
     if (entity.distanceToEntity(target) < threshold) {
-      Log('Close!');
       SendMessage({
         to: this.targetID,
         from: entity.getID(),
@@ -145,6 +190,20 @@ var EntityDefs = {
     ],
     default_state: LegacyUnitState,
     health: 50.0,
+    actions:
+    {
+      teleport:
+      {
+        targeting: TargetingTypes.LOCATION,
+        range: 4.0,
+        icon: 'melee_icon',
+        tooltip: 'Teleport\nRange 4',
+        exec: function (entity, target) {
+          Log('Teleporting to', target, 'Range:', this.range);
+          entity.warpPosition(target);
+        },
+      },
+    },
   },
   building:
   {
@@ -163,22 +222,18 @@ var EntityDefs = {
     },
     actions:
     {
-      prod_ranged:
-      {
-        type: 'production',
+      prod_ranged: new ProductionAction({
         prod_name: 'unit',
         req_cost: 100,
         time_cost: 5.0,
         icon: 'ranged_icon',
-      },
-      prod_melee:
-      {
-        type: 'production',
+      }),
+      prod_melee: new ProductionAction({
         prod_name: 'melee_unit',
         req_cost: 70,
         time_cost: 2.5,
         icon: 'melee_icon',
-      },
+      }),
     },
   },
   victory_point:
@@ -221,18 +276,6 @@ var EntityDefs = {
     default_state: ProjectileState,
   },
 };
-
-// -- Entity Helper Functions --
-function getActionTooltip(action) {
-  if (action.type == 'production') {
-    return action.prod_name +
-      '\nreq: ' + action.req_cost +
-      '\ntime: ' + action.time_cost;
-  } else {
-    Log('No tooltip for action type', action.type);
-    throw new Error('No tooltip for action type ' + action.type);
-  }
-}
 
 // -- Entity Functions --
 function entityInit(entity, params) {
@@ -295,8 +338,10 @@ function entityUpdate(entity, dt) {
     entity.cappingPlayerID_ = null;
   }
 
-  // TODO(zack): some state change logic here
-  entity.state_.update(entity, dt);
+  var new_state = entity.state_.update(entity, dt);
+  if (new_state) {
+    entity.state_ = new_state;
+  }
 
   for (var ename in entity.effects_) {
     var res = entity.effects_[ename](entity, dt);
@@ -343,22 +388,18 @@ function entityHandleMessage(entity, msg) {
   }
 }
 
-function entityHandleAction(entity, action_name) {
+function entityHandleAction(entity, action_name, target) {
   action = entity.actions_[action_name];
   if (!action) {
     Log(entity.getID(), 'got unknown action', action_name);
   }
-  if (action.type == 'production') {
-    if (GetRequisition(entity.getPlayerID()) > action.req_cost) {
-      var prod = {
-        name: action.prod_name,
-        t: 0.0,
-        endt: action.time_cost
-      };
-      entity.prodQueue_.push(prod);
-      Log('Started production of', prod.name, 'for', prod.endt);
-      AddRequisition(entity.getPlayerID(), -action.req_cost, entity.getID());
-    }
+  if (action.targeting == TargetingTypes.NONE) {
+    action.exec(entity);
+  } else if (action.targeting == TargetingTypes.LOCATION) {
+    entity.state_ = new LocationAbilityState({
+      target: target,
+      action: action,
+    });
   } else {
     Log(entity.getID(), 'unknown action type', action.type);
   }
@@ -374,7 +415,9 @@ function entityGetActions(entity) {
     actions.push({
       name: action_name,
       icon: action.icon,
-      tooltip: getActionTooltip(action),
+      tooltip: action.tooltip,
+      targeting: action.targeting ? action.targeting : TargetingTypes.NONE,
+      range: action.range ? action.range : 0.0,
     });
   }
 

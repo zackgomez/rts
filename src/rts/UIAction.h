@@ -7,8 +7,8 @@ namespace rts {
 struct UIAction {
  public:
   enum class TargetingType {
-    NONE,
-    LOCATION,
+    NONE = 0,
+    LOCATION = 1,
   };
 
   id_t owner;
@@ -16,6 +16,7 @@ struct UIAction {
   std::string icon;
   std::string tooltip;
   TargetingType targeting;
+  float range;
 };
 
 };

@@ -64,6 +64,8 @@ class GameEntity : public ModelEntity {
   void turnTowards(const glm::vec2 &pos, float dt);
   // Moves towards position as fast as possible (probably rotates)
   void moveTowards(const glm::vec2 &pos, float dt);
+  // Teleports to the given position
+  void warpPosition(const glm::vec2 &pos);
 
   const std::queue<glm::vec3>& getPathQueue() const {
     return pathQueue_;

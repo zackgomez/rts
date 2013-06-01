@@ -76,7 +76,8 @@ GameController::GameController(LocalPlayer *player)
     leftDragMinimap_(false),
     state_(PlayerState::DEFAULT),
     zoom_(0.f),
-    order_() {
+    order_(),
+    action_() {
 }
 
 GameController::~GameController() {
@@ -297,15 +298,40 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
   std::set<id_t> newSelect = player_->getSelection();
 
   glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
+  if (isinf(loc.x) || isinf(loc.y)) {
+    return;
+  }
   // The entity (maybe) under the cursor
   id_t eid = selectEntity(screenCoord);
   const GameEntity *entity = Game::get()->getEntity(eid);
 
   if (button == SDL_BUTTON_LEFT) {
-    leftStart_ = screenCoord;
-    leftDrag_ = true;
+    if (!order_.empty()) {
+      action["type"] = order_;
+      action["entity"] = toJson(player_->getSelection());
+      action["target"] = toJson(loc);
+      if (entity && entity->getTeamID() != player_->getTeamID()) {
+        action["enemy_id"] = toJson(entity->getID());
+      }
+      action["pid"] = toJson(player_->getPlayerID());
+      order_.clear();
+    } else if (!action_.name.empty()) {
+      if (newSelect.count(action_.owner)) {
+        action["type"] = ActionTypes::ACTION;
+        action["entity"] = toJson(action_.owner);
+        action["pid"] = toJson(player_->getPlayerID());
+        action["action"] = action_.name;
+        if (action_.targeting == UIAction::TargetingType::LOCATION) {
+          action["target"] = toJson(glm::vec2(loc));
+        } else {
+          invariant_violation("Unsupported targetting type");
+        }
+      }
+      action_.name.clear();
     // If no order, then adjust selection
-    if (order_.empty()) {
+    } else {
+      leftStart_ = screenCoord;
+      leftDrag_ = true;
       // If no shift held, then deselect (shift just adds)
       if (!shift_) {
         newSelect.clear();
@@ -314,24 +340,13 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
       if (entity && entity->getPlayerID() == player_->getPlayerID()) {
         newSelect.insert(eid);
       }
-    } else {
-      // If order, then execute it
-      action["type"] = order_;
-      action["entity"] = toJson(player_->getSelection());
-      action["target"] = toJson(loc);
-      if (entity && entity->getTeamID() != player_->getTeamID()) {
-        action["enemy_id"] = toJson(entity->getID());
-      }
-      action["pid"] = toJson(player_->getPlayerID());
-
-      // Clear order
-      order_.clear();
     }
   } else if (button == SDL_BUTTON_RIGHT) {
     // TODO(connor) make right click actions on minimap
     // If there is an order, it is canceled by right click
-    if (!order_.empty()) {
+    if (!order_.empty() || !action_.name.empty()) {
       order_.clear();
+      action_.name.clear();
     } else {
       // Otherwise default to some right click actions
       // If right clicked on enemy unit (and we have a selection)
@@ -466,8 +481,9 @@ void GameController::keyPress(SDL_keysym keysym) {
         ->captureText(prefix);
     } else if (key == SDLK_ESCAPE) {
       // ESC clears out current states
-      if (!order_.empty()) {
+      if (!order_.empty() || !action_.name.empty()) {
         order_.clear();
+        action_.name.clear();
       } else {
         player_->setSelection(std::set<id_t>());
       }
@@ -717,18 +733,20 @@ void GameController::updateMapShader(Shader *shader) const {
 }
 
 void GameController::handleUIAction(const UIAction &action) {
-  Json::Value msg;
-  msg["type"] = ActionTypes::ACTION;
-  msg["entity"] = toJson(action.owner);
-  msg["pid"] = toJson(player_->getPlayerID());
-  msg["action"] = action.name;
 
   if (action.targeting == UIAction::TargetingType::NONE) {
+    Json::Value msg;
+    msg["type"] = ActionTypes::ACTION;
+    msg["entity"] = toJson(action.owner);
+    msg["pid"] = toJson(player_->getPlayerID());
+    msg["action"] = action.name;
+    MessageHub::get()->addAction(msg);
     // No extra params
+  } else if (action.targeting == UIAction::TargetingType::LOCATION) {
+    action_ = action;
   } else {
     invariant_violation("Unknown targetting type");
   }
 
-  MessageHub::get()->addAction(msg);
 }
 };  // rts

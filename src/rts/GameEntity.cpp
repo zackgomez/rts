@@ -93,6 +93,10 @@ void GameEntity::moveTowards(const glm::vec2 &targetPos, float dt) {
   setSpeed(speed);
 }
 
+void GameEntity::warpPosition(const glm::vec2 &pos) {
+  setPosition(pos);
+}
+
 void GameEntity::checksum(Checksum &chksum) const {
   id_t id = getID();
   chksum

@@ -100,25 +100,30 @@ void Actor::handleOrder(const Message &order) {
   if (order["order_type"] == OrderTypes::ACTION) {
     invariant(order.isMember("action"), "missing action name");
     std::string action_name = order["action"].asString();
-    handleAction(action_name);
+    handleAction(action_name, order);
   } else {
     LOG(WARNING) << "Actor got unknown order: "
       << order.toStyledString() << '\n';
   }
 }
 
-void Actor::handleAction(const std::string &action_name) {
+void Actor::handleAction(const std::string &action_name, const Json::Value &order) {
   using namespace v8;
   auto *script = Game::get()->getScript();
   HandleScope scope(script->getIsolate());
 
   Handle<Object> global = script->getGlobal();
   TryCatch try_catch;
+  Handle<Value> target = Undefined();
+  if (order.isMember("target")) {
+    target = script->jsonToJS(order["target"]);
+  };
 
-  const int argc = 2;
+  const int argc = 3;
   Handle<Value> argv[argc] = {
     script->getEntity(getID()),
-    String::New(action_name.c_str())};
+    String::New(action_name.c_str()),
+    target};
   Handle<Value> result =
     Handle<Function>::Cast(global->Get(String::New("entityHandleAction")))
     ->Call(global, argc, argv);
@@ -218,6 +223,8 @@ void Actor::updateActions() {
   auto name = String::New("name");
   auto icon = String::New("icon");
   auto tooltip = String::New("tooltip");
+  auto targeting = String::New("targeting");
+  auto range = String::New("range");
   Handle<Array> jsactions = Handle<Array>::Cast(ret);
   for (int i = 0; i < jsactions->Length(); i++) {
     Handle<Object> jsaction = Handle<Object>::Cast(jsactions->Get(i));
@@ -226,8 +233,9 @@ void Actor::updateActions() {
     uiaction.name = *String::AsciiValue(jsaction->Get(name));
     uiaction.icon = *String::AsciiValue(jsaction->Get(icon));
     uiaction.tooltip = *String::AsciiValue(jsaction->Get(tooltip));
-    // TODO(zack): get this from JS!
-    uiaction.targeting = UIAction::TargetingType::NONE;
+    uiaction.targeting = static_cast<UIAction::TargetingType>(
+        jsaction->Get(targeting)->IntegerValue());
+    uiaction.range = jsaction->Get(range)->NumberValue();
     actions_.push_back(uiaction);
   }
 }

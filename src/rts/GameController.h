@@ -3,6 +3,7 @@
 
 #include "rts/Controller.h"
 #include <GL/glew.h>
+#include "rts/UIAction.h"
 
 namespace rts {
 
@@ -47,6 +48,7 @@ class GameController : public Controller {
 
   std::string state_;
   std::string order_;
+  UIAction action_;
 
   bool shift_;
   bool ctrl_;

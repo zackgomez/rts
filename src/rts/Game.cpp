@@ -437,6 +437,7 @@ void Game::handleAction(id_t playerID, const PlayerAction &action) {
     } else if (action["type"] == ActionTypes::ACTION) {
       msg["order_type"] = OrderTypes::ACTION;
       msg["action"] = action["action"];
+      msg["target"] = action["target"];
 
       MessageHub::get()->sendMessage(msg);
     } else {

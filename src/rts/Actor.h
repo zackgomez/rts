@@ -63,7 +63,7 @@ class Actor : public GameEntity {
 
  protected:
   virtual void handleOrder(const Message &order);
-  void handleAction(const std::string &action_name);
+  void handleAction(const std::string &action_name, const Json::Value &order);
 
   void resetTexture();
 
