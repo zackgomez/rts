@@ -78,6 +78,16 @@ function NullState(params) {
   }
 }
 
+// This state just calls the Unit updateState function.
+// Don't call this on entities that aren't units!
+// Eventually remove it when all the Unit states are in JS
+function LegacyUnitState(params) {
+  this.update = function (entity, dt) {
+    entity.updateUnitStateLegacy(dt);
+    return null;
+  }
+}
+
 function ProjectileState(params) {
   this.targetID = params.target_id;
   this.damage = params.damage;
@@ -120,6 +130,7 @@ var EntityDefs = {
       P_COLLIDABLE,
       P_MOBILE,
     ],
+    default_state: LegacyUnitState,
     health: 100.0,
   },
   melee_unit:
@@ -132,6 +143,7 @@ var EntityDefs = {
       P_COLLIDABLE,
       P_MOBILE,
     ],
+    default_state: LegacyUnitState,
     health: 50.0,
   },
   building:

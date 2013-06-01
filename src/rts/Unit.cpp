@@ -76,17 +76,19 @@ void Unit::update(float dt) {
     weapon_ = meleeWeapon_;
   }
 
+  // count down the attack timer
+  if (weapon_) {
+    weapon_->update(dt);
+  }
+}
+
+void Unit::updateState(float dt) {
   state_->update(dt);
 
   UnitState *next;
   if ((next = state_->next())) {
     delete state_;
     state_ = next;
-  }
-
-  // count down the attack timer
-  if (weapon_) {
-    weapon_->update(dt);
   }
 }
 

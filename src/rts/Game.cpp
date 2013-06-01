@@ -333,7 +333,7 @@ const GameEntity * Game::spawnEntity(
 }
 
 void Game::destroyEntity(id_t eid) {
-  deadEntities_.push_back(eid);
+  deadEntities_.insert(eid);
 }
 
 GameEntity * Game::getEntity(id_t eid) {

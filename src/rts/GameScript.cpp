@@ -6,6 +6,8 @@
 #include "rts/MessageHub.h"
 #include "rts/Player.h"
 #include "rts/Renderer.h"
+// Just for entityUpdateUnitState
+#include "rts/Unit.h"
 
 using namespace v8;
 
@@ -164,6 +166,18 @@ static Handle<Value> entityDestroy(const Arguments &args) {
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   Actor *actor = static_cast<Actor *>(wrap->Value());
   Game::get()->destroyEntity(actor->getID());
+  return Undefined();
+}
+
+static Handle<Value> entityUpdateUnitState(const Arguments &args) {
+  if (args.Length() < 1) return Undefined();
+
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  Unit *unit = static_cast<Unit *>(wrap->Value());
+  unit->updateState(args[0]->NumberValue());
+
   return Undefined();
 }
 
@@ -372,6 +386,9 @@ void GameScript::init() {
   entityTemplate_->Set(
       String::New("destroy"),
       FunctionTemplate::New(entityDestroy));
+  entityTemplate_->Set(
+      String::New("updateUnitStateLegacy"),
+      FunctionTemplate::New(entityUpdateUnitState));
 
   entityTemplate_->Set(
       String::New("getNearbyEntities"),

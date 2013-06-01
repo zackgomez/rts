@@ -128,7 +128,7 @@ class Game {
   Checksum actionChecksummer_;
 
   // Entities that need removal at the end of a tick
-  std::vector<id_t> deadEntities_;
+  std::set<id_t> deadEntities_;
 
   bool paused_;
   bool running_;

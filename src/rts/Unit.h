@@ -15,6 +15,7 @@ class Unit : public Actor {
 
   virtual void handleMessage(const Message &msg);
   virtual void update(float dt);
+  void updateState(float dt);
 
   // Unit state functions
   // if the target is in range and within firing arc
