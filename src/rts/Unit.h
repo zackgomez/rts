@@ -30,7 +30,6 @@ class Unit : public Actor {
   void captureTarget(const GameEntity *target, float cap);
 
   const GameEntity *getTarget(id_t lastTargetID) const;
-  glm::vec3 getTargetPos() const;
 
  protected:
   virtual void handleOrder(const Message &order);

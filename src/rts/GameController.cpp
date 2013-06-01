@@ -195,6 +195,18 @@ void GameController::onDestroy() {
 void GameController::renderExtra(float dt) {
   renderDragRect(leftDrag_, leftStart_, lastMousePos_, dt);
   renderHighlights(highlights_, entityHighlights_, dt);
+
+  if (!action_.name.empty()) {
+    GameEntity *e = Game::get()->getEntity(action_.owner);
+    invariant(e, "Unable to find action owner");
+
+    glm::vec2 size = e->getSize();
+    glm::mat4 transform = glm::scale(
+        glm::translate(glm::mat4(1.f), e->getPosition() + glm::vec3(0, 0, 0.1f)),
+        glm::vec3(2 * action_.range));
+
+    renderCircleColor(transform, glm::vec4(0, 0, 1, 1));
+  }
 }
 
 void GameController::frameUpdate(float dt) {
@@ -273,6 +285,9 @@ void GameController::frameUpdate(float dt) {
     if (e && e->getPlayerID() == player_->getPlayerID()) {
       newsel.insert(eid);
     }
+  }
+  if (!action_.name.empty() && !newsel.count(action_.owner)) {
+    action_.name.clear();
   }
   player_->setSelection(newsel);
 
