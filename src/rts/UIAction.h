@@ -10,6 +10,10 @@ struct UIAction {
     NONE = 0,
     LOCATION = 1,
   };
+  enum ActionState {
+    DISABLED = 0,
+    ENABLED = 1,
+  };
 
   id_t owner;
   std::string name;
@@ -17,6 +21,6 @@ struct UIAction {
   std::string tooltip;
   TargetingType targeting;
   float range;
+  ActionState state;
 };
-
 };

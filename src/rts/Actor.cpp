@@ -225,6 +225,7 @@ void Actor::updateActions() {
   auto tooltip = String::New("tooltip");
   auto targeting = String::New("targeting");
   auto range = String::New("range");
+  auto state = String::New("state");
   Handle<Array> jsactions = Handle<Array>::Cast(ret);
   for (int i = 0; i < jsactions->Length(); i++) {
     Handle<Object> jsaction = Handle<Object>::Cast(jsactions->Get(i));
@@ -236,6 +237,8 @@ void Actor::updateActions() {
     uiaction.targeting = static_cast<UIAction::TargetingType>(
         jsaction->Get(targeting)->IntegerValue());
     uiaction.range = jsaction->Get(range)->NumberValue();
+    uiaction.state = static_cast<UIAction::ActionState>(
+        jsaction->Get(state)->Uint32Value());
     actions_.push_back(uiaction);
   }
 }

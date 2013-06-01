@@ -36,7 +36,7 @@ void ActionWidget::render(float dt) {
   for (auto action : actions) {
     glm::vec4 color = bgcolor_;
     bool action_hover = hover_ && pointInBox(hoverPos_, center, size_, 0);
-    if (action_hover) {
+    if (action_hover && action.state != UIAction::DISABLED) {
       float fact = press_ ? 0.8f : 1.2f;
       color *= glm::vec4(fact, fact, fact, 1.f);
     }
@@ -46,6 +46,10 @@ void ActionWidget::render(float dt) {
         size_ - glm::vec2(5.f),
         ResourceManager::get()->getTexture(action.icon),
         glm::vec4(0, 0, 1, 1));
+
+    if (action.state == UIAction::DISABLED) {
+      drawRectCenter(center, size_, glm::vec4(0, 0, 0, 0.2f));
+    }
 
     if (action_hover && hoverTimer_ > fltParam("local.tooltipDelay")) {
       tooltip = action.tooltip;

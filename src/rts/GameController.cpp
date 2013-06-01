@@ -748,7 +748,9 @@ void GameController::updateMapShader(Shader *shader) const {
 }
 
 void GameController::handleUIAction(const UIAction &action) {
-
+  if (action.state == UIAction::DISABLED) {
+    return;
+  }
   if (action.targeting == UIAction::TargetingType::NONE) {
     Json::Value msg;
     msg["type"] = ActionTypes::ACTION;
@@ -762,6 +764,5 @@ void GameController::handleUIAction(const UIAction &action) {
   } else {
     invariant_violation("Unknown targetting type");
   }
-
 }
 };  // rts

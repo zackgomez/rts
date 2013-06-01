@@ -23,6 +23,11 @@ TargetingTypes = {
   ENTITY: 2,
 };
 
+ActionStates = {
+  DISABLED: 0,
+  ENABLED: 1,
+};
+
 // -- Utility --
 function vecAdd(v1, v2) {
   if (v1.length != v2.length) return undefined;
@@ -89,8 +94,12 @@ function ProductionAction(params) {
     '\nreq: ' + this.req_cost +
     '\ntime: ' + this.time_cost;
 
+  this.isEnabled = function (entity) {
+    return GetRequisition(entity.getPlayerID()) > this.req_cost;
+  };
+
   this.exec = function (entity, target) {
-    if (GetRequisition(entity.getPlayerID()) > this.req_cost) {
+    if (this.isEnabled(entity)) {
       var prod = {
         name: this.prod_name,
         t: 0.0,
@@ -198,6 +207,9 @@ var EntityDefs = {
         range: 4.0,
         icon: 'melee_icon',
         tooltip: 'Teleport\nRange 4',
+        isEnabled: function (entity) {
+          return true;
+        },
         exec: function (entity, target) {
           Log('Teleporting to', target, 'Range:', this.range);
           entity.warpPosition(target);
@@ -418,6 +430,7 @@ function entityGetActions(entity) {
       tooltip: action.tooltip,
       targeting: action.targeting ? action.targeting : TargetingTypes.NONE,
       range: action.range ? action.range : 0.0,
+      state: action.isEnabled(entity) ? ActionStates.ENABLED : ActionStates.DISABLED,
     });
   }
 
