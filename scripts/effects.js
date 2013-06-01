@@ -112,6 +112,22 @@ function ProductionAction(params) {
   };
 }
 
+function TeleportAction(params) {
+  this.range = params.range;
+  this.icon =  'melee_icon';
+  this.tooltip =  'Teleport';
+  this.targeting =  TargetingTypes.LOCATION;
+
+  this.isEnabled =  function (entity) {
+    return true;
+  };
+
+  this.exec = function (entity, target) {
+    Log('Teleporting to', target, 'Range:', this.range);
+    entity.warpPosition(target);
+  };
+}
+
 // -- Entity States --
 function NullState(params) {
   this.update = function (entity, dt) {
@@ -201,20 +217,9 @@ var EntityDefs = {
     health: 50.0,
     actions:
     {
-      teleport:
-      {
-        targeting: TargetingTypes.LOCATION,
+      teleport: new TeleportAction({
         range: 4.0,
-        icon: 'melee_icon',
-        tooltip: 'Teleport\nRange 4',
-        isEnabled: function (entity) {
-          return true;
-        },
-        exec: function (entity, target) {
-          Log('Teleporting to', target, 'Range:', this.range);
-          entity.warpPosition(target);
-        },
-      },
+      }),
     },
   },
   building:
