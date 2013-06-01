@@ -1,7 +1,6 @@
 #include "rts/EntityFactory.h"
 #include "common/ParamReader.h"
 #include "rts/CollisionObject.h"
-#include "rts/Projectile.h"
 #include "rts/Unit.h"
 
 namespace rts {
@@ -24,8 +23,6 @@ GameEntity * EntityFactory::construct(rts::id_t id,
 
   if (cl == "Unit") {
     return new Unit(id, name, params);
-  } else if (cl == "Projectile") {
-    return new Projectile(id, name, params);
   } else if (cl == "Collision") {
     return new CollisionObject(id, name, params);
   } else if (cl == "Actor") {

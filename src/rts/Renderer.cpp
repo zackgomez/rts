@@ -20,7 +20,6 @@
 #include "rts/Game.h"
 #include "rts/Map.h"
 #include "rts/MessageHub.h"
-#include "rts/Projectile.h"
 #include "rts/Player.h"
 #include "rts/ModelEntity.h"
 #include "rts/ResourceManager.h"

@@ -46,9 +46,6 @@ public:
   float getSpeed() const {
     return speed_;
   }
-  float getTurnSpeed() const {
-    return turnSpeed_;
-  }
   const glm::vec3& getBumpVel() const {
     return bumpVel_;
   }
@@ -106,7 +103,6 @@ private:
   glm::vec3 bumpVel_;
 
   float speed_;
-  float turnSpeed_;
 
   bool visible_;
 

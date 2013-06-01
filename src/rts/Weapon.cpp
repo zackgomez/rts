@@ -3,7 +3,6 @@
 #include "rts/Actor.h"
 #include "rts/GameEntity.h"
 #include "rts/MessageHub.h"
-#include "rts/Projectile.h"
 
 namespace rts {
 
@@ -13,9 +12,6 @@ Weapon::Weapon(const std::string &name, const Actor *owner)
     state_(READY),
     t_(0.f),
     target_(NO_ENTITY) {
-  if (strParam("type") == "ranged") {
-    invariant(hasParam("projectile"), "ranged weapon missing projectile");
-  }
 }
 
 float Weapon::getMaxRange() const {
@@ -76,7 +72,8 @@ void Weapon::sendMessage() {
     params["entity_pid"] = toJson(owner_->getPlayerID());
     params["entity_pos"] = toJson(owner_->getPosition2());
     params["target_id"] = toJson(target_);
-    Game::get()->spawnEntity(strParam("projectile"), params);
+    params["damage"] = param("damage");
+    Game::get()->spawnEntity("projectile", params);
   } else if (type == "melee") {
     Message msg;
     msg["to"] = toJson(target_);

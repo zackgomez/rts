@@ -119,6 +119,45 @@ static Handle<Value> entityGetNearbyEntities(const Arguments &args) {
   return Undefined();
 }
 
+static Handle<Value> entityDistanceToEntity(const Arguments &args) {
+  if (args.Length() < 1) return Undefined();
+  HandleScope scope(args.GetIsolate());
+
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
+
+  Local<Object> targetobj = Local<Object>::Cast(args[0]);
+  Local<External> targetwrap = Local<External>::Cast(targetobj->GetInternalField(0));
+  GameEntity *target = static_cast<GameEntity *>(targetwrap->Value());
+
+  if (!target) {
+    return scope.Close(Number::New(HUGE_VAL));
+  }
+
+  float dist = entity->distanceToEntity(target);
+
+  return scope.Close(Number::New(dist));
+}
+
+static Handle<Value> entityMoveTowards(const Arguments &args) {
+  if (args.Length() < 2) return Undefined();
+
+  HandleScope scope(args.GetIsolate());
+
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
+
+  auto script = Game::get()->getScript();
+  glm::vec2 pos = script->jsToVec2(Handle<Array>::Cast(args[0]));
+  float dt = args[1]->NumberValue();
+
+  entity->moveTowards(pos, dt);
+
+  return Undefined();
+}
+
 static Handle<Value> entityDestroy(const Arguments &args) {
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
@@ -328,12 +367,18 @@ void GameScript::init() {
       String::New("setPlayerID"),
       FunctionTemplate::New(entitySetPlayerID));
   entityTemplate_->Set(
+      String::New("moveTowards"),
+      FunctionTemplate::New(entityMoveTowards));
+  entityTemplate_->Set(
       String::New("destroy"),
       FunctionTemplate::New(entityDestroy));
 
   entityTemplate_->Set(
       String::New("getNearbyEntities"),
       FunctionTemplate::New(entityGetNearbyEntities));
+  entityTemplate_->Set(
+      String::New("distanceToEntity"),
+      FunctionTemplate::New(entityDistanceToEntity));
 
   entityTemplate_->Set(
       String::New("onTookDamage"),

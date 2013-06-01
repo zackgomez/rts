@@ -124,21 +124,19 @@
     "range"      : 6.0,
     "cooldown"   : 0.5,
     "arc"        : 30.0,
+    "damage"     : 10.0,
     "windup"     : 0.2,
-    "winddown"   : 0.3,
-    "projectile" : "basic_bullet"
+    "winddown"   : 0.3
   },
 
 
-  "basic_bullet" :
+  "projectile" :
   {
-    "class"  : "Projectile",
-    // projectile params
+    "class"  : "Actor",
     "model"  : "basic_bullet",
     "modelSize"    : 1.0,
     "speed"  : 10.0,
     "size"   : [0.6, 0.6],
-    "damage" : 10.0,
     "height" : 0.3
   },
 

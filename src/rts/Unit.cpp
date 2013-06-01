@@ -4,7 +4,6 @@
 #include "common/ParamReader.h"
 #include "rts/Game.h"
 #include "rts/MessageHub.h"
-#include "rts/Projectile.h"
 #include "rts/Renderer.h"
 #include "rts/Weapon.h"
 

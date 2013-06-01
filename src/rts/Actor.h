@@ -30,8 +30,6 @@ class Actor : public GameEntity {
   virtual void update(float dt) override;
   virtual void collide(const GameEntity *other, float dt) override final;
 
-  float distanceToEntity(const GameEntity *e) const;
-
   const std::vector<UIAction> &getActions() const;
 
   // Returns sight radius

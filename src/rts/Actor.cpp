@@ -3,7 +3,6 @@
 #include "common/util.h"
 #include "rts/MessageHub.h"
 #include "rts/Player.h"
-#include "rts/Projectile.h"
 #include "rts/ResourceManager.h"
 #include "rts/Unit.h"
 #include "rts/Weapon.h"
@@ -156,13 +155,6 @@ void Actor::update(float dt) {
 
   updateUIInfo();
   updateActions();
-}
-
-float Actor::distanceToEntity(const GameEntity *e) const {
-  return rayBox2Intersection(
-    getPosition2(),
-    glm::normalize(e->getPosition2() - getPosition2()),
-    e->getRect());
 }
 
 void Actor::updateUIInfo() {

@@ -13,7 +13,6 @@ ModelEntity::ModelEntity(id_t id)
     height_(0.f),
     size_(glm::vec2(0.f)),
     speed_(0.f),
-    turnSpeed_(0.f),
     bumpVel_(0.f),
     material_(nullptr),
     scale_(1.f),
@@ -49,9 +48,6 @@ void ModelEntity::setAngle(float angle) {
 }
 void ModelEntity::setHeight(float height) {
   height_ = height;
-}
-void ModelEntity::setTurnSpeed(float turn_speed) {
-  turnSpeed_ = turn_speed;
 }
 void ModelEntity::setSpeed(float speed) {
   speed_ = speed;
@@ -125,16 +121,6 @@ void ModelEntity::render(float dt) {
 
 void ModelEntity::integrate(float dt) {
   pos_ = getPosition(dt);
-
-  // rotate
-  angle_ += turnSpeed_ * dt;
-  // clamp to [0, 360]
-  while (angle_ > 360.f) {
-    angle_ -= 360.f;
-  }
-  while (angle_ < 0.f) {
-    angle_ += 360.f;
-  }
 }
 
 glm::mat4 ModelEntity::getTransform(float dt) const {
@@ -159,7 +145,7 @@ glm::vec3 ModelEntity::getPosition(float dt) const {
 }
 
 float ModelEntity::getAngle(float dt) const {
-  return angle_ + turnSpeed_ * dt;
+  return angle_;
 }
 
 const glm::vec2 ModelEntity::getDirection(float angle) {

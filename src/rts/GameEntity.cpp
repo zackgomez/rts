@@ -21,7 +21,7 @@ GameEntity::GameEntity(
     playerID_ = toID(params["entity_pid"]);
   }
   if (params.isMember("entity_pos")) {
-    setPosition(toVec2(params["entity_pos"]));
+    setPosition(glm::vec3(toVec2(params["entity_pos"]), 0.f));
   }
   if (params.isMember("entity_size")) {
     setSize(toVec2(params["entity_size"]));
@@ -53,7 +53,6 @@ id_t GameEntity::getTeamID() const {
 
 void GameEntity::update(float dt) {
   setBumpVel(glm::vec3(0.f));
-  setTurnSpeed(0.f);
   setSpeed(0.f);
 }
 
@@ -62,25 +61,20 @@ void GameEntity::handleMessage(const Message &msg) {
     << " received unknown message type: " << msg["type"] << '\n';
 }
 
+float GameEntity::distanceToEntity(const GameEntity *e) const {
+  return rayBox2Intersection(
+    getPosition2(),
+    glm::normalize(e->getPosition2() - getPosition2()),
+    e->getRect());
+}
+
 void GameEntity::remainStationary() {
   pathQueue_ = std::queue<glm::vec3>();
   setSpeed(0.f);
-  setTurnSpeed(0.f);
 }
 
 void GameEntity::turnTowards(const glm::vec2 &targetPos, float dt) {
-  float desired_angle = angleToTarget(targetPos);
-  float delAngle = addAngles(desired_angle, -getAngle());
-  float turnRate = fltParam("turnRate");
-  // rotate
-  // only rotate when not close enough
-  // Would overshoot, just move directly there
-  if (fabs(delAngle) < turnRate * dt) {
-    setTurnSpeed(delAngle / dt);
-  } else {
-    setTurnSpeed(glm::sign(delAngle) * turnRate);
-  }
-  // No movement
+  setAngle(angleToTarget(targetPos));
   setSpeed(0.f);
 }
 
@@ -109,8 +103,7 @@ void GameEntity::checksum(Checksum &chksum) const {
     .process(getAngle())
     .process(getSize())
     .process(getHeight())
-    .process(getSpeed())
-    .process(getTurnSpeed());
+    .process(getSpeed());
 }
 
 std::queue<glm::vec3> GameEntity::getPathNodes() const {

@@ -72,19 +72,39 @@ function makeReqGenEffect(amount) {
 }
 
 // -- Entity States --
-function NullState() {
-  this.update = function (entity, dt) {};
+function NullState(params) {
+  this.update = function (entity, dt) {
+    return null;
+  }
 }
 
 function ProjectileState(params) {
-  this.targetID_ = params.target_id;
+  this.targetID = params.target_id;
+  this.damage = params.damage;
 
-  this.update = function (entity, dt)
-  {
-    var target = GetEntity(this.targetID_);
+  this.update = function (entity, dt) {
+    var target = GetEntity(this.targetID);
     if (!target) {
-      Log('Target gone');
+      entity.destroy();
+      return null;
     }
+
+    var threshold = 1.0;
+    if (entity.distanceToEntity(target) < threshold) {
+      Log('Close!');
+      SendMessage({
+        to: this.targetID,
+        from: entity.getID(),
+        type: MessageTypes.ATTACK,
+        pid: entity.getPlayerID(),
+        damage: this.damage,
+        damage_type: 'ranged',
+      });
+      entity.destroy();
+    }
+
+    entity.moveTowards(target.getPosition2(), dt);
+    return null;
   };
 }
 
@@ -179,7 +199,7 @@ var EntityDefs = {
       req_gen: makeReqGenEffect(1.0),
     },
   },
-  basic_bullet:
+  projectile:
   {
     properties:
     [
@@ -205,7 +225,7 @@ function getActionTooltip(action) {
 // -- Entity Functions --
 function entityInit(entity, params) {
   entity.prodQueue_ = [];
-  entity.state_ = new NullState();
+  entity.defaultState_ = NullState;
 
   var name = entity.getName();
   var def = EntityDefs[name];
@@ -216,7 +236,7 @@ function entityInit(entity, params) {
       }
     }
     if (def.default_state) {
-      entity.state_ = new def.default_state(params);
+      entity.defaultState_ = def.default_state;
     }
     if (def.health) {
       entity.maxHealth_ = def.health;
@@ -237,6 +257,8 @@ function entityInit(entity, params) {
   } else {
     Log('No def for', name);
   }
+
+  entity.state_ = new entity.defaultState_(params);
 }
 
 function entityUpdate(entity, dt) {

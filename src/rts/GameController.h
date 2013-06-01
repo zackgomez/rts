@@ -7,7 +7,7 @@
 namespace rts {
 
 class LocalPlayer;
-class UIAction;
+struct UIAction;
 
 struct MapHighlight {
   glm::vec2 pos;

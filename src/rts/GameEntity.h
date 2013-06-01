@@ -35,7 +35,7 @@ class GameEntity : public ModelEntity {
     }
   }
 
-  // The player than owns this entity, or NO_PLAYER
+  // The player that owns this entity, or NO_PLAYER
   id_t getPlayerID() const {
     return playerID_;
   }
@@ -48,12 +48,14 @@ class GameEntity : public ModelEntity {
   virtual void handleMessage(const Message& msg);
   // Sets 'intention' like velocity, etc
   virtual void update(float dt) = 0;
+  virtual void collide(const GameEntity *other, float dt) = 0;
 
   virtual void checksum(Checksum &chksum) const;
 
   std::queue<glm::vec3> getPathNodes() const;
 
-  virtual void collide(const GameEntity *other, float dt) = 0;
+
+  float distanceToEntity(const GameEntity *e) const;
 
   // helper functions for update
   // Don't move or rotate
