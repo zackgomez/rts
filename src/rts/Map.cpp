@@ -47,15 +47,15 @@ void Map::init(const std::vector<Player *> &players) {
       continue;
     }
     Json::Value params;
-    params["entity_pid"] = toJson(NO_PLAYER);
+    params["pid"] = toJson(NO_PLAYER);
     if (entity_def.isMember("pos")) {
-      params["entity_pos"] = entity_def["pos"];
+      params["pos"] = entity_def["pos"];
     }
     if (entity_def.isMember("size")) {
-      params["entity_size"] = entity_def["size"];
+      params["size"] = entity_def["size"];
     }
     if (entity_def.isMember("angle")) {
-      params["entity_angle"] = entity_def["angle"];
+      params["angle"] = entity_def["angle"];
     }
     invariant(entity_def.isMember("type"), "missing type param");
     Game::get()->spawnEntity(type, params);
@@ -74,9 +74,9 @@ void Map::spawnStartingLocation(const Json::Value &definition,
 
   // Spawn starting building
   Json::Value params;
-  params["entity_pid"] = toJson(pid);
-  params["entity_pos"] = toJson(pos);
-  params["entity_angle"] = angle;
+  params["pid"] = toJson(pid);
+  params["pos"] = toJson(pos);
+  params["angle"] = angle;
   const GameEntity *base = Game::get()->spawnEntity("building", params);
   player->setBaseID(base->getID());
 
@@ -90,9 +90,9 @@ void Map::spawnStartingLocation(const Json::Value &definition,
   pos -= tangent * 1.5f;
   for (int i = 0; i < 3; i++) {
     Json::Value params;
-    params["entity_pid"] = toJson(pid);
-    params["entity_pos"] = toJson(pos);
-    params["entity_angle"] = angle;
+    params["pid"] = toJson(pid);
+    params["pos"] = toJson(pos);
+    params["angle"] = angle;
     Game::get()->spawnEntity("melee_unit", params);
     pos += tangent * 1.5f;
   }

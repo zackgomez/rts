@@ -10,10 +10,6 @@ CollisionObject::CollisionObject(
     const Json::Value &params)
   : GameEntity(id, name, params) {
 
-  setPosition(glm::vec3(toVec2(params["entity_pos"]), 0.1f));
-  setSize(toVec2(params["entity_size"]));
-  setAngle(params["entity_angle"].asFloat());
-
   setScale(glm::vec3(2.f*getSize(), 1.f));
   setMeshName("square");
 

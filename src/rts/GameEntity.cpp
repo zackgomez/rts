@@ -17,19 +17,19 @@ GameEntity::GameEntity(
     name_(name) {
   setProperty(P_RENDERABLE, true);
 
-  if (params.isMember("entity_pid")) {
-    playerID_ = toID(params["entity_pid"]);
+  if (params.isMember("pid")) {
+    playerID_ = toID(params["pid"]);
   }
-  if (params.isMember("entity_pos")) {
-    setPosition(glm::vec3(toVec2(params["entity_pos"]), 0.f));
+  if (params.isMember("pos")) {
+    setPosition(glm::vec3(toVec2(params["pos"]), 0.f));
   }
-  if (params.isMember("entity_size")) {
-    setSize(toVec2(params["entity_size"]));
+  if (params.isMember("size")) {
+    setSize(toVec2(params["size"]));
   } else {
     setSize(vec2Param("size"));
   }
-  if (params.isMember("entity_angle")) {
-    setAngle(params["entity_angle"].asFloat());
+  if (params.isMember("angle")) {
+    setAngle(params["angle"].asFloat());
   }
   if (hasParam("height")) {
     setHeight(fltParam("height"));

@@ -508,8 +508,8 @@ function entityInit(entity, params) {
 
         if (weapon.type == 'ranged') {
           var params = {
-            entity_pid: this.getPlayerID(),
-            entity_pos: this.getPosition2(),
+            pid: this.getPlayerID(),
+            pos: this.getPosition2(),
             target_id: target.getID(),
             damage: weapon.damage,
           };
@@ -540,9 +540,9 @@ function entityUpdate(entity, dt) {
       SpawnEntity(
         prod.name,
         {
-          entity_pid: entity.getPlayerID(),
-          entity_pos: vecAdd(entity.getPosition2(), entity.getDirection()),
-          entity_angle: entity.getAngle()
+          pid: entity.getPlayerID(),
+          pos: vecAdd(entity.getPosition2(), entity.getDirection()),
+          angle: entity.getAngle()
         });
       entity.prodQueue_.pop();
     }
