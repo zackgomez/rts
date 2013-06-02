@@ -121,6 +121,20 @@ static Handle<Value> entityGetNearbyEntities(const Arguments &args) {
   return Undefined();
 }
 
+static Handle<Value> entityContainsPoint(const Arguments &args) {
+  if (args.Length() < 1) return Undefined();
+  HandleScope scope(args.GetIsolate());
+
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
+  const glm::vec2 pt = Game::get()->getScript()->jsToVec2(
+      Handle<Array>::Cast(args[0]));
+
+  bool contains = entity->pointInEntity(pt);
+  return scope.Close(Boolean::New(contains));
+}
+
 static Handle<Value> entityDistanceToPoint(const Arguments &args) {
   if (args.Length() < 1) return Undefined();
   HandleScope scope(args.GetIsolate());
@@ -156,8 +170,20 @@ static Handle<Value> entityDistanceToEntity(const Arguments &args) {
   return scope.Close(Number::New(dist));
 }
 
+static Handle<Value> entityRemainStationary(const Arguments &args) {
+  HandleScope scope(args.GetIsolate());
+
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
+
+  entity->remainStationary();
+
+  return Undefined();
+}
+
 static Handle<Value> entityMoveTowards(const Arguments &args) {
-  if (args.Length() < 2) return Undefined();
+  invariant(args.Length() == 2, "Expected 2 args to moveTowards");
 
   HandleScope scope(args.GetIsolate());
 
@@ -173,6 +199,7 @@ static Handle<Value> entityMoveTowards(const Arguments &args) {
 
   return Undefined();
 }
+
 static Handle<Value> entityWarpPosition(const Arguments &args) {
   if (args.Length() < 1) return Undefined();
 
@@ -412,6 +439,9 @@ void GameScript::init() {
       String::New("setPlayerID"),
       FunctionTemplate::New(entitySetPlayerID));
   entityTemplate_->Set(
+      String::New("remainStationary"),
+      FunctionTemplate::New(entityRemainStationary));
+  entityTemplate_->Set(
       String::New("moveTowards"),
       FunctionTemplate::New(entityMoveTowards));
   entityTemplate_->Set(
@@ -427,6 +457,9 @@ void GameScript::init() {
   entityTemplate_->Set(
       String::New("getNearbyEntities"),
       FunctionTemplate::New(entityGetNearbyEntities));
+  entityTemplate_->Set(
+      String::New("containsPoint"),
+      FunctionTemplate::New(entityContainsPoint));
   entityTemplate_->Set(
       String::New("distanceToEntity"),
       FunctionTemplate::New(entityDistanceToEntity));

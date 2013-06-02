@@ -102,8 +102,27 @@ void Actor::handleOrder(const Message &order) {
     std::string action_name = order["action"].asString();
     handleAction(action_name, order);
   } else {
-    LOG(WARNING) << "Actor got unknown order: "
-      << order.toStyledString() << '\n';
+    using namespace v8;
+    auto *script = Game::get()->getScript();
+    HandleScope scope(script->getIsolate());
+    Handle<Object> global = script->getGlobal();
+    TryCatch try_catch;
+
+    Json::Value cleanorder;
+    cleanorder["type"] = order["order_type"];
+    cleanorder["target"] = toJson(glm::vec2(toVec2(order["target"])));
+    cleanorder["target_id"] = order["enemy_id"];
+    Handle<Object> jsorder = Handle<Object>::Cast(script->jsonToJS(cleanorder));
+
+    const int argc = 2;
+    Handle<Value> argv[argc] = {script->getEntity(getID()), jsorder};
+    Handle<Value> result =
+      Handle<Function>::Cast(global->Get(String::New("entityHandleOrder")))
+      ->Call(global, argc, argv);
+    if (result.IsEmpty()) {
+      LOG(ERROR) << "error handling order: "
+        << *String::AsciiValue(try_catch.Exception()) << '\n';
+    }
   }
 }
 

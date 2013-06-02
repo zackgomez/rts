@@ -23,6 +23,7 @@ class GameEntity : public ModelEntity {
   static const uint32_t P_CAPPABLE = 815586235;
   static const uint32_t P_ACTOR = 913794634;
   static const uint32_t P_MOBILE = 1122719651;
+  static const uint32_t P_UNIT = 118468328;
 
   virtual bool hasProperty(uint32_t property) const final override {
     return properties_.count(property);

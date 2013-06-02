@@ -32,11 +32,15 @@ void Unit::handleMessage(const Message &msg) {
 }
 
 void Unit::handleOrder(const Message &order) {
+  Actor::handleOrder(order);
+  return;
+
+
+
   invariant(order["type"] == MessageTypes::ORDER, "unexpected message type");
   invariant(order.isMember("order_type"), "malformed order message");
   UnitState *next = nullptr;
   if (order["order_type"] == OrderTypes::MOVE) {
-    // TODO(zack) add following a unit here
     next = new MoveState(toVec2(order["target"]), this);
   } else if (order["order_type"] == OrderTypes::ATTACK) {
     invariant(order.isMember("enemy_id") || order.isMember("target"),

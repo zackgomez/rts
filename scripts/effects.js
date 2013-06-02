@@ -5,6 +5,7 @@ P_ACTOR = 913794634;
 P_RENDERABLE = 565038773;
 P_COLLIDABLE = 983556954;
 P_MOBILE = 1122719651;
+P_UNIT = 118468328;
 
 NO_PLAYER = 0;
 NO_ENTITY = 0;
@@ -155,9 +156,58 @@ function NullState(params) {
 // Eventually remove it when all the Unit states are in JS
 function LegacyUnitState(params) {
   this.update = function (entity, dt) {
-    entity.updateUnitStateLegacy(dt);
+    //entity.updateUnitStateLegacy(dt);
     return null;
   }
+}
+
+function UnitIdleState() {
+  this.targetID = null;
+
+  this.update = function (entity, dt) {
+    entity.remainStationary();
+    // TODO(zack): attack close units in range
+
+    return null;
+  };
+}
+
+function UnitMoveState(params) {
+  this.target = params.target;
+  this.update = function (entity, dt) {
+    if (entity.containsPoint(this.target)) {
+      return new UnitIdleState({});
+    }
+
+    entity.moveTowards(this.target, dt);
+    return null;
+  };
+}
+
+function UnitCaptureState(params) {
+  this.targetID = params.target_id;
+
+  this.update = function (entity, dt) {
+    var target = GetEntity(this.targetID);
+    if (!target
+        || !target.hasProperty(P_CAPPABLE)
+        || target.getPlayerID() == entity.getPlayerID()) {
+      return new UnitIdleState();
+    }
+
+    var dist = entity.distanceToEntity(target);
+    if (dist < entity.captureRange_) {
+      SendMessage({
+        to: target.getID(),
+        from: entity.getID(),
+        type: MessageTypes.CAPTURE,
+        cap: dt,
+      });
+    } else {
+      entity.moveTowards(target.getPosition2(), dt);
+    }
+    return null;
+  };
 }
 
 function LocationAbilityState(params) {
@@ -171,7 +221,7 @@ function LocationAbilityState(params) {
 
     entity.moveTowards(this.target, dt);
     return null;
-  }
+  };
 }
 
 function ProjectileState(params) {
@@ -191,7 +241,6 @@ function ProjectileState(params) {
         to: this.targetID,
         from: entity.getID(),
         type: MessageTypes.ATTACK,
-        pid: entity.getPlayerID(),
         damage: this.damage,
         damage_type: 'ranged',
       });
@@ -205,56 +254,51 @@ function ProjectileState(params) {
 
 // -- Entity Definitions --
 var EntityDefs = {
-  unit:
-  {
-    properties:
-    [
+  unit: {
+    properties: [
       P_ACTOR,
+      P_UNIT,
       P_TARGETABLE,
       P_RENDERABLE,
       P_COLLIDABLE,
       P_MOBILE,
     ],
-    default_state: LegacyUnitState,
+    default_state: UnitIdleState,
     health: 100.0,
+    capture_range: 1.0,
   },
-  melee_unit:
-  {
-    properties:
-    [
+  melee_unit: {
+    properties: [
       P_ACTOR,
+      P_UNIT,
       P_TARGETABLE,
       P_RENDERABLE,
       P_COLLIDABLE,
       P_MOBILE,
     ],
-    default_state: LegacyUnitState,
+    default_state: UnitIdleState,
     health: 50.0,
-    actions:
-    {
+    capture_range: 1.0,
+    actions: {
       teleport: new TeleportAction({
         range: 6.0,
         cooldown: 2.0,
       }),
     },
   },
-  building:
-  {
-    properties:
-    [
+  building: {
+    properties: [
       P_ACTOR,
       P_TARGETABLE,
       P_RENDERABLE,
       P_COLLIDABLE,
     ],
     health: 700.0,
-    effects:
-    {
+    effects: {
       req_gen: makeReqGenEffect(1.0),
       base_healing: makeHealingAura(5.0, 5.0),
     },
-    actions:
-    {
+    actions: {
       prod_ranged: new ProductionAction({
         prod_name: 'unit',
         req_cost: 100,
@@ -269,40 +313,32 @@ var EntityDefs = {
       }),
     },
   },
-  victory_point:
-  {
-    properties:
-    [
+  victory_point: {
+    properties: [
       P_ACTOR,
       P_CAPPABLE,
       P_RENDERABLE,
       P_COLLIDABLE,
     ],
     cap_time: 5.0,
-    effects:
-    {
+    effects: {
       vp_gen: makeVpGenEffect(1.0),
     },
   },
-  req_point:
-  {
-    properties:
-    [
+  req_point: {
+    properties: [
       P_ACTOR,
       P_CAPPABLE,
       P_RENDERABLE,
       P_COLLIDABLE,
     ],
     cap_time: 5.0,
-    effects:
-    {
+    effects: {
       req_gen: makeReqGenEffect(1.0),
     },
   },
-  projectile:
-  {
-    properties:
-    [
+  projectile: {
+    properties: [
       P_RENDERABLE,
       P_MOBILE,
     ],
@@ -336,6 +372,9 @@ function entityInit(entity, params) {
       entity.cappingPlayerID_ = null;
       entity.capAmount_ = 0.0;
       entity.capResetDelay_ = 0;
+    }
+    if (def.capture_range) {
+      entity.captureRange_ = def.capture_range;
     }
     if (def.effects) {
       entity.effects_ = EntityDefs[name].effects;
@@ -398,9 +437,15 @@ function entityHandleMessage(entity, msg) {
       Log('Uncappable entity received capture message');
       return;
     }
-    if (!entity.cappingPlayerID_ || entity.cappingPlayerID_ === msg.pid) {
+    var from_entity = GetEntity(msg.from);
+    if (!from_entity) {
+      Log('Received capture message from missing entity', msg.from);
+      return;
+    }
+    if (!entity.cappingPlayerID_
+        || entity.cappingPlayerID_ === from_entity.getPlayerID()) {
       entity.capResetDelay_ = 0;
-      entity.cappingPlayerID_ = msg.pid;
+      entity.cappingPlayerID_ = from_entity.getPlayerID();
       entity.capAmount_ += msg.cap;
       if (entity.capAmount_ >= entity.capTime_) {
         entity.setPlayerID(entity.cappingPlayerID_);
@@ -426,6 +471,29 @@ function entityHandleMessage(entity, msg) {
     }
   } else {
     Log('Unknown message of type', msg.type);
+  }
+}
+
+function entityHandleOrder(entity, order) {
+  var type = order.type;
+  Log('Got order of type', type);
+
+  if (type == 'MOVE') {
+    entity.state_ = new UnitMoveState({
+      target: order.target,
+    });
+  } else if (type == 'STOP') {
+    entity.state_ = new UnitIdleState();
+  } else if (type == 'CAPTURE') {
+    if (!entity.captureRange_) {
+      Log('Entity without capturing ability told to cap!');
+      return;
+    }
+    entity.state_ = new UnitCaptureState({
+      target_id: order.target_id,
+    });
+  } else {
+    Log('Unknown order of type', type);
   }
 }
 
