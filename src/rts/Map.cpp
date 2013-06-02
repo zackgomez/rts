@@ -3,7 +3,6 @@
 #include "common/Collision.h"
 #include "common/ParamReader.h"
 #include "rts/CollisionObject.h"
-#include "rts/MessageHub.h"
 #include "rts/Player.h"
 #include "rts/Renderer.h"
 

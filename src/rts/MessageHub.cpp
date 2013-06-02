@@ -39,8 +39,6 @@ void MessageHub::sendMessage(const Message &msg) {
 
   Json::Value to = msg["to"];
 
-  // TODO(zack): force `to` to array here (see T61)
-
   // Force `to` as array
   if (!to.isArray()) {
     to = Json::Value(Json::arrayValue);
@@ -58,15 +56,5 @@ void MessageHub::sendMessage(const Message &msg) {
     assertEid(eid);
     game_->sendMessage(eid, rlmsg);
   }
-}
-
-void MessageHub::sendHealMessage(id_t from, id_t to, float amount) {
-  Message msg;
-  msg["to"] = toJson(to);
-  msg["from"] = toJson(from);
-  msg["type"] = MessageTypes::ADD_STAT;
-  msg["healing"] = amount;
-
-  sendMessage(msg);
 }
 };  // rts

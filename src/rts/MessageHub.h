@@ -22,8 +22,6 @@ class MessageHub {
   // Immediately dispatches message
   void sendMessage(const Message &msg);
 
-  void sendHealMessage(id_t from, id_t to, float amount);
-
  private:
   // For singleton
   MessageHub();

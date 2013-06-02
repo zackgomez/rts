@@ -1,6 +1,5 @@
 #include "rts/CollisionObject.h"
 #include <string>
-#include "rts/MessageHub.h"
 #include "rts/ResourceManager.h"
 
 namespace rts {

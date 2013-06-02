@@ -1,7 +1,6 @@
 #include "rts/Actor.h"
 #include "common/ParamReader.h"
 #include "common/util.h"
-#include "rts/MessageHub.h"
 #include "rts/Player.h"
 #include "rts/ResourceManager.h"
 #include "rts/Weapon.h"
