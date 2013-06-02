@@ -140,7 +140,7 @@ function ProductionAction(params) {
     } else {
       return ActionStates.DISABLED;
     }
-  };
+  }
 
   this.exec = function (entity, target) {
     if (this.getState(entity) != ActionStates.ENABLED) {
@@ -154,7 +154,7 @@ function ProductionAction(params) {
     entity.prodQueue_.push(prod);
     Log('Started production of', prod.name, 'for', prod.endt);
     AddRequisition(entity.getPlayerID(), -this.req_cost, entity.getID());
-  };
+  }
 }
 
 function TeleportAction(params) {
@@ -170,7 +170,7 @@ function TeleportAction(params) {
       return ActionStates.COOLDOWN;
     }
     return ActionStates.ENABLED;
-  };
+  }
 
   this.exec = function (entity, target) {
     if (this.getState(entity) != ActionStates.ENABLED) {
@@ -179,7 +179,7 @@ function TeleportAction(params) {
     Log('Teleporting to', target, 'Range:', this.range);
     entity.cooldowns_[this.cooldownName] = this.cooldown;
     entity.warpPosition(target);
-  };
+  }
 }
 
 // -- Entity States --
@@ -198,11 +198,11 @@ function UnitIdleState() {
     var target = entityFindTarget(entity, this.targetID);
     this.targetID = target ? target.getID() : null;
     if (target) {
-      entity.attack(target);
+      entity.attack(target, dt);
     }
 
     return null;
-  };
+  }
 }
 
 function UnitMoveState(params) {
@@ -214,7 +214,7 @@ function UnitMoveState(params) {
 
     entity.moveTowards(this.target, dt);
     return null;
-  };
+  }
 }
 
 function UnitCaptureState(params) {
@@ -240,7 +240,7 @@ function UnitCaptureState(params) {
       entity.moveTowards(target.getPosition2(), dt);
     }
     return null;
-  };
+  }
 }
 
 function UnitAttackState(params) {
@@ -255,7 +255,7 @@ function UnitAttackState(params) {
       return new UnitIdleState();
     }
 
-    entity.attack(target);
+    entity.attack(target, dt);
   }
 }
 
@@ -275,7 +275,7 @@ function UnitAttackMoveState(params) {
       entity.moveTowards(this.targetPos, dt);
     } else {
       // Pursue a target enemy
-      entity.attack(targetEnemy);
+      entity.attack(targetEnemy, dt);
     }
 
     return null;
@@ -293,7 +293,7 @@ function LocationAbilityState(params) {
 
     entity.moveTowards(this.target, dt);
     return null;
-  };
+  }
 }
 
 function ProjectileState(params) {
@@ -314,14 +314,31 @@ function ProjectileState(params) {
         from: entity.getID(),
         type: MessageTypes.ATTACK,
         damage: this.damage,
-        damage_type: 'ranged',
       });
       entity.destroy();
     }
 
     entity.moveTowards(target.getPosition2(), dt);
     return null;
-  };
+  }
+}
+
+// -- Weapon Definitions --
+var Weapons = {
+  rifle: {
+    type: 'ranged',
+    range: 6.0,
+    damage: 10.0,
+    cooldown_name: 'rifle_cd',
+    cooldown: 1.0,
+  },
+  advanced_melee: {
+    type: 'melee',
+    range: 1.0,
+    damage: 6.0,
+    cooldown_name: 'advanced_melee_cd',
+    cooldown: 0.5,
+  },
 }
 
 // -- Entity Definitions --
@@ -339,6 +356,7 @@ var EntityDefs = {
     sight: 8.0,
     health: 100.0,
     capture_range: 1.0,
+    weapon: 'rifle',
   },
   melee_unit: {
     properties: [
@@ -353,6 +371,7 @@ var EntityDefs = {
     sight: 7.0,
     health: 50.0,
     capture_range: 1.0,
+    weapon: 'advanced_melee',
     actions: {
       teleport: new TeleportAction({
         range: 6.0,
@@ -421,7 +440,7 @@ var EntityDefs = {
     ],
     default_state: ProjectileState,
   },
-};
+}
 
 // -- Entity Functions --
 function entityInit(entity, params) {
@@ -457,6 +476,9 @@ function entityInit(entity, params) {
     if (def.capture_range) {
       entity.captureRange_ = def.capture_range;
     }
+    if (def.weapon) {
+      entity.weapon_ = Weapons[def.weapon];
+    }
     if (def.effects) {
       entity.effects_ = EntityDefs[name].effects;
     }
@@ -469,9 +491,39 @@ function entityInit(entity, params) {
 
   entity.state_ = new entity.defaultState_(params);
 
-  entity.attack = function (target) {
-    Log(entity.getID(), 'attack');
-    // TODO
+  entity.attack = function (target, dt) {
+    if (!this.weapon_) {
+      Log(this.getID(), 'Told to attack without weapon');
+      return;
+    }
+    var weapon = this.weapon_;
+
+    var dist = this.distanceToEntity(target);
+    if (dist > weapon.range) {
+      this.moveTowards(target.getPosition2(), dt);
+    } else {
+      this.remainStationary();
+      if (!(weapon.cooldown_name in this.cooldowns_)) {
+        this.cooldowns_[weapon.cooldown_name] = weapon.cooldown;
+
+        if (weapon.type == 'ranged') {
+          var params = {
+            entity_pid: this.getPlayerID(),
+            entity_pos: this.getPosition2(),
+            target_id: target.getID(),
+            damage: weapon.damage,
+          };
+          SpawnEntity('projectile', params);
+        } else {
+          SendMessage({
+            to: target.getID(),
+            from: this.getID(),
+            type: MessageTypes.ATTACK,
+            damage: weapon.damage,
+          });
+        }
+      }
+    }
   }
 }
 
@@ -546,7 +598,6 @@ function entityHandleMessage(entity, msg) {
     if (entity.health_ <= 0.0) {
       entity.destroy();
     }
-    // TODO(zack): melee timer
     // TODO(zack): Compute this in UIInfo/update
     entity.onTookDamage();
   } else if (msg.type == MessageTypes.ADD_STAT) {
@@ -565,10 +616,9 @@ function entityHandleOrder(entity, order) {
   if (!entity.hasProperty(P_UNIT)) {
     return;
   }
-  var type = order.type;
-  Log('Got order of type', type);
 
   // TODO(zack): replace if/else if/else block
+  var type = order.type;
   if (type == 'MOVE') {
     entity.state_ = new UnitMoveState({
       target: order.target,
