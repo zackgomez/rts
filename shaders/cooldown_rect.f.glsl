@@ -9,7 +9,7 @@ const float PI = 3.1415926;
 void main()
 {
     vec2 p = frag_texcoord - vec2(0.5);
-    float angle = atan(p.x, p.y) / (2 * PI) + 0.5;
+    float angle = -atan(p.x, p.y) / (2 * PI) + 0.5;
 
     if (angle < cooldown_percent) {
       discard;

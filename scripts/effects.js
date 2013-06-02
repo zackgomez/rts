@@ -166,7 +166,7 @@ function TeleportAction(params) {
   this.targeting = TargetingTypes.LOCATION;
 
   this.getState = function (entity) {
-    if (this.cooldownName in entity.cooldowns_) {
+    if (entity.hasCooldown(this.cooldownName)) {
       return ActionStates.COOLDOWN;
     }
     return ActionStates.ENABLED;
@@ -177,7 +177,7 @@ function TeleportAction(params) {
       return;
     }
     Log('Teleporting to', target, 'Range:', this.range);
-    entity.cooldowns_[this.cooldownName] = this.cooldown;
+    entity.addCooldown(this.cooldownName, this.cooldown);
     entity.warpPosition(target);
   }
 }
@@ -491,6 +491,17 @@ function entityInit(entity, params) {
 
   entity.state_ = new entity.defaultState_(params);
 
+  entity.hasCooldown = function (name) {
+    return name in this.cooldowns_;
+  }
+  entity.addCooldown = function (name, t) {
+    if (this.cooldowns_[name]) {
+      this.cooldowns_[name] = Math.max(this.cooldowns_[name], t);
+    } else {
+      this.cooldowns_[name] = t;
+    }
+  }
+
   entity.attack = function (target, dt) {
     if (!this.weapon_) {
       Log(this.getID(), 'Told to attack without weapon');
@@ -503,8 +514,8 @@ function entityInit(entity, params) {
       this.moveTowards(target.getPosition2(), dt);
     } else {
       this.remainStationary();
-      if (!(weapon.cooldown_name in this.cooldowns_)) {
-        this.cooldowns_[weapon.cooldown_name] = weapon.cooldown;
+      if (!this.hasCooldown(weapon.cooldown_name)) {
+        this.addCooldown(weapon.cooldown_name, weapon.cooldown);
 
         if (weapon.type == 'ranged') {
           var params = {
