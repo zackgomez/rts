@@ -14,7 +14,6 @@
 #include "rts/Player.h"
 #include "rts/Renderer.h"
 #include "rts/ResourceManager.h"
-#include "rts/Unit.h"
 #include "rts/Widgets.h"
 
 namespace rts {

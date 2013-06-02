@@ -4,7 +4,6 @@
 #include "rts/MessageHub.h"
 #include "rts/Player.h"
 #include "rts/ResourceManager.h"
-#include "rts/Unit.h"
 #include "rts/Weapon.h"
 #include "rts/Renderer.h"
 
@@ -32,6 +31,16 @@ Actor::~Actor() {
 
 const std::vector<UIAction> &Actor::getActions() const {
   return actions_;
+}
+
+float Actor::getSight() const {
+  // TODO(zack): cache this each frame
+  using namespace v8;
+  auto *script = Game::get()->getScript();
+  HandleScope scope(script->getIsolate());
+
+  Handle<Object> jsactor = script->getEntity(getID());
+  return jsactor->Get(String::New("sight_"))->NumberValue();
 }
 
 void Actor::resetTexture() {
@@ -110,8 +119,12 @@ void Actor::handleOrder(const Message &order) {
 
     Json::Value cleanorder;
     cleanorder["type"] = order["order_type"];
-    cleanorder["target"] = toJson(glm::vec2(toVec2(order["target"])));
-    cleanorder["target_id"] = order["enemy_id"];
+    if (order.isMember("target")) {
+      cleanorder["target"] = toJson(glm::vec2(toVec2(order["target"])));
+    }
+    if (order.isMember("enemy_id")) {
+      cleanorder["target_id"] = order["enemy_id"];
+    }
     Handle<Object> jsorder = Handle<Object>::Cast(script->jsonToJS(cleanorder));
 
     const int argc = 2;

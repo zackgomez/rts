@@ -23,7 +23,6 @@
 #include "rts/Player.h"
 #include "rts/ModelEntity.h"
 #include "rts/ResourceManager.h"
-#include "rts/Unit.h"
 #include "rts/UI.h"
 
 namespace rts {

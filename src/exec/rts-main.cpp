@@ -23,8 +23,6 @@
 #include "rts/Renderer.h"
 #include "rts/ResourceManager.h"
 #include "rts/Player.h"
-#include "rts/Unit.h"
-#include <v8.h>
 
 using rts::Game;
 using rts::Renderer;

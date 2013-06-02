@@ -16,7 +16,6 @@ namespace OrderTypes {
 const std::string MOVE = "MOVE";
 const std::string ATTACK = "ATTACK";
 const std::string CAPTURE = "CAPTURE";
-const std::string ATTACK_MOVE = "AMOVE";
 const std::string STOP = "STOP";
 const std::string ACTION = "ACTION";
 };
@@ -33,9 +32,7 @@ class Actor : public GameEntity {
   const std::vector<UIAction> &getActions() const;
 
   // Returns sight radius
-  float getSight() const {
-    return fltParam("sight");
-  }
+  float getSight() const;
 
   Clock::time_point getLastTookDamage() const {
     return lastTookDamage_;

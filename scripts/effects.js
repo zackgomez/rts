@@ -41,7 +41,44 @@ function vecAdd(v1, v2) {
   return ret;
 }
 
-// -- Effects --
+// -- Entity Helpers --
+// @return Entity object or null if no target
+function entityFindTarget(entity, previous_target_id) {
+  // Only looking for targetable entities belonging to enemy teams
+  var is_viable_target = function (target) {
+    // TODO(zack): only consider 'visible' enemies
+    return target.getPlayerID() != NO_PLAYER
+      && target.getTeamID() != entity.getTeamID()
+      && target.hasProperty(P_TARGETABLE);
+  };
+
+  // Default to previous target
+  if (previous_target_id) {
+    var previous_target = GetEntity(previous_target_id);
+    if (previous_target && is_viable_target(previous_target)) {
+      return previous_target;
+    }
+  }
+
+  // Search for closest entity in sight range
+  var new_target = null;
+  var best_dist = Infinity;
+  entity.getNearbyEntities(entity.sight_, function (e) {
+    if (!is_viable_target(e)) {
+      return true;
+    }
+    var dist = entity.distanceToEntity(e);
+    if (dist < best_dist) {
+      new_target = e;
+      best_dist = dist;
+    }
+    return true;
+  });
+
+  return new_target;
+}
+
+// -- Entity Effects --
 function makeHealingAura(radius, amount) {
   return function(entity, dt) {
     entity.getNearbyEntities(radius, function (nearby_entity) {
@@ -84,6 +121,7 @@ function makeReqGenEffect(amount) {
   }
 }
 
+// -- Entity Actions --
 function ProductionAction(params) {
   this.prod_name = params.prod_name;
   this.time_cost = params.time_cost;
@@ -151,22 +189,17 @@ function NullState(params) {
   }
 }
 
-// This state just calls the Unit updateState function.
-// Don't call this on entities that aren't units!
-// Eventually remove it when all the Unit states are in JS
-function LegacyUnitState(params) {
-  this.update = function (entity, dt) {
-    //entity.updateUnitStateLegacy(dt);
-    return null;
-  }
-}
-
 function UnitIdleState() {
   this.targetID = null;
 
   this.update = function (entity, dt) {
     entity.remainStationary();
-    // TODO(zack): attack close units in range
+
+    var target = entityFindTarget(entity, this.targetID);
+    this.targetID = target ? target.getID() : null;
+    if (target) {
+      entity.attack(target);
+    }
 
     return null;
   };
@@ -208,6 +241,45 @@ function UnitCaptureState(params) {
     }
     return null;
   };
+}
+
+function UnitAttackState(params) {
+  this.targetID = params.target_id;
+
+  this.update = function (entity, dt) {
+    var target = GetEntity(this.targetID);
+    // TODO(zack): or if the target isn't visible
+    if (!target
+        || !target.hasProperty(P_TARGETABLE)
+        || target.getTeamID() == entity.getTeamID()) {
+      return new UnitIdleState();
+    }
+
+    entity.attack(target);
+  }
+}
+
+function UnitAttackMoveState(params) {
+  this.targetPos = params.target;
+  this.targetID = null;
+
+  this.update = function (entity, dt) {
+    var targetEnemy = entityFindTarget(entity, this.targetID);
+    this.targetID = targetEnemy ? targetEnemy.getID() : null;
+
+    if (!targetEnemy) {
+      // If no viable enemy, move towards target position
+      if (entity.containsPoint(this.targetPos)) {
+        return new UnitIdleState();
+      }
+      entity.moveTowards(this.targetPos, dt);
+    } else {
+      // Pursue a target enemy
+      entity.attack(targetEnemy);
+    }
+
+    return null;
+  }
 }
 
 function LocationAbilityState(params) {
@@ -264,6 +336,7 @@ var EntityDefs = {
       P_MOBILE,
     ],
     default_state: UnitIdleState,
+    sight: 8.0,
     health: 100.0,
     capture_range: 1.0,
   },
@@ -277,6 +350,7 @@ var EntityDefs = {
       P_MOBILE,
     ],
     default_state: UnitIdleState,
+    sight: 7.0,
     health: 50.0,
     capture_range: 1.0,
     actions: {
@@ -293,6 +367,7 @@ var EntityDefs = {
       P_RENDERABLE,
       P_COLLIDABLE,
     ],
+    sight: 5.0,
     health: 700.0,
     effects: {
       req_gen: makeReqGenEffect(1.0),
@@ -320,6 +395,7 @@ var EntityDefs = {
       P_RENDERABLE,
       P_COLLIDABLE,
     ],
+    sight: 2.0,
     cap_time: 5.0,
     effects: {
       vp_gen: makeVpGenEffect(1.0),
@@ -332,6 +408,7 @@ var EntityDefs = {
       P_RENDERABLE,
       P_COLLIDABLE,
     ],
+    sight: 2.0,
     cap_time: 5.0,
     effects: {
       req_gen: makeReqGenEffect(1.0),
@@ -353,12 +430,16 @@ function entityInit(entity, params) {
   entity.cooldowns_ = {};
 
   var name = entity.getName();
+  // TODO(zack): some kind of copy properties or something, this sucks
   var def = EntityDefs[name];
   if (def) {
     if (def.properties) {
       for (var i = 0; i < def.properties.length; i++) {
         entity.setProperty(def.properties[i], true);
       }
+    }
+    if (def.sight) {
+      entity.sight_ = def.sight;
     }
     if (def.default_state) {
       entity.defaultState_ = def.default_state;
@@ -387,9 +468,19 @@ function entityInit(entity, params) {
   }
 
   entity.state_ = new entity.defaultState_(params);
+
+  entity.attack = function (target) {
+    Log(entity.getID(), 'attack');
+    // TODO
+  }
 }
 
 function entityUpdate(entity, dt) {
+  var new_state = entity.state_.update(entity, dt);
+  if (new_state) {
+    entity.state_ = new_state;
+  }
+
   if (entity.prodQueue_.length) {
     var prod = entity.prodQueue_[0];
     prod.t += dt;
@@ -416,11 +507,6 @@ function entityUpdate(entity, dt) {
     if (entity.cooldowns_[cd] < 0.0) {
       delete entity.cooldowns_[cd];
     }
-  }
-
-  var new_state = entity.state_.update(entity, dt);
-  if (new_state) {
-    entity.state_ = new_state;
   }
 
   for (var ename in entity.effects_) {
@@ -475,9 +561,14 @@ function entityHandleMessage(entity, msg) {
 }
 
 function entityHandleOrder(entity, order) {
+  // the unit property basically means you can order it around
+  if (!entity.hasProperty(P_UNIT)) {
+    return;
+  }
   var type = order.type;
   Log('Got order of type', type);
 
+  // TODO(zack): replace if/else if/else block
   if (type == 'MOVE') {
     entity.state_ = new UnitMoveState({
       target: order.target,
@@ -492,6 +583,16 @@ function entityHandleOrder(entity, order) {
     entity.state_ = new UnitCaptureState({
       target_id: order.target_id,
     });
+  } else if (type == 'ATTACK') {
+    if (order.target_id) {
+      entity.state_ = new UnitAttackState({
+        target_id: order.target_id,
+      });
+    } else {
+      entity.state_ = new UnitAttackMoveState({
+        target: order.target,
+      });
+    }
   } else {
     Log('Unknown order of type', type);
   }

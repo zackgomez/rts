@@ -109,16 +109,14 @@
 
   "unit" :
   {
-    "class"        : "Unit",
+    "class"        : "Actor",
     "model"        : "unit",
     "modelSize"    : 0.8,
     "speed"        : 3.0,
-    "turnRate"     : 800.0,
     "size"         : [0.6, 0.6],
     "height"       : 1.25,
     "rangedWeapon" : "basic_rifle",
-    "meleeWeapon"  : "basic_knife",
-    "sight"        : 8.0
+    "meleeWeapon"  : "basic_knife"
   },
 
   "basic_rifle" :
@@ -145,14 +143,12 @@
 
   "melee_unit" :
   {
-    "class"       : "Unit",
+    "class"       : "Actor",
     "model"       : "melee_unit",
     "modelSize"   : 1.0,
     "speed"       : 4.5,
-    "turnRate"    : 800.0,
     "size"        : [0.6, 0.6],
     "height"      : 1.0,
-    "sight"       : 7.0,
     "meleeWeapon" : "quick_knife"
   },
 
@@ -184,8 +180,7 @@
     "model"  : "building",
     "modelSize"    : 4.0,
     "size"   : [2.5, 2.5],
-    "height" : 1.65,
-    "sight"  : 5.0
+    "height" : 1.65
   },
 
   "victory_point" :
@@ -195,8 +190,7 @@
     "modelSize"   : 0.6,
     "texture"     : "vp",
     "size"        : [1.4, 1.4],
-    "height"      : 0.5,
-    "sight"       : 2.0
+    "height"      : 0.5
   },
 
   "req_point" :
@@ -205,8 +199,7 @@
     "model"       : "req_point",
     "modelSize"   : 2.0,
     "size"        : [0.9, 0.9],
-    "height"      : 0.25,
-    "sight"       : 2.0
+    "height"      : 0.25
   },
 
   "colors" :

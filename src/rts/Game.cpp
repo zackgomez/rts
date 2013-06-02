@@ -11,7 +11,6 @@
 #include "rts/MessageHub.h"
 #include "rts/Player.h"
 #include "rts/Renderer.h"
-#include "rts/Unit.h"
 #include "rts/VisibilityMap.h"
 
 namespace rts {
@@ -409,14 +408,14 @@ void Game::handleAction(id_t playerID, const PlayerAction &action) {
     msg["from"] = toJson(playerID);
     msg["type"] = MessageTypes::ORDER;
     if (action["type"] == ActionTypes::MOVE) {
-      // Generate a message to target entity with move ordervi
-      msg["order_type"] = OrderTypes::MOVE;
+      // Generate a message to target entity with move order
+      msg["order_type"] = "MOVE";
       msg["target"] = action["target"];
 
       MessageHub::get()->sendMessage(msg);
     } else if (action["type"] == ActionTypes::ATTACK) {
       // Generate a message to target entity with attack order
-      msg["order_type"] = OrderTypes::ATTACK;
+      msg["order_type"] = "ATTACK";
       if (action.isMember("target")) {
         msg["target"] = action["target"];
       }
@@ -427,15 +426,15 @@ void Game::handleAction(id_t playerID, const PlayerAction &action) {
       MessageHub::get()->sendMessage(msg);
     } else if (action["type"] == ActionTypes::CAPTURE) {
       msg["enemy_id"] = action["enemy_id"];
-      msg["order_type"] = OrderTypes::CAPTURE;
+      msg["order_type"] = "CAPTURE";
 
       MessageHub::get()->sendMessage(msg);
     } else if (action["type"] == ActionTypes::STOP) {
-      msg["order_type"] = OrderTypes::STOP;
+      msg["order_type"] = "STOP";
 
       MessageHub::get()->sendMessage(msg);
     } else if (action["type"] == ActionTypes::ACTION) {
-      msg["order_type"] = OrderTypes::ACTION;
+      msg["order_type"] = "ACTION";
       msg["action"] = action["action"];
       msg["target"] = action["target"];
 

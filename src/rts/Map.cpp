@@ -6,7 +6,6 @@
 #include "rts/MessageHub.h"
 #include "rts/Player.h"
 #include "rts/Renderer.h"
-#include "rts/Unit.h"
 
 namespace rts {
 
