@@ -2,9 +2,7 @@
 #define SRC_RTS_MESSAGEHUB_H_
 
 #include <utility>
-#include "common/Logger.h"
 #include "common/util.h"
-#include "rts/GameEntity.h"
 #include "rts/Message.h"
 #include "rts/Game.h"
 

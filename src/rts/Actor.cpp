@@ -1,24 +1,16 @@
 #include "rts/Actor.h"
+#include <v8.h>
 #include "common/ParamReader.h"
 #include "common/util.h"
+#include "rts/Game.h"
 #include "rts/Player.h"
 #include "rts/ResourceManager.h"
-#include "rts/Weapon.h"
 #include "rts/Renderer.h"
 
 namespace rts {
 
 Actor::Actor(id_t id, const std::string &name, const Json::Value &params)
-  : GameEntity(id, name, params),
-    melee_timer_(0.f),
-    meleeWeapon_(nullptr),
-    rangedWeapon_(nullptr) {
-  if (hasParam("meleeWeapon")) {
-    meleeWeapon_ = new Weapon(strParam("meleeWeapon"), this);
-  }
-  if (hasParam("rangedWeapon")) {
-    rangedWeapon_ = new Weapon(strParam("rangedWeapon"), this);
-  }
+  : GameEntity(id, name, params) {
 
   setMeshName(strParam("model"));
   setScale(glm::vec3(fltParam("modelSize")));
@@ -105,7 +97,7 @@ void Actor::handleMessage(const Message &msg) {
 void Actor::handleOrder(const Message &order) {
   invariant(order["type"] == MessageTypes::ORDER, "unknown message type");
   invariant(order.isMember("order_type"), "missing order type");
-  if (order["order_type"] == OrderTypes::ACTION) {
+  if (order["order_type"] == "ACTION") {
     invariant(order.isMember("action"), "missing action name");
     std::string action_name = order["action"].asString();
     handleAction(action_name, order);
@@ -186,8 +178,6 @@ void Actor::update(float dt) {
     LOG(ERROR) << "Error updating entity: "
       << *String::AsciiValue(try_catch.Exception()) << '\n';
   }
-
-  melee_timer_ -= dt;
 
   updateUIInfo();
   updateActions();

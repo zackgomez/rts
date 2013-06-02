@@ -93,8 +93,6 @@
 
   "global" :
   {
-    // time after melee attacks before unit can ranged attack again
-    "meleeCooldown" : 1.00,
     "defaultColor"  : [1, 1, 1],
     "pointsToWin"   : 100,
     "startingRequisition" : 100,
@@ -114,22 +112,8 @@
     "modelSize"    : 0.8,
     "speed"        : 3.0,
     "size"         : [0.6, 0.6],
-    "height"       : 1.25,
-    "rangedWeapon" : "basic_rifle",
-    "meleeWeapon"  : "basic_knife"
+    "height"       : 1.25
   },
-
-  "basic_rifle" :
-  {
-    "type"       : "ranged",
-    "range"      : 6.0,
-    "cooldown"   : 0.5,
-    "arc"        : 30.0,
-    "damage"     : 10.0,
-    "windup"     : 0.2,
-    "winddown"   : 0.3
-  },
-
 
   "projectile" :
   {
@@ -148,30 +132,7 @@
     "modelSize"   : 1.0,
     "speed"       : 4.5,
     "size"        : [0.6, 0.6],
-    "height"      : 1.0,
-    "meleeWeapon" : "quick_knife"
-  },
-
-  "basic_knife" :
-  {
-    "type"     : "melee",
-    "range"    : 1.0,
-    "arc"      : 60.0,
-    "damage"   : 5.0,
-    "windup"   : 0.0,
-    "winddown" : 0.2,
-    "cooldown" : 0.5
-  },
-
-  "quick_knife" :
-  {
-    "type"     : "melee",
-    "range"    : 1.0,
-    "arc"      : 60.0,
-    "damage"   : 5.0,
-    "windup"   : 0.0,
-    "winddown" : 0.2,
-    "cooldown" : 0.2
+    "height"      : 1.0
   },
 
   "building" :

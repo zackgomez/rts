@@ -1,7 +1,6 @@
 #ifndef SRC_RTS_ACTOR_H_
 #define SRC_RTS_ACTOR_H_
 
-#include <queue>
 #include <string>
 #include <vector>
 #include "common/Clock.h"
@@ -9,16 +8,6 @@
 #include "rts/UIAction.h"
 
 namespace rts {
-
-class Weapon;
-
-namespace OrderTypes {
-const std::string MOVE = "MOVE";
-const std::string ATTACK = "ATTACK";
-const std::string CAPTURE = "CAPTURE";
-const std::string STOP = "STOP";
-const std::string ACTION = "ACTION";
-};
 
 class Actor : public GameEntity {
  public:
@@ -47,13 +36,11 @@ class Actor : public GameEntity {
     resetTexture();
   }
 
-
   struct UIInfo {
     glm::vec2 health;
     glm::vec2 production;
     glm::vec2 capture;
   };
-
   const UIInfo& getUIInfo() const {
     return uiInfo_;
   }
@@ -64,8 +51,6 @@ class Actor : public GameEntity {
 
   void resetTexture();
 
-  float melee_timer_;
-
   UIInfo uiInfo_;
   void updateUIInfo();
 
@@ -74,8 +59,6 @@ class Actor : public GameEntity {
 
   // Used by the render
   Clock::time_point lastTookDamage_;
-
-  Weapon *rangedWeapon_, *meleeWeapon_;
 };
 };  // namespace rts
 
