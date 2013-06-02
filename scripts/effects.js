@@ -114,16 +114,22 @@ function ProductionAction(params) {
 
 function TeleportAction(params) {
   this.range = params.range;
-  this.icon =  'melee_icon';
-  this.tooltip =  'Teleport';
-  this.targeting =  TargetingTypes.LOCATION;
+  this.cooldown = params.cooldown;
+  this.icon = 'melee_icon';
+  this.tooltip = 'Teleport';
+  this.cooldownName = 'teleport';
+  this.targeting = TargetingTypes.LOCATION;
 
-  this.isEnabled =  function (entity) {
-    return true;
+  this.isEnabled = function (entity) {
+    return !(this.cooldownName in entity.cooldowns_);
   };
 
   this.exec = function (entity, target) {
+    if (!this.isEnabled(entity)) {
+      return;
+    }
     Log('Teleporting to', target, 'Range:', this.range);
+    entity.cooldowns_[this.cooldownName] = this.cooldown;
     entity.warpPosition(target);
   };
 }
@@ -218,7 +224,8 @@ var EntityDefs = {
     actions:
     {
       teleport: new TeleportAction({
-        range: 4.0,
+        range: 6.0,
+        cooldown: 2.0,
       }),
     },
   },
@@ -298,6 +305,7 @@ var EntityDefs = {
 function entityInit(entity, params) {
   entity.prodQueue_ = [];
   entity.defaultState_ = NullState;
+  entity.cooldowns_ = {};
 
   var name = entity.getName();
   var def = EntityDefs[name];
@@ -353,6 +361,13 @@ function entityUpdate(entity, dt) {
   if (entity.getPlayerID() !== NO_PLAYER || entity.capResetDelay_ > 1) {
     entity.capAmount_ = 0.0;
     entity.cappingPlayerID_ = null;
+  }
+
+  for (var cd in entity.cooldowns_) {
+    entity.cooldowns_[cd] -= dt;
+    if (entity.cooldowns_[cd] < 0.0) {
+      delete entity.cooldowns_[cd];
+    }
   }
 
   var new_state = entity.state_.update(entity, dt);
