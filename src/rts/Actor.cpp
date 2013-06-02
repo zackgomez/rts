@@ -226,6 +226,7 @@ void Actor::updateActions() {
   auto targeting = String::New("targeting");
   auto range = String::New("range");
   auto state = String::New("state");
+  auto cooldown = String::New("cooldown");
   Handle<Array> jsactions = Handle<Array>::Cast(ret);
   for (int i = 0; i < jsactions->Length(); i++) {
     Handle<Object> jsaction = Handle<Object>::Cast(jsactions->Get(i));
@@ -239,6 +240,7 @@ void Actor::updateActions() {
     uiaction.range = jsaction->Get(range)->NumberValue();
     uiaction.state = static_cast<UIAction::ActionState>(
         jsaction->Get(state)->Uint32Value());
+    uiaction.cooldown = jsaction->Get(cooldown)->NumberValue();
     actions_.push_back(uiaction);
   }
 }

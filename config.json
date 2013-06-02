@@ -83,6 +83,10 @@
       "depthfield" : {
         "vert" : "shaders/texsimple.v.glsl",
         "frag" : "shaders/depthfield.f.glsl"
+      },
+      "cooldown" : {
+        "vert" : "shaders/texsimple.v.glsl",
+        "frag" : "shaders/cooldown_rect.f.glsl"
       }
     }
   },

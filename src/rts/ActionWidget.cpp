@@ -47,8 +47,15 @@ void ActionWidget::render(float dt) {
         ResourceManager::get()->getTexture(action.icon),
         glm::vec4(0, 0, 1, 1));
 
-    if (action.state == UIAction::DISABLED) {
-      drawRectCenter(center, size_, glm::vec4(0, 0, 0, 0.2f));
+    if (action.state == UIAction::COOLDOWN) {
+      Shader *shader = ResourceManager::get()->getShader("cooldown");
+      shader->makeActive();
+      shader->uniform4f("texcoord", glm::vec4(0, 0, 1, 1));
+      shader->uniform1f("cooldown_percent", action.cooldown);
+      shader->uniform4f("color", glm::vec4(0, 0, 0, 0.5f));
+      drawShaderCenter(center, size_);
+    } else if (action.state == UIAction::DISABLED) {
+      drawRectCenter(center, size_, glm::vec4(0, 0, 0, 0.5f));
     }
 
     if (action_hover && hoverTimer_ > fltParam("local.tooltipDelay")) {

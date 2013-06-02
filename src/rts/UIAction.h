@@ -13,6 +13,7 @@ struct UIAction {
   enum ActionState {
     DISABLED = 0,
     ENABLED = 1,
+    COOLDOWN = 2,
   };
 
   id_t owner;
@@ -22,5 +23,7 @@ struct UIAction {
   TargetingType targeting;
   float range;
   ActionState state;
+  // Only relevant in COOLDOWN state
+  float cooldown;
 };
 };

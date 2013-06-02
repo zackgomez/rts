@@ -26,6 +26,7 @@ TargetingTypes = {
 ActionStates = {
   DISABLED: 0,
   ENABLED: 1,
+  COOLDOWN: 2,
 };
 
 // -- Utility --
@@ -94,21 +95,26 @@ function ProductionAction(params) {
     '\nreq: ' + this.req_cost +
     '\ntime: ' + this.time_cost;
 
-  this.isEnabled = function (entity) {
-    return GetRequisition(entity.getPlayerID()) > this.req_cost;
+  this.getState = function (entity) {
+    if (GetRequisition(entity.getPlayerID()) > this.req_cost) {
+      return ActionStates.ENABLED;
+    } else {
+      return ActionStates.DISABLED;
+    }
   };
 
   this.exec = function (entity, target) {
-    if (this.isEnabled(entity)) {
-      var prod = {
-        name: this.prod_name,
-        t: 0.0,
-        endt: this.time_cost
-      };
-      entity.prodQueue_.push(prod);
-      Log('Started production of', prod.name, 'for', prod.endt);
-      AddRequisition(entity.getPlayerID(), -this.req_cost, entity.getID());
+    if (this.getState(entity) != ActionStates.ENABLED) {
+      return;
     }
+    var prod = {
+      name: this.prod_name,
+      t: 0.0,
+      endt: this.time_cost
+    };
+    entity.prodQueue_.push(prod);
+    Log('Started production of', prod.name, 'for', prod.endt);
+    AddRequisition(entity.getPlayerID(), -this.req_cost, entity.getID());
   };
 }
 
@@ -120,12 +126,15 @@ function TeleportAction(params) {
   this.cooldownName = 'teleport';
   this.targeting = TargetingTypes.LOCATION;
 
-  this.isEnabled = function (entity) {
-    return !(this.cooldownName in entity.cooldowns_);
+  this.getState = function (entity) {
+    if (this.cooldownName in entity.cooldowns_) {
+      return ActionStates.COOLDOWN;
+    }
+    return ActionStates.ENABLED;
   };
 
   this.exec = function (entity, target) {
-    if (!this.isEnabled(entity)) {
+    if (this.getState(entity) != ActionStates.ENABLED) {
       return;
     }
     Log('Teleporting to', target, 'Range:', this.range);
@@ -450,7 +459,11 @@ function entityGetActions(entity) {
       tooltip: action.tooltip,
       targeting: action.targeting ? action.targeting : TargetingTypes.NONE,
       range: action.range ? action.range : 0.0,
-      state: action.isEnabled(entity) ? ActionStates.ENABLED : ActionStates.DISABLED,
+      state: action.getState(entity),
+      // TODO(zack): this is hacky
+      cooldown: action.getState(entity) == ActionStates.COOLDOWN
+        ? 1 - entity.cooldowns_[action.cooldownName] / action.cooldown
+        : 0.0,
     });
   }
 
