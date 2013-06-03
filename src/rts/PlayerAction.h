@@ -7,14 +7,15 @@
 typedef Json::Value PlayerAction;
 
 namespace ActionTypes {
-const std::string DONE = "DONE";
 const std::string MOVE = "MOVE";
 const std::string ATTACK = "ATTACK";
 const std::string CAPTURE = "CAPTURE";
 const std::string STOP = "STOP";
 const std::string ACTION = "ACTION";
-const std::string CHAT = "CHAT";
+// ^^ Convert to ORDER
 
+const std::string DONE = "DONE";
+const std::string CHAT = "CHAT";
 const std::string LEAVE_GAME = "LEAVE_GAME";
 };
 

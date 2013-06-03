@@ -46,11 +46,6 @@ void GameEntity::update(float dt) {
   setSpeed(0.f);
 }
 
-void GameEntity::handleMessage(const Message &msg) {
-  LOG(INFO) << "Entity named " << name_
-    << " received unknown message type: " << msg["type"] << '\n';
-}
-
 float GameEntity::distanceToEntity(const GameEntity *e) const {
   return rayBox2Intersection(
     getPosition2(),
@@ -63,7 +58,7 @@ void GameEntity::remainStationary() {
   setSpeed(0.f);
 }
 
-void GameEntity::turnTowards(const glm::vec2 &targetPos, float dt) {
+void GameEntity::turnTowards(const glm::vec2 &targetPos) {
   setAngle(angleToTarget(targetPos));
   setSpeed(0.f);
 }
@@ -74,7 +69,7 @@ void GameEntity::moveTowards(const glm::vec2 &targetPos, float dt) {
   float dist = glm::length(targetPos - getPosition2());
   float speed = maxSpeed_;
   // rotate
-  turnTowards(targetPos, dt);
+  turnTowards(targetPos);
   // move
   // Set speed careful not to overshoot
   if (dist < speed * dt) {

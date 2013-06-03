@@ -49,10 +49,9 @@ rts::tick_t toTick(const Json::Value &v);
 template <class T>
 Json::Value toJson(const std::set<T> &entities) {
   Json::Value v;
-for (const T& t : entities) {
+  for (const T& t : entities) {
     v.append(toJson(t));
   }
-
   return v;
 }
 

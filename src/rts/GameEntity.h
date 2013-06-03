@@ -13,6 +13,7 @@ class Checksum;
 
 namespace rts {
 
+// TODO(zack): merge with actor
 class GameEntity : public ModelEntity {
  public:
   explicit GameEntity(id_t id,
@@ -52,10 +53,11 @@ class GameEntity : public ModelEntity {
     maxSpeed_ = max_speed;
   }
 
-  virtual void handleMessage(const Message& msg);
+  virtual void handleMessage(const Message& msg) { }
+  virtual void handleOrder(const Message &order) { }
   // Sets 'intention' like velocity, etc
-  virtual void update(float dt) = 0;
-  virtual void collide(const GameEntity *other, float dt) = 0;
+  virtual void update(float dt);
+  virtual void collide(const GameEntity *other, float dt) { }
 
   virtual void checksum(Checksum &chksum) const;
 
@@ -68,7 +70,7 @@ class GameEntity : public ModelEntity {
   // Don't move or rotate
   void remainStationary();
   // Rotates to face position
-  void turnTowards(const glm::vec2 &pos, float dt);
+  void turnTowards(const glm::vec2 &pos);
   // Moves towards position as fast as possible (probably rotates)
   void moveTowards(const glm::vec2 &pos, float dt);
   // Teleports to the given position

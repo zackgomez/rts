@@ -17,12 +17,4 @@ CollisionObject::CollisionObject(
 
   setSize(toVec2(params["size"]));
 }
-
-void CollisionObject::handleMessage(const Message &msg) {
-  GameEntity::handleMessage(msg);
-}
-
-void CollisionObject::update(float dt) {
-  GameEntity::update(dt);
-}
 };  // rts

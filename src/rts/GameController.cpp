@@ -332,7 +332,8 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
     } else if (!action_.name.empty()) {
       if (newSelect.count(action_.owner)) {
         action["type"] = ActionTypes::ACTION;
-        action["entity"] = toJson(action_.owner);
+        std::set<id_t> ids(&action_.owner, (&action_.owner)+1);
+        action["entity"] = toJson(ids);
         action["pid"] = toJson(player_->getPlayerID());
         action["action"] = action_.name;
         if (action_.targeting == UIAction::TargetingType::LOCATION) {
@@ -753,7 +754,8 @@ void GameController::handleUIAction(const UIAction &action) {
   if (action.targeting == UIAction::TargetingType::NONE) {
     Json::Value msg;
     msg["type"] = ActionTypes::ACTION;
-    msg["entity"] = toJson(action.owner);
+    std::set<id_t> ids(&action.owner, (&action.owner)+1);
+    msg["entity"] = toJson(ids);
     msg["pid"] = toJson(player_->getPlayerID());
     msg["action"] = action.name;
     MessageHub::get()->addAction(msg);

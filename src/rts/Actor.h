@@ -15,6 +15,7 @@ class Actor : public GameEntity {
   virtual ~Actor();
 
   virtual void handleMessage(const Message &msg) override;
+  virtual void handleOrder(const Message &order) override;
   virtual void update(float dt) override;
   virtual void collide(const GameEntity *other, float dt) override final;
 
@@ -46,7 +47,6 @@ class Actor : public GameEntity {
   }
 
  protected:
-  virtual void handleOrder(const Message &order);
   void handleAction(const std::string &action_name, const Json::Value &order);
 
   void resetTexture();

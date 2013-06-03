@@ -6,14 +6,11 @@
 
 namespace rts {
 
+// TODO(zack): fucking kill this thing.  it should be just a model entity
 class CollisionObject : public GameEntity {
  public:
   explicit CollisionObject(id_t id, const std::string &name, const Json::Value &params);
   virtual ~CollisionObject() { }
-
-  virtual void handleMessage(const Message &msg) override;
-  virtual void update(float dt) override;
-  virtual void collide(const GameEntity *e, float dt) override { }
 };
 };  // namespace rts
 

@@ -211,6 +211,7 @@ function entityHandleOrder(entity, order) {
       target_id: order.target_id,
     });
   } else if (type == 'ATTACK') {
+    Log(order.target_id);
     if (order.target_id) {
       entity.state_ = new UnitAttackState({
         target_id: order.target_id,

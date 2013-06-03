@@ -99,7 +99,7 @@ class Game {
 
  private:
   void initScripts();
-  void handleAction(id_t playerID, const PlayerAction &action);
+  void handleOrder(id_t playerID, const PlayerAction &action);
   // Returns true if all the players have submitted input for the current tick_
   bool updatePlayers();
   TickChecksum checksum();

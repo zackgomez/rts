@@ -71,33 +71,27 @@ void Actor::collide(const GameEntity *collider, float dt) {
 }
 
 void Actor::handleMessage(const Message &msg) {
-  if (msg["type"] == MessageTypes::ORDER) {
-    handleOrder(msg);
-  } else {
-    using namespace v8;
-    auto *script = Game::get()->getScript();
-    HandleScope scope(script->getIsolate());
-    Handle<Object> global = script->getGlobal();
-    TryCatch try_catch;
+  using namespace v8;
+  auto *script = Game::get()->getScript();
+  HandleScope scope(script->getIsolate());
+  Handle<Object> global = script->getGlobal();
+  TryCatch try_catch;
 
-    Handle<Object> jsmsg = Handle<Object>::Cast(script->jsonToJS(msg));
+  Handle<Object> jsmsg = Handle<Object>::Cast(script->jsonToJS(msg));
 
-    const int argc = 2;
-    Handle<Value> argv[argc] = {script->getEntity(getID()), jsmsg};
-    Handle<Value> result =
-      Handle<Function>::Cast(global->Get(String::New("entityHandleMessage")))
-      ->Call(global, argc, argv);
-    if (result.IsEmpty()) {
-      LOG(ERROR) << "error handling action: "
-        << *String::AsciiValue(try_catch.Exception()) << '\n';
-    }
+  const int argc = 2;
+  Handle<Value> argv[argc] = {script->getEntity(getID()), jsmsg};
+  Handle<Value> result =
+    Handle<Function>::Cast(global->Get(String::New("entityHandleMessage")))
+    ->Call(global, argc, argv);
+  if (result.IsEmpty()) {
+    LOG(ERROR) << "error handling action: "
+      << *String::AsciiValue(try_catch.Exception()) << '\n';
   }
 }
 
 void Actor::handleOrder(const Message &order) {
-  invariant(order["type"] == MessageTypes::ORDER, "unknown message type");
-  invariant(order.isMember("order_type"), "missing order type");
-  if (order["order_type"] == "ACTION") {
+  if (order["type"] == "ACTION") {
     invariant(order.isMember("action"), "missing action name");
     std::string action_name = order["action"].asString();
     handleAction(action_name, order);
@@ -108,14 +102,12 @@ void Actor::handleOrder(const Message &order) {
     Handle<Object> global = script->getGlobal();
     TryCatch try_catch;
 
-    Json::Value cleanorder;
-    cleanorder["type"] = order["order_type"];
+    // TODO(zack): HACK! either pass vec2 or expect vec3
+    Json::Value cleanorder = order;
     if (order.isMember("target")) {
-      cleanorder["target"] = toJson(glm::vec2(toVec2(order["target"])));
+      cleanorder["target"] = toJson(toVec2(order["target"]));
     }
-    if (order.isMember("enemy_id")) {
-      cleanorder["target_id"] = order["enemy_id"];
-    }
+
     Handle<Object> jsorder = Handle<Object>::Cast(script->jsonToJS(cleanorder));
 
     const int argc = 2;

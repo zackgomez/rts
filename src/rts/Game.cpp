@@ -176,9 +176,14 @@ void Game::update(float dt) {
       } else if (action["type"] == ActionTypes::LEAVE_GAME) {
         running_ = false;
         return;
+      } else if (action["type"] == ActionTypes::CHAT) {
+        invariant(action.isMember("chat"), "malformed CHAT action");
+        if (chatListener_) {
+          chatListener_(action);
+        }
       } else {
         actionChecksummer_.process(action);
-        handleAction(pid, action);
+        handleOrder(pid, action);
       }
     }
     invariant(done, "Missing DONE message for player");
@@ -396,54 +401,27 @@ const VisibilityMap* Game::getVisibilityMap(id_t pid) const {
   return it->second;
 }
 
-void Game::handleAction(id_t playerID, const PlayerAction &action) {
-  if (action["type"] == ActionTypes::CHAT) {
-    invariant(action.isMember("chat"), "malformed CHAT action");
-    if (chatListener_) {
-      chatListener_(action);
+void Game::handleOrder(id_t playerID, const PlayerAction &order) {
+  invariant(
+      order.isMember("entity") && order["entity"].isArray(),
+      "expected order targets as array");
+
+  // TODO(zack): this will when ActionTypes::ORDER is introduced
+  Json::Value order_trim;
+  order_trim["type"] = order["type"];
+  if (order.isMember("target")) order_trim["target"] = order["target"];
+  if (order.isMember("enemy_id")) order_trim["target_id"] = order["enemy_id"];
+  if (order.isMember("action")) order_trim["action"] = order["action"];
+
+  Json::Value entities = order["entity"];
+  for (int i = 0; i < entities.size(); i++) {
+    GameEntity *entity = getEntity(toID(entities[i]));
+    if (!entity) {
+      LOG(WARNING) << "Couldn't find entity "
+        << toID(order["entity"]) << " for order\n";
     }
-  } else {
-    Message msg;
-    msg["to"] = action["entity"];
-    msg["from"] = toJson(playerID);
-    msg["type"] = MessageTypes::ORDER;
-    if (action["type"] == ActionTypes::MOVE) {
-      // Generate a message to target entity with move order
-      msg["order_type"] = "MOVE";
-      msg["target"] = action["target"];
-
-      MessageHub::get()->sendMessage(msg);
-    } else if (action["type"] == ActionTypes::ATTACK) {
-      // Generate a message to target entity with attack order
-      msg["order_type"] = "ATTACK";
-      if (action.isMember("target")) {
-        msg["target"] = action["target"];
-      }
-      if (action.isMember("enemy_id")) {
-        msg["enemy_id"] = action["enemy_id"];
-      }
-
-      MessageHub::get()->sendMessage(msg);
-    } else if (action["type"] == ActionTypes::CAPTURE) {
-      msg["enemy_id"] = action["enemy_id"];
-      msg["order_type"] = "CAPTURE";
-
-      MessageHub::get()->sendMessage(msg);
-    } else if (action["type"] == ActionTypes::STOP) {
-      msg["order_type"] = "STOP";
-
-      MessageHub::get()->sendMessage(msg);
-    } else if (action["type"] == ActionTypes::ACTION) {
-      msg["order_type"] = "ACTION";
-      msg["action"] = action["action"];
-      msg["target"] = action["target"];
-
-      MessageHub::get()->sendMessage(msg);
-    } else {
-      LOG(WARN)
-        << "Unknown action type from player " << playerID << " : "
-        << action["type"].asString() << '\n';
-    }
+    invariant(entity->getPlayerID() == playerID, "order for unonwned entity");
+    entity->handleOrder(order_trim);
   }
 }
 
