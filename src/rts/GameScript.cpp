@@ -6,6 +6,7 @@
 #include "rts/MessageHub.h"
 #include "rts/Player.h"
 #include "rts/Renderer.h"
+#include "rts/ResourceManager.h"
 
 using namespace v8;
 
@@ -491,26 +492,25 @@ void GameScript::init() {
 }
 
 void GameScript::loadScripts() {
-  // TODO(zack): HACK ALERT
-  std::ifstream file("scripts/effects.js");
-  if (!file) {
-    throw file_exception("Unable to open script");
-  }
-  std::string text;
-  std::getline(file, text, (char)EOF);
-  file.close();
+  auto scripts = ResourceManager::get()->getOrderedScriptNames();
+  for (const auto &pair : scripts) {
+    std::string filename = pair.first;
+    std::string contents = pair.second;
 
-  TryCatch try_catch;
-  Handle<Script> script = Script::Compile(String::New(text.c_str()));
-  if (script.IsEmpty()) {
-    String::AsciiValue e_str(try_catch.Exception());
-    LOG(ERROR) << "Unable to compile script: " << *e_str << '\n';
-  }
+    LOG(INFO) << "Loading script: " << filename << '\n';
 
-  Handle<Value> result = script->Run();
-  if (result.IsEmpty()) {
-    String::AsciiValue e_str(try_catch.Exception());
-    LOG(ERROR) << "Unable to run script: " << *e_str << '\n';
+    TryCatch try_catch;
+    Handle<Script> script = Script::Compile(String::New(contents.c_str()));
+    if (script.IsEmpty()) {
+      String::AsciiValue e_str(try_catch.Exception());
+      LOG(ERROR) << "Unable to compile script '" << filename << "': " << *e_str << '\n';
+    }
+
+    Handle<Value> result = script->Run();
+    if (result.IsEmpty()) {
+      String::AsciiValue e_str(try_catch.Exception());
+      LOG(ERROR) << "Unable to run script '" << filename << "': " << *e_str << '\n';
+    }
   }
 }
 

@@ -107,6 +107,65 @@ void ResourceManager::loadResources() {
   }
 }
 
+std::vector<std::pair<std::string, std::string>> ResourceManager::getOrderedScriptNames() {
+  namespace fs = boost::filesystem;
+  boost::system::error_code ec;
+  fs::path scripts_path("scripts");
+  auto status = fs::status(scripts_path);
+  invariant(
+    fs::exists(status) && fs::is_directory(status),
+    "missing scripts directory");
+
+  std::vector<std::pair<int, std::string>> paths;
+  Json::Reader reader;
+  auto it = fs::directory_iterator(scripts_path);
+  for ( ; it != fs::directory_iterator(); it++) {
+    auto dir_ent = *it;
+    if (!fs::is_regular_file(dir_ent.status())) {
+      continue;
+    }
+    auto filepath = dir_ent.path().filename();
+    auto filename = filepath.string();
+    if (filepath.extension() != ".js" || filename.empty() || filename[0] == '.') {
+      continue;
+    }
+    bool inserted = false;
+    uint32_t n;
+    auto pit = paths.begin(); 
+    for (; pit != paths.end(); pit++) {
+      if (sscanf(pit->second.c_str(), "%d-", &n) == EOF) {
+        // on error, wrap to end
+        n = -1;
+      }
+      if (n < pit->first) {
+        paths.insert(pit, make_pair(n, dir_ent.path().string()));
+        inserted = true;
+      }
+    }
+    if (!inserted) {
+      paths.insert(pit, make_pair(n, dir_ent.path().string()));
+    }
+  }
+
+  std::vector<std::pair<std::string, std::string>> path_files;
+
+  for (const auto& pair : paths) {
+    auto script_name = pair.second;
+    std::ifstream f(script_name.c_str());
+    if (!f) {
+      continue;
+    }
+
+    std::string contents;
+    std::getline(f, contents, (char)EOF);
+    path_files.emplace_back(script_name, contents);
+
+    f.close();
+  }
+
+  return path_files;
+}
+
 Mesh * ResourceManager::getMesh(const std::string &name) {
   invariant(meshes_.count(name), "cannot find mesh: " + name);
   return meshes_[name];
