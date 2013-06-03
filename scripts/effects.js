@@ -577,7 +577,7 @@ function entityUpdate(entity, dt) {
   }
 
   entity.capResetDelay_ += 1;
-  if (entity.getPlayerID() !== NO_PLAYER || entity.capResetDelay_ > 1) {
+  if (entity.capResetDelay_ > 1) {
     entity.capAmount_ = 0.0;
     entity.cappingPlayerID_ = null;
   }
