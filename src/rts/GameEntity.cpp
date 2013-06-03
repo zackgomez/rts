@@ -14,29 +14,19 @@ GameEntity::GameEntity(
     const Json::Value &params)
   : ModelEntity(id),
     playerID_(NO_PLAYER),
-    name_(name) {
+    name_(name),
+    maxSpeed_(0.f) {
   setProperty(P_RENDERABLE, true);
 
   if (params.isMember("pid")) {
-    playerID_ = toID(params["pid"]);
+    playerID_ = assertPid(toID(params["pid"]));
   }
   if (params.isMember("pos")) {
     setPosition(glm::vec3(toVec2(params["pos"]), 0.f));
   }
-  if (params.isMember("size")) {
-    setSize(toVec2(params["size"]));
-  } else {
-    setSize(vec2Param("size"));
-  }
   if (params.isMember("angle")) {
     setAngle(params["angle"].asFloat());
   }
-  if (hasParam("height")) {
-    setHeight(fltParam("height"));
-  }
-
-  // Make sure we did it right
-  assertPid(playerID_);
 }
 
 GameEntity::~GameEntity() {
@@ -82,7 +72,7 @@ void GameEntity::moveTowards(const glm::vec2 &targetPos, float dt) {
   pathQueue_ = std::queue<glm::vec3>();
   pathQueue_.push(glm::vec3(targetPos, 0.f));
   float dist = glm::length(targetPos - getPosition2());
-  float speed = fltParam("speed");
+  float speed = maxSpeed_;
   // rotate
   turnTowards(targetPos, dt);
   // move

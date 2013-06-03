@@ -31,14 +31,14 @@ public:
   float getAngle() const {
     return angle_;
   }
-  const glm::vec2 getDirection() const;
+  glm::vec2 getDirection() const;
   // This unit's bounding box
-  const glm::vec2& getSize() const {
-    return size_;
+  glm::vec2 getSize() const {
+    return glm::vec2(size_);
   }
   // Returns this entities height
   float getHeight() const {
-    return height_;
+    return size_.z;
   }
   // Bounding rectangle
   Rect getRect() const;
@@ -91,13 +91,12 @@ public:
   float angleToTarget(const glm::vec2 &pos) const;
 
 protected:
-  static const glm::vec2 getDirection(float angle);
+  static glm::vec2 getDirection(float angle);
 
 private:
   glm::vec3 pos_;
   float angle_;
-  glm::vec2 size_;
-  float height_;
+  glm::vec3 size_;
 
   // velocity not related to forward movement
   glm::vec3 bumpVel_;

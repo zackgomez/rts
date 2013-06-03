@@ -303,6 +303,32 @@ static Handle<Value> entityGetAngle(const Arguments &args) {
   return scope.Close(ret);
 }
 
+static Handle<Value> entitySetMaxSpeed(const Arguments &args) {
+  invariant(args.Length() == 1, "setMaxSpeed takes 1 arg");
+
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
+  e->setMaxSpeed(args[0]->NumberValue());
+  return Undefined();
+}
+static Handle<Value> entitySetSize(const Arguments &args) {
+  invariant(args.Length() == 1, "setMaxSpeed takes 1 arg");
+
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
+
+  glm::vec3 size = Game::get()->getScript()->jsToVec3(
+      Handle<Array>::Cast(args[0]));
+  e->setSize(glm::vec2(size));
+  e->setHeight(size.z);
+
+  return Undefined();
+}
+
 static Handle<Value> entitySetProperty(const Arguments &args) {
   if (args.Length() < 2) return Undefined();
 
@@ -417,6 +443,13 @@ void GameScript::init() {
   entityTemplate_->Set(
       String::New("getAngle"),
       FunctionTemplate::New(entityGetAngle));
+
+  entityTemplate_->Set(
+      String::New("setMaxSpeed"),
+      FunctionTemplate::New(entitySetMaxSpeed));
+  entityTemplate_->Set(
+      String::New("setSize"),
+      FunctionTemplate::New(entitySetSize));
 
   entityTemplate_->Set(
       String::New("setProperty"),
@@ -588,6 +621,20 @@ glm::vec2 GameScript::jsToVec2(const Handle<Array> arr) const {
 
   ret.x = arr->Get(0)->NumberValue();
   ret.y = arr->Get(1)->NumberValue();
+  return ret;
+}
+glm::vec3 GameScript::jsToVec3(const Handle<Array> arr) const {
+  glm::vec3 ret;
+
+  if (arr->Length() != 3) {
+    LOG(WARNING) << "Trying to convert array of size "
+      << arr->Length() << " to vec2\n";
+    return ret;
+  }
+
+  ret.x = arr->Get(0)->NumberValue();
+  ret.y = arr->Get(1)->NumberValue();
+  ret.z = arr->Get(2)->NumberValue();
   return ret;
 }
 };  // rts

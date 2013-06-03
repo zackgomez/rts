@@ -30,6 +30,7 @@ public:
   v8::Handle<v8::Value> jsonToJS(const Json::Value &json) const;
   Json::Value jsToJSON(const v8::Handle<v8::Value> json) const;
   glm::vec2 jsToVec2(const v8::Handle<v8::Array> js) const;
+  glm::vec3 jsToVec3(const v8::Handle<v8::Array> js) const;
 
 private:
   v8::Persistent<v8::Context> context_;

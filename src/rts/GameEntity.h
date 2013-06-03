@@ -45,6 +45,12 @@ class GameEntity : public ModelEntity {
   const std::string& getName() const {
     return name_;
   }
+  float getMaxSpeed() const {
+    return maxSpeed_;
+  }
+  void setMaxSpeed(float max_speed) {
+    maxSpeed_ = max_speed;
+  }
 
   virtual void handleMessage(const Message& msg);
   // Sets 'intention' like velocity, etc
@@ -84,6 +90,7 @@ class GameEntity : public ModelEntity {
 
  private:
   std::string name_;
+  float maxSpeed_;
 
   std::set<uint32_t> properties_;
 };

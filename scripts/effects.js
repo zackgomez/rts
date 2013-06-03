@@ -353,6 +353,8 @@ var EntityDefs = {
       P_MOBILE,
     ],
     default_state: UnitIdleState,
+    size: [0.6, 0.6, 1.25],
+    speed: 3.0,
     sight: 8.0,
     health: 100.0,
     capture_range: 1.0,
@@ -368,6 +370,8 @@ var EntityDefs = {
       P_MOBILE,
     ],
     default_state: UnitIdleState,
+    size: [0.6, 0.6, 1.0],
+    speed: 4.5,
     sight: 7.0,
     health: 50.0,
     capture_range: 1.0,
@@ -386,6 +390,7 @@ var EntityDefs = {
       P_RENDERABLE,
       P_COLLIDABLE,
     ],
+    size: [2.5, 2.5, 1.65],
     sight: 5.0,
     health: 700.0,
     effects: {
@@ -414,6 +419,7 @@ var EntityDefs = {
       P_RENDERABLE,
       P_COLLIDABLE,
     ],
+    size: [1.4, 1.4, 0.5],
     sight: 2.0,
     cap_time: 5.0,
     effects: {
@@ -427,6 +433,7 @@ var EntityDefs = {
       P_RENDERABLE,
       P_COLLIDABLE,
     ],
+    size: [0.9, 0.9, 0.25],
     sight: 2.0,
     cap_time: 5.0,
     effects: {
@@ -438,8 +445,12 @@ var EntityDefs = {
       P_RENDERABLE,
       P_MOBILE,
     ],
+    speed: 10.0,
+    size: [0.6, 0.6, 0.3],
     default_state: ProjectileState,
   },
+  // TODO(zack): remove this after collision object is no longer a game entity
+  collision_object: {},
 }
 
 // -- Entity Functions --
@@ -456,6 +467,12 @@ function entityInit(entity, params) {
       for (var i = 0; i < def.properties.length; i++) {
         entity.setProperty(def.properties[i], true);
       }
+    }
+    if (def.size) {
+      entity.setSize(def.size);
+    }
+    if (def.speed) {
+      entity.setMaxSpeed(def.speed);
     }
     if (def.sight) {
       entity.sight_ = def.sight;
@@ -486,7 +503,7 @@ function entityInit(entity, params) {
       entity.actions_ = EntityDefs[name].actions;
     }
   } else {
-    Log('No def for', name);
+    throw new Error('No def for ' + name);
   }
 
   entity.state_ = new entity.defaultState_(params);

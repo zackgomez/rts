@@ -1,3 +1,4 @@
+#define GLM_SWIZZLE_XYZW
 #include "rts/ModelEntity.h"
 #include "common/ParamReader.h"
 #include "rts/Game.h"
@@ -10,8 +11,7 @@ ModelEntity::ModelEntity(id_t id)
   : Entity(id),
     pos_(HUGE_VAL),
     angle_(0.f),
-    height_(0.f),
-    size_(glm::vec2(0.f)),
+    size_(0.f),
     speed_(0.f),
     bumpVel_(0.f),
     material_(nullptr),
@@ -24,10 +24,10 @@ ModelEntity::~ModelEntity() {
 }
 
 Rect ModelEntity::getRect() const {
-  return Rect(glm::vec2(pos_), size_, glm::radians(angle_));
+  return Rect(glm::vec2(pos_), getSize(), glm::radians(angle_));
 }
 const Rect ModelEntity::getRect(float dt) const {
-  return Rect(glm::vec2(getPosition(dt)), size_, glm::radians(getAngle(dt)));
+  return Rect(glm::vec2(getPosition(dt)), getSize(), glm::radians(getAngle(dt)));
 }
 
 const glm::vec3 ModelEntity::getVelocity() const {
@@ -41,13 +41,13 @@ void ModelEntity::setPosition(const glm::vec3 &pos) {
   pos_ = pos;
 }
 void ModelEntity::setSize(const glm::vec2 &size) {
-  size_ = size;
+  size_.xy = size;
 }
 void ModelEntity::setAngle(float angle) {
   angle_ = angle;
 }
 void ModelEntity::setHeight(float height) {
-  height_ = height;
+  size_.z = height;
 }
 void ModelEntity::setSpeed(float speed) {
   speed_ = speed;
@@ -148,12 +148,12 @@ float ModelEntity::getAngle(float dt) const {
   return angle_;
 }
 
-const glm::vec2 ModelEntity::getDirection(float angle) {
+glm::vec2 ModelEntity::getDirection(float angle) {
   float rad = deg2rad(angle);
   return glm::vec2(cosf(rad), sinf(rad));
 }
 
-const glm::vec2 ModelEntity::getDirection() const {
+glm::vec2 ModelEntity::getDirection() const {
   return getDirection(angle_);
 }
 
@@ -163,6 +163,6 @@ float ModelEntity::angleToTarget(const glm::vec2 &target) const {
 }
 
 bool ModelEntity::pointInEntity(const glm::vec2 &p) {
-  return pointInBox(p, glm::vec2(pos_), size_, angle_);
+  return pointInBox(p, glm::vec2(pos_), size_.xy, angle_);
 }
 }  // rts

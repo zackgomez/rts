@@ -200,7 +200,6 @@ void GameController::renderExtra(float dt) {
     GameEntity *e = Game::get()->getEntity(action_.owner);
     invariant(e, "Unable to find action owner");
 
-    glm::vec2 size = e->getSize();
     glm::mat4 transform = glm::scale(
         glm::translate(glm::mat4(1.f), e->getPosition() + glm::vec3(0, 0, 0.1f)),
         glm::vec3(2 * action_.range));
