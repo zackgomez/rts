@@ -3,7 +3,6 @@
 #include "common/util.h"
 #include "rts/Actor.h"
 #include "rts/Game.h"
-#include "rts/MessageHub.h"
 #include "rts/Player.h"
 #include "rts/Renderer.h"
 #include "rts/ResourceManager.h"
@@ -11,17 +10,6 @@
 using namespace v8;
 
 namespace rts {
-
-static Handle<Value> jsSendMessage(const Arguments &args) {
-  if (args.Length() < 1) return Undefined();
-  HandleScope scope(args.GetIsolate());
-
-  auto script = Game::get()->getScript();
-  Message json_msg = script->jsToJSON(args[0]);
-  MessageHub::get()->sendMessage(json_msg);
-
-  return Undefined();
-}
 
 static Handle<Value> jsGetEntity(const Arguments &args) {
   if (args.Length() < 1) return Undefined();
@@ -392,9 +380,6 @@ void GameScript::init() {
 
   Handle<ObjectTemplate> global = ObjectTemplate::New();
 
-  global->Set(
-      String::New("SendMessage"),
-      FunctionTemplate::New(jsSendMessage));
   global->Set(
       String::New("Log"),
       FunctionTemplate::New(jsLog));

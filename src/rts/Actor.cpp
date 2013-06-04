@@ -70,26 +70,6 @@ void Actor::collide(const GameEntity *collider, float dt) {
   addBumpVel(glm::vec3(dir * bumpSpeed, 0.f));
 }
 
-void Actor::handleMessage(const Message &msg) {
-  using namespace v8;
-  auto *script = Game::get()->getScript();
-  HandleScope scope(script->getIsolate());
-  Handle<Object> global = script->getGlobal();
-  TryCatch try_catch;
-
-  Handle<Object> jsmsg = Handle<Object>::Cast(script->jsonToJS(msg));
-
-  const int argc = 2;
-  Handle<Value> argv[argc] = {script->getEntity(getID()), jsmsg};
-  Handle<Value> result =
-    Handle<Function>::Cast(global->Get(String::New("entityHandleMessage")))
-    ->Call(global, argc, argv);
-  if (result.IsEmpty()) {
-    LOG(ERROR) << "error handling action: "
-      << *String::AsciiValue(try_catch.Exception()) << '\n';
-  }
-}
-
 void Actor::handleOrder(const Message &order) {
   if (order["type"] == "ACTION") {
     invariant(order.isMember("action"), "missing action name");

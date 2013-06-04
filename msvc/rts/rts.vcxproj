@@ -45,7 +45,6 @@
     <ClCompile Include="..\..\src\rts\Matchmaker.cpp" />
     <ClCompile Include="..\..\src\rts\MatchmakerController.cpp" />
     <ClCompile Include="..\..\src\rts\MatrixStack.cpp" />
-    <ClCompile Include="..\..\src\rts\MessageHub.cpp" />
     <ClCompile Include="..\..\src\rts\MinimapWidget.cpp" />
     <ClCompile Include="..\..\src\rts\ModelEntity.cpp" />
     <ClCompile Include="..\..\src\rts\NetPlayer.cpp" />
@@ -88,7 +87,6 @@
     <ClInclude Include="..\..\src\rts\MatchmakerController.h" />
     <ClInclude Include="..\..\src\rts\MatrixStack.h" />
     <ClInclude Include="..\..\src\rts\Message.h" />
-    <ClInclude Include="..\..\src\rts\MessageHub.h" />
     <ClInclude Include="..\..\src\rts\MinimapWidget.h" />
     <ClInclude Include="..\..\src\rts\ModelEntity.h" />
     <ClInclude Include="..\..\src\rts\NetPlayer.h" />

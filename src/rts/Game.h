@@ -65,8 +65,6 @@ class Game {
     return &script_;
   }
 
-  // Does not block, should only be called from Game thread
-  void sendMessage(id_t to, const Message &msg);
   // Can possibly block, but should never block long
   void addAction(id_t pid, const PlayerAction &act);
 
@@ -92,7 +90,7 @@ class Game {
   float getVictoryPoints(id_t tid) const;
   const VisibilityMap* getVisibilityMap(id_t tid) const;
 
-  typedef std::function<void(const Message&)> ChatListener;
+  typedef std::function<void(id_t pid, const Message&)> ChatListener;
   void setChatListener(ChatListener cl) {
     chatListener_ = cl;
   }

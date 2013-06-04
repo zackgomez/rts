@@ -3,7 +3,7 @@
 #include "common/Collision.h"
 #include "common/ParamReader.h"
 #include "common/util.h"
-#include "rts/MessageHub.h"
+#include "rts/Game.h"
 #include "rts/Player.h"
 
 namespace rts {

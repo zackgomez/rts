@@ -11,7 +11,6 @@
 #include "rts/Game.h"
 #include "rts/Map.h"
 #include "rts/Matchmaker.h"
-#include "rts/MessageHub.h"
 #include "rts/MinimapWidget.h"
 #include "rts/Player.h"
 #include "rts/PlayerAction.h"
@@ -129,8 +128,7 @@ void GameController::onCreate() {
   auto chatWidget = new CommandWidget("ui.chat");
   chatWidget->setCloseOnSubmit(true);
   chatWidget->setOnTextSubmittedHandler([&, chatWidget](const std::string &t) {
-    Message msg;
-    msg["pid"] = toJson(player_->getPlayerID());
+    PlayerAction msg;
     msg["type"] = ActionTypes::CHAT;
 
     std::string text = t;
@@ -144,13 +142,13 @@ void GameController::onCreate() {
     // In future add additional check for whisper
     if (!text.empty()) {
       msg["chat"] = text;
-      MessageHub::get()->addAction(msg);
+      Game::get()->addAction(player_->getPlayerID(), msg);
     }
   });
   getUI()->addWidget("ui.widgets.chat", chatWidget);
 
-  Game::get()->setChatListener([&](const Message &m) {
-    const Player* from = Game::get()->getPlayer(toID(m["pid"]));
+  Game::get()->setChatListener([&](id_t pid, const Message &m) {
+    const Player* from = Game::get()->getPlayer(pid);
     invariant(from, "No playyayayaya");
     std::stringstream ss;
     if (m["target"] == "all" || (m["target"] == "team" && from->getTeamID() == player_->getTeamID())) {
@@ -304,8 +302,7 @@ void GameController::quitEvent()
   // Send the quit game event
   PlayerAction action;
   action["type"] = ActionTypes::LEAVE_GAME;
-  action["pid"] = toJson(player_->getPlayerID());
-  MessageHub::get()->addAction(action);
+  Game::get()->addAction(player_->getPlayerID(), action);
 }
 
 void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
@@ -409,9 +406,8 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
     if (order.isMember("type")) {
       PlayerAction action;
       action["type"] = ActionTypes::ORDER;
-      action["pid"] = player_->getPlayerID();
       action["order"] = order;
-      MessageHub::get()->addAction(action);
+      Game::get()->addAction(player_->getPlayerID(), action);
     }
   }
 }
@@ -457,8 +453,7 @@ void GameController::keyPress(SDL_keysym keysym) {
   if (key == SDLK_F10) {
     PlayerAction action;
     action["type"] = ActionTypes::LEAVE_GAME;
-    action["pid"] = player_->getPlayerID();
-    MessageHub::get()->addAction(action);
+    Game::get()->addAction(player_->getPlayerID(), action);
   // Camera panning
   } else if (key == SDLK_UP) {
     if (alt_) {
@@ -534,9 +529,8 @@ void GameController::keyPress(SDL_keysym keysym) {
         order["entity"] = toJson(player_->getSelection());
         PlayerAction action;
         action["type"] = ActionTypes::ORDER;
-        action["pid"] = toJson(player_->getPlayerID());
         action["order"] = order;
-        MessageHub::get()->addAction(action);
+        Game::get()->addAction(player_->getPlayerID(), action);
       } else {
         // TODO(zack): use a map for MAIN_KEYS here
         for (unsigned int i = 0; i < 4; i++) {
@@ -762,14 +756,13 @@ void GameController::handleUIAction(const UIAction &action) {
   if (action.targeting == UIAction::TargetingType::NONE) {
     PlayerAction player_action;
     player_action["type"] = ActionTypes::ORDER;
-    player_action["pid"] = toJson(player_->getPlayerID());
     Json::Value order;
     order["type"] = OrderTypes::ACTION;
     std::set<id_t> ids(&action.owner, (&action.owner)+1);
     order["entity"] = toJson(ids);
     order["action"] = action.name;
     player_action["order"] = order;
-    MessageHub::get()->addAction(player_action);
+    Game::get()->addAction(player_->getPlayerID(), player_action);
     // No extra params
   } else if (action.targeting == UIAction::TargetingType::LOCATION) {
     action_ = action;

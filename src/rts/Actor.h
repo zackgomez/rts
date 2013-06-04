@@ -14,7 +14,6 @@ class Actor : public GameEntity {
   Actor(id_t id, const std::string &name, const Json::Value &params);
   virtual ~Actor();
 
-  virtual void handleMessage(const Message &msg) override;
   virtual void handleOrder(const Message &order) override;
   virtual void update(float dt) override;
   virtual void collide(const GameEntity *other, float dt) override final;

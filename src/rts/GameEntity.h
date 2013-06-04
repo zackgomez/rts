@@ -53,7 +53,6 @@ class GameEntity : public ModelEntity {
     maxSpeed_ = max_speed;
   }
 
-  virtual void handleMessage(const Message& msg) { }
   virtual void handleOrder(const Message &order) { }
   // Sets 'intention' like velocity, etc
   virtual void update(float dt);

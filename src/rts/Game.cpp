@@ -8,7 +8,6 @@
 #include "rts/GameEntity.h"
 #include "rts/EntityFactory.h"
 #include "rts/Map.h"
-#include "rts/MessageHub.h"
 #include "rts/Player.h"
 #include "rts/Renderer.h"
 #include "rts/VisibilityMap.h"
@@ -24,8 +23,6 @@ Game::Game(Map *map, const std::vector<Player *> &players)
     tickOffset_(2),
     paused_(true),
     running_(true) {
-  MessageHub::get()->setGame(this);
-
   for (auto player : players) {
     player->setGame(this);
     teams_.insert(player->getTeamID());
@@ -59,7 +56,6 @@ Game::Game(Map *map, const std::vector<Player *> &players)
 }
 
 Game::~Game() {
-  MessageHub::get()->setGame(nullptr);
   delete map_;
   for (auto map : visibilityMaps_) {
     delete map.second;
@@ -179,7 +175,7 @@ void Game::update(float dt) {
       } else if (action["type"] == ActionTypes::CHAT) {
         invariant(action.isMember("chat"), "malformed CHAT action");
         if (chatListener_) {
-          chatListener_(action);
+          chatListener_(pid, action);
         }
       } else if (action["type"] == ActionTypes::ORDER) {
         invariant(action.isMember("order"), "malformed ORDER action");
@@ -286,19 +282,6 @@ void Game::update(float dt) {
   Renderer::get()->setLastTickTime(Clock::now());
 
   // unlock game automatically when lock goes out of scope
-}
-
-void Game::sendMessage(id_t to, const Message &msg) {
-  auto entities = Renderer::get()->getEntities();
-  assertEid(to);
-  auto it = entities.find(to);
-  if (it == entities.end()) {
-    LOG(WARN) << "Tried to send message to unknown entity:\n"
-      << msg.toStyledString() << '\n';
-    return;
-  }
-
-  it->second->handleMessage(msg);
 }
 
 void Game::addResources(

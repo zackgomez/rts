@@ -19,7 +19,6 @@
 #include "rts/FontManager.h"
 #include "rts/Game.h"
 #include "rts/Map.h"
-#include "rts/MessageHub.h"
 #include "rts/Player.h"
 #include "rts/ModelEntity.h"
 #include "rts/ResourceManager.h"

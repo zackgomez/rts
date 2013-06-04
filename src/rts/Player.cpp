@@ -4,7 +4,6 @@
 #include "common/ParamReader.h"
 #include "rts/GameEntity.h"
 #include "rts/Game.h"
-#include "rts/MessageHub.h"
 #include "rts/Renderer.h"
 
 namespace rts {
@@ -20,7 +19,6 @@ LocalPlayer::~LocalPlayer() {
 void LocalPlayer::startTick(tick_t tick) {
   PlayerAction a;
   a["type"] = ActionTypes::DONE;
-  a["pid"] = toJson(playerID_);
   a["checksum"] = game_->getChecksum().toJson();
   a["tick"] = toJson(tick);
   game_->addAction(playerID_, a);
@@ -65,7 +63,6 @@ DummyPlayer::DummyPlayer(id_t playerID, id_t teamID)
 void DummyPlayer::startTick(tick_t tick) {
   PlayerAction action;
   action["type"] = ActionTypes::DONE;
-  action["pid"] = toJson(playerID_);
   action["checksum"] = game_->getChecksum().toJson();
   action["tick"] = toJson(tick);
   actions_.push(action);

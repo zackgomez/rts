@@ -8,6 +8,8 @@ function entityInit(entity, params) {
   entity.defaultState_ = NullState;
   entity.cooldowns_ = {};
 
+  entity.handleMessage = entityHandleMessage;
+
   var name = entity.getName();
   // TODO(zack): some kind of copy properties or something, this sucks
   var def = EntityDefs[name];
@@ -146,9 +148,9 @@ function entityUpdate(entity, dt) {
   }
 }
 
-function entityHandleMessage(entity, msg) {
+function entityHandleMessage(msg) {
   if (msg.type == MessageTypes.CAPTURE) {
-    if (!entity.capTime_) {
+    if (!this.capTime_) {
       Log('Uncappable entity received capture message');
       return;
     }
@@ -157,31 +159,31 @@ function entityHandleMessage(entity, msg) {
       Log('Received capture message from missing entity', msg.from);
       return;
     }
-    if (!entity.cappingPlayerID_
-        || entity.cappingPlayerID_ === from_entity.getPlayerID()) {
-      entity.capResetDelay_ = 0;
-      entity.cappingPlayerID_ = from_entity.getPlayerID();
-      entity.capAmount_ += msg.cap;
-      if (entity.capAmount_ >= entity.capTime_) {
-        entity.setPlayerID(entity.cappingPlayerID_);
+    if (!this.cappingPlayerID_
+        || this.cappingPlayerID_ === from_entity.getPlayerID()) {
+      this.capResetDelay_ = 0;
+      this.cappingPlayerID_ = from_entity.getPlayerID();
+      this.capAmount_ += msg.cap;
+      if (this.capAmount_ >= this.capTime_) {
+        this.setPlayerID(this.cappingPlayerID_);
       }
     }
   } else if (msg.type == MessageTypes.ATTACK) {
-    if (!entity.maxHealth_) {
+    if (!this.maxHealth_) {
       Log('Entity without health received attack message');
       return;
     }
-    entity.health_ -= msg.damage;
-    if (entity.health_ <= 0.0) {
-      entity.destroy();
+    this.health_ -= msg.damage;
+    if (this.health_ <= 0.0) {
+      this.destroy();
     }
     // TODO(zack): Compute this in UIInfo/update
-    entity.onTookDamage();
+    this.onTookDamage();
   } else if (msg.type == MessageTypes.ADD_STAT) {
     if (msg.healing) {
-      entity.health_ = Math.min(
-        entity.health_ + msg.healing,
-        entity.maxHealth_);
+      this.health_ = Math.min(
+        this.health_ + msg.healing,
+        this.maxHealth_);
     }
   } else {
     Log('Unknown message of type', msg.type);
