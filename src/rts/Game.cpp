@@ -181,9 +181,12 @@ void Game::update(float dt) {
         if (chatListener_) {
           chatListener_(action);
         }
-      } else {
+      } else if (action["type"] == ActionTypes::ORDER) {
+        invariant(action.isMember("order"), "malformed ORDER action");
         actionChecksummer_.process(action);
-        handleOrder(pid, action);
+        handleOrder(pid, action["order"]);
+      } else {
+        invariant_violation("unknown action type" + action["type"].asString());
       }
     }
     invariant(done, "Missing DONE message for player");
@@ -406,22 +409,14 @@ void Game::handleOrder(id_t playerID, const PlayerAction &order) {
       order.isMember("entity") && order["entity"].isArray(),
       "expected order targets as array");
 
-  // TODO(zack): this will when ActionTypes::ORDER is introduced
-  Json::Value order_trim;
-  order_trim["type"] = order["type"];
-  if (order.isMember("target")) order_trim["target"] = order["target"];
-  if (order.isMember("enemy_id")) order_trim["target_id"] = order["enemy_id"];
-  if (order.isMember("action")) order_trim["action"] = order["action"];
-
   Json::Value entities = order["entity"];
   for (int i = 0; i < entities.size(); i++) {
     GameEntity *entity = getEntity(toID(entities[i]));
     if (!entity) {
-      LOG(WARNING) << "Couldn't find entity "
-        << toID(order["entity"]) << " for order\n";
+      LOG(WARNING) << "Couldn't find entity " << entities[i] << " for order\n";
     }
     invariant(entity->getPlayerID() == playerID, "order for unonwned entity");
-    entity->handleOrder(order_trim);
+    entity->handleOrder(order);
   }
 }
 

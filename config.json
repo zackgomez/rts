@@ -4,7 +4,7 @@
   {
     "name"      : "Ragnarok 0.3",
     "simrate"   : 10.0,
-    "version"   : "v0.3",
+    "version"   : "v0.31",
 
     // grid cells per game unit
     "visibility_grid_res" : 10.0

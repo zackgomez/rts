@@ -312,7 +312,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
   if (alt_) {
     return;
   }
-  PlayerAction action;
+  Json::Value order;
   std::set<id_t> newSelect = player_->getSelection();
 
   glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
@@ -325,23 +325,21 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
 
   if (button == SDL_BUTTON_LEFT) {
     if (!order_.empty()) {
-      action["type"] = order_;
-      action["entity"] = toJson(player_->getSelection());
-      action["target"] = toJson(loc);
+      order["type"] = order_;
+      order["entity"] = toJson(player_->getSelection());
+      order["target"] = toJson(loc);
       if (entity && entity->getTeamID() != player_->getTeamID()) {
-        action["enemy_id"] = toJson(entity->getID());
+        order["target_id"] = toJson(entity->getID());
       }
-      action["pid"] = toJson(player_->getPlayerID());
       order_.clear();
     } else if (!action_.name.empty()) {
       if (newSelect.count(action_.owner)) {
-        action["type"] = ActionTypes::ACTION;
+        order["type"] = OrderTypes::ACTION;
         std::set<id_t> ids(&action_.owner, (&action_.owner)+1);
-        action["entity"] = toJson(ids);
-        action["pid"] = toJson(player_->getPlayerID());
-        action["action"] = action_.name;
+        order["entity"] = toJson(ids);
+        order["action"] = action_.name;
         if (action_.targeting == UIAction::TargetingType::LOCATION) {
-          action["target"] = toJson(glm::vec2(loc));
+          order["target"] = toJson(glm::vec2(loc));
         } else {
           invariant_violation("Unsupported targetting type");
         }
@@ -377,13 +375,12 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
 
         // Queue up action
         if (entity->hasProperty(GameEntity::P_CAPPABLE)) {
-          action["type"] = ActionTypes::CAPTURE;
+          order["type"] = OrderTypes::CAPTURE;
         } else {
-          action["type"] = ActionTypes::ATTACK;
+          order["type"] = OrderTypes::ATTACK;
         }
-        action["entity"] = toJson(player_->getSelection());
-        action["enemy_id"] = toJson(eid);
-        action["pid"] = toJson(player_->getPlayerID());
+        order["entity"] = toJson(player_->getSelection());
+        order["target_id"] = toJson(eid);
       // If we have a selection, and they didn't click on the current
       // selection, move them to target
       } else if (!player_->getSelection().empty()
@@ -394,10 +391,9 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
           highlight(glm::vec2(loc.x, loc.y));
 
           // Queue up action
-          action["type"] = ActionTypes::MOVE;
-          action["entity"] = toJson(player_->getSelection());
-          action["target"] = toJson(loc);
-          action["pid"] = toJson(player_->getPlayerID());
+          order["type"] = OrderTypes::MOVE;
+          order["entity"] = toJson(player_->getSelection());
+          order["target"] = toJson(loc);
         }
       }
     }
@@ -410,7 +406,11 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
   if (!Game::get()->isPaused()) {
     // Mutate, if game isn't paused
     player_->setSelection(newSelect);
-    if (action.isMember("type")) {
+    if (order.isMember("type")) {
+      PlayerAction action;
+      action["type"] = ActionTypes::ORDER;
+      action["pid"] = player_->getPlayerID();
+      action["order"] = order;
       MessageHub::get()->addAction(action);
     }
   }
@@ -453,11 +453,11 @@ void GameController::keyPress(SDL_keysym keysym) {
   static const SDLKey MAIN_KEYS[] = {SDLK_q, SDLK_w, SDLK_e, SDLK_r};
   SDLKey key = keysym.sym;
   // TODO(zack) watch out for pausing here
-  PlayerAction action;
   // Actions available in all player states:
   if (key == SDLK_F10) {
+    PlayerAction action;
     action["type"] = ActionTypes::LEAVE_GAME;
-    action["pid"] = toJson(player_->getPlayerID());
+    action["pid"] = player_->getPlayerID();
     MessageHub::get()->addAction(action);
   // Camera panning
   } else if (key == SDLK_UP) {
@@ -525,13 +525,17 @@ void GameController::keyPress(SDL_keysym keysym) {
       // Handle unit commands
       // Order types
       if (key == SDLK_a) {
-        order_ = ActionTypes::ATTACK;
+        order_ = OrderTypes::ATTACK;
       } else if (key == SDLK_m) {
-        order_ = ActionTypes::MOVE;
+        order_ = OrderTypes::MOVE;
       } else if (key == SDLK_s) {
-        action["type"] = ActionTypes::STOP;
-        action["entity"] = toJson(player_->getSelection());
+        Json::Value order;
+        order["type"] = OrderTypes::STOP;
+        order["entity"] = toJson(player_->getSelection());
+        PlayerAction action;
+        action["type"] = ActionTypes::ORDER;
         action["pid"] = toJson(player_->getPlayerID());
+        action["order"] = order;
         MessageHub::get()->addAction(action);
       } else {
         // TODO(zack): use a map for MAIN_KEYS here
@@ -756,13 +760,16 @@ void GameController::handleUIAction(const UIAction &action) {
     return;
   }
   if (action.targeting == UIAction::TargetingType::NONE) {
-    Json::Value msg;
-    msg["type"] = ActionTypes::ACTION;
+    PlayerAction player_action;
+    player_action["type"] = ActionTypes::ORDER;
+    player_action["pid"] = toJson(player_->getPlayerID());
+    Json::Value order;
+    order["type"] = OrderTypes::ACTION;
     std::set<id_t> ids(&action.owner, (&action.owner)+1);
-    msg["entity"] = toJson(ids);
-    msg["pid"] = toJson(player_->getPlayerID());
-    msg["action"] = action.name;
-    MessageHub::get()->addAction(msg);
+    order["entity"] = toJson(ids);
+    order["action"] = action.name;
+    player_action["order"] = order;
+    MessageHub::get()->addAction(player_action);
     // No extra params
   } else if (action.targeting == UIAction::TargetingType::LOCATION) {
     action_ = action;
