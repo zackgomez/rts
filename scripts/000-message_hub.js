@@ -8,5 +8,5 @@ function SendMessage(msg) {
     Log('Unable to find entity', id, 'to send message.');
   }
 
-  entity.handleMessage(msg);
+  entityHandleMessage(entity, msg);
 }
