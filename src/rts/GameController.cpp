@@ -20,6 +20,10 @@
 #include "rts/UI.h"
 #include "rts/Widgets.h"
 
+#ifdef _MSC_VER
+#define isinf(x) (!_finite(x))
+#endif
+
 namespace rts {
 
 namespace PlayerState {

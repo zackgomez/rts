@@ -50,14 +50,11 @@
     <ClCompile Include="..\..\src\rts\ModelEntity.cpp" />
     <ClCompile Include="..\..\src\rts\NetPlayer.cpp" />
     <ClCompile Include="..\..\src\rts\Player.cpp" />
-    <ClCompile Include="..\..\src\rts\Projectile.cpp" />
     <ClCompile Include="..\..\src\rts\Renderer.cpp" />
     <ClCompile Include="..\..\src\rts\ResourceManager.cpp" />
     <ClCompile Include="..\..\src\rts\Shader.cpp" />
     <ClCompile Include="..\..\src\rts\UI.cpp" />
-    <ClCompile Include="..\..\src\rts\Unit.cpp" />
     <ClCompile Include="..\..\src\rts\VisibilityMap.cpp" />
-    <ClCompile Include="..\..\src\rts\Weapon.cpp" />
     <ClCompile Include="..\..\src\rts\Widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -97,15 +94,12 @@
     <ClInclude Include="..\..\src\rts\NetPlayer.h" />
     <ClInclude Include="..\..\src\rts\Player.h" />
     <ClInclude Include="..\..\src\rts\PlayerAction.h" />
-    <ClInclude Include="..\..\src\rts\Projectile.h" />
     <ClInclude Include="..\..\src\rts\Renderer.h" />
     <ClInclude Include="..\..\src\rts\ResourceManager.h" />
     <ClInclude Include="..\..\src\rts\Shader.h" />
     <ClInclude Include="..\..\src\rts\UI.h" />
     <ClInclude Include="..\..\src\rts\UIAction.h" />
-    <ClInclude Include="..\..\src\rts\Unit.h" />
     <ClInclude Include="..\..\src\rts\VisibilityMap.h" />
-    <ClInclude Include="..\..\src\rts\Weapon.h" />
     <ClInclude Include="..\..\src\rts\Widgets.h" />
   </ItemGroup>
   <ItemGroup>
