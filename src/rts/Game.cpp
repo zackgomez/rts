@@ -209,13 +209,18 @@ void Game::update(float dt) {
   // Integrate positions before updating entities, to ensure the render displays
   // extrapolated information.  This is safe and provides a better experience.
   for (auto &it : entities) {
-    it.second->resolve(dt);
+    it.second->integrate(dt);
   }
 
   // Update entities
   for (auto &it : entities) {
     GameEntity *entity = it.second;
     entity->update(dt);
+  }
+  // Resolve entities
+  for (auto &it : entities) {
+    GameEntity *entity = it.second;
+    entity->resolve(dt);
   }
   // Remove deadEnts
   for (auto eid : deadEntities_) {

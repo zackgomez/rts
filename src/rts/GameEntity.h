@@ -57,7 +57,8 @@ class GameEntity : public ModelEntity {
   // Sets 'intention' like velocity, etc
   virtual void update(float dt);
   virtual void collide(const GameEntity *other, float dt) { }
-  // Basically, integrate/apply the results of update/collide
+  // Basically, integrate/apply the results of update
+  // useful so that order entity updates doesn't matter
   virtual void resolve(float dt) { }
 
   virtual void checksum(Checksum &chksum) const;
@@ -72,7 +73,7 @@ class GameEntity : public ModelEntity {
   // Rotates to face position
   void turnTowards(const glm::vec2 &pos);
   // Moves towards position as fast as possible (probably rotates)
-  void moveTowards(const glm::vec2 &pos, float dt);
+  void moveTowards(const glm::vec2 &pos);
   // Teleports to the given position
   void warpPosition(const glm::vec2 &pos);
 

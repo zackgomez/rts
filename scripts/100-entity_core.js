@@ -7,6 +7,7 @@ function entityInit(entity, params) {
   entity.prodQueue_ = [];
   entity.defaultState_ = NullState;
   entity.cooldowns_ = {};
+  entityResetDeltas(entity);
   var name = entity.getName();
   // TODO(zack): some kind of copy properties or something, this sucks
   var def = EntityDefs[name];
@@ -67,7 +68,7 @@ function entityInit(entity, params) {
     }
   }
 
-  entity.attack = function (target, dt) {
+  entity.attack = function (target) {
     if (!this.weapon_) {
       Log(this.getID(), 'Told to attack without weapon');
       return;
@@ -76,7 +77,7 @@ function entityInit(entity, params) {
 
     var dist = this.distanceToEntity(target);
     if (dist > weapon.range) {
-      this.moveTowards(target.getPosition2(), dt);
+      this.moveTowards(target.getPosition2());
     } else {
       this.remainStationary();
       if (!this.hasCooldown(weapon.cooldown_name)) {
@@ -103,10 +104,64 @@ function entityInit(entity, params) {
   }
 }
 
+function entityResetDeltas(entity) {
+  entity.deltas = {
+    capture: {},
+    damage: 0,
+    healing_rate: 0,
+  };
+}
+
 function entityUpdate(entity, dt) {
-  var new_state = entity.state_.update(entity, dt);
+  var new_state = entity.state_.update(entity);
   if (new_state) {
     entity.state_ = new_state;
+  }
+
+  for (var ename in entity.effects_) {
+    var res = entity.effects_[ename](entity);
+    if (!res) {
+      delete entity.effects_[ename];
+    }
+  }
+}
+
+function entityResolve(entity, dt) {
+  for (var cd in entity.cooldowns_) {
+    entity.cooldowns_[cd] -= dt;
+    if (entity.cooldowns_[cd] < 0.0) {
+      delete entity.cooldowns_[cd];
+    }
+  }
+
+  // Health
+  var healing = dt * entity.deltas.healing_rate;
+  var health_delta = healing - entity.deltas.damage;
+  entity.health_ = Math.min(entity.health_ + health_delta, entity.maxHealth_);
+  if (entity.deltas.damage) {
+    entity.onTookDamage();
+  }
+  if (entity.health_ <= 0.0) {
+    entity.destroy();
+  }
+
+  // Capture
+  var capture_values = entity.deltas.capture;
+  for (var pid in capture_values) {
+    if (!entity.cappingPlayerID_) {
+      entity.cappingPlayerID_ = pid;
+    }
+    if (entity.cappingPlayerID_ == pid) {
+      entity.capAmount_ += dt * capture_values[pid];
+      if (entity.capAmount_ >= entity.capTime_) {
+        entity.setPlayerID(entity.cappingPlayerID_);
+        entity.cappingPlayerID_ = null;
+      }
+    }
+  }
+  if (Object.keys(capture_values).length == 0) {
+    entity.cappingPlayerID_ = null;
+    entity.capAmount_ = 0;
   }
 
   if (entity.prodQueue_.length) {
@@ -124,25 +179,8 @@ function entityUpdate(entity, dt) {
     }
   }
 
-  entity.capResetDelay_ += 1;
-  if (entity.capResetDelay_ > 1) {
-    entity.capAmount_ = 0.0;
-    entity.cappingPlayerID_ = null;
-  }
-
-  for (var cd in entity.cooldowns_) {
-    entity.cooldowns_[cd] -= dt;
-    if (entity.cooldowns_[cd] < 0.0) {
-      delete entity.cooldowns_[cd];
-    }
-  }
-
-  for (var ename in entity.effects_) {
-    var res = entity.effects_[ename](entity, dt);
-    if (!res) {
-      delete entity.effects_[ename];
-    }
-  }
+  // Resolved!
+  entityResetDeltas(entity);
 }
 
 function entityHandleMessage(entity, msg) {
@@ -156,31 +194,30 @@ function entityHandleMessage(entity, msg) {
       Log('Received capture message from missing entity', msg.from);
       return;
     }
-    if (!entity.cappingPlayerID_
-        || entity.cappingPlayerID_ === from_entity.getPlayerID()) {
-      entity.capResetDelay_ = 0;
-      entity.cappingPlayerID_ = from_entity.getPlayerID();
-      entity.capAmount_ += msg.cap;
-      if (entity.capAmount_ >= entity.capTime_) {
-        entity.setPlayerID(entity.cappingPlayerID_);
-      }
+    var from_pid = from_entity.getPlayerID();
+    var cur = entity.deltas.capture[from_pid];
+    if (cur) {
+      entity.deltas.capture[from_pid] += msg.cap;
+    } else {
+      entity.deltas.capture[from_pid] = msg.cap;
     }
   } else if (msg.type == MessageTypes.ATTACK) {
     if (!entity.maxHealth_) {
       Log('Entity without health received attack message');
       return;
     }
-    entity.health_ -= msg.damage;
-    if (entity.health_ <= 0.0) {
-      entity.destroy();
+    if (msg.damage < 0) {
+      Log('Ignoring attack with negative damage');
+      return;
     }
-    // TODO(zack): Compute this in UIInfo/update
-    entity.onTookDamage();
+    entity.deltas.damage += msg.damage;
   } else if (msg.type == MessageTypes.ADD_STAT) {
-    if (msg.healing) {
-      entity.health_ = Math.min(
-        entity.health_ + msg.healing,
-        entity.maxHealth_);
+    if (msg.healing_rate) {
+      if (msg.healing_rate < 0) {
+        Log('Ignoring heal with negative heal');
+        return;
+      }
+      entity.deltas.healing_rate += msg.healing_rate;
     }
   } else {
     Log('Unknown message of type', msg.type);
@@ -210,7 +247,6 @@ function entityHandleOrder(entity, order) {
       target_id: order.target_id,
     });
   } else if (type == 'ATTACK') {
-    Log(order.target_id);
     if (order.target_id) {
       entity.state_ = new UnitAttackState({
         target_id: order.target_id,
@@ -231,6 +267,7 @@ function entityHandleAction(entity, action_name, target) {
     Log(entity.getID(), 'got unknown action', action_name);
   }
   if (action.targeting == TargetingTypes.NONE) {
+    // TODO(zack): make this also a state
     action.exec(entity);
   } else if (action.targeting == TargetingTypes.LOCATION) {
     entity.state_ = new LocationAbilityState({

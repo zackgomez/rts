@@ -71,7 +71,35 @@ void Actor::collide(const GameEntity *collider, float dt) {
 }
 
 void Actor::resolve(float dt) {
-  integrate(dt);
+  using namespace v8;
+  auto *script = Game::get()->getScript();
+  HandleScope scope(script->getIsolate());
+  Handle<Object> global = script->getGlobal();
+  TryCatch try_catch;
+
+  const int argc = 2;
+  Handle<Value> argv[argc] = {script->getEntity(getID()), Number::New(dt)};
+  Handle<Value> result =
+    Handle<Function>::Cast(global->Get(String::New("entityResolve")))
+    ->Call(global, argc, argv);
+  if (result.IsEmpty()) {
+    LOG(ERROR) << "error handling order: "
+      << *String::AsciiValue(try_catch.Exception()) << '\n';
+  }
+
+  if (!getPathQueue().empty()) {
+    glm::vec2 targetPos(getPathQueue().front());
+    float dist = glm::length(targetPos - getPosition2());
+    float speed = getMaxSpeed();
+    // rotate
+    turnTowards(targetPos);
+    // move
+    // Set speed careful not to overshoot
+    if (dist < speed * dt) {
+      speed = dist / dt;
+    }
+    setSpeed(speed);
+  }
 }
 
 void Actor::handleOrder(const Message &order) {

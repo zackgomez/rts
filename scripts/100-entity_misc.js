@@ -45,14 +45,14 @@ function entityFindTarget(entity, previous_target_id) {
 // -- Entity Effects --
 // --
 function makeHealingAura(radius, amount) {
-  return function(entity, dt) {
+  return function(entity) {
     entity.getNearbyEntities(radius, function (nearby_entity) {
       if (nearby_entity.getPlayerID() == entity.getPlayerID()) {
         SendMessage({
           to: nearby_entity.getID(),
           from: entity.getID(),
           type: "STAT",
-          healing: dt * amount
+          healing_rate: amount
         });
       }
 
@@ -64,24 +64,23 @@ function makeHealingAura(radius, amount) {
 }
 
 function makeVpGenEffect(amount) {
-  return function(entity, dt) {
+  return function(entity) {
     if (entity.getTeamID() == NO_TEAM) {
       return true;
     }
 
-    AddVPs(entity.getTeamID(), dt * amount, entity.getID());
+    AddVPs(entity.getTeamID(), amount, entity.getID());
     return true;
   }
 }
 
 function makeReqGenEffect(amount) {
-  return function(entity, dt) {
+  return function(entity) {
     if (entity.getPlayerID() == NO_PLAYER) {
       return true;
     }
 
-    var amount = 1.0;
-    AddRequisition(entity.getPlayerID(), dt * amount, entity.getID());
+    AddRequisition(entity.getPlayerID(), amount, entity.getID());
     return true;
   }
 }
@@ -153,7 +152,7 @@ function TeleportAction(params) {
 // -- Entity States --
 // --
 function NullState(params) {
-  this.update = function (entity, dt) {
+  this.update = function (entity) {
     return null;
   }
 }
@@ -161,13 +160,13 @@ function NullState(params) {
 function UnitIdleState() {
   this.targetID = null;
 
-  this.update = function (entity, dt) {
+  this.update = function (entity) {
     entity.remainStationary();
 
     var target = entityFindTarget(entity, this.targetID);
     this.targetID = target ? target.getID() : null;
     if (target) {
-      entity.attack(target, dt);
+      entity.attack(target);
     }
 
     return null;
@@ -176,12 +175,12 @@ function UnitIdleState() {
 
 function UnitMoveState(params) {
   this.target = params.target;
-  this.update = function (entity, dt) {
+  this.update = function (entity) {
     if (entity.containsPoint(this.target)) {
       return new UnitIdleState({});
     }
 
-    entity.moveTowards(this.target, dt);
+    entity.moveTowards(this.target);
     return null;
   }
 }
@@ -189,7 +188,7 @@ function UnitMoveState(params) {
 function UnitCaptureState(params) {
   this.targetID = params.target_id;
 
-  this.update = function (entity, dt) {
+  this.update = function (entity) {
     var target = GetEntity(this.targetID);
     if (!target
         || !target.hasProperty(P_CAPPABLE)
@@ -199,14 +198,15 @@ function UnitCaptureState(params) {
 
     var dist = entity.distanceToEntity(target);
     if (dist < entity.captureRange_) {
+      entity.remainStationary();
       SendMessage({
         to: target.getID(),
         from: entity.getID(),
         type: MessageTypes.CAPTURE,
-        cap: dt,
+        cap: 1,
       });
     } else {
-      entity.moveTowards(target.getPosition2(), dt);
+      entity.moveTowards(target.getPosition2());
     }
     return null;
   }
@@ -215,7 +215,7 @@ function UnitCaptureState(params) {
 function UnitAttackState(params) {
   this.targetID = params.target_id;
 
-  this.update = function (entity, dt) {
+  this.update = function (entity) {
     var target = GetEntity(this.targetID);
     // TODO(zack): or if the target isn't visible
     if (!target
@@ -224,7 +224,7 @@ function UnitAttackState(params) {
       return new UnitIdleState();
     }
 
-    entity.attack(target, dt);
+    entity.attack(target);
   }
 }
 
@@ -232,19 +232,20 @@ function UnitAttackMoveState(params) {
   this.targetPos = params.target;
   this.targetID = null;
 
-  this.update = function (entity, dt) {
+  this.update = function (entity) {
     var targetEnemy = entityFindTarget(entity, this.targetID);
     this.targetID = targetEnemy ? targetEnemy.getID() : null;
+    Log('amove update');
 
     if (!targetEnemy) {
       // If no viable enemy, move towards target position
       if (entity.containsPoint(this.targetPos)) {
         return new UnitIdleState();
       }
-      entity.moveTowards(this.targetPos, dt);
+      entity.moveTowards(this.targetPos);
     } else {
       // Pursue a target enemy
-      entity.attack(targetEnemy, dt);
+      entity.attack(targetEnemy);
     }
 
     return null;
@@ -254,13 +255,13 @@ function UnitAttackMoveState(params) {
 function LocationAbilityState(params) {
   this.target = params.target;
   this.action = params.action;
-  this.update = function (entity, dt) {
+  this.update = function (entity) {
     if (entity.distanceToPoint(this.target) < this.action.range) {
       this.action.exec(entity, this.target);
       return new entity.defaultState_;
     }
 
-    entity.moveTowards(this.target, dt);
+    entity.moveTowards(this.target);
     return null;
   }
 }
@@ -269,7 +270,7 @@ function ProjectileState(params) {
   this.targetID = params.target_id;
   this.damage = params.damage;
 
-  this.update = function (entity, dt) {
+  this.update = function (entity) {
     var target = GetEntity(this.targetID);
     if (!target) {
       entity.destroy();
@@ -287,7 +288,7 @@ function ProjectileState(params) {
       entity.destroy();
     }
 
-    entity.moveTowards(target.getPosition2(), dt);
+    entity.moveTowards(target.getPosition2());
     return null;
   }
 }

@@ -99,9 +99,15 @@ static Handle<Value> entityGetNearbyEntities(const Arguments &args) {
   const int argc = 1;
   Renderer::get()->getNearbyEntities(pos, radius,
       [&](const GameEntity *e) -> bool {
+        TryCatch try_catch;
         auto jsEntity = Game::get()->getScript()->getEntity(e->getID());
         Handle<Value> argv[1] = {jsEntity};
         auto ret = callback->Call(args.Holder(), argc, argv);
+        if (ret.IsEmpty()) {
+          LOG(ERROR) << "error in nearby entity callback: "
+            << *String::AsciiValue(try_catch.Exception()) << '\n';
+          invariant_violation("js error");
+        }
         return ret->BooleanValue();
       });
 
@@ -170,7 +176,7 @@ static Handle<Value> entityRemainStationary(const Arguments &args) {
 }
 
 static Handle<Value> entityMoveTowards(const Arguments &args) {
-  invariant(args.Length() == 2, "Expected 2 args to moveTowards");
+  invariant(args.Length() == 1, "Expected 1 arg to moveTowards");
 
   HandleScope scope(args.GetIsolate());
 
@@ -180,9 +186,8 @@ static Handle<Value> entityMoveTowards(const Arguments &args) {
 
   auto script = Game::get()->getScript();
   glm::vec2 pos = script->jsToVec2(Handle<Array>::Cast(args[0]));
-  float dt = args[1]->NumberValue();
 
-  entity->moveTowards(pos, dt);
+  entity->moveTowards(pos);
 
   return Undefined();
 }

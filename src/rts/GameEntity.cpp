@@ -63,19 +63,9 @@ void GameEntity::turnTowards(const glm::vec2 &targetPos) {
   setSpeed(0.f);
 }
 
-void GameEntity::moveTowards(const glm::vec2 &targetPos, float dt) {
+void GameEntity::moveTowards(const glm::vec2 &targetPos) {
   pathQueue_ = std::queue<glm::vec3>();
   pathQueue_.push(glm::vec3(targetPos, 0.f));
-  float dist = glm::length(targetPos - getPosition2());
-  float speed = maxSpeed_;
-  // rotate
-  turnTowards(targetPos);
-  // move
-  // Set speed careful not to overshoot
-  if (dist < speed * dt) {
-    speed = dist / dt;
-  }
-  setSpeed(speed);
 }
 
 void GameEntity::warpPosition(const glm::vec2 &pos) {
