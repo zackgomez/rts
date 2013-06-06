@@ -57,11 +57,12 @@ class GameEntity : public ModelEntity {
   // Sets 'intention' like velocity, etc
   virtual void update(float dt);
   virtual void collide(const GameEntity *other, float dt) { }
+  // Basically, integrate/apply the results of update/collide
+  virtual void resolve(float dt) { }
 
   virtual void checksum(Checksum &chksum) const;
 
   std::queue<glm::vec3> getPathNodes() const;
-
 
   float distanceToEntity(const GameEntity *e) const;
 

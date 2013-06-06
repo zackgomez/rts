@@ -70,6 +70,10 @@ void Actor::collide(const GameEntity *collider, float dt) {
   addBumpVel(glm::vec3(dir * bumpSpeed, 0.f));
 }
 
+void Actor::resolve(float dt) {
+  integrate(dt);
+}
+
 void Actor::handleOrder(const Message &order) {
   if (order["type"] == "ACTION") {
     invariant(order.isMember("action"), "missing action name");

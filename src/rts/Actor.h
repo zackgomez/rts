@@ -17,6 +17,7 @@ class Actor : public GameEntity {
   virtual void handleOrder(const Message &order) override;
   virtual void update(float dt) override;
   virtual void collide(const GameEntity *other, float dt) override final;
+  virtual void resolve(float dt) override final;
 
   const std::vector<UIAction> &getActions() const;
 

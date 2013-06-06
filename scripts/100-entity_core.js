@@ -7,7 +7,6 @@ function entityInit(entity, params) {
   entity.prodQueue_ = [];
   entity.defaultState_ = NullState;
   entity.cooldowns_ = {};
-
   var name = entity.getName();
   // TODO(zack): some kind of copy properties or something, this sucks
   var def = EntityDefs[name];
