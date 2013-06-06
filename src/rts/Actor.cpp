@@ -82,10 +82,7 @@ void Actor::resolve(float dt) {
   Handle<Value> result =
     Handle<Function>::Cast(global->Get(String::New("entityResolve")))
     ->Call(global, argc, argv);
-  if (result.IsEmpty()) {
-    LOG(ERROR) << "error handling order: "
-      << *String::AsciiValue(try_catch.Exception()) << '\n';
-  }
+  checkJSResult(result, try_catch.Exception(), "entityResolve:");
 
   if (!getPathQueue().empty()) {
     glm::vec2 targetPos(getPathQueue().front());
@@ -127,10 +124,7 @@ void Actor::handleOrder(const Message &order) {
     Handle<Value> result =
       Handle<Function>::Cast(global->Get(String::New("entityHandleOrder")))
       ->Call(global, argc, argv);
-    if (result.IsEmpty()) {
-      LOG(ERROR) << "error handling order: "
-        << *String::AsciiValue(try_catch.Exception()) << '\n';
-    }
+    checkJSResult(result, try_catch.Exception(), "entityHandleOrder:");
   }
 }
 
@@ -154,10 +148,7 @@ void Actor::handleAction(const std::string &action_name, const Json::Value &orde
   Handle<Value> result =
     Handle<Function>::Cast(global->Get(String::New("entityHandleAction")))
     ->Call(global, argc, argv);
-  if (result.IsEmpty()) {
-    LOG(ERROR) << "error handling action: "
-      << *String::AsciiValue(try_catch.Exception()) << '\n';
-  }
+  checkJSResult(result, try_catch.Exception(), "entityHandleAction:");
 
   return;
 }
@@ -175,13 +166,10 @@ void Actor::update(float dt) {
 
   Handle<Value> argv[] = {script->getEntity(getID()), Number::New(dt)};
 
-  Handle<Value> ret =
+  Handle<Value> result =
     Handle<Function>::Cast(global->Get(String::New("entityUpdate")))
     ->Call(global, argc, argv);
-  if (ret.IsEmpty()) {
-    LOG(ERROR) << "Error updating entity: "
-      << *String::AsciiValue(try_catch.Exception()) << '\n';
-  }
+  checkJSResult(result, try_catch.Exception(), "entityUpdate:");
 
   updateUIInfo();
   updateActions();
@@ -201,11 +189,7 @@ void Actor::updateUIInfo() {
   Handle<Value> ret =
     Handle<Function>::Cast(global->Get(String::New("entityGetUIInfo")))
     ->Call(global, argc, argv);
-  if (ret.IsEmpty()) {
-    LOG(ERROR) << "Error updating ui info entity: "
-      << *String::AsciiValue(try_catch.Exception()) << '\n';
-    return;
-  }
+  checkJSResult(ret, try_catch.Exception(), "entityGetUIInfo:");
 
   auto jsinfo = ret->ToObject();
   auto prod = String::New("production");
@@ -239,11 +223,7 @@ void Actor::updateActions() {
   Handle<Value> ret =
     Handle<Function>::Cast(global->Get(String::New("entityGetActions")))
     ->Call(global, argc, argv);
-  if (ret.IsEmpty()) {
-    LOG(ERROR) << "Error updating ui info entity: "
-      << *String::AsciiValue(try_catch.Exception()) << '\n';
-    return;
-  }
+  checkJSResult(ret, try_catch.Exception(), "entityGetActions:");
 
   auto name = String::New("name");
   auto icon = String::New("icon");

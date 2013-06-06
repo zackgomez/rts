@@ -9,6 +9,11 @@ namespace rts {
 
 class GameEntity;
 
+void checkJSResult(
+  const v8::Handle<v8::Value> &result,
+  const v8::Handle<v8::Value> &exception,
+  const std::string &msg);
+
 class GameScript {
 public:
   GameScript();

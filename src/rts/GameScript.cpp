@@ -11,6 +11,17 @@ using namespace v8;
 
 namespace rts {
 
+void checkJSResult(
+  const Handle<Value> &result,
+  const Handle<Value> &exception,
+  const std::string &msg) {
+  if (result.IsEmpty()) {
+    LOG(ERROR) << msg << " "
+      << *String::AsciiValue(exception) << '\n';
+    invariant_violation("Javascript exception");
+  }
+}
+
 static Handle<Value> jsGetEntity(const Arguments &args) {
   if (args.Length() < 1) return Undefined();
   HandleScope scope(args.GetIsolate());
@@ -103,11 +114,7 @@ static Handle<Value> entityGetNearbyEntities(const Arguments &args) {
         auto jsEntity = Game::get()->getScript()->getEntity(e->getID());
         Handle<Value> argv[1] = {jsEntity};
         auto ret = callback->Call(args.Holder(), argc, argv);
-        if (ret.IsEmpty()) {
-          LOG(ERROR) << "error in nearby entity callback: "
-            << *String::AsciiValue(try_catch.Exception()) << '\n';
-          invariant_violation("js error");
-        }
+        checkJSResult(ret, try_catch.Exception(), "getNearbyEntities callback:");
         return ret->BooleanValue();
       });
 
