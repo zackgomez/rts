@@ -16,10 +16,9 @@ NO_ENTITY = 0;
 NO_TEAM = 0;
 
 MessageTypes = {
-  ORDER: 'ORDER',
   ATTACK: 'ATTACK',
   CAPTURE: 'CAPTURE',
-  ADD_STAT: 'STAT',
+  ADD_DELTA: 'DELTA',
 };
 
 TargetingTypes = {

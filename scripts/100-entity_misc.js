@@ -51,8 +51,10 @@ function makeHealingAura(radius, amount) {
         SendMessage({
           to: nearby_entity.getID(),
           from: entity.getID(),
-          type: "STAT",
-          healing_rate: amount
+          type: MessageTypes.ADD_DELTA,
+          deltas: {
+            healing_rate: amount,
+          },
         });
       }
 
@@ -235,7 +237,6 @@ function UnitAttackMoveState(params) {
   this.update = function (entity) {
     var targetEnemy = entityFindTarget(entity, this.targetID);
     this.targetID = targetEnemy ? targetEnemy.getID() : null;
-    Log('amove update');
 
     if (!targetEnemy) {
       // If no viable enemy, move towards target position

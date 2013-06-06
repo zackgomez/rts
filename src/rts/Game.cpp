@@ -402,6 +402,7 @@ void Game::handleOrder(id_t playerID, const PlayerAction &order) {
     GameEntity *entity = getEntity(toID(entities[i]));
     if (!entity) {
       LOG(WARNING) << "Couldn't find entity " << entities[i] << " for order\n";
+      continue;
     }
     invariant(entity->getPlayerID() == playerID, "order for unonwned entity");
     entity->handleOrder(order);

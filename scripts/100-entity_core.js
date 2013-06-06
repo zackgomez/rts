@@ -211,13 +211,9 @@ function entityHandleMessage(entity, msg) {
       return;
     }
     entity.deltas.damage += msg.damage;
-  } else if (msg.type == MessageTypes.ADD_STAT) {
-    if (msg.healing_rate) {
-      if (msg.healing_rate < 0) {
-        Log('Ignoring heal with negative heal');
-        return;
-      }
-      entity.deltas.healing_rate += msg.healing_rate;
+  } else if (msg.type == MessageTypes.ADD_DELTA) {
+    for (var name in msg.deltas) {
+      entity.deltas[name] += msg.deltas[name];
     }
   } else {
     Log('Unknown message of type', msg.type);

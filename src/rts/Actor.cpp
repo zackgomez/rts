@@ -97,6 +97,9 @@ void Actor::resolve(float dt) {
     }
     setSpeed(speed);
   }
+
+  updateUIInfo();
+  updateActions();
 }
 
 void Actor::handleOrder(const Message &order) {
@@ -170,9 +173,6 @@ void Actor::update(float dt) {
     Handle<Function>::Cast(global->Get(String::New("entityUpdate")))
     ->Call(global, argc, argv);
   checkJSResult(result, try_catch.Exception(), "entityUpdate:");
-
-  updateUIInfo();
-  updateActions();
 }
 
 void Actor::updateUIInfo() {
