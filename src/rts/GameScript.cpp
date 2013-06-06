@@ -311,11 +311,25 @@ static Handle<Value> entitySetMaxSpeed(const Arguments &args) {
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   GameEntity *e = static_cast<GameEntity *>(wrap->Value());
+
   e->setMaxSpeed(args[0]->NumberValue());
   return Undefined();
 }
+
+static Handle<Value> entitySetSight(const Arguments &args) {
+  invariant(args.Length() == 1, "setSetSight takes 1 arg");
+
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  Actor *e = static_cast<Actor *>(wrap->Value());
+
+  e->setSight(args[0]->NumberValue());
+  return Undefined();
+}
+
 static Handle<Value> entitySetSize(const Arguments &args) {
-  invariant(args.Length() == 1, "setMaxSpeed takes 1 arg");
+  invariant(args.Length() == 1, "setSetSize takes 1 arg");
 
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
@@ -448,6 +462,9 @@ void GameScript::init() {
   entityTemplate_->Set(
       String::New("setSize"),
       FunctionTemplate::New(entitySetSize));
+  entityTemplate_->Set(
+      String::New("setSight"),
+      FunctionTemplate::New(entitySetSight));
 
   entityTemplate_->Set(
       String::New("setProperty"),

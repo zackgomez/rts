@@ -15,7 +15,8 @@ GameEntity::GameEntity(
   : ModelEntity(id),
     playerID_(NO_PLAYER),
     name_(name),
-    maxSpeed_(0.f) {
+    maxSpeed_(0.f),
+    sight_(0.f) {
   setProperty(P_RENDERABLE, true);
 
   if (params.isMember("pid")) {

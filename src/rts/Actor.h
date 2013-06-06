@@ -21,9 +21,6 @@ class Actor : public GameEntity {
 
   const std::vector<UIAction> &getActions() const;
 
-  // Returns sight radius
-  float getSight() const;
-
   Clock::time_point getLastTookDamage() const {
     return lastTookDamage_;
   }

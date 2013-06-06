@@ -21,7 +21,7 @@ function entityInit(entity, params) {
       entity.setSize(def.size);
     }
     if (def.speed) {
-      entity.setMaxSpeed(def.speed);
+      entity.maxSpeed_ = def.speed;
     }
     if (def.sight) {
       entity.sight_ = def.sight;
@@ -178,6 +178,9 @@ function entityResolve(entity, dt) {
       entity.prodQueue_.pop();
     }
   }
+
+  entity.setMaxSpeed(entity.maxSpeed_);
+  entity.setSight(entity.sight_);
 
   // Resolved!
   entityResetDeltas(entity);

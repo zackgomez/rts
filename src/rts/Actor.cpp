@@ -24,16 +24,6 @@ const std::vector<UIAction> &Actor::getActions() const {
   return actions_;
 }
 
-float Actor::getSight() const {
-  // TODO(zack): cache this each frame
-  using namespace v8;
-  auto *script = Game::get()->getScript();
-  HandleScope scope(script->getIsolate());
-
-  Handle<Object> jsactor = script->getEntity(getID());
-  return jsactor->Get(String::New("sight_"))->NumberValue();
-}
-
 void Actor::resetTexture() {
   const Player *player = Game::get()->getPlayer(getPlayerID());
   auto color = player ? player->getColor() : ::vec3Param("global.defaultColor");
@@ -84,7 +74,7 @@ void Actor::resolve(float dt) {
     ->Call(global, argc, argv);
   checkJSResult(result, try_catch.Exception(), "entityResolve:");
 
-  if (!getPathQueue().empty()) {
+  if (hasProperty(P_MOBILE) && !getPathQueue().empty() && getMaxSpeed() > 0) {
     glm::vec2 targetPos(getPathQueue().front());
     float dist = glm::length(targetPos - getPosition2());
     float speed = getMaxSpeed();

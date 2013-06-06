@@ -52,6 +52,12 @@ class GameEntity : public ModelEntity {
   void setMaxSpeed(float max_speed) {
     maxSpeed_ = max_speed;
   }
+  float getSight() const {
+    return sight_;
+  }
+  void setSight(float sight) {
+    sight_ = sight;
+  }
 
   virtual void handleOrder(const Message &order) { }
   // Sets 'intention' like velocity, etc
@@ -94,6 +100,7 @@ class GameEntity : public ModelEntity {
  private:
   std::string name_;
   float maxSpeed_;
+  float sight_;
 
   std::set<uint32_t> properties_;
 };
