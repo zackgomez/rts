@@ -128,7 +128,7 @@ function ProductionAction(params) {
 function TeleportAction(params) {
   this.range = params.range;
   this.cooldown = params.cooldown;
-  this.icon = 'melee_icon';
+  this.icon = 'teleport_icon';
   this.tooltip = 'Teleport\nCooldown:'+this.cooldown;
   this.cooldownName = 'teleport';
   this.targeting = TargetingTypes.LOCATION;

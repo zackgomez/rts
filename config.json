@@ -46,7 +46,8 @@
       "vp"         : "images/vp-tex-1024.png",
       "collision-tex" : "images/collision-tex-1024.png",
       "melee_icon"  : "images/melee_icon.png",
-      "ranged_icon" : "images/ranged_icon.png"
+      "ranged_icon" : "images/ranged_icon.png",
+      "teleport_icon" : "images/teleport_icon.png"
     },
     "depthFields" : {
       "steamLogo"  : {
