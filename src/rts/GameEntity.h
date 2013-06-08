@@ -98,8 +98,10 @@ class GameEntity : public ModelEntity {
   glm::vec2 vec2Param(const std::string &p) const;
   bool hasParam(const std::string &p) const;
 
-  std::queue<glm::vec3> pathQueue_;
   id_t playerID_;
+
+  bool warp_;
+  glm::vec2 warpTarget_;
 
  private:
   std::string name_;
@@ -107,6 +109,7 @@ class GameEntity : public ModelEntity {
   float sight_;
 
   std::set<uint32_t> properties_;
+  std::queue<glm::vec3> pathQueue_;
 };
 };  // namespace rts
 

@@ -5,8 +5,8 @@
 #include "common/Checksum.h"
 #include "common/ParamReader.h"
 #include "common/util.h"
+#include "rts/Actor.h"
 #include "rts/GameEntity.h"
-#include "rts/EntityFactory.h"
 #include "rts/Map.h"
 #include "rts/Player.h"
 #include "rts/Renderer.h"
@@ -331,7 +331,7 @@ const GameEntity * Game::spawnEntity(
     const std::string &name,
     const Json::Value &params) {
   id_t eid = Renderer::get()->newEntityID();
-  GameEntity *ent = EntityFactory::get()->construct(eid, name, params);
+  GameEntity *ent = new Actor(eid, name, params);
   if (ent) {
     Renderer::get()->spawnEntity(ent);
     script_.wrapEntity(ent, params);

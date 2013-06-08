@@ -16,7 +16,8 @@ GameEntity::GameEntity(
     playerID_(NO_PLAYER),
     name_(name),
     maxSpeed_(0.f),
-    sight_(0.f) {
+    sight_(0.f),
+    warp_(false) {
   setProperty(P_RENDERABLE, true);
 
   if (params.isMember("pid")) {
@@ -45,6 +46,7 @@ id_t GameEntity::getTeamID() const {
 void GameEntity::update(float dt) {
   setBumpVel(glm::vec3(0.f));
   setSpeed(0.f);
+  warp_ = false;
 }
 
 float GameEntity::distanceToEntity(const GameEntity *e) const {
@@ -70,7 +72,8 @@ void GameEntity::moveTowards(const glm::vec2 &targetPos) {
 }
 
 void GameEntity::warpPosition(const glm::vec2 &pos) {
-  setPosition(pos);
+  warp_ = true;
+  warpTarget_ = pos;
 }
 
 void GameEntity::checksum(Checksum &chksum) const {
