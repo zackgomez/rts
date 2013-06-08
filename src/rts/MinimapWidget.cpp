@@ -102,10 +102,10 @@ void MinimapWidget::render(float dt) {
     
   // render actors
   for (const auto &pair : Renderer::get()->getEntities()) {
-    const GameEntity *e = (const GameEntity *)pair.second;
-    if (!e->hasProperty(GameEntity::P_ACTOR)) {
+    if (!pair.second->hasProperty(GameEntity::P_ACTOR)) {
       continue;
     }
+    const GameEntity *e = (const GameEntity *)pair.second;
     //if (!visibilityMap->locationVisible(e->getPosition2())) {
     if (!e->isVisible()) {
       continue;

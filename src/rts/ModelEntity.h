@@ -18,7 +18,11 @@ public:
   static const uint32_t P_COLLIDABLE = 983556954;
 
   virtual bool hasProperty(uint32_t property) const {
-      return false;
+    // TODO(zack): remove, this is a hack for collision objects
+    if (property == P_RENDERABLE) {
+      return true;
+    }
+    return false;
   }
 
   glm::vec2 getPosition2() const {

@@ -110,6 +110,9 @@ static Handle<Value> entityGetNearbyEntities(const Arguments &args) {
   const int argc = 1;
   Renderer::get()->getNearbyEntities(pos, radius,
       [&](const ModelEntity *e) -> bool {
+        if (!e->hasProperty(GameEntity::P_GAMEENTITY)) {
+          return true;
+        }
         TryCatch try_catch;
         auto jsEntity = Game::get()->getScript()->getEntity(e->getID());
         Handle<Value> argv[1] = {jsEntity};

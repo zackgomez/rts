@@ -6,6 +6,7 @@
 #include "rts/Game.h"
 #include "rts/Player.h"
 #include "rts/Renderer.h"
+#include "rts/ResourceManager.h"
 
 namespace rts {
 
@@ -41,11 +42,27 @@ void Map::init(const std::vector<Player *> &players) {
   Json::Value entities = definition_["entities"];
   for (int i = 0; i < entities.size(); i++) {
     Json::Value entity_def = entities[i];
+    invariant(entity_def.isMember("type"), "missing type param");
     std::string type = entity_def["type"].asString();
     if (type == "starting_location") {
       spawnStartingLocation(entity_def, players);
       continue;
     }
+    if (type == "collision_object") {
+      id_t eid = Renderer::get()->newEntityID();
+      ModelEntity *obj = new ModelEntity(eid);
+      obj->setPosition(glm::vec3(toVec2(entity_def["pos"]), 0.1f));
+      obj->setSize(toVec2(entity_def["size"]));
+      obj->setAngle(entity_def["angle"].asFloat());
+
+      obj->setScale(glm::vec3(2.f*obj->getSize(), 1.f));
+      GLuint texture = ResourceManager::get()->getTexture("collision-tex");
+      obj->setMeshName("square");
+      obj->setMaterial(createMaterial(glm::vec3(0.f), 0.f, texture));
+      Renderer::get()->spawnEntity(obj);
+      continue;
+    }
+
     Json::Value params;
     params["pid"] = toJson(NO_PLAYER);
     if (entity_def.isMember("pos")) {
@@ -57,7 +74,6 @@ void Map::init(const std::vector<Player *> &players) {
     if (entity_def.isMember("angle")) {
       params["angle"] = entity_def["angle"];
     }
-    invariant(entity_def.isMember("type"), "missing type param");
     Game::get()->spawnEntity(type, params);
   }
 }

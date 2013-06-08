@@ -128,6 +128,4 @@ EntityDefs = {
     size: [0.6, 0.6, 0.3],
     default_state: ProjectileState,
   },
-  // TODO(zack): remove this after collision object is no longer a game entity
-  collision_object: {},
 }

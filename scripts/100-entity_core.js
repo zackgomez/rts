@@ -9,51 +9,50 @@ function entityInit(entity, params) {
   entity.cooldowns_ = {};
   entityResetDeltas(entity);
   var name = entity.getName();
-  // TODO(zack): some kind of copy properties or something, this sucks
   var def = EntityDefs[name];
-  if (def) {
-    if (def.properties) {
-      for (var i = 0; i < def.properties.length; i++) {
-        entity.setProperty(def.properties[i], true);
-      }
-    }
-    if (def.size) {
-      entity.setSize(def.size);
-    }
-    if (def.speed) {
-      entity.maxSpeed_ = def.speed;
-    }
-    if (def.sight) {
-      entity.sight_ = def.sight;
-    }
-    if (def.default_state) {
-      entity.defaultState_ = def.default_state;
-    }
-    if (def.health) {
-      entity.maxHealth_ = def.health;
-      entity.health_ = entity.maxHealth_;
-    }
-    if (def.cap_time) {
-      entity.capTime_ = def.cap_time;
-      entity.cappingPlayerID_ = null;
-      entity.capAmount_ = 0.0;
-      entity.capResetDelay_ = 0;
-    }
-    if (def.capture_range) {
-      entity.captureRange_ = def.capture_range;
-    }
-    if (def.weapon) {
-      entity.weapon_ = Weapons[def.weapon];
-    }
-    if (def.effects) {
-      entity.effects_ = EntityDefs[name].effects;
-    }
-    if (def.actions) {
-      entity.actions_ = EntityDefs[name].actions;
-    }
-  } else {
+  if (!def) {
     throw new Error('No def for ' + name);
-  }
+	}
+  // TODO(zack): some kind of copy properties or something, this sucks
+	if (def.properties) {
+		for (var i = 0; i < def.properties.length; i++) {
+			entity.setProperty(def.properties[i], true);
+		}
+	}
+	if (def.size) {
+		entity.setSize(def.size);
+	}
+	if (def.speed) {
+		entity.maxSpeed_ = def.speed;
+	}
+	if (def.sight) {
+		entity.sight_ = def.sight;
+	}
+	if (def.default_state) {
+		entity.defaultState_ = def.default_state;
+	}
+	if (def.health) {
+		entity.maxHealth_ = def.health;
+		entity.health_ = entity.maxHealth_;
+	}
+	if (def.cap_time) {
+		entity.capTime_ = def.cap_time;
+		entity.cappingPlayerID_ = null;
+		entity.capAmount_ = 0.0;
+		entity.capResetDelay_ = 0;
+	}
+	if (def.capture_range) {
+		entity.captureRange_ = def.capture_range;
+	}
+	if (def.weapon) {
+		entity.weapon_ = Weapons[def.weapon];
+	}
+	if (def.effects) {
+		entity.effects_ = EntityDefs[name].effects;
+	}
+	if (def.actions) {
+		entity.actions_ = EntityDefs[name].actions;
+	}
 
   entity.state_ = new entity.defaultState_(params);
 

@@ -101,42 +101,32 @@
     "bumpSpeed" : 1.0
   },
 
-  "collision_object" :
-  {
-    "class"        : "Collision"
-  },
-
   "unit" :
   {
-    "class"        : "Actor",
     "model"        : "unit",
     "modelSize"    : 0.8
   },
 
   "projectile" :
   {
-    "class"  : "Actor",
     "model"  : "basic_bullet",
     "modelSize"    : 1.0
   },
 
   "melee_unit" :
   {
-    "class"       : "Actor",
     "model"       : "melee_unit",
     "modelSize"   : 1.0
   },
 
   "building" :
   {
-    "class"  : "Actor",
     "model"  : "building",
     "modelSize"    : 4.0
   },
 
   "victory_point" :
   {
-    "class"       : "Actor",
     "model"       : "victory_point",
     "modelSize"   : 0.6,
     "texture"     : "vp"
@@ -144,7 +134,6 @@
 
   "req_point" :
   {
-    "class"       : "Actor",
     "model"       : "req_point",
     "modelSize"   : 2.0
   },

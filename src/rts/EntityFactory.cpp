@@ -18,17 +18,6 @@ EntityFactory * EntityFactory::get() {
 
 GameEntity * EntityFactory::construct(rts::id_t id, 
     const std::string &name, const Json::Value &params) {
-
-  auto cl = strParam(name + ".class");
-
-  if (cl == "Collision") {
-    return new CollisionObject(id, name, params);
-  } else if (cl == "Actor") {
-    return new Actor(id, name, params);
-  } else {
-    LOG(WARNING) << "Trying to spawn unknown class " << cl
-      << " named " << name << " params: " << params << '\n';
-    return nullptr;
-  }
+	return new Actor(id, name, params);
 }
 };  // namespace rts
