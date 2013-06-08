@@ -71,7 +71,7 @@ function makeVpGenEffect(amount) {
       return true;
     }
 
-    AddVPs(entity.getTeamID(), amount, entity.getID());
+    entity.deltas.vp_rate += amount;
     return true;
   }
 }
@@ -82,7 +82,7 @@ function makeReqGenEffect(amount) {
       return true;
     }
 
-    AddRequisition(entity.getPlayerID(), amount, entity.getID());
+    entity.deltas.req_rate += amount;
     return true;
   }
 }

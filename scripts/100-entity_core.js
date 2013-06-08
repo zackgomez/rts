@@ -108,6 +108,8 @@ function entityResetDeltas(entity) {
     capture: {},
     damage: 0,
     healing_rate: 0,
+    vp_rate: 0,
+    req_rate: 0,
   };
 }
 
@@ -131,6 +133,16 @@ function entityResolve(entity, dt) {
     if (entity.cooldowns_[cd] < 0.0) {
       delete entity.cooldowns_[cd];
     }
+  }
+
+  // Resources
+  if (entity.deltas.req_rate) {
+    var amount = dt * entity.deltas.req_rate;
+    AddRequisition(entity.getPlayerID(), amount, entity.getID());
+  }
+  if (entity.deltas.vp_rate) {
+    var amount = dt * entity.deltas.vp_rate;
+    AddVPs(entity.getTeamID(), amount, entity.getID());
   }
 
   // Health
