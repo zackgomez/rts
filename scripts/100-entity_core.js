@@ -186,7 +186,7 @@ function entityResolve(entity, dt) {
           pos: vecAdd(entity.getPosition2(), entity.getDirection()),
           angle: entity.getAngle()
         });
-      entity.prodQueue_.pop();
+      entity.prodQueue_.shift();
     }
   }
 
