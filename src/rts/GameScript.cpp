@@ -109,7 +109,7 @@ static Handle<Value> entityGetNearbyEntities(const Arguments &args) {
 
   const int argc = 1;
   Renderer::get()->getNearbyEntities(pos, radius,
-      [&](const GameEntity *e) -> bool {
+      [&](const ModelEntity *e) -> bool {
         TryCatch try_catch;
         auto jsEntity = Game::get()->getScript()->getEntity(e->getID());
         Handle<Value> argv[1] = {jsEntity};
@@ -555,11 +555,11 @@ void GameScript::wrapEntity(GameEntity *e, const Json::Value &params) {
   scriptObjects_[e->getID()] = wrapper;
 }
 
-void GameScript::destroyEntity(GameEntity *e) {
+void GameScript::destroyEntity(id_t id) {
   HandleScope handle_scope(isolate_);
   Context::Scope context_scope(isolate_, context_);
 
-  auto it = scriptObjects_.find(e->getID());
+  auto it = scriptObjects_.find(id);
   invariant(it != scriptObjects_.end(), "destroying entity without wrapper");
   it->second.Dispose();
   scriptObjects_.erase(it);

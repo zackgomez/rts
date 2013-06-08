@@ -585,7 +585,7 @@ id_t GameController::selectEntity(const glm::vec2 &screenCoord) const {
   auto entity = Renderer::get()->castRay(
       origin,
       dir,
-      [](const GameEntity *e) {
+      [](const ModelEntity *e) {
         return e->isVisible() && e->hasProperty(GameEntity::P_ACTOR);
       });
 

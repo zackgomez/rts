@@ -76,7 +76,9 @@ bool Game::updatePlayers() {
 TickChecksum Game::checksum() {
   Checksum chksum;
   for (auto it : Renderer::get()->getEntities()) {
-    it.second->checksum(chksum);
+    if (it.second->hasProperty(GameEntity::P_GAMEENTITY)) {
+      static_cast<GameEntity *>(it.second)->checksum(chksum);
+    }
   }
 
   TickChecksum ret;
@@ -123,7 +125,6 @@ void Game::start() {
 
 void Game::update(float dt) {
   auto lock = Renderer::get()->lockEngine();
-  auto& entities = Renderer::get()->getEntities();
   v8::Locker locker(script_.getIsolate());
   v8::Context::Scope context_scope(script_.getContext());
 
@@ -206,32 +207,44 @@ void Game::update(float dt) {
   // Update pathing
   map_->update(dt);
 
+  std::vector<GameEntity *> entities;
+  for (auto it : Renderer::get()->getEntities()) {
+    if (it.second->hasProperty(GameEntity::P_GAMEENTITY)) {
+      entities.push_back((GameEntity *)it.second);
+    }
+  }
+
   // Integrate positions before updating entities, to ensure the render displays
   // extrapolated information.  This is safe and provides a better experience.
-  for (auto &it : entities) {
-    it.second->integrate(dt);
+  for (auto entity : entities) {
+    entity->integrate(dt);
   }
 
   // Update entities
-  for (auto &it : entities) {
-    GameEntity *entity = it.second;
+  for (auto entity : entities) {
     entity->update(dt);
   }
   // Resolve entities
-  for (auto &it : entities) {
-    GameEntity *entity = it.second;
+  for (auto entity : entities) {
     entity->resolve(dt);
   }
   // Remove deadEnts
   for (auto eid : deadEntities_) {
-    script_.destroyEntity(getEntity(eid));
+    script_.destroyEntity(eid);
     Renderer::get()->removeEntity(eid);
   }
   deadEntities_.clear();
 
+  entities.clear();
+  for (auto it : Renderer::get()->getEntities()) {
+    if (it.second->hasProperty(GameEntity::P_GAMEENTITY)) {
+      entities.push_back((GameEntity *)it.second);
+    }
+  }
+
   // Collision detection
   for (auto it = entities.begin(); it != entities.end(); it++) {
-    GameEntity *e1 = it->second;
+    GameEntity *e1 = *it;
     if (!e1->hasProperty(GameEntity::P_COLLIDABLE)) {
       continue;
     }
@@ -242,7 +255,7 @@ void Game::update(float dt) {
         map_->getMapHeight(glm::vec2(e1->getPosition()))));
     auto it2 = it;
     for (it2++; it2 != entities.end(); it2++) {
-      GameEntity *e2 = it2->second;
+      GameEntity *e2 = *it2;
       if (!e2->hasProperty(GameEntity::P_COLLIDABLE)) {
         continue;
       }
@@ -261,8 +274,7 @@ void Game::update(float dt) {
 
   for (auto &vit : visibilityMaps_) {
     vit.second->clear();
-    for (auto &it : entities) {
-      GameEntity *entity = it.second;
+    for (auto entity : entities) {
       vit.second->processEntity(entity);
     }
   }
@@ -334,21 +346,31 @@ void Game::destroyEntity(id_t eid) {
 GameEntity * Game::getEntity(id_t eid) {
   auto entities = Renderer::get()->getEntities();
   auto it = entities.find(eid);
-  return it == entities.end() ? nullptr : it->second;
+  if (it == entities.end() || !it->second->hasProperty(GameEntity::P_GAMEENTITY)) {
+    return nullptr;
+  }
+  return (GameEntity *)it->second;
 }
 
 const GameEntity * Game::getEntity(id_t eid) const {
   auto entities = Renderer::get()->getEntities();
   auto it = entities.find(eid);
-  return it == entities.end() ? nullptr : it->second;
+  if (it == entities.end() || !it->second->hasProperty(GameEntity::P_GAMEENTITY)) {
+    return nullptr;
+  }
+  return (const GameEntity *)it->second;
 }
 
 const GameEntity * Game::findEntity(
     std::function<bool(const GameEntity *)> f) const {
   auto entities = Renderer::get()->getEntities();
   for (auto pair : entities) {
-    if (f(pair.second)) {
-      return pair.second;
+    if (!pair.second->hasProperty(GameEntity::P_GAMEENTITY)) {
+      continue;
+    }
+    const GameEntity *e = (const GameEntity *)pair.second;
+    if (f(e)) {
+      return e;
     }
   }
 

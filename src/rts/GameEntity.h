@@ -20,6 +20,7 @@ class GameEntity : public ModelEntity {
       const std::string &name, const Json::Value &params);
   virtual ~GameEntity();
 
+  static const uint32_t P_GAMEENTITY = 293013864;
   static const uint32_t P_TARGETABLE = 463132888;
   static const uint32_t P_CAPPABLE = 815586235;
   static const uint32_t P_ACTOR = 913794634;
@@ -27,6 +28,9 @@ class GameEntity : public ModelEntity {
   static const uint32_t P_UNIT = 118468328;
 
   virtual bool hasProperty(uint32_t property) const final override {
+    if (property == P_GAMEENTITY) {
+      return true;
+    }
     return properties_.count(property);
   }
   void setProperty(uint32_t property, bool val) {

@@ -12,14 +12,10 @@
 #include "common/FPSCalculator.h"
 #include "common/ParamReader.h"
 #include "common/util.h"
-#include "rts/CollisionObject.h"
 #include "rts/Controller.h"
 #include "rts/Graphics.h"
-#include "rts/GameEntity.h"
 #include "rts/FontManager.h"
-#include "rts/Game.h"
 #include "rts/Map.h"
-#include "rts/Player.h"
 #include "rts/ModelEntity.h"
 #include "rts/ResourceManager.h"
 #include "rts/UI.h"
@@ -246,12 +242,12 @@ void Renderer::endRender() {
   SDL_GL_SwapBuffers();
 }
 
-const GameEntity *Renderer::castRay(
+const ModelEntity *Renderer::castRay(
     const glm::vec3 &origin,
     const glm::vec3 &dir,
-    std::function<bool(const GameEntity *)> filter) const {
+    std::function<bool(const ModelEntity *)> filter) const {
   float bestTime = HUGE_VAL;
-  const GameEntity *ret = nullptr;
+  const ModelEntity *ret = nullptr;
   for (auto pair : entities_) {
     auto entity = pair.second;
     float time = rayAABBIntersection(
@@ -273,7 +269,7 @@ const GameEntity *Renderer::castRay(
 void Renderer::getNearbyEntities(
     const glm::vec3 &pos,
     float radius,
-    std::function<bool(const GameEntity *)> callback) const {
+    std::function<bool(const ModelEntity *)> callback) const {
   float radius2 = radius * radius;
   for (auto pair : entities_) {
     auto entity = pair.second;
@@ -287,14 +283,14 @@ void Renderer::getNearbyEntities(
     }
   }
 }
-std::vector<const GameEntity *> Renderer::getNearbyEntitiesArray(
+std::vector<const ModelEntity *> Renderer::getNearbyEntitiesArray(
     const glm::vec3& pos,
     float radius) {
-  std::vector<const GameEntity *> ret;
+  std::vector<const ModelEntity *> ret;
   getNearbyEntities(
       pos,
       radius,
-      [&ret] (const GameEntity *e) -> bool {
+      [&ret] (const ModelEntity *e) -> bool {
         ret.push_back(e);
         return true;
       });
@@ -310,7 +306,7 @@ void Renderer::spawnEntity(Entity *ent) {
   invariant(ent, "Cannot spawn null entity");
   invariant(entities_.find(ent->getID()) == entities_.end(),
       "cannot add spawn entity with already existing ID");
-  entities_[ent->getID()] = (GameEntity *)ent;
+  entities_[ent->getID()] = (ModelEntity *)ent;
 }
 
 void Renderer::removeEntity(id_t eid) {

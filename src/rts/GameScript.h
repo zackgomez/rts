@@ -28,7 +28,7 @@ public:
   }
 
   void wrapEntity(GameEntity *e, const Json::Value &params);
-  void destroyEntity(GameEntity *e);
+  void destroyEntity(id_t eid);
   v8::Handle<v8::Object> getEntity(id_t eid);
   v8::Handle<v8::Object> getGlobal();
 

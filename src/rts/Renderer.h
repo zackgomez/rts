@@ -7,23 +7,18 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include "common/Clock.h"
-#include "common/Logger.h"
 #include "rts/Camera.h"
-#include "rts/GameEntity.h"
+#include "rts/ModelEntity.h"
 #ifdef USE_FMOD
 #include <fmod.hpp>
 #endif  // USE_FMOD
 
 namespace rts {
 
-class Actor;
 class Controller;
-class Game;
 class Map;
 class ModelEntity;
 class UI;
-
-struct MapHighlight;
 
 class Renderer {
  public:
@@ -53,23 +48,23 @@ class Renderer {
     return controller_;
   }
 
-  std::map<id_t, GameEntity *>& getEntities() {
+  std::map<id_t, ModelEntity *>& getEntities() {
     return entities_;
   }
-  const std::map<id_t, GameEntity *>& getEntities() const {
+  const std::map<id_t, ModelEntity *>& getEntities() const {
     return entities_;
   }
-  const GameEntity * castRay(
+  const ModelEntity * castRay(
       const glm::vec3 &origin,
       const glm::vec3 &dir,
-      std::function<bool(const GameEntity *)> filter) const;
+      std::function<bool(const ModelEntity *)> filter) const;
   // callback should return false when done
   void getNearbyEntities(
       const glm::vec3& pos,
       float radius,
-      std::function<bool(const GameEntity *)> callback) const;
+      std::function<bool(const ModelEntity *)> callback) const;
   // Prefer the callback version
-  std::vector<const GameEntity *> getNearbyEntitiesArray(
+  std::vector<const ModelEntity *> getNearbyEntitiesArray(
       const glm::vec3& pos,
       float radius);
   // Internally synchronized
@@ -131,9 +126,9 @@ class Renderer {
   glm::vec3 screenToTerrain(const glm::vec2 &screenCoord) const;
 
   // Returns the entity that scores the LOWEST with the given scoring function.
-  // Scoring function should have signature float scorer(const GameEntity *);
+  // Scoring function should have signature float scorer(const ModelEntity *);
   template <class T>
-  const GameEntity * findEntity(T scorer) const;
+  const ModelEntity * findEntity(T scorer) const;
 
  private:
   Renderer();
@@ -147,10 +142,9 @@ class Renderer {
   void renderUI();
 
   glm::vec3 screenToNDC(const glm::vec2 &screenCoord) const;
-  void renderActor(const Actor *actor, glm::mat4 transform);
   glm::vec2 worldToMinimap(const glm::vec3 &mapPos);
 
-  std::map<id_t, GameEntity *> entities_;
+  std::map<id_t, ModelEntity *> entities_;
   std::atomic<id_t> nextEntityID_;
 
   std::mutex funcMutex_;
@@ -183,12 +177,12 @@ class Renderer {
 };
 
 template <class T>
-const GameEntity * Renderer::findEntity(T scorer) const {
+const ModelEntity * Renderer::findEntity(T scorer) const {
   float bestscore = HUGE_VAL;
-  const GameEntity *bestentity = nullptr;
+  const ModelEntity *bestentity = nullptr;
 
   for (const auto& it : entities_) {
-    const GameEntity *e = it.second;
+    const ModelEntity *e = it.second;
     float score = scorer(e);
     if (score < bestscore) {
       bestscore = score;
