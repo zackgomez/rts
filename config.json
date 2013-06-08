@@ -223,14 +223,14 @@
       },
       "vicdisplay-1" : {
         "type"       : "TextWidget",
-        "center"     : [40.0, 0.0],
+        "center"     : [40.0, 25],
         "dim"        : [70, 50],
         "fontHeight" : 32.0,
         "bgcolor"    : [0.4, 0.4, 0.4, 1.0]
       },
       "vicdisplay-2" : {
         "type"       : "TextWidget",
-        "center"     : [60.0, 0.0],
+        "center"     : [60.0, 25],
         "dim"        : [70, 50],
         "fontHeight" : 32.0,
         "bgcolor"    : [0.4, 0.4, 0.4, 1.0]

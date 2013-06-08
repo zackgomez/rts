@@ -16,13 +16,14 @@ glm::vec2 uiVec2Param(const std::string &name) {
   invariant(raw.size() == 2, "bad param " + raw.toStyledString());
 
   auto res = Renderer::get()->getResolution();
-  if (raw[0].isDouble() && raw[1].isDouble()) {
-    return toVec2(raw) * res / 100.f;
-  } else if (raw[0].isInt() && raw[1].isInt()) {
-    return toVec2(raw);
-  } else {
-    invariant_violation("unexpected ui pos array element");
+  glm::vec2 ret = toVec2(raw);
+  for (int i = 0; i < raw.size(); i++) {
+    if (raw[i].isDouble()) {
+      ret[i] *= res[i] / 100.f;
+    }
   }
+
+  return ret;
 }
 
 glm::vec2 uiPosParam(const std::string &name) {
