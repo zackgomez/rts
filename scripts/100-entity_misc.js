@@ -168,7 +168,7 @@ function UnitIdleState() {
     var target = entityFindTarget(entity, this.targetID);
     this.targetID = target ? target.getID() : null;
     if (target) {
-      entity.attack(target);
+      entity.pursue(target);
     }
 
     return null;
@@ -226,7 +226,7 @@ function UnitAttackState(params) {
       return new UnitIdleState();
     }
 
-    entity.attack(target);
+    entity.pursue(target);
   }
 }
 
@@ -246,10 +246,24 @@ function UnitAttackMoveState(params) {
       entity.moveTowards(this.targetPos);
     } else {
       // Pursue a target enemy
-      entity.attack(targetEnemy);
+      entity.pursue(targetEnemy);
     }
 
     return null;
+  }
+}
+
+function HoldPositionState() {
+  this.targetID = null;
+
+  this.update = function (entity) {
+    entity.remainStationary();
+
+    var targetEnemy = entityFindTarget(entity, this.targetID);
+    this.targetID = targetEnemy ? targetEnemy.getID() : null;
+    if (targetEnemy) {
+      entity.attack(targetEnemy);
+    }
   }
 }
 

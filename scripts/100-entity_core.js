@@ -67,39 +67,47 @@ function entityInit(entity, params) {
     }
   }
 
+  entity.pursue = function (target) {
+    if (this.attack(target)) {
+      this.remainStationary();
+    } else {
+      this.moveTowards(target.getPosition2());
+    }
+  }
+
   entity.attack = function (target) {
     if (!this.weapon_) {
       Log(this.getID(), 'Told to attack without weapon');
-      return;
+      return false;
     }
     var weapon = this.weapon_;
 
     var dist = this.distanceToEntity(target);
     if (dist > weapon.range) {
-      this.moveTowards(target.getPosition2());
-    } else {
-      this.remainStationary();
-      if (!this.hasCooldown(weapon.cooldown_name)) {
-        this.addCooldown(weapon.cooldown_name, weapon.cooldown);
+      return false;
+    }
 
-        if (weapon.type == 'ranged') {
-          var params = {
-            pid: this.getPlayerID(),
-            pos: this.getPosition2(),
-            target_id: target.getID(),
-            damage: weapon.damage,
-          };
-          SpawnEntity('projectile', params);
-        } else {
-          SendMessage({
-            to: target.getID(),
-            from: this.getID(),
-            type: MessageTypes.ATTACK,
-            damage: weapon.damage,
-          });
-        }
+    if (!this.hasCooldown(weapon.cooldown_name)) {
+      this.addCooldown(weapon.cooldown_name, weapon.cooldown);
+
+      if (weapon.type == 'ranged') {
+        var params = {
+          pid: this.getPlayerID(),
+          pos: this.getPosition2(),
+          target_id: target.getID(),
+          damage: weapon.damage,
+        };
+        SpawnEntity('projectile', params);
+      } else {
+        SendMessage({
+          to: target.getID(),
+          from: this.getID(),
+          type: MessageTypes.ATTACK,
+          damage: weapon.damage,
+        });
       }
     }
+    return true;
   }
 }
 
@@ -256,6 +264,8 @@ function entityHandleOrder(entity, order) {
     entity.state_ = new UnitCaptureState({
       target_id: order.target_id,
     });
+  } else if (type == 'HOLD') {
+    entity.state_ = new HoldPositionState();
   } else if (type == 'ATTACK') {
     if (order.target_id) {
       entity.state_ = new UnitAttackState({

@@ -17,6 +17,7 @@ namespace OrderTypes {
 const std::string MOVE = "MOVE";
 const std::string ATTACK = "ATTACK";
 const std::string CAPTURE = "CAPTURE";
+const std::string HOLD_POSITION = "HOLD";
 const std::string STOP = "STOP";
 const std::string ACTION = "ACTION";
 }

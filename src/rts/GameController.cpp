@@ -523,6 +523,14 @@ void GameController::keyPress(SDL_keysym keysym) {
         order_ = OrderTypes::ATTACK;
       } else if (key == SDLK_m) {
         order_ = OrderTypes::MOVE;
+      } else if (key == SDLK_h) {
+        Json::Value order;
+        order["type"] = OrderTypes::HOLD_POSITION;
+        order["entity"] = toJson(player_->getSelection());
+        PlayerAction action;
+        action["type"] = ActionTypes::ORDER;
+        action["order"] = order;
+        Game::get()->addAction(player_->getPlayerID(), action);
       } else if (key == SDLK_s) {
         Json::Value order;
         order["type"] = OrderTypes::STOP;
