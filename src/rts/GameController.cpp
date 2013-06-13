@@ -719,6 +719,23 @@ void renderEntity(
     drawRectCenter(pos, size, healthBarColor);
   }
 
+  if (ui_info.mana[1]) {
+    // Display the mana bar
+    glm::vec4 manaBarColor = glm::vec4(0, 0, 1, 1);
+
+    float manaFact = glm::max(
+        0.f,
+        ui_info.mana[0] / ui_info.mana[1]);
+    glm::vec2 size = vec2Param("hud.actor_mana.dim");
+    glm::vec2 pos = coord - vec2Param("hud.actor_mana.pos");
+    // black underneath for max mana
+    drawRectCenter(pos, size, glm::vec4(0, 0, 0, 1));
+    // mana color on top
+    pos.x -= size.x * (1.f - manaFact) / 2.f;
+    size.x *= manaFact;
+    drawRectCenter(pos, size, manaBarColor);
+  }
+
   if (ui_info.production[1] &&
 	  localPlayer->getPlayerID() == actor->getPlayerID()) {
     // display production bar

@@ -36,6 +36,7 @@ class Actor : public GameEntity {
 
   struct UIInfo {
     glm::vec2 health;
+    glm::vec2 mana;
     glm::vec2 production;
     glm::vec2 capture;
   };

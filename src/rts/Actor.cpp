@@ -194,6 +194,11 @@ void Actor::updateUIInfo() {
     uiInfo_.health = script->jsToVec2(
         Handle<Array>::Cast(jsinfo->Get(health)));
   }
+  auto mana = String::New("mana");
+  if (jsinfo->Has(mana)) {
+    uiInfo_.mana = script->jsToVec2(
+        Handle<Array>::Cast(jsinfo->Get(mana)));
+  }
   auto capture = String::New("capture");
   if (jsinfo->Has(capture)) {
     uiInfo_.capture = script->jsToVec2(
