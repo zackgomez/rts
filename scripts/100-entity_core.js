@@ -3,6 +3,8 @@
 // --
 // -- Entity Functions --
 // --
+
+// This function is called on an entity when it is created.
 function entityInit(entity, params) {
   entity.prodQueue_ = [];
   entity.defaultState_ = NullState;
@@ -12,50 +14,51 @@ function entityInit(entity, params) {
   var def = EntityDefs[name];
   if (!def) {
     throw new Error('No def for ' + name);
-	}
+  }
   // TODO(zack): some kind of copy properties or something, this sucks
-	if (def.properties) {
-		for (var i = 0; i < def.properties.length; i++) {
-			entity.setProperty(def.properties[i], true);
-		}
-	}
-	if (def.size) {
-		entity.setSize(def.size);
-	}
-	if (def.speed) {
-		entity.maxSpeed_ = def.speed;
-	}
-	if (def.sight) {
-		entity.sight_ = def.sight;
-	}
-	if (def.default_state) {
-		entity.defaultState_ = def.default_state;
-	}
-	if (def.health) {
-		entity.maxHealth_ = def.health;
-		entity.health_ = entity.maxHealth_;
-	}
-	if (def.cap_time) {
-		entity.capTime_ = def.cap_time;
-		entity.cappingPlayerID_ = null;
-		entity.capAmount_ = 0.0;
-		entity.capResetDelay_ = 0;
-	}
-	if (def.capture_range) {
-		entity.captureRange_ = def.capture_range;
-	}
-	if (def.weapon) {
-		entity.weapon_ = Weapons[def.weapon];
-	}
-	if (def.effects) {
-		entity.effects_ = EntityDefs[name].effects;
-	}
-	if (def.actions) {
-		entity.actions_ = EntityDefs[name].actions;
-	}
+  if (def.properties) {
+    for (var i = 0; i < def.properties.length; i++) {
+      entity.setProperty(def.properties[i], true);
+    }
+  }
+  if (def.size) {
+    entity.setSize(def.size);
+  }
+  if (def.speed) {
+    entity.maxSpeed_ = def.speed;
+  }
+  if (def.sight) {
+    entity.sight_ = def.sight;
+  }
+  if (def.default_state) {
+    entity.defaultState_ = def.default_state;
+  }
+  if (def.health) {
+    entity.maxHealth_ = def.health;
+    entity.health_ = entity.maxHealth_;
+  }
+  if (def.cap_time) {
+    entity.capTime_ = def.cap_time;
+    entity.cappingPlayerID_ = null;
+    entity.capAmount_ = 0.0;
+    entity.capResetDelay_ = 0;
+  }
+  if (def.capture_range) {
+    entity.captureRange_ = def.capture_range;
+  }
+  if (def.weapon) {
+    entity.weapon_ = Weapons[def.weapon];
+  }
+  if (def.effects) {
+    entity.effects_ = EntityDefs[name].effects;
+  }
+  if (def.actions) {
+    entity.actions_ = EntityDefs[name].actions;
+  }
 
   entity.state_ = new entity.defaultState_(params);
 
+  // Set some functions on the entity
   entity.hasCooldown = function (name) {
     return name in this.cooldowns_;
   }
@@ -67,6 +70,7 @@ function entityInit(entity, params) {
     }
   }
 
+  // Chases after a target, attacking it whenever possible
   entity.pursue = function (target) {
     if (this.attack(target)) {
       this.remainStationary();
@@ -75,6 +79,8 @@ function entityInit(entity, params) {
     }
   }
 
+  // entity.attack attacks a target if it can.  Checks range and weapon
+  // cooldowns
   entity.attack = function (target) {
     if (!this.weapon_) {
       Log(this.getID(), 'Told to attack without weapon');
@@ -111,6 +117,7 @@ function entityInit(entity, params) {
   }
 }
 
+// Helper function that clears out the deltas at the end of the resolve.
 function entityResetDeltas(entity) {
   entity.deltas = {
     capture: {},
@@ -121,6 +128,8 @@ function entityResetDeltas(entity) {
   };
 }
 
+// Called once per tick.  Should not do any direct updates, should only set
+// intents (like moveTowards, attack, etc) or send messages.
 function entityUpdate(entity, dt) {
   var new_state = entity.state_.update(entity);
   if (new_state) {
@@ -135,6 +144,9 @@ function entityUpdate(entity, dt) {
   }
 }
 
+// Called in a second round after all entities have been updated.  Should
+// actually change positions, update values etc.  Do not send messages or
+// interact with other entities.
 function entityResolve(entity, dt) {
   for (var cd in entity.cooldowns_) {
     entity.cooldowns_[cd] -= dt;
@@ -183,6 +195,7 @@ function entityResolve(entity, dt) {
     entity.capAmount_ = 0;
   }
 
+  // Production
   if (entity.prodQueue_.length) {
     var prod = entity.prodQueue_[0];
     prod.t += dt;
@@ -193,11 +206,12 @@ function entityResolve(entity, dt) {
           pid: entity.getPlayerID(),
           pos: vecAdd(entity.getPosition2(), entity.getDirection()),
           angle: entity.getAngle()
-        });
+      });
       entity.prodQueue_.shift();
     }
   }
 
+  // Attributes
   entity.setMaxSpeed(entity.maxSpeed_);
   entity.setSight(entity.sight_);
 
@@ -205,6 +219,8 @@ function entityResolve(entity, dt) {
   entityResetDeltas(entity);
 }
 
+// Called each time an entity receives a mesage from another entity.  You should
+// not directly update values, only set intents and update deltas.
 function entityHandleMessage(entity, msg) {
   if (msg.type == MessageTypes.CAPTURE) {
     if (!entity.capTime_) {
@@ -242,6 +258,8 @@ function entityHandleMessage(entity, msg) {
   }
 }
 
+// Handles an order from the player.  Called before update/resolve.
+// Intentions only.
 function entityHandleOrder(entity, order) {
   // the unit property basically means you can order it around
   if (!entity.hasProperty(P_UNIT)) {
@@ -281,6 +299,7 @@ function entityHandleOrder(entity, order) {
   }
 }
 
+// A special case of an order.  Actions are like teleport, or production
 function entityHandleAction(entity, action_name, target) {
   action = entity.actions_[action_name];
   if (!action) {
@@ -299,6 +318,12 @@ function entityHandleAction(entity, action_name, target) {
   }
 }
 
+
+// Accessors
+
+
+// Returns an array of actions and their associated state.  This is
+// used by the UI to display the bottom bar.
 function entityGetActions(entity) {
   if (!entity.actions_) {
     return [];
@@ -315,14 +340,16 @@ function entityGetActions(entity) {
       state: action.getState(entity),
       // TODO(zack): this is hacky
       cooldown: action.getState(entity) == ActionStates.COOLDOWN
-        ? 1 - entity.cooldowns_[action.cooldownName] / action.cooldown
-        : 0.0,
+      ? 1 - entity.cooldowns_[action.cooldownName] / action.cooldown
+      : 0.0,
     });
   }
 
   return actions;
 }
 
+// Returns info about this entity, like health or mana.
+// It is used by the UI to display this information
 function entityGetUIInfo(entity) {
   var ui_info = {};
   if (entity.hasProperty(P_CAPPABLE)) {

@@ -1,3 +1,6 @@
+// This file holds message related files.  Currently this is just a simple
+// convenience function.  Maybe someday it will be more, or be gone.
+
 function SendMessage(msg) {
   var id = msg.to;
   if (!id) {

@@ -41,6 +41,7 @@ function entityFindTarget(entity, previous_target_id) {
   return new_target;
 }
 
+
 // --
 // -- Entity Effects --
 // --
