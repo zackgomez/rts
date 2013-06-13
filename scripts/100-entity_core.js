@@ -78,6 +78,43 @@ function entityInit(entity, params) {
     GetNearbyEntities(entity.getPosition2(), range, callback);
   }
 
+  // @return Entity object or null if no target
+  entity.findTarget = function (previous_target_id) {
+    // Only looking for targetable entities belonging to enemy teams
+    var is_viable_target = function (target) {
+      // TODO(zack): only consider 'visible' enemies
+      return target.getPlayerID() != NO_PLAYER
+        && target.getTeamID() != this.getTeamID()
+        && target.hasProperty(P_TARGETABLE);
+    }.bind(this);
+
+    // Default to previous target
+    if (previous_target_id) {
+      var previous_target = GetEntity(previous_target_id);
+      if (previous_target && is_viable_target(previous_target)) {
+        return previous_target;
+      }
+    }
+
+    // Search for closest entity in sight range
+    var new_target = null;
+    var best_dist = Infinity;
+    this.getNearbyEntities(this.sight_, function (e) {
+      if (!is_viable_target(e)) {
+        return true;
+      }
+      var dist = this.distanceToEntity(e);
+      if (dist < best_dist) {
+        new_target = e;
+        best_dist = dist;
+      }
+      return true;
+    }.bind(this));
+
+    return new_target;
+  }
+
+
   // Chases after a target, attacking it whenever possible
   entity.pursue = function (target) {
     if (this.attack(target)) {
