@@ -94,18 +94,14 @@ static Handle<Value> jsAddVPs(const Arguments &args) {
   return Undefined();
 }
 
-static Handle<Value> entityGetNearbyEntities(const Arguments &args) {
-  if (args.Length() < 2) return Undefined();
+static Handle<Value> jsGetNearbyEntities(const Arguments &args) {
+  invariant(args.Length() == 3, "expected 3 args: pos2, radius, callback");
   HandleScope scope(args.GetIsolate());
 
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
-
-  float radius = args[0]->NumberValue();
-  Handle<Function> callback = Handle<Function>::Cast(args[1]);
-
-  auto pos = entity->getPosition();
+  auto script = Game::get()->getScript();
+  glm::vec3 pos = glm::vec3(script->jsToVec2(Handle<Array>::Cast(args[0])), 0.f);
+  float radius = args[1]->NumberValue();
+  Handle<Function> callback = Handle<Function>::Cast(args[2]);
 
   const int argc = 1;
   Renderer::get()->getNearbyEntities(pos, radius,
@@ -427,6 +423,9 @@ void GameScript::init() {
   global->Set(
       String::New("SpawnEntity"),
       FunctionTemplate::New(jsSpawnEntity));
+  global->Set(
+      String::New("GetNearbyEntities"),
+      FunctionTemplate::New(jsGetNearbyEntities));
 
   context_.Reset(isolate_, Context::New(isolate_, nullptr, global));
   Context::Scope context_scope(isolate_, context_);
@@ -488,9 +487,6 @@ void GameScript::init() {
       String::New("destroy"),
       FunctionTemplate::New(entityDestroy));
 
-  entityTemplate_->Set(
-      String::New("getNearbyEntities"),
-      FunctionTemplate::New(entityGetNearbyEntities));
   entityTemplate_->Set(
       String::New("containsPoint"),
       FunctionTemplate::New(entityContainsPoint));

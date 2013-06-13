@@ -70,6 +70,14 @@ function entityInit(entity, params) {
     }
   }
 
+  // Find entities near the current one.
+  // Calls the passed callback for each entity in range.
+  // If the callback returns true, it will continue passing entities until
+  // there are no more
+  entity.getNearbyEntities = function (range, callback) {
+    GetNearbyEntities(entity.getPosition2(), range, callback);
+  }
+
   // Chases after a target, attacking it whenever possible
   entity.pursue = function (target) {
     if (this.attack(target)) {
