@@ -314,8 +314,10 @@ function entityHandleAction(entity, action_name, target) {
     Log(entity.getID(), 'got unknown action', action_name);
   }
   if (action.targeting == TargetingTypes.NONE) {
-    // TODO(zack): make this also a state
-    action.exec(entity);
+    entity.state_ = new UntargetedAbilityState({
+      action: action,
+      state: entity.state_,
+    });
   } else if (action.targeting == TargetingTypes.LOCATION) {
     entity.state_ = new LocationAbilityState({
       target: target,

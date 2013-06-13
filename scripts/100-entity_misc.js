@@ -268,6 +268,16 @@ function HoldPositionState() {
   }
 }
 
+function UntargetedAbilityState(params) {
+  this.next_state = params.state;
+  this.action = params.action;
+  this.update = function (entity) {
+    this.action.exec(entity);
+    var next_state = this.next_state.update(entity);
+    return next_state ? next_state : this.next_state;
+  }
+}
+
 function LocationAbilityState(params) {
   this.target = params.target;
   this.action = params.action;
