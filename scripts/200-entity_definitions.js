@@ -38,6 +38,13 @@ EntityDefs = {
     health: 100.0,
     capture_range: 1.0,
     weapon: 'rifle',
+    actions: {
+      snipe: new SnipeAction({
+        range: 7.0,
+        cooldown: 10.0,
+        damage: 50.0,
+      }),
+    },
   },
   melee_unit: {
     properties: [

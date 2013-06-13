@@ -24,7 +24,7 @@ MessageTypes = {
 TargetingTypes = {
   NONE: 0,
   LOCATION: 1,
-  ENTITY: 2,
+  ENEMY: 2,
 };
 
 ActionStates = {
@@ -45,4 +45,3 @@ function vecAdd(v1, v2) {
   }
   return ret;
 }
-

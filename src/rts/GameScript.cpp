@@ -517,12 +517,14 @@ void GameScript::loadScripts() {
     if (script.IsEmpty()) {
       String::AsciiValue e_str(try_catch.Exception());
       LOG(ERROR) << "Unable to compile script '" << filename << "': " << *e_str << '\n';
+      invariant_violation("Error loading javascript");
     }
 
     Handle<Value> result = script->Run();
     if (result.IsEmpty()) {
       String::AsciiValue e_str(try_catch.Exception());
       LOG(ERROR) << "Unable to run script '" << filename << "': " << *e_str << '\n';
+      invariant_violation("Error loading javascript");
     }
   }
 }

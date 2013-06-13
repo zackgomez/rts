@@ -130,10 +130,15 @@ void Actor::handleAction(const std::string &action_name, const Json::Value &orde
 
   Handle<Object> global = script->getGlobal();
   TryCatch try_catch;
+  // TODO(zack): convert this to a params array rather than a single 'target'
+  // variable.
   Handle<Value> target = Undefined();
   if (order.isMember("target")) {
     target = script->jsonToJS(order["target"]);
-  };
+  }
+  else if (order.isMember("target_id")) {
+    target = script->jsonToJS(order["target_id"]);
+  }
 
   const int argc = 3;
   Handle<Value> argv[argc] = {

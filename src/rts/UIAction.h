@@ -9,6 +9,7 @@ struct UIAction {
   enum class TargetingType {
     NONE = 0,
     LOCATION = 1,
+    ENEMY = 2,
   };
   enum ActionState {
     DISABLED = 0,

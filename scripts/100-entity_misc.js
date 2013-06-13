@@ -151,6 +151,46 @@ function TeleportAction(params) {
   }
 }
 
+function SnipeAction(params) {
+  this.range = params.range;
+  this.cooldown = params.cooldown;
+  this.damage = params.damage;
+
+  this.icon = 'ranged_icon';
+  this.tooltip = 'Snipe\nDamage:'+this.damage+'\nCooldown:'+this.cooldown;
+  this.cooldownName = 'snipe';
+  this.targeting = TargetingTypes.ENEMY;
+
+  this.getState = function (entity) {
+    // TODO(zack): add mana cost
+    if (entity.hasCooldown(this.cooldownName)) {
+      return ActionStates.COOLDOWN;
+    }
+    return ActionStates.ENABLED;
+  }
+
+  this.exec = function (entity, target) {
+    if (this.getState(entity) != ActionStates.ENABLED) {
+      return;
+    }
+    var target_entity = GetEntity(target);
+    if (!target_entity || target_entity.getTeamID() == entity.getTeamID()) {
+      Log('not sniping', target, target_entity);
+      return;
+    }
+
+    entity.addCooldown(this.cooldownName, this.cooldown);
+
+    Log('Sniping', target, 'for', this.damage);
+    SendMessage({
+      to: target,
+      from: entity.getID(),
+      type: MessageTypes.ATTACK,
+      damage: this.damage,
+    });
+  }
+}
+
 // --
 // -- Entity States --
 // --
@@ -291,6 +331,24 @@ function LocationAbilityState(params) {
     return null;
   }
 }
+function TargetedAbilityState(params) {
+  this.target_id = params.target_id;
+  this.action = params.action;
+  this.update = function (entity) {
+    var target = GetEntity(this.target_id);
+    if (!target) {
+      return new entity.defaultState_;
+    }
+    // TODO(zack): some checking of visibility here
+    if (entity.distanceToEntity(target) < this.action.range) {
+      this.action.exec(entity, this.target_id);
+      return new entity.defaultState_;
+    }
+
+    entity.moveTowards(target.getPosition3()); return null;
+  }
+}
+
 
 function ProjectileState(params) {
   this.targetID = params.target_id;

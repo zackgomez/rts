@@ -323,6 +323,11 @@ function entityHandleAction(entity, action_name, target) {
       target: target,
       action: action,
     });
+  } else if (action.targeting == TargetingTypes.ENEMY) {
+    entity.state_ = new TargetedAbilityState({
+      target_id: target,
+      action: action,
+    });
   } else {
     Log(entity.getID(), 'unknown action type', action.type);
   }

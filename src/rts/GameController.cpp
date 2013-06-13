@@ -330,16 +330,31 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
       }
       order_.clear();
     } else if (!action_.name.empty()) {
-      if (newSelect.count(action_.owner)) {
+      if (!newSelect.count(action_.owner)) {
+        return;
+      }
+      std::set<id_t> ids(&action_.owner, (&action_.owner)+1);
+      if (action_.targeting == UIAction::TargetingType::NONE) {
         order["type"] = OrderTypes::ACTION;
-        std::set<id_t> ids(&action_.owner, (&action_.owner)+1);
         order["entity"] = toJson(ids);
         order["action"] = action_.name;
-        if (action_.targeting == UIAction::TargetingType::LOCATION) {
-          order["target"] = toJson(glm::vec2(loc));
-        } else {
-          invariant_violation("Unsupported targetting type");
+      } else if (action_.targeting == UIAction::TargetingType::LOCATION) {
+        order["type"] = OrderTypes::ACTION;
+        order["entity"] = toJson(ids);
+        order["action"] = action_.name;
+        order["target"] = toJson(glm::vec2(loc));
+      } else if (action_.targeting == UIAction::TargetingType::ENEMY) {
+        if (!entity
+            || entity->getTeamID() == NO_TEAM
+            || entity->getTeamID() == player_->getTeamID()) {
+          return;
         }
+        order["type"] = OrderTypes::ACTION;
+        order["entity"] = toJson(ids);
+        order["action"] = action_.name;
+        order["target_id"] = toJson(entity->getID());
+      } else {
+        invariant_violation("Unsupported targeting type");
       }
       action_.name.clear();
     // If no order, then adjust selection
@@ -775,7 +790,7 @@ void GameController::updateMapShader(Shader *shader) const {
 }
 
 void GameController::handleUIAction(const UIAction &action) {
-  if (action.state == UIAction::DISABLED) {
+  if (action.state != UIAction::ENABLED) {
     return;
   }
   if (action.targeting == UIAction::TargetingType::NONE) {
@@ -789,10 +804,8 @@ void GameController::handleUIAction(const UIAction &action) {
     player_action["order"] = order;
     Game::get()->addAction(player_->getPlayerID(), player_action);
     // No extra params
-  } else if (action.targeting == UIAction::TargetingType::LOCATION) {
-    action_ = action;
   } else {
-    invariant_violation("Unknown targetting type");
+    action_ = action;
   }
 }
 };  // rts
