@@ -51,7 +51,7 @@ var EntityDefs = {
         cooldown_name: 'heal',
         cooldown: 8.0,
         amount: 10.0,
-        icon: 'ranged_icon',
+        icon: 'heal_icon',
       }),
     },
   },
