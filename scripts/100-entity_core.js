@@ -167,6 +167,7 @@ function entityResetDeltas(entity) {
   entity.deltas = {
     capture: {},
     damage: 0,
+    healing: 0,
     healing_rate: 0,
     vp_rate: 0,
     req_rate: 0,
@@ -211,7 +212,7 @@ function entityResolve(entity, dt) {
   }
 
   // Health
-  var healing = dt * entity.deltas.healing_rate;
+  var healing = entity.deltas.healing + dt * entity.deltas.healing_rate;
   var health_delta = healing - entity.deltas.damage;
   entity.health_ = Math.min(entity.health_ + health_delta, entity.maxHealth_);
   if (entity.deltas.damage) {
@@ -349,6 +350,11 @@ function entityHandleAction(entity, action_name, target) {
   action = entity.actions_[action_name];
   if (!action) {
     Log(entity.getID(), 'got unknown action', action_name);
+    return;
+  }
+  if (action.getState(entity) !== ActionStates.ENABLED) {
+    Log(entity.getID(), 'told to run unenabled action');
+    return;
   }
   if (action.targeting == TargetingTypes.NONE) {
     entity.state_ = new UntargetedAbilityState({
@@ -361,6 +367,11 @@ function entityHandleAction(entity, action_name, target) {
       action: action,
     });
   } else if (action.targeting == TargetingTypes.ENEMY) {
+    entity.state_ = new TargetedAbilityState({
+      target_id: target,
+      action: action,
+    });
+  } else if (action.targeting == TargetingTypes.ALLY) {
     entity.state_ = new TargetedAbilityState({
       target_id: target,
       action: action,
@@ -390,9 +401,9 @@ function entityGetActions(entity) {
       targeting: action.targeting ? action.targeting : TargetingTypes.NONE,
       range: action.range ? action.range : 0.0,
       state: action.getState(entity),
-      // TODO(zack): this is hacky
+      // TODO(zack): this is hacky, move this into the valued returned by the state
       cooldown: action.getState(entity) == ActionStates.COOLDOWN
-      ? 1 - entity.cooldowns_[action.cooldownName] / action.cooldown
+      ? 1 - entity.cooldowns_[action.cooldown_name] / action.cooldown
       : 0.0,
     });
   }

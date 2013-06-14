@@ -90,7 +90,7 @@ obj:
 	mkdir -p obj
 
 tags:
-	ctags -R src
+	ctags -R src scripts
 
 .PHONY: clean force_look config tags bundle
 

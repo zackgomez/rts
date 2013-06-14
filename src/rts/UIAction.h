@@ -6,10 +6,12 @@ namespace rts {
 
 struct UIAction {
  public:
+  // Keep in sync with the javascript constants
   enum class TargetingType {
     NONE = 0,
     LOCATION = 1,
     ENEMY = 2,
+    ALLY = 3,
   };
   enum ActionState {
     DISABLED = 0,

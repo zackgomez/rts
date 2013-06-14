@@ -10,15 +10,18 @@
 //
 // getState(entity) - returns the state of the action, see ActionStates
 // TODO(zack): make this (entity, params)
-// exec(entity, target) - runs the action
+// exec(entity, target) - runs the action, action.getState is guaranteed
+// to be ENABLED
+//
 
 function ProductionAction(params) {
+  this.targeting = TargetingTypes.NONE;
+  this.range = 0;
+
   this.prod_name = params.prod_name;
   this.time_cost = params.time_cost;
   this.req_cost = params.req_cost;
   this.icon = params.icon;
-  this.targeting = TargetingTypes.NONE;
-  this.range = 0;
 
   this.tooltip =  this.prod_name +
     '\nreq: ' + this.req_cost +
@@ -33,9 +36,6 @@ function ProductionAction(params) {
   }
 
   this.exec = function (entity, target) {
-    if (this.getState(entity) != ActionStates.ENABLED) {
-      return;
-    }
     var prod = {
       name: this.prod_name,
       t: 0.0,
@@ -48,59 +48,56 @@ function ProductionAction(params) {
 }
 
 function TeleportAction(params) {
-  this.range = params.range;
-  this.cooldown = params.cooldown;
-  this.icon = 'teleport_icon';
-  this.tooltip = 'Teleport\nCooldown:'+this.cooldown;
-  this.cooldownName = 'teleport';
   this.targeting = TargetingTypes.LOCATION;
 
+  this.range = params.range;
+  this.cooldown_name = params.cooldown_name;
+  this.cooldown = params.cooldown;
+  this.icon = params.icon;
+
+  this.tooltip = 'Teleport\nCooldown:'+this.cooldown;
+
   this.getState = function (entity) {
-    if (entity.hasCooldown(this.cooldownName)) {
+    if (entity.hasCooldown(this.cooldown_name)) {
       return ActionStates.COOLDOWN;
     }
     return ActionStates.ENABLED;
   }
 
   this.exec = function (entity, target) {
-    if (this.getState(entity) != ActionStates.ENABLED) {
-      return;
-    }
     Log('Teleporting to', target, 'Range:', this.range);
-    entity.addCooldown(this.cooldownName, this.cooldown);
+    entity.addCooldown(this.cooldown_name, this.cooldown);
     entity.warpPosition(target);
   }
 }
 
 function SnipeAction(params) {
+  this.targeting = TargetingTypes.ENEMY;
+
   this.range = params.range;
+  this.cooldown_name = params.cooldown_name;
   this.cooldown = params.cooldown;
   this.damage = params.damage;
+  this.icon = params.icon;
 
-  this.icon = 'ranged_icon';
   this.tooltip = 'Snipe\nDamage:'+this.damage+'\nCooldown:'+this.cooldown;
-  this.cooldownName = 'snipe';
-  this.targeting = TargetingTypes.ENEMY;
 
   this.getState = function (entity) {
     // TODO(zack): add mana cost
-    if (entity.hasCooldown(this.cooldownName)) {
+    if (entity.hasCooldown(this.cooldown_name)) {
       return ActionStates.COOLDOWN;
     }
     return ActionStates.ENABLED;
   }
 
   this.exec = function (entity, target) {
-    if (this.getState(entity) != ActionStates.ENABLED) {
-      return;
-    }
     var target_entity = GetEntity(target);
     if (!target_entity || target_entity.getTeamID() == entity.getTeamID()) {
       Log('not sniping', target, target_entity);
       return;
     }
 
-    entity.addCooldown(this.cooldownName, this.cooldown);
+    entity.addCooldown(this.cooldown_name, this.cooldown);
 
     Log('Sniping', target, 'for', this.damage);
     SendMessage({
@@ -108,6 +105,46 @@ function SnipeAction(params) {
       from: entity.getID(),
       type: MessageTypes.ATTACK,
       damage: this.damage,
+    });
+  }
+}
+
+function HealAction(params) {
+  this.targeting = TargetingTypes.ALLY;
+
+  this.range = params.range;
+  this.cooldown = params.cooldown;
+  this.cooldown_name = params.cooldown_name;
+  this.amount = params.amount;
+  this.icon = params.icon;
+
+  this.tooltip = 'Heal\nAmount:'+this.amount+'\nCooldown:'+this.cooldown;
+
+  this.getState = function (entity) {
+    // TODO(zack): add mana cost
+    if (entity.hasCooldown(this.cooldown_name)) {
+      return ActionStates.COOLDOWN;
+    }
+    return ActionStates.ENABLED;
+  }
+
+  this.exec = function (entity, target) {
+    var target_entity = GetEntity(target);
+    if (!target_entity || target_entity.getTeamID() != entity.getTeamID()) {
+      Log('not healing', target, target_entity);
+      return;
+    }
+
+    entity.addCooldown(this.cooldown_name, this.cooldown);
+
+    Log('Healing', target, 'for', this.amount);
+    SendMessage({
+      to: target,
+      from: entity.getID(),
+      type: MessageTypes.ADD_DELTA,
+      deltas: {
+        healing: this.amount,
+      },
     });
   }
 }
