@@ -48,7 +48,7 @@
       "melee_icon"  : "images/melee_icon.png",
       "ranged_icon" : "images/ranged_icon.png",
       "teleport_icon" : "images/teleport_icon.png",
-      "heal_icon" : "images/HealStyle1Test2.png"
+      "heal_icon" : "images/HealStyle1TestDark.png"
     },
     "depthFields" : {
       "steamLogo"  : {
