@@ -345,8 +345,20 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
         order["target"] = toJson(glm::vec2(loc));
       } else if (action_.targeting == UIAction::TargetingType::ENEMY) {
         if (!entity
+            || !entity->hasProperty(GameEntity::P_TARGETABLE)
             || entity->getTeamID() == NO_TEAM
             || entity->getTeamID() == player_->getTeamID()) {
+          return;
+        }
+        order["type"] = OrderTypes::ACTION;
+        order["entity"] = toJson(ids);
+        order["action"] = action_.name;
+        order["target_id"] = toJson(entity->getID());
+      } else if (action_.targeting == UIAction::TargetingType::ALLY) {
+        if (!entity
+            || !entity->hasProperty(GameEntity::P_TARGETABLE)
+            || entity->getTeamID() == NO_TEAM
+            || entity->getTeamID() != player_->getTeamID()) {
           return;
         }
         order["type"] = OrderTypes::ACTION;

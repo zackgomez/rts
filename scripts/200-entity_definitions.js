@@ -44,6 +44,11 @@ EntityDefs = {
         cooldown: 10.0,
         damage: 50.0,
       }),
+      heal: new HealAction({
+        range: 5.0,
+        cooldown: 8.0,
+        amount: 10.0,
+      }),
     },
   },
   melee_unit: {

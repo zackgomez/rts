@@ -112,3 +112,45 @@ function SnipeAction(params) {
   }
 }
 
+function HealAction(params) {
+  this.range = params.range;
+  this.cooldown = params.cooldown;
+  this.cooldownName = 'heal';
+  this.amount = params.amount;
+
+  this.icon = 'ranged_icon';
+  this.tooltip = 'Heal\nAmount:'+this.amount+'\nCooldown:'+this.cooldown;
+  this.targeting = TargetingTypes.ALLY;
+
+  this.getState = function (entity) {
+    // TODO(zack): add mana cost
+    if (entity.hasCooldown(this.cooldownName)) {
+      return ActionStates.COOLDOWN;
+    }
+    return ActionStates.ENABLED;
+  }
+
+  this.exec = function (entity, target) {
+    if (this.getState(entity) != ActionStates.ENABLED) {
+      return;
+    }
+    var target_entity = GetEntity(target);
+    if (!target_entity || target_entity.getTeamID() != entity.getTeamID()) {
+      Log('not healing', target, target_entity);
+      return;
+    }
+
+    entity.addCooldown(this.cooldownName, this.cooldown);
+
+    Log('Healing', target, 'for', this.amount);
+    SendMessage({
+      to: target,
+      from: entity.getID(),
+      type: MessageTypes.ADD_DELTA,
+      deltas: {
+        healing: this.amount,
+      },
+    });
+  }
+}
+
