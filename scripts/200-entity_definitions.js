@@ -1,7 +1,7 @@
 // --
 // -- Weapon Definitions --
 // --
-Weapons = {
+var Weapons = {
   rifle: {
     type: 'ranged',
     range: 6.0,
@@ -21,7 +21,7 @@ Weapons = {
 // --
 // -- Entity Definitions --
 // --
-EntityDefs = {
+var EntityDefs = {
   unit: {
     properties: [
       P_ACTOR,
@@ -41,13 +41,17 @@ EntityDefs = {
     actions: {
       snipe: new SnipeAction({
         range: 7.0,
+        cooldown_name: 'snipe',
         cooldown: 10.0,
         damage: 50.0,
+        icon: 'ranged_icon',
       }),
       heal: new HealAction({
         range: 5.0,
+        cooldown_name: 'heal',
         cooldown: 8.0,
         amount: 10.0,
+        icon: 'ranged_icon',
       }),
     },
   },
@@ -70,7 +74,9 @@ EntityDefs = {
     actions: {
       teleport: new TeleportAction({
         range: 6.0,
+        cooldown_name: 'teleport',
         cooldown: 2.0,
+        icon: 'teleport_icon',
       }),
     },
   },

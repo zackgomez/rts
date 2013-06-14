@@ -350,6 +350,11 @@ function entityHandleAction(entity, action_name, target) {
   action = entity.actions_[action_name];
   if (!action) {
     Log(entity.getID(), 'got unknown action', action_name);
+    return;
+  }
+  if (action.getState(entity) !== ActionStates.ENABLED) {
+    Log(entity.getID(), 'told to run unenabled action');
+    return;
   }
   if (action.targeting == TargetingTypes.NONE) {
     entity.state_ = new UntargetedAbilityState({
@@ -396,9 +401,9 @@ function entityGetActions(entity) {
       targeting: action.targeting ? action.targeting : TargetingTypes.NONE,
       range: action.range ? action.range : 0.0,
       state: action.getState(entity),
-      // TODO(zack): this is hacky
+      // TODO(zack): this is hacky, move this into the valued returned by the state
       cooldown: action.getState(entity) == ActionStates.COOLDOWN
-      ? 1 - entity.cooldowns_[action.cooldownName] / action.cooldown
+      ? 1 - entity.cooldowns_[action.cooldown_name] / action.cooldown
       : 0.0,
     });
   }
