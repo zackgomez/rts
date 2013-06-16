@@ -8,12 +8,17 @@
 // tooltip - a string describing the action, a newline acts as a line break
 // range - the casting range of the ability (should be 0 for TargetingType.NONE)
 //
-// getState(entity) - returns the state of the action, see ActionStates
 // TODO(zack): make this (entity, params)
 // exec(entity, target) - runs the action, action.getState is guaranteed
+// getState(entity) - returns an ActionState
+// getIcon(entity) - returns a string icon name
+// getRange(entity) - returns a float range
+// getTooltip(entity) - returns a string tooltip (lines separated with '\n')
 // to be ENABLED
 
-// TODO(zack): fill in this comment
+// This is the list of common boilerplate/helper methods for actions.
+// It expects one thing, a this.params object with icon and perhaps
+// range/cooldown parameters
 var ActionPrototype = {
   getState: function (entity) {
     if (!this.hasResources(entity)) {
@@ -25,13 +30,19 @@ var ActionPrototype = {
     return ActionStates.ENABLED;
   },
 
+  // Override this if your ability has a resource cost that can disable the
+  // ability.
+  hasResources: function (entity) {
+    return true;
+  },
+
   getIcon: function (entity) {
     return this.params.icon;
   },
 
   getRange: function (entity) {
     return this.params.range ? this.params.range : 0.0;
-  }
+  },
 }
 
 function ProductionAction(params) {
