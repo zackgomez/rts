@@ -346,7 +346,7 @@ function entityHandleOrder(entity, order) {
 }
 
 // A special case of an order.  Actions are like teleport, or production
-function entityHandleAction(entity, action_name, target) {
+function entityHandleAction(entity, action_name, args) {
   action = entity.actions_[action_name];
   if (!action) {
     Log(entity.getID(), 'got unknown action', action_name);
@@ -363,17 +363,17 @@ function entityHandleAction(entity, action_name, target) {
     });
   } else if (action.targeting == TargetingTypes.LOCATION) {
     entity.state_ = new LocationAbilityState({
-      target: target,
+      target: args.target,
       action: action,
     });
   } else if (action.targeting == TargetingTypes.ENEMY) {
     entity.state_ = new TargetedAbilityState({
-      target_id: target,
+      target_id: args.target_id,
       action: action,
     });
   } else if (action.targeting == TargetingTypes.ALLY) {
     entity.state_ = new TargetedAbilityState({
-      target_id: target,
+      target_id: args.target_id,
       action: action,
     });
   } else {

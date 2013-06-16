@@ -132,19 +132,23 @@ void Actor::handleAction(const std::string &action_name, const Json::Value &orde
   TryCatch try_catch;
   // TODO(zack): convert this to a params array rather than a single 'target'
   // variable.
-  Handle<Value> target = Undefined();
+  Handle<Object> action_args = Object::New();
   if (order.isMember("target")) {
-    target = script->jsonToJS(order["target"]);
-  }
-  else if (order.isMember("target_id")) {
-    target = script->jsonToJS(order["target_id"]);
+    action_args->Set(
+        String::New("target"),
+        script->jsonToJS(order["target"]));
+  } else if (order.isMember("target_id")) {
+    action_args->Set(
+        String::New("target_id"),
+        script->jsonToJS(order["target_id"]));
   }
 
   const int argc = 3;
   Handle<Value> argv[argc] = {
     script->getEntity(getID()),
     String::New(action_name.c_str()),
-    target};
+    action_args,
+  };
   Handle<Value> result =
     Handle<Function>::Cast(global->Get(String::New("entityHandleAction")))
     ->Call(global, argc, argv);
