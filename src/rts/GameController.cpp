@@ -536,10 +536,6 @@ void GameController::keyPress(SDL_keysym keysym) {
       alt_ = true;
     } else if (key == SDLK_BACKSPACE) {
       Renderer::get()->resetCameraRotation();
-    } else if (key == SDLK_b) {
-      std::set<id_t> newsel;
-      newsel.insert(player_->getBaseID());
-      player_->setSelection(newsel);
     } else if (key == SDLK_g) {
       // Debug commands
       SDL_WM_GrabInput(SDL_GRAB_ON);

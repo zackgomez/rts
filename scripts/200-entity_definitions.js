@@ -80,7 +80,7 @@ var EntityDefs = {
       }),
     },
   },
-  building: {
+  base: {
     properties: [
       P_ACTOR,
       P_TARGETABLE,
