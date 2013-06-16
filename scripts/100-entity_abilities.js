@@ -12,88 +12,89 @@
 // TODO(zack): make this (entity, params)
 // exec(entity, target) - runs the action, action.getState is guaranteed
 // to be ENABLED
-//
+
+// TODO(zack): fill in this comment
+var ActionPrototype = {
+  getState: function (entity) {
+    if (!this.hasResources(entity)) {
+      return ActionStates.DISABLED;
+    } else if (this.params.cooldown_name &&
+               entity.hasCooldown(this.params.cooldown_name)) {
+      return ActionStates.COOLDOWN;
+    }
+    return ActionStates.ENABLED;
+  },
+
+  getIcon: function (entity) {
+    return this.params.icon;
+  },
+
+  getRange: function (entity) {
+    return this.params.range ? this.params.range : 0.0;
+  }
+}
 
 function ProductionAction(params) {
   this.targeting = TargetingTypes.NONE;
-  this.range = 0;
-
-  this.prod_name = params.prod_name;
-  this.time_cost = params.time_cost;
-  this.req_cost = params.req_cost;
-  this.icon = params.icon;
+  this.params = params;
 
   this.getTooltip = function (entity) {
-    return this.prod_name +
-      '\nreq: ' + this.req_cost +
-      '\ntime: ' + this.time_cost;
+    return this.params.prod_name +
+      '\nreq: ' + this.params.req_cost +
+      '\ntime: ' + this.params.time_cost;
   }
 
-  this.getState = function (entity) {
-    if (GetRequisition(entity.getPlayerID()) > this.req_cost) {
-      return ActionStates.ENABLED;
-    } else {
-      return ActionStates.DISABLED;
-    }
+  this.hasResources = function (entity) {
+    return GetRequisition(entity.getPlayerID()) > this.params.req_cost;
   }
 
   this.exec = function (entity, target) {
     var prod = {
-      name: this.prod_name,
+      name: this.params.prod_name,
       t: 0.0,
-      endt: this.time_cost
+      endt: this.params.time_cost
     };
     entity.prodQueue_.push(prod);
     Log('Started production of', prod.name, 'for', prod.endt);
-    AddRequisition(entity.getPlayerID(), -this.req_cost, entity.getID());
+    AddRequisition(entity.getPlayerID(), -this.params.req_cost, entity.getID());
   }
 }
+ProductionAction.prototype = ActionPrototype;
 
 function TeleportAction(params) {
   this.targeting = TargetingTypes.LOCATION;
-
-  this.range = params.range;
-  this.cooldown_name = params.cooldown_name;
-  this.cooldown = params.cooldown;
-  this.icon = params.icon;
+  this.params = params;
 
   this.getTooltip = function (entity) {
-    return 'Teleport\nCooldown:'+this.cooldown;
+    return 'Teleport' +
+      '\nCooldown:'+this.params.cooldown;
   }
 
-  this.getState = function (entity) {
-    if (entity.hasCooldown(this.cooldown_name)) {
-      return ActionStates.COOLDOWN;
-    }
-    return ActionStates.ENABLED;
+  this.hasResources = function (entity) {
+    // TODO(zack): add mana cost
+    return true;
   }
 
   this.exec = function (entity, target) {
-    Log('Teleporting to', target, 'Range:', this.range);
-    entity.addCooldown(this.cooldown_name, this.cooldown);
+    entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
     entity.warpPosition(target);
   }
 }
+TeleportAction.prototype = ActionPrototype;
 
 function SnipeAction(params) {
   this.targeting = TargetingTypes.ENEMY;
-
-  this.range = params.range;
-  this.cooldown_name = params.cooldown_name;
-  this.cooldown = params.cooldown;
-  this.damage = params.damage;
-  this.icon = params.icon;
+  this.params = params;
 
   this.getTooltip = function (entity) {
-    return 'Snipe\nDamage:'+this.damage+'\nCooldown:'+this.cooldown;
+    return 'Snipe' +
+      '\nDamage:' + this.params.damage +
+      '\nCooldown:' + this.params.cooldown;
   }
 
-  this.getState = function (entity) {
+  this.hasResources = function (entity) {
     // TODO(zack): add mana cost
-    if (entity.hasCooldown(this.cooldown_name)) {
-      return ActionStates.COOLDOWN;
-    }
-    return ActionStates.ENABLED;
+    return true;
   }
 
   this.exec = function (entity, target) {
@@ -103,37 +104,32 @@ function SnipeAction(params) {
       return;
     }
 
-    entity.addCooldown(this.cooldown_name, this.cooldown);
+    entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
 
     Log('Sniping', target, 'for', this.damage);
     SendMessage({
       to: target,
       from: entity.getID(),
       type: MessageTypes.ATTACK,
-      damage: this.damage,
+      damage: this.params.damage,
     });
   }
 }
+SnipeAction.prototype = ActionPrototype;
 
 function HealAction(params) {
   this.targeting = TargetingTypes.ALLY;
-
-  this.range = params.range;
-  this.cooldown = params.cooldown;
-  this.cooldown_name = params.cooldown_name;
-  this.amount = params.amount;
-  this.icon = params.icon;
+  this.params = params;
 
   this.getTooltip = function (entity) {
-    return 'Heal\nAmount:'+this.amount+'\nCooldown:'+this.cooldown;
+    return 'Heal' +
+      '\nAmount:' + this.params.amount +
+      '\nCooldown:' + this.params.cooldown;
   }
 
-  this.getState = function (entity) {
+  this.hasResources = function (entity) {
     // TODO(zack): add mana cost
-    if (entity.hasCooldown(this.cooldown_name)) {
-      return ActionStates.COOLDOWN;
-    }
-    return ActionStates.ENABLED;
+    return true;
   }
 
   this.exec = function (entity, target) {
@@ -143,17 +139,17 @@ function HealAction(params) {
       return;
     }
 
-    entity.addCooldown(this.cooldown_name, this.cooldown);
+    entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
 
-    Log('Healing', target, 'for', this.amount);
+    Log('Healing', target, 'for', this.params.amount);
     SendMessage({
       to: target,
       from: entity.getID(),
       type: MessageTypes.ADD_DELTA,
       deltas: {
-        healing: this.amount,
+        healing: this.params.amount,
       },
     });
   }
 }
-
+HealAction.prototype = ActionPrototype;

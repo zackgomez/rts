@@ -396,15 +396,15 @@ function entityGetActions(entity) {
     var action = entity.actions_[action_name];
     actions.push({
       name: action_name,
-      icon: action.icon,
-      tooltip: action.getTooltip(),
-      targeting: action.targeting ? action.targeting : TargetingTypes.NONE,
-      range: action.range ? action.range : 0.0,
+      icon: action.getIcon(entity),
+      tooltip: action.getTooltip(entity),
+      targeting: action.targeting,
+      range: action.getRange(entity),
       state: action.getState(entity),
       // TODO(zack): this is hacky, move this into the valued returned by the state
       cooldown: action.getState(entity) == ActionStates.COOLDOWN
-      ? 1 - entity.cooldowns_[action.cooldown_name] / action.cooldown
-      : 0.0,
+        ? 1 - entity.cooldowns_[action.params.cooldown_name] / action.params.cooldown
+        : 0.0,
     });
   }
 
