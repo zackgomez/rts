@@ -397,7 +397,7 @@ function entityGetActions(entity) {
     actions.push({
       name: action_name,
       icon: action.icon,
-      tooltip: action.tooltip,
+      tooltip: action.getTooltip(),
       targeting: action.targeting ? action.targeting : TargetingTypes.NONE,
       range: action.range ? action.range : 0.0,
       state: action.getState(entity),

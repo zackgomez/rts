@@ -23,9 +23,11 @@ function ProductionAction(params) {
   this.req_cost = params.req_cost;
   this.icon = params.icon;
 
-  this.tooltip =  this.prod_name +
-    '\nreq: ' + this.req_cost +
-    '\ntime: ' + this.time_cost;
+  this.getTooltip = function (entity) {
+    return this.prod_name +
+      '\nreq: ' + this.req_cost +
+      '\ntime: ' + this.time_cost;
+  }
 
   this.getState = function (entity) {
     if (GetRequisition(entity.getPlayerID()) > this.req_cost) {
@@ -55,7 +57,9 @@ function TeleportAction(params) {
   this.cooldown = params.cooldown;
   this.icon = params.icon;
 
-  this.tooltip = 'Teleport\nCooldown:'+this.cooldown;
+  this.getTooltip = function (entity) {
+    return 'Teleport\nCooldown:'+this.cooldown;
+  }
 
   this.getState = function (entity) {
     if (entity.hasCooldown(this.cooldown_name)) {
@@ -80,7 +84,9 @@ function SnipeAction(params) {
   this.damage = params.damage;
   this.icon = params.icon;
 
-  this.tooltip = 'Snipe\nDamage:'+this.damage+'\nCooldown:'+this.cooldown;
+  this.getTooltip = function (entity) {
+    return 'Snipe\nDamage:'+this.damage+'\nCooldown:'+this.cooldown;
+  }
 
   this.getState = function (entity) {
     // TODO(zack): add mana cost
@@ -118,7 +124,9 @@ function HealAction(params) {
   this.amount = params.amount;
   this.icon = params.icon;
 
-  this.tooltip = 'Heal\nAmount:'+this.amount+'\nCooldown:'+this.cooldown;
+  this.getTooltip = function (entity) {
+    return 'Heal\nAmount:'+this.amount+'\nCooldown:'+this.cooldown;
+  }
 
   this.getState = function (entity) {
     // TODO(zack): add mana cost
