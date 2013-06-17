@@ -100,6 +100,8 @@ class Game {
   void handleOrder(id_t playerID, const PlayerAction &action);
   // Returns true if all the players have submitted input for the current tick_
   bool updatePlayers();
+  // This just updates JS player info, game data related rather than action related
+  void updateJSPlayers();
   TickChecksum checksum();
   void pause();
   void unpause();

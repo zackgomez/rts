@@ -19,17 +19,32 @@ function playerInit(pid, starting_def) {
     });
   var base_entity = GetEntity(base_id);
 
-  var hero_id = SpawnEntity(
+  var unit_id = SpawnEntity(
     'unit',
     {
       pid: pid,
       pos: vecAdd(base_entity.getPosition2(), base_entity.getDirection()),
       angle: base_entity.getAngle(),
     });
-  var hero_entity = GetEntity(hero_id);
 
   players[pid] = {
-    base_id: base_id,
-    hero_id: hero_id,
+    units: {
+      base: base_id,
+      unit: unit_id,
+    }
   };
+}
+
+function playerUpdate(player) {
+  for (var entity_name in player.units) {
+    if (!player.units[entity_name]) {
+      delete player.units[entity_name];
+    }
+  }
+}
+
+function updateAllPlayers() {
+  for (var pid in players) {
+    playerUpdate(players[pid]);
+  }
 }

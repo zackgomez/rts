@@ -56,7 +56,9 @@ function ProductionAction(params) {
   }
 
   this.hasResources = function (entity) {
-    return GetRequisition(entity.getPlayerID()) > this.params.req_cost;
+    var owner = getPlayerInfo(entity.getPlayerID());
+    return GetRequisition(entity.getPlayerID()) > this.params.req_cost &&
+      !owner.units[this.params.prod_name];
   }
 
   this.exec = function (entity, target) {
