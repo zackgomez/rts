@@ -64,10 +64,23 @@ function entityInit(entity, params) {
   }
   entity.addCooldown = function (name, t) {
     if (this.cooldowns_[name]) {
-      this.cooldowns_[name] = Math.max(this.cooldowns_[name], t);
+      this.cooldowns_[name] = {
+        t: Math.max(this.cooldowns_[name].t, t),
+        maxt: Math.max(this.cooldowns_[name].maxt, t),
+      };
     } else {
-      this.cooldowns_[name] = t;
+      this.cooldowns_[name] = {
+        t: t,
+        maxt: t,
+      };
     }
+  }
+  entity.getCooldownPercent = function (name) {
+    if (!(name in this.cooldowns_)) {
+      return 0;
+    }
+    var cd = this.cooldowns_[name];
+    return cd.t / cd.maxt;
   }
 
   // Find entities near the current one.
@@ -195,8 +208,8 @@ function entityUpdate(entity, dt) {
 // interact with other entities.
 function entityResolve(entity, dt) {
   for (var cd in entity.cooldowns_) {
-    entity.cooldowns_[cd] -= dt;
-    if (entity.cooldowns_[cd] < 0.0) {
+    entity.cooldowns_[cd].t -= dt;
+    if (entity.cooldowns_[cd].t < 0.0) {
       delete entity.cooldowns_[cd];
     }
   }
@@ -387,7 +400,7 @@ function entityGetActions(entity) {
       state: action.getState(entity),
       // TODO(zack): this is hacky, move this into the valued returned by the state
       cooldown: action.getState(entity) == ActionStates.COOLDOWN
-        ? 1 - entity.cooldowns_[action.params.cooldown_name] / action.params.cooldown
+        ? 1 - entity.getCooldownPercent(action.params.cooldown_name)
         : 0.0,
     });
   }
