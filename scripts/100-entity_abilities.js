@@ -48,6 +48,8 @@ var ActionPrototype = {
 function ProductionAction(params) {
   this.targeting = TargetingTypes.NONE;
   this.params = params;
+  this.params.cooldown_name = 'production';
+  this.params.cooldown = this.params.time_cost;
 
   this.getTooltip = function (entity) {
     return this.params.prod_name +
@@ -56,20 +58,24 @@ function ProductionAction(params) {
   }
 
   this.hasResources = function (entity) {
+    // TODO(zack): this is a hack to show cooldown info as production progress
+    if (entity.hasCooldown('production')) {
+      return true;
+    }
     var owner = getPlayerInfo(entity.getPlayerID());
     return GetRequisition(entity.getPlayerID()) > this.params.req_cost &&
-      !owner.units[this.params.prod_name];
+      !(this.params.prod_name in owner.units);
   }
 
   this.exec = function (entity, target) {
-    var prod = {
-      name: this.params.prod_name,
-      t: 0.0,
-      endt: this.params.time_cost
-    };
-    entity.prodQueue_.push(prod);
-    Log('Started production of', prod.name, 'for', prod.endt);
+    Log(entity.getID(), 'starting', this.params.prod_name);
+    entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
     AddRequisition(entity.getPlayerID(), -this.params.req_cost, entity.getID());
+
+    entity.effects_['production'] = makeProductionEffect({
+      prod_name: this.params.prod_name,
+      cooldown_name: this.params.cooldown_name,
+    });
   }
 }
 ProductionAction.prototype = ActionPrototype;
@@ -119,7 +125,7 @@ function SnipeAction(params) {
 
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
 
-    Log('Sniping', target, 'for', this.damage);
+    Log('Sniping', target, 'for', this.params.damage);
     SendMessage({
       to: target,
       from: entity.getID(),

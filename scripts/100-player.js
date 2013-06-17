@@ -37,7 +37,8 @@ function playerInit(pid, starting_def) {
 
 function playerUpdate(player) {
   for (var entity_name in player.units) {
-    if (!player.units[entity_name]) {
+    var entity = GetEntity(player.units[entity_name]);
+    if (!entity) {
       delete player.units[entity_name];
     }
   }

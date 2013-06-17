@@ -6,7 +6,6 @@
 
 // This function is called on an entity when it is created.
 function entityInit(entity, params) {
-  entity.prodQueue_ = [];
   entity.defaultState_ = NullState;
   entity.cooldowns_ = {};
   entityResetDeltas(entity);
@@ -49,11 +48,12 @@ function entityInit(entity, params) {
   if (def.weapon) {
     entity.weapon_ = Weapons[def.weapon];
   }
-  if (def.effects) {
-    entity.effects_ = EntityDefs[name].effects;
+  entity.effects_ = {};
+  if (def.getEffects) {
+    entity.effects_ = def.getEffects(entity);
   }
   if (def.actions) {
-    entity.actions_ = EntityDefs[name].actions;
+    entity.actions_ = def.actions;
   }
 
   entity.state_ = new entity.defaultState_(params);
@@ -241,22 +241,6 @@ function entityResolve(entity, dt) {
     entity.capAmount_ = 0;
   }
 
-  // Production
-  if (entity.prodQueue_.length) {
-    var prod = entity.prodQueue_[0];
-    prod.t += dt;
-    if (prod.t >= prod.endt) {
-      SpawnEntity(
-        prod.name,
-        {
-          pid: entity.getPlayerID(),
-          pos: vecAdd(entity.getPosition2(), entity.getDirection()),
-          angle: entity.getAngle()
-      });
-      entity.prodQueue_.shift();
-    }
-  }
-
   // Attributes
   entity.setMaxSpeed(entity.maxSpeed_);
   entity.setSight(entity.sight_);
@@ -420,11 +404,6 @@ function entityGetUIInfo(entity) {
       ui_info.capture = [entity.capAmount_, 5.0];
     }
     return ui_info;
-  }
-
-  if (entity.prodQueue_.length) {
-    var prod = entity.prodQueue_[0];
-    ui_info.production = [prod.t, prod.endt];
   }
 
   if (entity.maxHealth_) {

@@ -90,9 +90,11 @@ var EntityDefs = {
     size: [2.5, 2.5, 1.65],
     sight: 5.0,
     health: 700.0,
-    effects: {
-      req_gen: makeReqGenEffect(1.0),
-      base_healing: makeHealingAura(5.0, 5.0),
+    getEffects: function (entity) {
+      return {
+        req_gen: makeReqGenEffect(1.0),
+        base_healing: makeHealingAura(5.0, 5.0),
+      };
     },
     actions: {
       prod_ranged: new ProductionAction({
@@ -119,8 +121,10 @@ var EntityDefs = {
     size: [1.4, 1.4, 0.5],
     sight: 2.0,
     cap_time: 5.0,
-    effects: {
-      vp_gen: makeVpGenEffect(1.0),
+    getEffects: function (entity) {
+      return {
+        vp_gen: makeVpGenEffect(1.0),
+      };
     },
   },
   req_point: {
@@ -133,8 +137,10 @@ var EntityDefs = {
     size: [0.9, 0.9, 0.25],
     sight: 2.0,
     cap_time: 5.0,
-    effects: {
-      req_gen: makeReqGenEffect(1.0),
+    getEffects: function (entity) {
+      return {
+        req_gen: makeReqGenEffect(1.0),
+      };
     },
   },
   projectile: {

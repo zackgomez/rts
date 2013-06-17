@@ -2,6 +2,34 @@
 // should set intent (send messages, adjust deltas) but not actually change
 // values on the entity
 
+function makeProductionEffect(params) {
+  var cooldown_name = params.cooldown_name;
+  var prod_name = params.prod_name;
+
+  return function (entity) {
+    if (entity.hasCooldown(cooldown_name)) {
+      return true;
+    }
+
+    var player = getPlayerInfo(entity.getPlayerID());
+    if (player.units[prod_name]) {
+      Log('WTF producing a unit that already exists?!');
+    }
+
+    // Spawn
+    var eid = SpawnEntity(
+      prod_name,
+      {
+        pid: entity.getPlayerID(),
+        pos: vecAdd(entity.getPosition2(), entity.getDirection()),
+        angle: entity.getAngle(),
+      });
+
+    // Record
+    player.units[prod_name] = eid;
+    return false;
+  };
+}
 
 function makeHealingAura(radius, amount) {
   return function(entity) {
