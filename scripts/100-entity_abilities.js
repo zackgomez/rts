@@ -58,7 +58,7 @@ function ProductionAction(params) {
   }
 
   this.hasResources = function (entity) {
-    var owner = getPlayerInfo(entity.getPlayerID());
+    var owner = Players.getPlayerInfo(entity.getPlayerID());
     var unit_constructed = this.params.prod_name in owner.units;
 
     // Always disabled if unit is already produced

@@ -11,7 +11,7 @@ function makeProductionEffect(params) {
       return true;
     }
 
-    var player = getPlayerInfo(entity.getPlayerID());
+    var player = Players.getPlayerInfo(entity.getPlayerID());
     if (player.units[prod_name]) {
       Log('WTF producing a unit that already exists?!');
     }

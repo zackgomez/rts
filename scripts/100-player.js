@@ -1,51 +1,62 @@
-// 
-var players = {}
+//
+// Players API. 
+//
 
-function getPlayerInfo(pid) {
-  return players[pid];
-}
+var Players = (function() {
 
-function playerInit(pid, starting_def) {
-  if (players[pid]) {
-    throw new Error('player '+pid+' already exists!');
-  }
+  var players = {};
 
-  var base_id = SpawnEntity(
-    'base',
-    {
-      pid: pid,
-      pos: starting_def.pos,
-      angle: starting_def.angle,
-    });
-  var base_entity = GetEntity(base_id);
+  return {
+    getPlayerInfo: function(pid) {
+      return players[pid];
+    },
 
-  var unit_id = SpawnEntity(
-    'unit',
-    {
-      pid: pid,
-      pos: vecAdd(base_entity.getPosition2(), base_entity.getDirection()),
-      angle: base_entity.getAngle(),
-    });
+    // Create a new player.
+    // @param pid the player ID
+    // @param start_def dictionary with keys for `pos` and `angle`
+    playerInit: function (pid, starting_def) {
+      if (players[pid]) {
+        throw new Error('player '+pid+' already exists!');
+      }
 
-  players[pid] = {
-    units: {
-      base: base_id,
-      unit: unit_id,
+      var base_id = SpawnEntity(
+        'base',
+        {
+          pid: pid,
+          pos: starting_def.pos,
+          angle: starting_def.angle,
+        });
+      var base_entity = GetEntity(base_id);
+
+      var unit_id = SpawnEntity(
+        'unit',
+        {
+          pid: pid,
+          pos: vecAdd(base_entity.getPosition2(), base_entity.getDirection()),
+          angle: base_entity.getAngle(),
+        });
+
+      players[pid] = {
+        units: {
+          base: base_id,
+          unit: unit_id,
+        }
+      };
+    },
+
+    playerUpdate: function (player) {
+      for (var entity_name in player.units) {
+        var entity = GetEntity(player.units[entity_name]);
+        if (!entity) {
+          delete player.units[entity_name];
+        }
+      }
+    },
+
+    updateAllPlayers: function () {
+      for (var pid in players) {
+        this.playerUpdate(players[pid]);
+      }
     }
   };
-}
-
-function playerUpdate(player) {
-  for (var entity_name in player.units) {
-    var entity = GetEntity(player.units[entity_name]);
-    if (!entity) {
-      delete player.units[entity_name];
-    }
-  }
-}
-
-function updateAllPlayers() {
-  for (var pid in players) {
-    playerUpdate(players[pid]);
-  }
-}
+})();

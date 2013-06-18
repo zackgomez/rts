@@ -444,8 +444,10 @@ void Game::updateJSPlayers() {
   const int argc = 0;
   Handle<Value> *argv = nullptr;
 
+  Handle<Object> playersModule = Handle<Object>::Cast(
+    global->Get(String::New("Players")));
   Handle<Value> ret =
-    Handle<Function>::Cast(global->Get(String::New("updateAllPlayers")))
+    Handle<Function>::Cast(playersModule->Get(String::New("updateAllPlayers")))
     ->Call(global, argc, argv);
   checkJSResult(ret, try_catch.Exception(), "updateAllPlayers:");
 }
