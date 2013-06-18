@@ -137,7 +137,7 @@ function LocationAbilityState(params) {
   this.target = params.target;
   this.action = params.action;
   this.update = function (entity) {
-    if (entity.distanceToPoint(this.target) < this.action.range) {
+    if (entity.distanceToPoint(this.target) < this.action.getRange(entity)) {
       this.action.exec(entity, this.target);
       return new entity.defaultState_;
     }
@@ -156,12 +156,12 @@ function TargetedAbilityState(params) {
       return new entity.defaultState_;
     }
     // TODO(zack): some checking of visibility here
-    if (entity.distanceToEntity(target) < this.action.range) {
+    if (entity.distanceToEntity(target) < this.action.getRange(entity)) {
       this.action.exec(entity, this.target_id);
       return new entity.defaultState_;
     }
 
-    entity.moveTowards(target.getPosition3()); return null;
+    entity.moveTowards(target.getPosition2()); return null;
   }
 }
 

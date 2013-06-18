@@ -120,7 +120,7 @@
     "modelSize"   : 1.0
   },
 
-  "building" :
+  "base" :
   {
     "model"  : "building",
     "modelSize"    : 4.0

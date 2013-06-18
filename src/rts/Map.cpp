@@ -80,36 +80,25 @@ void Map::init(const std::vector<Player *> &players) {
 void Map::spawnStartingLocation(const Json::Value &definition,
     const std::vector<Player *> players) {
   invariant(definition.isMember("player"),
-      "missing player for starting pos defintion");
+      "missing player for starting base defintion");
+  invariant(definition.isMember("pos"),
+      "missing position for starting base defintion");
+  invariant(definition.isMember("angle"),
+      "missing angle for starting base defintion");
   auto player = players[definition["player"].asInt() - 1];
   id_t pid = player->getPlayerID();
 
-  glm::vec2 pos = toVec2(definition["pos"]);
-  float angle = definition["angle"].asFloat();
+  using namespace v8;
+  auto script = Game::get()->getScript();
+  HandleScope scope(script->getIsolate());
+  TryCatch try_catch;
+  auto global = script->getGlobal();
+  const int argc = 2;
+  Handle<Value> argv[argc] = {Integer::New(pid), script->jsonToJS(definition)};
 
-  // Spawn starting building
-  Json::Value params;
-  params["pid"] = toJson(pid);
-  params["pos"] = toJson(pos);
-  params["angle"] = angle;
-  const GameEntity *base = Game::get()->spawnEntity("building", params);
-  player->setBaseID(base->getID());
-
-  float radians = deg2rad(angle);
-  glm::vec2 dir(cos(radians), sin(radians));
-  glm::vec2 tangent(dir.y, dir.x);
-
-  // Starting units
-  // TODO(zack): make this part of the definition
-  pos += dir * 4.0f;
-  pos -= tangent * 1.5f;
-  for (int i = 0; i < 3; i++) {
-    Json::Value params;
-    params["pid"] = toJson(pid);
-    params["pos"] = toJson(pos);
-    params["angle"] = angle;
-    Game::get()->spawnEntity("melee_unit", params);
-    pos += tangent * 1.5f;
-  }
+  Handle<Value> ret =
+    Handle<Function>::Cast(global->Get(String::New("playerInit")))
+    ->Call(global, argc, argv);
+  checkJSResult(ret, try_catch.Exception(), "playerInit:");
 }
 };  // rts

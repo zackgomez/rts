@@ -235,6 +235,9 @@ void Game::update(float dt) {
   }
   deadEntities_.clear();
 
+  // Update players
+  updateJSPlayers();
+
   entities.clear();
   for (auto it : Renderer::get()->getEntities()) {
     if (it.second->hasProperty(GameEntity::P_GAMEENTITY)) {
@@ -429,6 +432,22 @@ void Game::handleOrder(id_t playerID, const PlayerAction &order) {
     invariant(entity->getPlayerID() == playerID, "order for unonwned entity");
     entity->handleOrder(order);
   }
+}
+
+void Game::updateJSPlayers() {
+  using namespace v8;
+  auto script = getScript();
+  HandleScope scope(script->getIsolate());
+  TryCatch try_catch;
+  auto global = script->getGlobal();
+
+  const int argc = 0;
+  Handle<Value> *argv = nullptr;
+
+  Handle<Value> ret =
+    Handle<Function>::Cast(global->Get(String::New("updateAllPlayers")))
+    ->Call(global, argc, argv);
+  checkJSResult(ret, try_catch.Exception(), "updateAllPlayers:");
 }
 
 void Game::pause() {

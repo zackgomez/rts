@@ -6,7 +6,6 @@
 
 // This function is called on an entity when it is created.
 function entityInit(entity, params) {
-  entity.prodQueue_ = [];
   entity.defaultState_ = NullState;
   entity.cooldowns_ = {};
   entityResetDeltas(entity);
@@ -49,11 +48,12 @@ function entityInit(entity, params) {
   if (def.weapon) {
     entity.weapon_ = Weapons[def.weapon];
   }
-  if (def.effects) {
-    entity.effects_ = EntityDefs[name].effects;
+  entity.effects_ = {};
+  if (def.getEffects) {
+    entity.effects_ = def.getEffects(entity);
   }
   if (def.actions) {
-    entity.actions_ = EntityDefs[name].actions;
+    entity.actions_ = def.actions;
   }
 
   entity.state_ = new entity.defaultState_(params);
@@ -64,10 +64,23 @@ function entityInit(entity, params) {
   }
   entity.addCooldown = function (name, t) {
     if (this.cooldowns_[name]) {
-      this.cooldowns_[name] = Math.max(this.cooldowns_[name], t);
+      this.cooldowns_[name] = {
+        t: Math.max(this.cooldowns_[name].t, t),
+        maxt: Math.max(this.cooldowns_[name].maxt, t),
+      };
     } else {
-      this.cooldowns_[name] = t;
+      this.cooldowns_[name] = {
+        t: t,
+        maxt: t,
+      };
     }
+  }
+  entity.getCooldownPercent = function (name) {
+    if (!(name in this.cooldowns_)) {
+      return 0;
+    }
+    var cd = this.cooldowns_[name];
+    return cd.t / cd.maxt;
   }
 
   // Find entities near the current one.
@@ -195,8 +208,8 @@ function entityUpdate(entity, dt) {
 // interact with other entities.
 function entityResolve(entity, dt) {
   for (var cd in entity.cooldowns_) {
-    entity.cooldowns_[cd] -= dt;
-    if (entity.cooldowns_[cd] < 0.0) {
+    entity.cooldowns_[cd].t -= dt;
+    if (entity.cooldowns_[cd].t < 0.0) {
       delete entity.cooldowns_[cd];
     }
   }
@@ -239,22 +252,6 @@ function entityResolve(entity, dt) {
   if (Object.keys(capture_values).length == 0) {
     entity.cappingPlayerID_ = null;
     entity.capAmount_ = 0;
-  }
-
-  // Production
-  if (entity.prodQueue_.length) {
-    var prod = entity.prodQueue_[0];
-    prod.t += dt;
-    if (prod.t >= prod.endt) {
-      SpawnEntity(
-        prod.name,
-        {
-          pid: entity.getPlayerID(),
-          pos: vecAdd(entity.getPosition2(), entity.getDirection()),
-          angle: entity.getAngle()
-      });
-      entity.prodQueue_.shift();
-    }
   }
 
   // Attributes
@@ -346,7 +343,7 @@ function entityHandleOrder(entity, order) {
 }
 
 // A special case of an order.  Actions are like teleport, or production
-function entityHandleAction(entity, action_name, target) {
+function entityHandleAction(entity, action_name, args) {
   action = entity.actions_[action_name];
   if (!action) {
     Log(entity.getID(), 'got unknown action', action_name);
@@ -363,17 +360,17 @@ function entityHandleAction(entity, action_name, target) {
     });
   } else if (action.targeting == TargetingTypes.LOCATION) {
     entity.state_ = new LocationAbilityState({
-      target: target,
+      target: args.target,
       action: action,
     });
   } else if (action.targeting == TargetingTypes.ENEMY) {
     entity.state_ = new TargetedAbilityState({
-      target_id: target,
+      target_id: args.target_id,
       action: action,
     });
   } else if (action.targeting == TargetingTypes.ALLY) {
     entity.state_ = new TargetedAbilityState({
-      target_id: target,
+      target_id: args.target_id,
       action: action,
     });
   } else {
@@ -396,15 +393,15 @@ function entityGetActions(entity) {
     var action = entity.actions_[action_name];
     actions.push({
       name: action_name,
-      icon: action.icon,
-      tooltip: action.tooltip,
-      targeting: action.targeting ? action.targeting : TargetingTypes.NONE,
-      range: action.range ? action.range : 0.0,
+      icon: action.getIcon(entity),
+      tooltip: action.getTooltip(entity),
+      targeting: action.targeting,
+      range: action.getRange(entity),
       state: action.getState(entity),
       // TODO(zack): this is hacky, move this into the valued returned by the state
       cooldown: action.getState(entity) == ActionStates.COOLDOWN
-      ? 1 - entity.cooldowns_[action.cooldown_name] / action.cooldown
-      : 0.0,
+        ? 1 - entity.getCooldownPercent(action.params.cooldown_name)
+        : 0.0,
     });
   }
 
@@ -420,11 +417,6 @@ function entityGetUIInfo(entity) {
       ui_info.capture = [entity.capAmount_, 5.0];
     }
     return ui_info;
-  }
-
-  if (entity.prodQueue_.length) {
-    var prod = entity.prodQueue_[0];
-    ui_info.production = [prod.t, prod.endt];
   }
 
   if (entity.maxHealth_) {
