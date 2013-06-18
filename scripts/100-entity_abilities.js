@@ -45,12 +45,12 @@ var ActionPrototype = {
   },
 }
 
-function RepairAction(params) {
+function ReinforceAction(params) {
   this.targeting = TargetingTypes.NONE;
   this.params = params;
 
   this.getTooltip = function (entity) {
-    return 'Repair' +
+    return 'Reinforce' +
       '\nreq: ' + this.params.req_cost;
   }
 
@@ -80,7 +80,7 @@ function RepairAction(params) {
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
   }
 }
-RepairAction.prototype = ActionPrototype;
+ReinforceAction.prototype = ActionPrototype;
 
 function ProductionAction(params) {
   this.targeting = TargetingTypes.NONE;

@@ -46,10 +46,10 @@ var EntityDefs = {
       };
     },
     actions: {
-      repair: new RepairAction({
+      reinforce: new ReinforceAction({
         icon: 'ranged_icon',
         req_cost: 10,
-        cooldown_name: 'repair',
+        cooldown_name: 'reinforce',
         cooldown: 1.0,
       }),
       snipe: new SnipeAction({
