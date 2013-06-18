@@ -40,6 +40,10 @@ function entityInit(entity, params) {
       entity.maxMana_ = def.mana;
       entity.mana_ = entity.maxMana_;
   }
+  if (def.health_bars) {
+    entity.maxBars_ = def.health_bars;
+    entity.bars_ = entity.maxBars_;
+  }
   if (def.cap_time) {
     entity.capTime_ = def.cap_time;
     entity.cappingPlayerID_ = null;
@@ -236,8 +240,15 @@ function entityResolve(entity, dt) {
   if (entity.deltas.damage) {
     entity.onTookDamage();
   }
-  if (entity.health_ <= 0.0) {
-    entity.destroy();
+  // If out of health, check if there is a bar to remove, else die
+  while (entity.health_ <= 0.0) {
+    if (entity.maxBars_ && entity.bars_ > 0) {
+      entity.bars_ -= 1;
+      entity.health_ += entity.maxHealth_;
+    } else {
+      entity.destroy();
+      break;
+    }
   }
 
   // Mana
@@ -430,6 +441,9 @@ function entityGetUIInfo(entity) {
   
   if (entity.maxHealth_) {
     ui_info.health = [entity.health_, entity.maxHealth_];
+  }
+  if (entity.maxBars_) {
+    ui_info.health_bars = [entity.bars_, entity.maxBars_];
   }
   if (entity.maxMana_) {
     ui_info.mana = [entity.mana_, entity.maxMana_];

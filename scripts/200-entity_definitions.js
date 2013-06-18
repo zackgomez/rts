@@ -35,7 +35,8 @@ var EntityDefs = {
     size: [0.6, 0.6, 1.25],
     speed: 3.0,
     sight: 8.0,
-    health: 100.0,
+    health: 20.0,
+    health_bars: 5,
     capture_range: 1.0,
     mana: 100,
     weapon: 'rifle',
@@ -45,6 +46,12 @@ var EntityDefs = {
       };
     },
     actions: {
+      repair: new RepairAction({
+        icon: 'ranged_icon',
+        req_cost: 10,
+        cooldown_name: 'repair',
+        cooldown: 1.0,
+      }),
       snipe: new SnipeAction({
         range: 7.0,
         cooldown_name: 'snipe',

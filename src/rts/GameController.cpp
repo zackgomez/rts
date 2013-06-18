@@ -87,8 +87,8 @@ GameController::~GameController() {
 }
 
 void GameController::onCreate() {
-	// TODO(zack): delete texture
-	glGenTextures(1, &visTex_);
+  // TODO(zack): delete texture
+  glGenTextures(1, &visTex_);
   glBindTexture(GL_TEXTURE_2D, visTex_);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -191,7 +191,7 @@ void GameController::onCreate() {
 void GameController::onDestroy() {
   Renderer::get()->setEntityOverlayRenderer(Renderer::EntityOverlayRenderer());
   getUI()->clearWidgets();
-	glDeleteTextures(1, &visTex_);
+  glDeleteTextures(1, &visTex_);
 }
 
 void GameController::renderExtra(float dt) {
@@ -409,7 +409,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
       // selection, move them to target
       } else if (!player_->getSelection().empty()
           && (!entity || !player_->getSelection().count(eid))) {
-				//loc.x/y wil be -/+HUGE_VAL if outside map bounds
+        //loc.x/y wil be -/+HUGE_VAL if outside map bounds
         if (loc.x != HUGE_VAL && loc.y != HUGE_VAL && loc.x != -HUGE_VAL && loc.y != -HUGE_VAL) {
           // Visual feedback
           highlight(glm::vec2(loc.x, loc.y));
@@ -491,8 +491,8 @@ void GameController::keyPress(SDL_keysym keysym) {
   // Control group binding and recalling
   } else if (key >= '0' && key <= '9') {
     int ctrlIndex = key - '0';
-	  if (ctrl_) {
-	    savedSelection_[ctrlIndex] = player_->getSelection();
+    if (ctrl_) {
+      savedSelection_[ctrlIndex] = player_->getSelection();
     } else {
       // center camera for double tapping
       if (!savedSelection_[ctrlIndex].empty()){
@@ -729,9 +729,18 @@ void renderEntity(
       healthBarColor = glm::vec4(1, 1, 1, 1);
     }
 
+    float health = ui_info.health[0];
+    float max_health = ui_info.health[1];
+    int8_t ndiv = 0;
+    if (ui_info.health_bars[1]) {
+      ndiv = ui_info.health_bars[1];
+      max_health = max_health * ui_info.health_bars[1];
+      health += ui_info.health[1] * std::max(ui_info.health_bars[0] - 1, 0.f);
+    }
+
     float healthFact = glm::max(
         0.f,
-        ui_info.health[0] / ui_info.health[1]);
+        health / max_health);
     glm::vec2 size = vec2Param("hud.actor_health.dim");
     glm::vec2 pos = coord - vec2Param("hud.actor_health.pos");
     // Red underneath for max health
@@ -740,6 +749,19 @@ void renderEntity(
     pos.x -= size.x * (1.f - healthFact) / 2.f;
     size.x *= healthFact;
     drawRectCenter(pos, size, healthBarColor);
+    if (ndiv > 1) {
+      glm::vec2 size = vec2Param("hud.actor_health.dim");
+      glm::vec2 pos = coord - vec2Param("hud.actor_health.pos");
+      pos -= size / 2.f;
+      float w = size.x / ndiv;
+      float x = pos.x + w;
+      for (int i = 0; i < ndiv; i++, x += w) {
+        drawLine(
+            glm::vec2(x, pos.y),
+            glm::vec2(x, pos.y + size.y),
+            glm::vec4(0, 0, 0, 1));
+      }
+    }
   }
 
   if (ui_info.mana[1]) {
@@ -759,20 +781,6 @@ void renderEntity(
     drawRectCenter(pos, size, manaBarColor);
   }
 
-  if (ui_info.production[1] &&
-	  localPlayer->getPlayerID() == actor->getPlayerID()) {
-    // display production bar
-    float prodFactor = ui_info.production[0] / ui_info.production[1];
-    glm::vec2 size = vec2Param("hud.actor_prod.dim");
-    glm::vec2 pos = coord - vec2Param("hud.actor_prod.pos");
-    // Purple underneath for max time
-    drawRectCenter(pos, size, glm::vec4(0.5, 0, 1, 1));
-    // Blue on top for time elapsed
-    pos.x -= size.x * (1.f - prodFactor) / 2.f;
-    size.x *= prodFactor;
-    drawRectCenter(pos, size, glm::vec4(0, 0, 1, 1));
-  }
-
   glEnable(GL_DEPTH_TEST);
   // Render path if selected
   if (localPlayer->isSelected(actor->getID())) {
@@ -786,7 +794,7 @@ void renderEntity(
 }
 
 void GameController::updateMapShader(Shader *shader) const {
-	auto visibilityMap = Game::get()->getVisibilityMap(player_->getPlayerID());
+  auto visibilityMap = Game::get()->getVisibilityMap(player_->getPlayerID());
 
   visibilityMap->fillTexture(visTex_);
 

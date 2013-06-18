@@ -45,6 +45,43 @@ var ActionPrototype = {
   },
 }
 
+function RepairAction(params) {
+  this.targeting = TargetingTypes.NONE;
+  this.params = params;
+
+  this.getTooltip = function (entity) {
+    return 'Repair' +
+      '\nreq: ' + this.params.req_cost;
+  }
+
+  this.hasResources = function (entity) {
+    var near_base = false;
+    // TODO(zack): unhardcode this radius
+    entity.getNearbyEntities(5.0, function (e) {
+      if (e.getName() == 'base' && entity.getPlayerID() == e.getPlayerID()) {
+        near_base = true;
+        return false;
+      }
+      return true;
+    });
+    return GetRequisition(entity.getPlayerID()) >= this.params.req_cost
+    && entity.bars_ < entity.maxBars_
+    && near_base;
+  }
+
+  this.exec = function (entity, target) {
+    Log(entity.getID(), 'repairing');
+    if (!entity.maxBars_) {
+      throw new Error('Trying to repair entity without bars');
+    }
+
+    entity.bars_ += 1;
+    AddRequisition(entity.getPlayerID(), -this.params.req_cost, entity.getID());
+    entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
+  }
+}
+RepairAction.prototype = ActionPrototype;
+
 function ProductionAction(params) {
   this.targeting = TargetingTypes.NONE;
   this.params = params;
