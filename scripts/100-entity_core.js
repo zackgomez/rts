@@ -36,6 +36,10 @@ function entityInit(entity, params) {
     entity.maxHealth_ = def.health;
     entity.health_ = entity.maxHealth_;
   }
+  if (def.mana) {
+      entity.maxMana_ = def.mana;
+      entity.mana_ = entity.maxMana_;
+  }
   if (def.cap_time) {
     entity.capTime_ = def.cap_time;
     entity.cappingPlayerID_ = null;
@@ -184,6 +188,7 @@ function entityResetDeltas(entity) {
     healing_rate: 0,
     vp_rate: 0,
     req_rate: 0,
+    mana_regen_rate: 0,
   };
 }
 
@@ -234,6 +239,10 @@ function entityResolve(entity, dt) {
   if (entity.health_ <= 0.0) {
     entity.destroy();
   }
+
+  // Mana
+  var mana_delta = dt * entity.deltas.mana_regen_rate;
+  entity.mana_ = Math.min(entity.mana_ + mana_delta, entity.maxMana_);
 
   // Capture
   var capture_values = entity.deltas.capture;
@@ -418,9 +427,12 @@ function entityGetUIInfo(entity) {
     }
     return ui_info;
   }
-
+  
   if (entity.maxHealth_) {
     ui_info.health = [entity.health_, entity.maxHealth_];
+  }
+  if (entity.maxMana_) {
+    ui_info.mana = [entity.mana_, entity.maxMana_];
   }
 
   return ui_info;

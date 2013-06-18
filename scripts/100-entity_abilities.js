@@ -97,12 +97,12 @@ function TeleportAction(params) {
   }
 
   this.hasResources = function (entity) {
-    // TODO(zack): add mana cost
-    return true;
+    return entity.mana_ > this.params.mana_cost;
   }
 
   this.exec = function (entity, target) {
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
+    entity.mana_ -= this.params.mana_cost;
     entity.warpPosition(target);
   }
 }
@@ -119,8 +119,7 @@ function SnipeAction(params) {
   }
 
   this.hasResources = function (entity) {
-    // TODO(zack): add mana cost
-    return true;
+    return entity.mana_ > this.params.mana_cost;
   }
 
   this.exec = function (entity, target) {
@@ -130,6 +129,7 @@ function SnipeAction(params) {
       return;
     }
 
+    entity.mana_ -= this.params.mana_cost;
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
 
     Log('Sniping', target, 'for', this.params.damage);
@@ -154,8 +154,7 @@ function HealAction(params) {
   }
 
   this.hasResources = function (entity) {
-    // TODO(zack): add mana cost
-    return true;
+    return entity.mana_ > this.params.mana_cost;
   }
 
   this.exec = function (entity, target) {
@@ -165,6 +164,7 @@ function HealAction(params) {
       return;
     }
 
+    entity.mana_ -= this.params.mana_cost;
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
 
     Log('Healing', target, 'for', this.params.amount);

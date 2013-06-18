@@ -52,6 +52,15 @@ function makeHealingAura(radius, amount) {
   }
 }
 
+function makeManaRegenEffect(amount) {
+  return function (entity) {
+    if (entity.maxMana_) {
+      entity.deltas.mana_regen_rate += amount;
+    }
+    return true;
+  }
+}
+
 function makeVpGenEffect(amount) {
   return function(entity) {
     if (entity.getTeamID() == NO_TEAM) {
