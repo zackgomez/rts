@@ -58,13 +58,20 @@ function ProductionAction(params) {
   }
 
   this.hasResources = function (entity) {
-    // TODO(zack): this is a hack to show cooldown info as production progress
+    var owner = getPlayerInfo(entity.getPlayerID());
+    var unit_constructed = this.params.prod_name in owner.units;
+
+    // Always disabled if unit is already produced
+    if (unit_constructed) {
+      return false;
+    }
+
+    // Always enough resources when production is on cooldown to show
+    // progress
     if (entity.hasCooldown('production')) {
       return true;
     }
-    var owner = getPlayerInfo(entity.getPlayerID());
-    return GetRequisition(entity.getPlayerID()) > this.params.req_cost &&
-      !(this.params.prod_name in owner.units);
+    return GetRequisition(entity.getPlayerID()) > this.params.req_cost;
   }
 
   this.exec = function (entity, target) {
