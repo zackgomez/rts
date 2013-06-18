@@ -46,3 +46,5 @@ function vecAdd(v1, v2) {
   }
   return ret;
 }
+
+var testUnderscore = _.isObject(vecAdd);
