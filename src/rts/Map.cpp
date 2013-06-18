@@ -88,6 +88,7 @@ void Map::spawnStartingLocation(const Json::Value &definition,
   auto player = players[definition["player"].asInt() - 1];
   id_t pid = player->getPlayerID();
 
+
   using namespace v8;
   auto script = Game::get()->getScript();
   HandleScope scope(script->getIsolate());
@@ -96,9 +97,11 @@ void Map::spawnStartingLocation(const Json::Value &definition,
   const int argc = 2;
   Handle<Value> argv[argc] = {Integer::New(pid), script->jsonToJS(definition)};
 
-  Handle<Value> ret =
-    Handle<Function>::Cast(global->Get(String::New("playerInit")))
-    ->Call(global, argc, argv);
+  Handle<Object> playersModule = Handle<Object>::Cast(
+     global->Get(String::New("Players")));
+  Handle<Function> playerInit = Handle<Function>::Cast(
+        playersModule->Get(String::New("playerInit")));
+  Handle<Value> ret = playerInit->Call(global, argc, argv);
   checkJSResult(ret, try_catch.Exception(), "playerInit:");
 }
 };  // rts

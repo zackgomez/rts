@@ -203,6 +203,11 @@ void Actor::updateUIInfo() {
     uiInfo_.health = script->jsToVec2(
         Handle<Array>::Cast(jsinfo->Get(health)));
   }
+  auto health_bars = String::New("health_bars");
+  if (jsinfo->Has(health_bars)) {
+    uiInfo_.health_bars = script->jsToVec2(
+        Handle<Array>::Cast(jsinfo->Get(health_bars)));
+  }
   auto mana = String::New("mana");
   if (jsinfo->Has(mana)) {
     uiInfo_.mana = script->jsToVec2(

@@ -45,6 +45,43 @@ var ActionPrototype = {
   },
 }
 
+function RepairAction(params) {
+  this.targeting = TargetingTypes.NONE;
+  this.params = params;
+
+  this.getTooltip = function (entity) {
+    return 'Repair' +
+      '\nreq: ' + this.params.req_cost;
+  }
+
+  this.hasResources = function (entity) {
+    var near_base = false;
+    // TODO(zack): unhardcode this radius
+    entity.getNearbyEntities(5.0, function (e) {
+      if (e.getName() == 'base' && entity.getPlayerID() == e.getPlayerID()) {
+        near_base = true;
+        return false;
+      }
+      return true;
+    });
+    return GetRequisition(entity.getPlayerID()) >= this.params.req_cost
+    && entity.bars_ < entity.maxBars_
+    && near_base;
+  }
+
+  this.exec = function (entity, target) {
+    Log(entity.getID(), 'repairing');
+    if (!entity.maxBars_) {
+      throw new Error('Trying to repair entity without bars');
+    }
+
+    entity.bars_ += 1;
+    AddRequisition(entity.getPlayerID(), -this.params.req_cost, entity.getID());
+    entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
+  }
+}
+RepairAction.prototype = ActionPrototype;
+
 function ProductionAction(params) {
   this.targeting = TargetingTypes.NONE;
   this.params = params;
@@ -58,13 +95,20 @@ function ProductionAction(params) {
   }
 
   this.hasResources = function (entity) {
-    // TODO(zack): this is a hack to show cooldown info as production progress
+    var owner = Players.getPlayerInfo(entity.getPlayerID());
+    var unit_constructed = this.params.prod_name in owner.units;
+
+    // Always disabled if unit is already produced
+    if (unit_constructed) {
+      return false;
+    }
+
+    // Always enough resources when production is on cooldown to show
+    // progress
     if (entity.hasCooldown('production')) {
       return true;
     }
-    var owner = getPlayerInfo(entity.getPlayerID());
-    return GetRequisition(entity.getPlayerID()) > this.params.req_cost &&
-      !(this.params.prod_name in owner.units);
+    return GetRequisition(entity.getPlayerID()) > this.params.req_cost;
   }
 
   this.exec = function (entity, target) {
@@ -90,12 +134,12 @@ function TeleportAction(params) {
   }
 
   this.hasResources = function (entity) {
-    // TODO(zack): add mana cost
-    return true;
+    return entity.mana_ > this.params.mana_cost;
   }
 
   this.exec = function (entity, target) {
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
+    entity.mana_ -= this.params.mana_cost;
     entity.warpPosition(target);
   }
 }
@@ -112,8 +156,7 @@ function SnipeAction(params) {
   }
 
   this.hasResources = function (entity) {
-    // TODO(zack): add mana cost
-    return true;
+    return entity.mana_ > this.params.mana_cost;
   }
 
   this.exec = function (entity, target) {
@@ -123,6 +166,7 @@ function SnipeAction(params) {
       return;
     }
 
+    entity.mana_ -= this.params.mana_cost;
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
 
     Log('Sniping', target, 'for', this.params.damage);
@@ -147,8 +191,7 @@ function HealAction(params) {
   }
 
   this.hasResources = function (entity) {
-    // TODO(zack): add mana cost
-    return true;
+    return entity.mana_ > this.params.mana_cost;
   }
 
   this.exec = function (entity, target) {
@@ -158,6 +201,7 @@ function HealAction(params) {
       return;
     }
 
+    entity.mana_ -= this.params.mana_cost;
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
 
     Log('Healing', target, 'for', this.params.amount);

@@ -11,7 +11,7 @@ function makeProductionEffect(params) {
       return true;
     }
 
-    var player = getPlayerInfo(entity.getPlayerID());
+    var player = Players.getPlayerInfo(entity.getPlayerID());
     if (player.units[prod_name]) {
       Log('WTF producing a unit that already exists?!');
     }
@@ -48,6 +48,15 @@ function makeHealingAura(radius, amount) {
       return true;
     });
 
+    return true;
+  }
+}
+
+function makeManaRegenEffect(amount) {
+  return function (entity) {
+    if (entity.maxMana_) {
+      entity.deltas.mana_regen_rate += amount;
+    }
     return true;
   }
 }

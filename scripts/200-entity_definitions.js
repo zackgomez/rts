@@ -35,15 +35,29 @@ var EntityDefs = {
     size: [0.6, 0.6, 1.25],
     speed: 3.0,
     sight: 8.0,
-    health: 100.0,
+    health: 20.0,
+    health_bars: 5,
     capture_range: 1.0,
+    mana: 100,
     weapon: 'rifle',
+    getEffects: function (entity) {
+      return {
+        mana_regen: makeManaRegenEffect(2.5),
+      };
+    },
     actions: {
+      repair: new RepairAction({
+        icon: 'ranged_icon',
+        req_cost: 10,
+        cooldown_name: 'repair',
+        cooldown: 1.0,
+      }),
       snipe: new SnipeAction({
         range: 7.0,
         cooldown_name: 'snipe',
         cooldown: 10.0,
         damage: 50.0,
+        mana_cost: 50,
         icon: 'ranged_icon',
       }),
       heal: new HealAction({
@@ -51,6 +65,7 @@ var EntityDefs = {
         cooldown_name: 'heal',
         cooldown: 8.0,
         amount: 10.0,
+        mana_cost: 40,
         icon: 'heal_icon',
       }),
     },
@@ -70,12 +85,19 @@ var EntityDefs = {
     sight: 7.0,
     health: 50.0,
     capture_range: 1.0,
+    mana: 100,
     weapon: 'advanced_melee',
+    getEffects: function (entity) {
+      return {
+        mana_regen: makeManaRegenEffect(5.0),
+      };
+    },
     actions: {
       teleport: new TeleportAction({
         range: 6.0,
         cooldown_name: 'teleport',
         cooldown: 2.0,
+        mana_cost: 55,
         icon: 'teleport_icon',
       }),
     },
