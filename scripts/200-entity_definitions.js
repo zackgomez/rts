@@ -47,10 +47,10 @@ var EntityDefs = {
     },
     actions: {
       reinforce: new ReinforceAction({
-        icon: 'ranged_icon',
         req_cost: 10,
         cooldown_name: 'reinforce',
         cooldown: 1.0,
+        icon: 'repair_icon',
       }),
       snipe: new SnipeAction({
         range: 7.0,
@@ -58,7 +58,7 @@ var EntityDefs = {
         cooldown: 10.0,
         damage: 50.0,
         mana_cost: 50,
-        icon: 'ranged_icon',
+        icon: 'snipe_icon',
       }),
       heal: new HealAction({
         range: 5.0,
