@@ -213,6 +213,8 @@ function HealAction(params) {
         healing: this.params.amount,
       },
     });
+
+    target_entity.addEffect('heal', {});
   }
 }
 HealAction.prototype = ActionPrototype;

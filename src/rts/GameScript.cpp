@@ -215,6 +215,27 @@ static Handle<Value> entityWarpPosition(const Arguments &args) {
   return Undefined();
 }
 
+static Handle<Value> entityAddEffect(const Arguments &args) {
+  if (args.Length() != 2) {
+    invariant_violation("AddEffect expects 2 arguments");
+  }
+
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
+
+  auto script = Game::get()->getScript();
+  HandleScope scope(args.GetIsolate());
+  std::string name(*String::AsciiValue(args[0]));
+  Json::Value params = script->jsToJSON(Handle<Object>::Cast(args[0]));
+
+  entity->addExtraEffect(makeEntityEffect(
+        entity,
+        name,
+        Handle<Object>::Cast(args[1])));
+
+  return Undefined();
+}
 
 static Handle<Value> entityDestroy(const Arguments &args) {
   HandleScope scope(args.GetIsolate());
@@ -497,6 +518,9 @@ void GameScript::init() {
       String::New("distanceToPoint"),
       FunctionTemplate::New(entityDistanceToPoint));
 
+  entityTemplate_->Set(
+      String::New("addEffect"),
+      FunctionTemplate::New(entityAddEffect));
   entityTemplate_->Set(
       String::New("onTookDamage"),
       FunctionTemplate::New(entityOnTookDamage));

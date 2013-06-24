@@ -114,8 +114,12 @@ void ModelEntity::render(float dt) {
   }
 
   // Now render additional effects
-  for (auto&& renderer : renderFuncs_) {
-    renderer(dt);
+  for (auto it = renderFuncs_.begin(); it != renderFuncs_.end(); ) {
+    if ((*it)(dt)) {
+      it++;
+    } else {
+      it = renderFuncs_.erase(it);
+    }
   }
 }
 

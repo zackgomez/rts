@@ -178,6 +178,28 @@ void renderRectangleColor(
   renderRectangleProgram(modelMatrix);
 }
 
+void renderRectangleTexture(
+    const glm::mat4 &modelMatrix,
+    GLuint texture,
+    const glm::vec4 &texcoord) {
+  record_section("renderRectangleTexture");
+
+  GLuint program = resources.texProgram;
+  GLuint textureUniform = glGetUniformLocation(program, "texture");
+  GLuint tcUniform = glGetUniformLocation(program, "texcoord");
+
+  // Enable program and set up values
+  glUseProgram(program);
+  glUniform1i(textureUniform, 0);
+  glUniform4fv(tcUniform, 1, glm::value_ptr(texcoord));
+
+  glActiveTexture(GL_TEXTURE0);
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, texture);
+
+  renderRectangleProgram(modelMatrix);
+}
+
 void renderRectangleProgram(const glm::mat4 &modelMatrix) {
   record_section("renderRectangleProgram");
   GLuint program;
@@ -285,7 +307,7 @@ void renderMeshMaterial(const glm::mat4 &modelMatrix, const Mesh *m,
   GLuint useTextureUniform = glGetUniformLocation(program, "useTexture");
   GLuint textureUniform = glGetUniformLocation(program, "texture");
   // Default to no texture
-  glUniform1i(useTextureUniform, 0);
+ glUniform1i(useTextureUniform, 0);
   if (mt) {
     glUniform3fv(baseColorUniform, 1, glm::value_ptr(mt->baseColor));
     glUniform1f(shininessUniform, mt->shininess);
@@ -302,10 +324,10 @@ void renderMeshMaterial(const glm::mat4 &modelMatrix, const Mesh *m,
 }
 
 void drawRectCenter(
-  const glm::vec2 &pos,
-  const glm::vec2 &size,
-  const glm::vec4 &color,
-  float angle) {
+    const glm::vec2 &pos,
+    const glm::vec2 &size,
+    const glm::vec4 &color,
+    float angle) {
   glm::mat4 transform =
     glm::scale(
       glm::rotate(
@@ -329,16 +351,16 @@ void drawRectCenter(
 }
 
 void drawRect(
-  const glm::vec2 &pos,
-  const glm::vec2 &size,
-  const glm::vec4 &color) {
+    const glm::vec2 &pos,
+    const glm::vec2 &size,
+    const glm::vec4 &color) {
   glm::vec2 center = pos + size/2.f;
   drawRectCenter(center, size, color);
 }
 
 void drawShaderCenter(
-  const glm::vec2 &pos,
-  const glm::vec2 &size) {
+    const glm::vec2 &pos,
+    const glm::vec2 &size) {
   record_section("drawShader");
   glm::mat4 transform =
     glm::scale(
@@ -358,17 +380,17 @@ void drawShaderCenter(
 }
 
 void drawShader(
-  const glm::vec2 &pos,
-  const glm::vec2 &size) {
+    const glm::vec2 &pos,
+    const glm::vec2 &size) {
   glm::vec2 center = pos + size/2.f;
   drawShaderCenter(center, size);
 }
 
 void drawTextureCenter(
-  const glm::vec2 &pos,  // center
-  const glm::vec2 &size,  // width/height
-  const GLuint texture,
-  const glm::vec4 &texcoord) {
+    const glm::vec2 &pos,  // center
+    const glm::vec2 &size,  // width/height
+    const GLuint texture,
+    const glm::vec4 &texcoord) {
   record_section("drawTexture");
 
   glUseProgram(resources.texProgram);
@@ -700,7 +722,6 @@ static int loadVerts(const std::string &filename,
     }
   }
 
-  // TODO(zack) make a logger call
   Logger::get()->log("verts: %d, faces: %d, norms: %d, coords: %d, extended: %d\n",
          nverts, nfaces, nnorms, ncoords, extended);
 

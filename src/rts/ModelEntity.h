@@ -3,6 +3,7 @@
 #include <string>
 #include "common/Collision.h"
 #include "common/util.h"
+#include "rts/EffectFactory.h"
 #include "rts/Entity.h"
 #include "rts/Graphics.h"
 
@@ -78,7 +79,6 @@ public:
   void setMeshName(const std::string &meshName);
   void setMeshName(std::string &&meshName);
   void setScale(const glm::vec3 &scale);
-  typedef std::function<void(float)> RenderFunction;
   void addExtraEffect(const RenderFunction &func);
 
   // graphics getters

@@ -38,7 +38,6 @@ static void renderEntity(
 
 static void renderHighlights(
     std::vector<MapHighlight> &highlights,
-    std::map<id_t, float> &entityHighlights,
     float dt) {
   // Render each of the highlights
   for (auto& hl : highlights) {
@@ -196,7 +195,7 @@ void GameController::onDestroy() {
 
 void GameController::renderExtra(float dt) {
   renderDragRect(leftDrag_, leftStart_, lastMousePos_, dt);
-  renderHighlights(highlights_, entityHighlights_, dt);
+  renderHighlights(highlights_, dt);
 
   if (!action_.name.empty()) {
     GameEntity *e = Game::get()->getEntity(action_.owner);

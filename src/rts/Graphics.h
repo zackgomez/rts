@@ -50,6 +50,10 @@ void renderLineColor(
 void renderRectangleColor(
     const glm::mat4 &modelMatrix,
     const glm::vec4 &color);
+void renderRectangleTexture(
+    const glm::mat4 &modelMatrix,
+    GLuint texture,
+    const glm::vec4 &texcoord);
 // Renders a circle of radius 0.5 with the given color.
 void renderCircleColor(
     const glm::mat4 &modelMatrix,
