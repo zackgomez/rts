@@ -169,17 +169,16 @@
     {
       "dim" : [80, 5],
       "pos" : [0, 10],
-      "flash_duration" : 0.25
+      "flash_duration" : 0.25,
+      "color" : [0, 1, 0, 1],
+      "bg_color" : [1, 0, 0, 1],
+      "flash_color" : [1, 1, 1, 1]
     },
     "actor_mana" : 
     {
       "dim" : [80, 5],
-      "pos" : [0, 0]
-    },
-    "actor_prod" :
-    {
-      "dim" : [80, 5],
-      "pos" : [0, 20]
+      "pos" : [0, 0],
+      "color" : [0.3, 0.3, 0.8, 1]
     },
     "actor_cap" :
     {

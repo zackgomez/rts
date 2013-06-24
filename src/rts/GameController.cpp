@@ -722,10 +722,10 @@ void renderEntity(
     // Display the health bar
     // Health bar flashes white on red (instead of green on red) when it has
     // recently taken damage.
-    glm::vec4 healthBarColor = glm::vec4(0, 1, 0, 1);
+    glm::vec4 healthBarColor = vec4Param("hud.actor_health.color");
     float timeSinceDamage = Clock::secondsSince(actor->getLastTookDamage());
     if (timeSinceDamage < fltParam("hud.actor_health.flash_duration")) {
-      healthBarColor = glm::vec4(1, 1, 1, 1);
+      healthBarColor = vec4Param("hud.actor_health.flash_color");
     }
 
     float health = ui_info.health[0];
@@ -743,7 +743,7 @@ void renderEntity(
     glm::vec2 size = vec2Param("hud.actor_health.dim");
     glm::vec2 pos = coord - vec2Param("hud.actor_health.pos");
     // Red underneath for max health
-    drawRectCenter(pos, size, glm::vec4(1, 0, 0, 1));
+    drawRectCenter(pos, size, vec4Param("hud.actor_health.bg_color"));
     // Green on top for current health
     pos.x -= size.x * (1.f - healthFact) / 2.f;
     size.x *= healthFact;
@@ -765,7 +765,7 @@ void renderEntity(
 
   if (ui_info.mana[1]) {
     // Display the mana bar
-    glm::vec4 manaBarColor = glm::vec4(0, 0, 1, 1);
+    glm::vec4 manaBarColor = vec4Param("hud.actor_mana.color");
 
     float manaFact = glm::max(
         0.f,

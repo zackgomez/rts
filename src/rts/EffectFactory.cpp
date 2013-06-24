@@ -39,7 +39,7 @@ RenderFunction makeEntityEffect(
 	using namespace v8;
 
 	if (name == "heal") {
-		return makeTextureBelowEffect(entity, 1.5f, "heal_icon", 2.f);
+		return makeTextureBelowEffect(entity, 3.5f, "heal_icon", 2.f);
 	} else {
 		invariant_violation("unknown effect " + name);
 	}
