@@ -4,6 +4,7 @@
 #include "common/ParamReader.h"
 #include "common/util.h"
 #include "rts/Game.h"
+#include "rts/Map.h"
 #include "rts/Player.h"
 
 namespace rts {
@@ -57,7 +58,7 @@ float GameEntity::distanceToEntity(const GameEntity *e) const {
 }
 
 void GameEntity::remainStationary() {
-  pathQueue_ = std::queue<glm::vec3>();
+  pathQueue_ = std::vector<glm::vec3>();
   setSpeed(0.f);
 }
 
@@ -67,8 +68,9 @@ void GameEntity::turnTowards(const glm::vec2 &targetPos) {
 }
 
 void GameEntity::moveTowards(const glm::vec2 &targetPos) {
-  pathQueue_ = std::queue<glm::vec3>();
-  pathQueue_.push(glm::vec3(targetPos, 0.f));
+  pathQueue_ = 
+    Game::get()->getMap()->getNavMesh()->getPath(getPosition(),
+                                                 glm::vec3(targetPos, 0));
 }
 
 void GameEntity::warpPosition(const glm::vec2 &pos) {
@@ -89,7 +91,7 @@ void GameEntity::checksum(Checksum &chksum) const {
     .process(getSpeed());
 }
 
-std::queue<glm::vec3> GameEntity::getPathNodes() const {
+std::vector<glm::vec3> GameEntity::getPathNodes() const {
   return pathQueue_;
 }
 

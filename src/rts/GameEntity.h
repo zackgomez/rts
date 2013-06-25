@@ -73,7 +73,7 @@ class GameEntity : public ModelEntity {
 
   virtual void checksum(Checksum &chksum) const;
 
-  std::queue<glm::vec3> getPathNodes() const;
+  std::vector<glm::vec3> getPathNodes() const;
 
   float distanceToEntity(const GameEntity *e) const;
 
@@ -87,8 +87,12 @@ class GameEntity : public ModelEntity {
   // Teleports to the given position
   void warpPosition(const glm::vec2 &pos);
 
-  const std::queue<glm::vec3>& getPathQueue() const {
+  const std::vector<glm::vec3>& getPathQueue() const {
     return pathQueue_;
+  }
+
+  void setPathQueue(const std::vector<glm::vec3>& queue) {
+    pathQueue_ = queue;
   }
 
  protected:
@@ -109,7 +113,7 @@ class GameEntity : public ModelEntity {
   float sight_;
 
   std::set<uint32_t> properties_;
-  std::queue<glm::vec3> pathQueue_;
+  std::vector<glm::vec3> pathQueue_;
 };
 };  // namespace rts
 

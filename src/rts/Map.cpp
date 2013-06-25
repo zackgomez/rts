@@ -75,6 +75,29 @@ void Map::init(const std::vector<Player *> &players) {
     }
     Game::get()->spawnEntity(type, params);
   }
+  std::vector<glm::vec3> navVerts;
+  for (int i = 0; i < 6; i++) {
+    for (int j = 0; j < 6; j++) {
+      float x = -20.f + j * 8;
+      float y = -20.f + i * 8;
+      navVerts.push_back(glm::vec3(x, y, 0.f));
+    }
+  }
+  std::vector<std::vector<glm::vec3> > navFaces;
+  for (int i = 0; i < 36; i++) {
+    if (i % 6 == 5 || i >= 30) continue;
+    if (i == 7) continue;
+    if (i == 9) continue;
+    if (i == 19) continue;
+    if (i == 21) continue;
+    std::vector<glm::vec3> face;
+    face.push_back(navVerts[i]);
+    face.push_back(navVerts[i+1]);
+    face.push_back(navVerts[i+7]);
+    face.push_back(navVerts[i+6]);
+    navFaces.push_back(face);
+  }
+  navmesh_ = new NavMesh(navFaces);
 }
 
 void Map::spawnStartingLocation(const Json::Value &definition,

@@ -16,7 +16,11 @@ class NavMesh {
 
   // some testing functions
   void printData();
-  int getNumNeighbors(int i) { return getNeighbors(verts_[i]).size(); }
+  int getNumNeighbors(int i) const;
+
+  // calculates a path between two points
+  const std::vector<glm::vec3>
+    getPath(const glm::vec3& start, const glm::vec3& end) const;
 
  private:
   struct Vertex;
@@ -26,10 +30,19 @@ class NavMesh {
   std::vector<HalfEdge*> halfedges_;
   std::vector<Face*> faces_;
   // finds the vertex at this position with some tolerance
-  Vertex* findVertex(const glm::vec3 &pos);
+  Vertex* findVertex(const glm::vec3 &pos) const;
 
   // finds all neighbors of the input vertex
-  std::vector<Vertex*> getNeighbors(Vertex *vert);
+  std::vector<Vertex*> getNeighbors(Vertex *vert) const;
+
+  // gets the midpoint of a halfedge
+  glm::vec3 getMidpoint(HalfEdge *he) const;
+
+  // gets the center of a face polygon
+  glm::vec3 getCenter(Face *f) const;
+
+  // given a point, finds the face that contains that point
+  Face* getContainingPolygon(const glm::vec3 &p) const;
 };
 
 #endif  // SRC_COMMON_NAVMESH_H_

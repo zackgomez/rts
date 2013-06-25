@@ -1,5 +1,4 @@
 #include "gtest/gtest.h"
-#include <tuple>
 #include "common/Clock.h"
 #include "common/Collision.h"
 
@@ -163,4 +162,17 @@ TEST(CollisionTest, pointInPolygon) {
   ASSERT_TRUE(pointInPolygon(p1, polygon));
   ASSERT_FALSE(pointInPolygon(p2, polygon));
   ASSERT_FALSE(pointInPolygon(p3, polygon));
+}
+
+TEST(CollisionTest, pointInPolygon) {
+  // make a simple box
+  std::vector<glm::vec3> polygon;
+  polygon.push_back(glm::vec3(-20, -20, 0));
+  polygon.push_back(glm::vec3(-20, -16, 0));
+  polygon.push_back(glm::vec3(-16, -16, 0));
+  polygon.push_back(glm::vec3(-16, -20, 0));
+  // a point that should be in the box
+  glm::vec3 p1(-18, -18, 0.0);
+
+  ASSERT_TRUE(pointInPolygon(p1, polygon));
 }

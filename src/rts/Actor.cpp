@@ -77,7 +77,7 @@ void Actor::resolve(float dt) {
 	if (hasProperty(P_MOBILE) && warp_) {
 		setPosition(warpTarget_);
 	} else if (hasProperty(P_MOBILE) && !getPathQueue().empty() && getMaxSpeed() > 0) {
-    glm::vec2 targetPos(getPathQueue().front());
+    glm::vec2 targetPos(getPathQueue()[0]);
     float dist = glm::length(targetPos - getPosition2());
     float speed = getMaxSpeed();
     // rotate

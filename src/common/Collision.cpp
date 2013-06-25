@@ -65,41 +65,48 @@ bool boxInBox(
 
 bool pointInPolygon(const glm::vec3 &point,
     const std::vector<glm::vec3> &polygon) {
-  int n = polygon.size();
   bool result = false;
-  for (int i = 0, j = n - 1; i < n; j = i++) {
-    if ((polygon[i].y > point.y) != (polygon[j].y > point.y) &&
-        point.x < (polygon[j].x - polygon[i].x) * (point.y - polygon[i].y) /
-        (polygon[j].x - polygon[j].x) + polygon[i].x) result = !result;
-  }
-  return result;
-}
-
-template<int N>
-float rayAABBNIntersection(
-    const float *origin,
-    const float *dir,
-    const float *center,
-    const float *size) {
-  float min[N];
-  float max[N];
-  for (int i = 0; i < N; i++) {
-    min[i] = center[i] - size[i]/2.f;
-    max[i] = center[i] + size[i]/2.f;
-  }
-  float tnear = -HUGE_VAL;
-  float tfar = HUGE_VAL;
-  for (int i = 0; i < N; i++) {
-    if (dir[i] == 0.f && (origin[i] < min[i] || origin[i] > max[i])) {
-      return NO_INTERSECTION;
+  /*
+  int n = polygon.size();
+  int j = n - 1;
+  for (int i=0; i<n; i++) {
+    if (((polygon[i].y< point.y && polygon[j].y>=point.y)
+          ||   (polygon[j].y< point.y && polygon[i].y>=point.y))
+        &&  (polygon[i].x<=point.x || polygon[j].x<=point.x)) {
+      result^=(polygon[i].x+(point.y-polygon[i].y)/(polygon[j].y-polygon[i].y)*(polygon[j].x-polygon[i].x)<point.x);
     }
-    float t1 = (min[i] - origin[i]) / dir[i];
-    float t2 = (max[i] - origin[i]) / dir[i];
-    if (t1 > t2) std::swap(t1, t2);
-    if (t1 > tnear) tnear = t1;
-    if (t2 < tfar) tfar = t2;
-    if (tnear > tfar) return NO_INTERSECTION;
-    if (tfar < 0) return NO_INTERSECTION;
+  }
+  */
+  if (point.x > polygon[0].x && point.x <= polygon[1].x &&
+      point.y > polygon[0].y && point.y <= polygon[3].y) result = true;
+  return result;
+  }
+
+  template<int N>
+    float rayAABBNIntersection(
+        const float *origin,
+        const float *dir,
+        const float *center,
+        const float *size) {
+      float min[N];
+      float max[N];
+      for (int i = 0; i < N; i++) {
+        min[i] = center[i] - size[i]/2.f;
+        max[i] = center[i] + size[i]/2.f;
+      }
+      float tnear = -HUGE_VAL;
+      float tfar = HUGE_VAL;
+      for (int i = 0; i < N; i++) {
+        if (dir[i] == 0.f && (origin[i] < min[i] || origin[i] > max[i])) {
+          return NO_INTERSECTION;
+        }
+        float t1 = (min[i] - origin[i]) / dir[i];
+        float t2 = (max[i] - origin[i]) / dir[i];
+        if (t1 > t2) std::swap(t1, t2);
+        if (t1 > tnear) tnear = t1;
+        if (t2 < tfar) tfar = t2;
+        if (tnear > tfar) return NO_INTERSECTION;
+        if (tfar < 0) return NO_INTERSECTION;
   }
 
   return tnear;
