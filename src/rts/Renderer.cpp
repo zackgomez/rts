@@ -13,6 +13,7 @@
 #include "common/ParamReader.h"
 #include "common/util.h"
 #include "rts/Controller.h"
+#include "rts/Game.h"
 #include "rts/Graphics.h"
 #include "rts/FontManager.h"
 #include "rts/Map.h"
@@ -202,6 +203,11 @@ void Renderer::renderMap() {
         glm::mat4(1.f),
         glm::vec3(mapSize_.x, mapSize_.y, 1.f));
   renderRectangleProgram(transform);
+
+  // TODO(zack): bit of hack here
+  renderNavMesh(*Game::get()->getMap()->getNavMesh(),
+      glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 0.15f)),
+      glm::vec4(0.6, 0.6, 0.2, 0.75f));
 }
 
 void Renderer::startRender() {

@@ -85,11 +85,11 @@ void Map::init(const std::vector<Player *> &players) {
   }
   std::vector<std::vector<glm::vec3> > navFaces;
   for (int i = 0; i < 36; i++) {
-    if (i % 6 == 5 || i >= 30) continue;
-    if (i == 7) continue;
-    if (i == 9) continue;
-    if (i == 19) continue;
-    if (i == 21) continue;
+    if (i % 6 == 5 || i >= 28) continue;
+    //if (i == 7) continue;
+    //if (i == 9) continue;
+    //if (i == 19) continue;
+    //if (i == 21) continue;
     std::vector<glm::vec3> face;
     face.push_back(navVerts[i]);
     face.push_back(navVerts[i+1]);

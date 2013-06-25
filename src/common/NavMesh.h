@@ -3,6 +3,7 @@
 
 #include <glm/glm.hpp>
 #include <vector>
+#include <functional>
 
 class NavMesh {
  public:
@@ -17,6 +18,9 @@ class NavMesh {
   // some testing functions
   void printData();
   int getNumNeighbors(int i) const;
+  void iterate(
+      std::function<void(void)> faceCallback,
+      std::function<void(const glm::vec3 &)> vertCallback) const;
 
   // calculates a path between two points
   const std::vector<glm::vec3>

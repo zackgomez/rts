@@ -316,3 +316,16 @@ void NavMesh::printData() {
 int NavMesh::getNumNeighbors(int i) const {
   return getNeighbors(verts_[i]).size();
 }
+
+void NavMesh::iterate(
+    std::function<void(void)> faceCallback,
+    std::function<void(const glm::vec3 &)> vertCallback) const {
+  for (auto face : faces_) {
+    HalfEdge *face_he = face->he;
+    faceCallback();
+    do {
+      vertCallback(face_he->start->position);
+      face_he = face_he->next;
+    } while (face_he != face->he);
+  }
+}

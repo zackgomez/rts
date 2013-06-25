@@ -8,6 +8,7 @@
 #include "common/Clock.h"
 #include "common/Exception.h"
 #include "common/Logger.h"
+#include "common/NavMesh.h"
 #include "common/ParamReader.h"
 #include "common/util.h"
 #include "rts/ResourceManager.h"
@@ -321,6 +322,32 @@ void renderMeshMaterial(const glm::mat4 &modelMatrix, const Mesh *m,
   }
 
   renderMesh(modelMatrix, m);
+}
+
+void renderNavMesh(
+    const NavMesh &navmesh,
+    const glm::mat4 &modelMatrix,
+    const glm::vec4 &color) {
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glm::vec3 center(0.f);
+  glm::vec2 size(0.f);
+  navmesh.iterate(
+      [&]() {
+        center /= 4.f;
+        size = 2.f * glm::abs(size - glm::vec2(center));
+        renderRectangleColor(
+          glm::scale(
+            glm::translate(glm::mat4(1.f), glm::vec3(center) + glm::vec3(0, 0, 0.25f)),
+            glm::vec3(size, 1.f)),
+          glm::vec4(0.7, 0.4, 0.2, 0.4));
+        center = glm::vec3(0.f);
+        size = glm::vec2(0.f);
+      },
+      [&](const glm::vec3 &v) {
+        center += v;
+        size = glm::vec2(v);
+      });
 }
 
 void drawRectCenter(

@@ -16,6 +16,7 @@ struct DepthField {
   float minDist;
   float maxDist;
 };
+class NavMesh;
 
 void initEngine(const glm::vec2 &resolution);
 void teardownEngine();
@@ -69,6 +70,11 @@ void renderMeshMaterial(
     const glm::mat4 &modelMatrix,
     const Mesh *mesh,
     const Material *m);
+
+void renderNavMesh(
+    const NavMesh &navmesh,
+    const glm::mat4 &modelMatrix,
+    const glm::vec4 &color);
 
 /* Draws a rectangle at the given pixels.
  * (0,0) is the top-left corner.
