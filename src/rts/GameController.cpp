@@ -784,10 +784,13 @@ void renderEntity(
   // Render path if selected
   if (localPlayer->isSelected(actor->getID())) {
     auto pathQueue = actor->getPathQueue();
-    if (!pathQueue.empty()) {
-      auto target = pathQueue.front();
-      // TODO(zack): remove z hack
-      renderLineColor(pos + glm::vec3(0, 0, 0.05f), target, glm::vec4(1.f));
+    // TODO(zack): remove z hack
+    const auto zhack = glm::vec3(0, 0, 0.05f);
+    auto prev = pos + zhack;
+    for (auto target : pathQueue) {
+      target += zhack;
+      renderLineColor(prev, target, glm::vec4(1.f));
+      prev = target;
     }
   }
 }
