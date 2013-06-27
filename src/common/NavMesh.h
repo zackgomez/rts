@@ -2,8 +2,9 @@
 #define SRC_COMMON_NAVMESH_H_
 
 #include <glm/glm.hpp>
-#include <vector>
 #include <functional>
+#include <map>
+#include <vector>
 
 class NavMesh {
  public:
@@ -38,12 +39,15 @@ class NavMesh {
 
   // finds all neighbors of the input vertex
   std::vector<Vertex*> getNeighbors(Vertex *vert) const;
+  static std::vector<glm::vec3> reconstructPath(
+    const std::map<const Face *, const Face *> &came_from,
+    const Face *current_face);
 
   // gets the midpoint of a halfedge
-  glm::vec3 getMidpoint(HalfEdge *he) const;
+  static glm::vec3 getMidpoint(const HalfEdge *he);
 
   // gets the center of a face polygon
-  glm::vec3 getCenter(Face *f) const;
+  static glm::vec3 getCenter(const Face *f);
 
   // given a point, finds the face that contains that point
   Face* getContainingPolygon(const glm::vec3 &p) const;

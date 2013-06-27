@@ -154,11 +154,11 @@ std::vector<NavMesh::Vertex*> NavMesh::getNeighbors(Vertex *vert) const {
   return neighbors;
 }
 
-glm::vec3 NavMesh::getMidpoint(HalfEdge *he) const {
+glm::vec3 NavMesh::getMidpoint(const HalfEdge *he) {
   return (he->start->position + he->next->start->position) / 2.f;
 }
 
-glm::vec3 NavMesh::getCenter(Face *f) const {
+glm::vec3 NavMesh::getCenter(const Face *f) {
   glm::vec3 center(0, 0, 0);
   float n = 0.f;
   HalfEdge *he = f->he;
@@ -186,6 +186,21 @@ NavMesh::Face* NavMesh::getContainingPolygon(const glm::vec3& p) const {
   return NULL;
 }
 
+// Doesn't return the first node
+std::vector<glm::vec3> NavMesh::reconstructPath(
+    const std::map<const Face *, const Face *> &came_from,
+    const Face *current_face) {
+  std::vector<glm::vec3> ret;
+  auto it = came_from.find(current_face);
+  if (it != came_from.end()) {
+    ret = reconstructPath(came_from, it->second);
+  } else {
+    return ret;
+  }
+  ret.push_back(getCenter(current_face));
+  return ret;
+}
+
 const std::vector<glm::vec3> NavMesh::getPath(const glm::vec3 &start,
     const glm::vec3 &end) const {
   std::vector<glm::vec3> path;
@@ -203,9 +218,9 @@ const std::vector<glm::vec3> NavMesh::getPath(const glm::vec3 &start,
   }
 
   // run A* search algorithm
-  std::vector<Face*> closed;
-  std::vector<Face*> open;
-  std::map<Face*, Face*> came_from;
+  std::set<Face*> closed;
+  std::set<Face*> open;
+  std::map<const Face*, const Face*> came_from;
 
   std::map<Face*, float> g_score;
   std::map<Face*, float> f_score;
@@ -213,94 +228,55 @@ const std::vector<glm::vec3> NavMesh::getPath(const glm::vec3 &start,
   g_score[start_face] = 0;
   f_score[start_face] = glm::distance(start, end);
 
-  closed.push_back(start_face);
-  HalfEdge *he = start_face->he;
-  do {
-    Face *neighbor = he->flip->face;
-    if (neighbor) {
-      g_score[neighbor] = glm::distance(start, getCenter(neighbor));
-      f_score[neighbor] = g_score[neighbor] + glm::distance(getCenter(neighbor), end);
-      open.push_back(neighbor);
-    }
-    he = he->next;
-  } while (he != start_face->he);
-  do {
-    Face* current;
-    for (auto node : open) {
-      // will point to the lowest scoring node
-      float lowest_score = HUGE_VAL;
-      if (f_score[node] < lowest_score) {
-        lowest_score = f_score[node];
-        current = node;
+  open.insert(start_face);
+
+  while (!open.empty()) {
+    // Find open face with lowet f_score
+    Face *current_face = nullptr;
+    float best_f = HUGE_VAL;
+    for (Face *f : open) {
+      if (f_score[f] < best_f) {
+        current_face = f;
+        best_f = f_score[f];
       }
     }
-    // once this face contains the end, we're done
-    if (current == end_face) {
-      // iterate back to find the path
-      std::vector<Face*> node_path;
-      Face *node = current;
-      while (node != NULL) {
-        node_path.push_back(node);
-        node = came_from[node];
-      }
-      for (int i = node_path.size() - 1; i >= 0; i--) {
-        path.push_back(getCenter(node_path[i]));
-      }
-      path.push_back(end);
-      return path;
+    invariant(current_face != nullptr, "unexpected null face");
+
+    // If we've reached the destination, backtrack and return
+    if (current_face == end_face) {
+      return reconstructPath(came_from, current_face);
     }
 
-    // add the current node to closed, remove it from open
-    for (auto it = open.begin(); it != open.end(); it++) {
-      if ((*it) == current) {
-        open.erase(it);
-        break;
-      }
-    }
-    closed.push_back(current);
+    open.erase(current_face);
+    closed.insert(current_face);
 
-    HalfEdge* neighbor_he = current->he;
+    // Iterate over current face's neighbor
+    HalfEdge *he = current_face->he;
+    int n = 0;
     do {
-      Face *neighbor = neighbor_he->flip->face;
-      if (!neighbor) {
-        neighbor_he = neighbor_he->next;
-        continue;
-      }
-      float g = g_score[current] + glm::distance(getCenter(current),
-          getCenter(neighbor));
-      // if neighbor is in the closed set and it has a better g
-      // score already, we can skip it
-      bool neighbor_closed = false;
-      for (auto it = closed.begin(); it != closed.end(); it++) {
-        if ((*it) == neighbor) {
-          neighbor_closed = true;
-          break;
+      Face *neighbor = he->flip->face;
+      if (neighbor) {
+        // For each neighbor...
+        // TODO(zack): this one is the heuristic, can we do better?
+        float neighbor_g_score = glm::distance(start, getCenter(neighbor));
+        // If in closed and already a better score, pass
+        if (closed.count(neighbor) && neighbor_g_score >= g_score[neighbor]) {
+          he = he->next;
+          continue;
+        }
+
+        if (!open.count(neighbor) || neighbor_g_score < g_score[neighbor]) {
+          came_from[neighbor] = current_face;
+          g_score[neighbor] = neighbor_g_score;
+          f_score[neighbor] = g_score[neighbor] + glm::distance(getCenter(neighbor), end);
+          open.insert(neighbor);
         }
       }
-      if (neighbor_closed && g >= g_score[neighbor]) {
-        neighbor_he = neighbor_he->next;
-        continue;
-      }
-      // if the neighbor is in the open set, then we only evaluate if
-      // if g is less than the recorded g_score
-      bool found = false;
-      for (auto it2 = open.begin(); it2 != open.end(); it2++) {
-        if ((*it2) == neighbor) {
-          found = true;
-          break;
-        }
-      }
-      if (!found || g < g_score[neighbor]) {
-        came_from[neighbor] = current;
-        g_score[neighbor] = g;
-        f_score[neighbor] = g + glm::distance(getCenter(neighbor),
-            end);
-        if (!found) open.push_back(neighbor);
-      }
-      neighbor_he = neighbor_he->next;
-    } while (neighbor_he != current->he);
-  } while (!open.empty());
-  return path;
+      he = he->next;
+    } while (he != current_face->he);
+  }
+
+  invariant_violation("unable to compute path\n");
 }
 
 void NavMesh::printData() {

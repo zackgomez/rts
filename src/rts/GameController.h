@@ -61,6 +61,8 @@ class GameController : public Controller {
   std::vector<MapHighlight> highlights_;
   std::map<id_t, float> entityHighlights_;
 
+	bool renderNavMesh_;
+
   // TODO(zack): move to renderer/engine as a camera velocity
   glm::vec2 cameraPanDir_;
   float zoom_;

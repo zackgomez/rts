@@ -76,6 +76,7 @@ GameController::GameController(LocalPlayer *player)
     alt_(false),
     leftDrag_(false),
     leftDragMinimap_(false),
+    renderNavMesh_(false),
     state_(PlayerState::DEFAULT),
     zoom_(0.f),
     order_(),
@@ -206,6 +207,15 @@ void GameController::renderExtra(float dt) {
         glm::vec3(2 * action_.range));
 
     renderCircleColor(transform, glm::vec4(0, 0, 1, 1));
+  }
+
+  // TODO(zack): bit of hack here
+  if (renderNavMesh_) {
+    //glDisable(GL_CULL_FACE);
+    renderNavMesh(*Game::get()->getMap()->getNavMesh(),
+        glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 0.15f)), glm::vec3(0.8)),
+        glm::vec4(0.6, 0.6, 0.2, 0.75f));
+    //glEnable(GL_CULL_FACE);
   }
 }
 
@@ -533,6 +543,8 @@ void GameController::keyPress(SDL_keysym keysym) {
       ctrl_ = true;
     } else if (key == SDLK_LALT || key == SDLK_RALT) {
       alt_ = true;
+    } else if (key == SDLK_n) {
+      renderNavMesh_ = !renderNavMesh_;
     } else if (key == SDLK_BACKSPACE) {
       Renderer::get()->resetCameraRotation();
     } else if (key == SDLK_g) {
