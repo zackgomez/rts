@@ -22,7 +22,7 @@
 
   "engine" :
   {
-    "circle_segments" : 50
+    "circle_segments" : 16
   },
 
   "resources" :
@@ -260,6 +260,7 @@
       "chatDisplayTime" : 5.0
     },
     "highlight" : {
+      "thickness" : 2.5,
       "duration" : 0.5
     }
   },

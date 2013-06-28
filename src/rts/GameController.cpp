@@ -48,7 +48,10 @@ static void renderHighlights(
             glm::mat4(1.f),
             glm::vec3(hl.pos.x, hl.pos.y, 0.01f)),
           glm::vec3(0.33f));
-    renderCircleColor(transform, glm::vec4(1, 0, 0, 1));
+    renderCircleColor(
+        transform,
+        glm::vec4(1, 0, 0, 1),
+        fltParam("ui.highlight.thickness"));
   }
 }
 
@@ -218,7 +221,7 @@ void GameController::renderExtra(float dt) {
         glm::translate(glm::mat4(1.f), e->getPosition() + glm::vec3(0, 0, 0.1f)),
         glm::vec3(2 * action_.range));
 
-    renderCircleColor(transform, glm::vec4(0, 0, 1, 1));
+    //renderCircleColor(transform, glm::vec4(0, 0, 1, 1));
   }
 
   // TODO(zack): bit of hack here
@@ -719,12 +722,16 @@ void renderEntity(
       glm::vec3(0.25f + sqrt(entitySize.x * entitySize.y)));
   if (localPlayer->isSelected(e->getID())) {
     // A bit of a hack here...
-    renderCircleColor(circleTransform,
-        glm::vec4(vec3Param("colors.selected"), 1.f));
+    renderCircleColor(
+        circleTransform,
+        glm::vec4(vec3Param("colors.selected"), 1.f),
+        fltParam("ui.highlight.thickness"));
   } else if (entityHighlights.find(e->getID()) != entityHighlights.end()) {
     // A bit of a hack here...
-    renderCircleColor(circleTransform,
-        glm::vec4(vec3Param("colors.targeted"), 1.f));
+    renderCircleColor(
+        circleTransform,
+        glm::vec4(vec3Param("colors.targeted"), 1.f),
+        fltParam("ui.highlight.thickness"));
   }
 
   glDisable(GL_DEPTH_TEST);
