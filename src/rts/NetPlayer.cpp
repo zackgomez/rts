@@ -32,7 +32,6 @@ bool NetPlayer::isReady() const {
   if (!connection_->running()) {
     PlayerAction a;
     a["type"] = ActionTypes::LEAVE_GAME;
-    a["pid"] = toJson(playerID_);
     actionBuffer_.push_back(a);
     return ready_ = true;
   }
@@ -42,7 +41,6 @@ bool NetPlayer::isReady() const {
   while (!incomingActions.empty()) {
     PlayerAction a = incomingActions.front();
     incomingActions.pop();
-    invariant(toID(a["pid"]) == playerID_, "bad action from network thread");
 
     actionBuffer_.push_back(a);
 
@@ -57,7 +55,7 @@ bool NetPlayer::isReady() const {
 
 
 std::vector<PlayerAction> NetPlayer::getActions() {
-  invariant(ready_, "Asked for updat when not ready");
+  invariant(ready_, "Asked for update when not ready");
   // reset, consume actions and ready state
   std::vector<PlayerAction> ret;
   ret.swap(actionBuffer_);
