@@ -23,6 +23,7 @@
     <ClCompile Include="..\..\src\common\image.cpp" />
     <ClCompile Include="..\..\src\common\kissnet.cpp" />
     <ClCompile Include="..\..\src\common\Logger.cpp" />
+    <ClCompile Include="..\..\src\common\NavMesh.cpp" />
     <ClCompile Include="..\..\src\common\NetConnection.cpp" />
     <ClCompile Include="..\..\src\common\ParamReader.cpp" />
     <ClCompile Include="..\..\src\common\Types.cpp" />
@@ -33,6 +34,7 @@
     <ClCompile Include="..\..\src\rts\Camera.cpp" />
     <ClCompile Include="..\..\src\rts\CommandWidget.cpp" />
     <ClCompile Include="..\..\src\rts\Controller.cpp" />
+    <ClCompile Include="..\..\src\rts\EffectFactory.cpp" />
     <ClCompile Include="..\..\src\rts\FontManager.cpp" />
     <ClCompile Include="..\..\src\rts\Game.cpp" />
     <ClCompile Include="..\..\src\rts\GameController.cpp" />
@@ -62,6 +64,7 @@
     <ClInclude Include="..\..\src\common\image.h" />
     <ClInclude Include="..\..\src\common\kissnet.h" />
     <ClInclude Include="..\..\src\common\Logger.h" />
+    <ClInclude Include="..\..\src\common\NavMesh.h" />
     <ClInclude Include="..\..\src\common\NetConnection.h" />
     <ClInclude Include="..\..\src\common\ParamReader.h" />
     <ClInclude Include="..\..\src\common\Types.h" />
@@ -71,6 +74,7 @@
     <ClInclude Include="..\..\src\rts\Camera.h" />
     <ClInclude Include="..\..\src\rts\CommandWidget.h" />
     <ClInclude Include="..\..\src\rts\Controller.h" />
+    <ClInclude Include="..\..\src\rts\EffectFactory.h" />
     <ClInclude Include="..\..\src\rts\Entity.h" />
     <ClInclude Include="..\..\src\rts\FontManager.h" />
     <ClInclude Include="..\..\src\rts\Game.h" />

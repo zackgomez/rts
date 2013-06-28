@@ -52,7 +52,7 @@ NavMesh::NavMesh(const std::vector<std::vector<glm::vec3> > &faces) {
     }
 
     // add verts
-    Vertex *verts[n];
+    std::vector<Vertex *> verts(n);
     for (int i = 0; i < n; i++) {
       verts[i] = findVertex(vertPos[i]);
       if (verts[i] == NULL) {
@@ -69,7 +69,7 @@ NavMesh::NavMesh(const std::vector<std::vector<glm::vec3> > &faces) {
     for (int i = 0; i < n; i++) face->verts[i] = verts[i];
 
     // add half edges
-    HalfEdge *he[n];
+    std::vector<HalfEdge *> he(n);
     for (int i = 0; i < n; i++) {
       he[i] = new HalfEdge;
       he[i]->start = verts[i];
