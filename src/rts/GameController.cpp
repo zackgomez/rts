@@ -381,6 +381,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
         order["entity"] = toJson(ids);
         order["action"] = action_.name;
         order["target_id"] = toJson(entity->getID());
+        highlightEntity(entity->getID());
       } else if (action_.targeting == UIAction::TargetingType::ALLY) {
         if (!entity
             || !entity->hasProperty(GameEntity::P_TARGETABLE)
@@ -392,6 +393,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
         order["entity"] = toJson(ids);
         order["action"] = action_.name;
         order["target_id"] = toJson(entity->getID());
+        highlightEntity(entity->getID());
       } else {
         invariant_violation("Unsupported targeting type");
       }
