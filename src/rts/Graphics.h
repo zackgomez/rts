@@ -58,7 +58,8 @@ void renderRectangleTexture(
 // Renders a circle of radius 0.5 with the given color.
 void renderCircleColor(
     const glm::mat4 &modelMatrix,
-    const glm::vec4 &color);
+    const glm::vec4 &color,
+    float width = 1.f);
 // Uses the currently bound program
 void renderRectangleProgram(
     const glm::mat4 &modelMatrix);

@@ -79,6 +79,8 @@ class GameController : public Controller {
   void highlight(const glm::vec2 &mapCoord);
   void highlightEntity(id_t eid);
 
+  GLuint getCursorTexture() const;
+
   // For control groups
   std::set<id_t> savedSelection_[10];
 };

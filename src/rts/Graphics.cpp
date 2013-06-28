@@ -108,7 +108,8 @@ void teardownEngine() {
 
 void renderCircleColor(
     const glm::mat4 &modelMatrix,
-    const glm::vec4 &color) {
+    const glm::vec4 &color,
+    float width) {
   record_section("renderCircleColor");
   GLuint program = resources.colorProgram;
   GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
@@ -128,10 +129,22 @@ void renderCircleColor(
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
+  // save some old state
+  bool wasEnabled = glIsEnabled(GL_LINE_SMOOTH);
+  float oldWidth;
+  glGetFloatv(GL_LINE_WIDTH, &oldWidth);
+
+  glEnable(GL_LINE_SMOOTH);
+  glLineWidth(width);
+
   // RENDER
   glDrawArrays(GL_LINE_LOOP, 0, intParam("engine.circle_segments"));
 
   // Clean up
+  if (!wasEnabled) {
+    glDisable(GL_LINE_SMOOTH);
+  }
+  glLineWidth(oldWidth);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glDisableVertexAttribArray(0);
 }

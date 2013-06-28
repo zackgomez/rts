@@ -48,7 +48,10 @@ static void renderHighlights(
             glm::mat4(1.f),
             glm::vec3(hl.pos.x, hl.pos.y, 0.01f)),
           glm::vec3(0.33f));
-    renderCircleColor(transform, glm::vec4(1, 0, 0, 1));
+    renderCircleColor(
+        transform,
+        glm::vec4(1, 0, 0, 1),
+        fltParam("ui.highlight.thickness"));
   }
 }
 
@@ -87,6 +90,7 @@ GameController::~GameController() {
 }
 
 void GameController::onCreate() {
+  SDL_ShowCursor(0);
   // TODO(zack): delete texture
   glGenTextures(1, &visTex_);
   glBindTexture(GL_TEXTURE_2D, visTex_);
@@ -189,6 +193,7 @@ void GameController::onCreate() {
 }
 
 void GameController::onDestroy() {
+  SDL_ShowCursor(1);
   Renderer::get()->setEntityOverlayRenderer(Renderer::EntityOverlayRenderer());
   getUI()->clearWidgets();
   glDeleteTextures(1, &visTex_);
@@ -198,6 +203,16 @@ void GameController::renderExtra(float dt) {
   renderDragRect(leftDrag_, leftStart_, lastMousePos_, dt);
   renderHighlights(highlights_, dt);
 
+  // render cursor
+  const auto res = Renderer::get()->getResolution();
+  const float cursor_size = std::min(res.x, res.y) * 0.05f;
+  GLuint texture = getCursorTexture();
+  drawTextureCenter(
+      lastMousePos_,
+      glm::vec2(cursor_size),
+      texture, glm::vec4(0, 0, 1, 1));
+
+
   if (!action_.name.empty()) {
     GameEntity *e = Game::get()->getEntity(action_.owner);
     invariant(e, "Unable to find action owner");
@@ -206,17 +221,23 @@ void GameController::renderExtra(float dt) {
         glm::translate(glm::mat4(1.f), e->getPosition() + glm::vec3(0, 0, 0.1f)),
         glm::vec3(2 * action_.range));
 
-    renderCircleColor(transform, glm::vec4(0, 0, 1, 1));
+    //renderCircleColor(transform, glm::vec4(0, 0, 1, 1));
   }
 
   // TODO(zack): bit of hack here
   if (renderNavMesh_) {
-    //glDisable(GL_CULL_FACE);
     renderNavMesh(*Game::get()->getMap()->getNavMesh(),
         glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 0.15f)), glm::vec3(0.8)),
         glm::vec4(0.6, 0.6, 0.2, 0.75f));
-    //glEnable(GL_CULL_FACE);
   }
+}
+
+GLuint GameController::getCursorTexture() const {
+  std::string texname = "cursor_normal";
+  if (!action_.name.empty()) {
+    texname = "cursor_action";
+  }
+  return ResourceManager::get()->getTexture(texname);
 }
 
 void GameController::frameUpdate(float dt) {
@@ -363,6 +384,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
         order["entity"] = toJson(ids);
         order["action"] = action_.name;
         order["target_id"] = toJson(entity->getID());
+        highlightEntity(entity->getID());
       } else if (action_.targeting == UIAction::TargetingType::ALLY) {
         if (!entity
             || !entity->hasProperty(GameEntity::P_TARGETABLE)
@@ -374,6 +396,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
         order["entity"] = toJson(ids);
         order["action"] = action_.name;
         order["target_id"] = toJson(entity->getID());
+        highlightEntity(entity->getID());
       } else {
         invariant_violation("Unsupported targeting type");
       }
@@ -699,12 +722,16 @@ void renderEntity(
       glm::vec3(0.25f + sqrt(entitySize.x * entitySize.y)));
   if (localPlayer->isSelected(e->getID())) {
     // A bit of a hack here...
-    renderCircleColor(circleTransform,
-        glm::vec4(vec3Param("colors.selected"), 1.f));
+    renderCircleColor(
+        circleTransform,
+        glm::vec4(vec3Param("colors.selected"), 1.f),
+        fltParam("ui.highlight.thickness"));
   } else if (entityHighlights.find(e->getID()) != entityHighlights.end()) {
     // A bit of a hack here...
-    renderCircleColor(circleTransform,
-        glm::vec4(vec3Param("colors.targeted"), 1.f));
+    renderCircleColor(
+        circleTransform,
+        glm::vec4(vec3Param("colors.targeted"), 1.f),
+        fltParam("ui.highlight.thickness"));
   }
 
   glDisable(GL_DEPTH_TEST);

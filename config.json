@@ -22,7 +22,7 @@
 
   "engine" :
   {
-    "circle_segments" : 50
+    "circle_segments" : 16
   },
 
   "resources" :
@@ -50,7 +50,9 @@
       "teleport_icon" : "images/teleport_icon.png",
       "heal_icon" : "images/HealStyle1TestDark.png",
       "snipe_icon" : "images/snipe_icon.png",
-      "repair_icon" : "images/repair_icon.png"
+      "repair_icon" : "images/repair_icon.png",
+      "cursor_normal" : "images/cursor-normal.png",
+      "cursor_action" : "images/cursor-action.png"
     },
     "depthFields" : {
       "steamLogo"  : {
@@ -258,6 +260,7 @@
       "chatDisplayTime" : 5.0
     },
     "highlight" : {
+      "thickness" : 2.5,
       "duration" : 0.5
     }
   },

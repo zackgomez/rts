@@ -242,7 +242,7 @@ function entityResolve(entity, dt) {
   }
   // If out of health, check if there is a bar to remove, else die
   while (entity.health_ <= 0.0) {
-    if (entity.maxBars_ && entity.bars_ > 0) {
+    if (entity.maxBars_ && entity.bars_ > 1) {
       entity.bars_ -= 1;
       entity.health_ += entity.maxHealth_;
     } else {
