@@ -51,7 +51,8 @@
       "heal_icon" : "images/HealStyle1TestDark.png",
       "snipe_icon" : "images/snipe_icon.png",
       "repair_icon" : "images/repair_icon.png",
-      "cursor_normal" : "images/cursor-normal.png"
+      "cursor_normal" : "images/cursor-normal.png",
+      "cursor_action" : "images/cursor-action.png"
     },
     "depthFields" : {
       "steamLogo"  : {

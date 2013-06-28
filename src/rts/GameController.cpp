@@ -203,7 +203,7 @@ void GameController::renderExtra(float dt) {
   // render cursor
   const auto res = Renderer::get()->getResolution();
   const float cursor_size = std::min(res.x, res.y) * 0.05f;
-  GLuint texture = ResourceManager::get()->getTexture("cursor_normal");
+  GLuint texture = getCursorTexture();
   drawTextureCenter(
       lastMousePos_,
       glm::vec2(cursor_size),
@@ -223,12 +223,18 @@ void GameController::renderExtra(float dt) {
 
   // TODO(zack): bit of hack here
   if (renderNavMesh_) {
-    //glDisable(GL_CULL_FACE);
     renderNavMesh(*Game::get()->getMap()->getNavMesh(),
         glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 0.15f)), glm::vec3(0.8)),
         glm::vec4(0.6, 0.6, 0.2, 0.75f));
-    //glEnable(GL_CULL_FACE);
   }
+}
+
+GLuint GameController::getCursorTexture() const {
+  std::string texname = "cursor_normal";
+  if (!action_.name.empty()) {
+    texname = "cursor_action";
+  }
+  return ResourceManager::get()->getTexture(texname);
 }
 
 void GameController::frameUpdate(float dt) {
