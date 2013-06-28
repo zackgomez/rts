@@ -87,6 +87,7 @@ GameController::~GameController() {
 }
 
 void GameController::onCreate() {
+  SDL_ShowCursor(0);
   // TODO(zack): delete texture
   glGenTextures(1, &visTex_);
   glBindTexture(GL_TEXTURE_2D, visTex_);
@@ -189,6 +190,7 @@ void GameController::onCreate() {
 }
 
 void GameController::onDestroy() {
+  SDL_ShowCursor(1);
   Renderer::get()->setEntityOverlayRenderer(Renderer::EntityOverlayRenderer());
   getUI()->clearWidgets();
   glDeleteTextures(1, &visTex_);
@@ -197,6 +199,16 @@ void GameController::onDestroy() {
 void GameController::renderExtra(float dt) {
   renderDragRect(leftDrag_, leftStart_, lastMousePos_, dt);
   renderHighlights(highlights_, dt);
+
+  // render cursor
+  const auto res = Renderer::get()->getResolution();
+  const float cursor_size = std::min(res.x, res.y) * 0.05f;
+  GLuint texture = ResourceManager::get()->getTexture("cursor_normal");
+  drawTextureCenter(
+      lastMousePos_,
+      glm::vec2(cursor_size),
+      texture, glm::vec4(0, 0, 1, 1));
+
 
   if (!action_.name.empty()) {
     GameEntity *e = Game::get()->getEntity(action_.owner);
