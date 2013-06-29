@@ -244,7 +244,10 @@ const std::vector<glm::vec3> NavMesh::getPath(const glm::vec3 &start,
 
     // If we've reached the destination, backtrack and return
     if (current_face == end_face) {
-      return reconstructPath(came_from, current_face);
+      auto ret = reconstructPath(came_from, current_face);
+      ret.push_back(end);
+      // TODO refine path
+      return ret;
     }
 
     open.erase(current_face);
