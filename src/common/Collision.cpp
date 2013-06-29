@@ -67,8 +67,8 @@ bool pointInPolygon(const glm::vec3 &point,
     const std::vector<glm::vec3> &polygon) {
   bool result = false;
   const int n = polygon.size();
-  for (int i = 0; i < n - 1; i++) {
-    int j = i + 1;
+  for (int i = 0; i < n; i++) {
+    int j = (i + 1) % n;
     // point.y must be between the two edge endpoints
     if (((polygon[i].y < point.y && polygon[j].y>= point.y)
           || (polygon[j].y < point.y && polygon[i].y >= point.y))
@@ -78,7 +78,9 @@ bool pointInPolygon(const glm::vec3 &point,
         (polygon[i].x +
           (point.y-polygon[i].y) / (polygon[j].y-polygon[i].y) * (polygon[j].x-polygon[i].x)
          > point.x);
-      result ^= crosses;
+      if (crosses) {
+        result = !result;
+      }
     }
   }
   return result;
@@ -167,13 +169,6 @@ float segmentLineIntersection(
   float s = l1.x != l0.x
     ? (x - l0.x) / (l1.x - l0.x)
     : (y - l0.y) / (l1.y - l0.y);
-  /*
-  if (fabs(t) < 1 || fabs(s) < 1) {
-    LOG(DEBUG) << start << " - " << end << " // " << l0 << " - " << l1 
-      << " ?? " << glm::vec2(x, y)
-      << " || t: " << t << " s: " << s << '\n';
-  }
-  */
   if (t >= 1 || t <= 0 || s <= 0 || s >= 1) {
     return NO_INTERSECTION;
   }

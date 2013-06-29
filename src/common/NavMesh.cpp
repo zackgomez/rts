@@ -19,7 +19,6 @@ struct NavMesh::HalfEdge {
 };
 
 struct NavMesh::Face {
-  Vertex **verts;
   HalfEdge *he;
 };
 
@@ -65,8 +64,6 @@ NavMesh::NavMesh(const std::vector<std::vector<glm::vec3> > &faces) {
 
     // add faces
     Face *face = new Face;
-    face->verts = new Vertex*[n];
-    for (int i = 0; i < n; i++) face->verts[i] = verts[i];
 
     // add half edges
     std::vector<HalfEdge *> he(n);
@@ -171,13 +168,13 @@ glm::vec3 NavMesh::getCenter(const Face *f) {
 }
 
 NavMesh::Face* NavMesh::getContainingPolygon(const glm::vec3& p) const {
-  for (auto face: faces_) {
-    HalfEdge *face_he = face->he;
+  for (auto face : faces_) {
+    HalfEdge *he = face->he;
     std::vector<glm::vec3> polypoints;
     do {
-      polypoints.push_back(face_he->start->position);
-      face_he = face_he->next;
-    } while (face_he != face->he);
+      polypoints.push_back(he->start->position);
+      he = he->next;
+    } while (he != face->he);
     if (pointInPolygon(p, polypoints)) {
       return face;
     }
@@ -228,8 +225,6 @@ std::tuple<glm::vec3, glm::vec3, float> NavMesh::firstIntersectingEdge(
   }
 
   if (best_edge) {
-    LOG(DEBUG) << "edge faces: " << best_edge->face
-      << ", " << best_edge->flip->face << '\n';
     return std::make_tuple(
       best_edge->start->position,
       best_edge->next->start->position,
@@ -254,12 +249,13 @@ std::vector<glm::vec3> NavMesh::refinePath(
       i++;
       continue;
     }
-    LOG(DEBUG) << cur << " - " << next << " || " << e0 << " - " << e1
-      << " @ " << t << '\n';
     // on intersection, set current node to closer vertex of target point
     float l0_sq = glm::dot(next - e0, next - e0);
     float l1_sq = glm::dot(next - e1, next - e1);
-    cur = (l0_sq < l1_sq) ? e0 : e1;
+    // Slightly offset past the line, assume's the polygon is convex
+    cur = (l0_sq < l1_sq)
+      ? e0 - (e1 - e0) * 0.01f
+      : e1 - (e0 - e1) * 0.01f;
     output.push_back(cur);
     // now keep trying to move to the same point again
   }
