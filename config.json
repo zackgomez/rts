@@ -36,7 +36,8 @@
       "basic_bullet"  : "models/projectile.obj",
       "victory_point" : "models/vic_point.obj",
       "req_point"     : "models/req.obj",
-      "cube"          : "models/cube.obj"
+      "cube"          : "models/cube.obj",
+      "hero"          : "models/Master Chief.obj"
     },
     "textures" :
     {
@@ -108,8 +109,8 @@
 
   "unit" :
   {
-    "model"        : "unit",
-    "modelSize"    : 0.8
+    "model"        : "hero",
+    "modelSize"    : 0.025
   },
 
   "projectile" :
