@@ -221,7 +221,7 @@ void GameController::renderExtra(float dt) {
         glm::translate(glm::mat4(1.f), e->getPosition() + glm::vec3(0, 0, 0.1f)),
         glm::vec3(2 * action_.range));
 
-    //renderCircleColor(transform, glm::vec4(0, 0, 1, 1));
+    renderCircleColor(transform, glm::vec4(0, 0, 1, 1.5));
   }
 
   // TODO(zack): bit of hack here
