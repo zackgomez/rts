@@ -23,6 +23,10 @@ class NavMesh {
       std::function<void(void)> faceCallback,
       std::function<void(const glm::vec3 &)> vertCallback) const;
 
+  // returns e0, e1, t
+  std::tuple<glm::vec3, glm::vec3, float> firstIntersectingEdge(
+    const glm::vec3 &start,
+    const glm::vec3 &end) const;
   // calculates a path between two points
   const std::vector<glm::vec3>
     getPath(const glm::vec3& start, const glm::vec3& end) const;
@@ -42,6 +46,9 @@ class NavMesh {
   static std::vector<glm::vec3> reconstructPath(
     const std::map<const Face *, const Face *> &came_from,
     const Face *current_face);
+  std::vector<glm::vec3> refinePath(
+    const glm::vec3 &start,
+    std::vector<glm::vec3> input) const;
 
   // gets the midpoint of a halfedge
   static glm::vec3 getMidpoint(const HalfEdge *he);

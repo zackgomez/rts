@@ -145,6 +145,41 @@ float rayAABB2Intersection(
   return rayAABBNIntersection<2>(&origin[0], &dir[0], &center[0], &size[0]);
 }
 
+float segmentLineIntersection(
+    const glm::vec2 &start,
+    const glm::vec2 &end,
+    const glm::vec2 &l0,
+    const glm::vec2 &l1) {
+  float denom =
+    (start.x - end.x) * (l0.y - l1.y)
+    - (start.y - end.y) * (l0.x - l1.x);
+  float x = 
+    (start.x * end.y - end.x * start.y) * (l0.x - l1.x)
+    - (start.x - end.x) * (l0.x * l1.y - l1.x * l0.y);
+  float y = 
+    (start.x * end.y - end.x * start.y) * (l0.y - l1.y)
+    - (start.y - end.y) * (l0.x * l1.y - l1.x * l0.y);
+  x /= denom;
+  y /= denom;
+  float t = end.x != start.x
+    ? (x - start.x) / (end.x - start.x)
+    : (y - start.y) / (end.y - start.y);
+  float s = l1.x != l0.x
+    ? (x - l0.x) / (l1.x - l0.x)
+    : (y - l0.y) / (l1.y - l0.y);
+  /*
+  if (fabs(t) < 1 || fabs(s) < 1) {
+    LOG(DEBUG) << start << " - " << end << " // " << l0 << " - " << l1 
+      << " ?? " << glm::vec2(x, y)
+      << " || t: " << t << " s: " << s << '\n';
+  }
+  */
+  if (t >= 1 || t <= 0 || s <= 0 || s >= 1) {
+    return NO_INTERSECTION;
+  }
+  return t;
+}
+
 float boxBoxCollision(
     const Rect &rect1,
     const glm::vec2 &v1,

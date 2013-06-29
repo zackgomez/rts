@@ -201,6 +201,75 @@ std::vector<glm::vec3> NavMesh::reconstructPath(
   return ret;
 }
 
+std::tuple<glm::vec3, glm::vec3, float> NavMesh::firstIntersectingEdge(
+    const glm::vec3 &start,
+    const glm::vec3 &end) const {
+  float best_t = glm::length(end - start);
+  HalfEdge *best_edge = nullptr;
+   // stupid implementation, use quad tree when available
+  for (int i = 0; i < halfedges_.size(); i++) {
+    auto *he = halfedges_[i];
+    if (he == he->next) {
+      continue;
+    }
+
+    if (!he->face || (he->face && he->flip->face)) {
+      continue;
+    }
+    float t = segmentLineIntersection(
+      glm::vec2(start),
+      glm::vec2(end),
+      glm::vec2(he->start->position),
+      glm::vec2(he->next->start->position));
+    if (t != NO_INTERSECTION && t < best_t) {
+      best_t = t;
+      best_edge = he;
+    }
+  }
+
+  if (best_edge) {
+    LOG(DEBUG) << "edge faces: " << best_edge->face
+      << ", " << best_edge->flip->face << '\n';
+    return std::make_tuple(
+      best_edge->start->position,
+      best_edge->next->start->position,
+      best_t);
+  }
+  return std::make_tuple(glm::vec3(), glm::vec3(), NO_INTERSECTION);
+}
+
+std::vector<glm::vec3> NavMesh::refinePath(
+    const glm::vec3 &start,
+    std::vector<glm::vec3> input) const {
+  std::vector<glm::vec3> output;
+  auto cur = start;
+  // start point should not be not the output
+  for (int i = 0; i < input.size() - 1;) {
+    auto next = input[i];
+    glm::vec3 e0, e1;
+    float t;
+    std::tie(e0, e1, t) = firstIntersectingEdge(cur, next);
+    // if direct line of site, just toss this node;
+    if (t == NO_INTERSECTION) {
+      i++;
+      continue;
+    }
+    LOG(DEBUG) << cur << " - " << next << " || " << e0 << " - " << e1
+      << " @ " << t << '\n';
+    // on intersection, set current node to closer vertex of target point
+    float l0_sq = glm::dot(next - e0, next - e0);
+    float l1_sq = glm::dot(next - e1, next - e1);
+    cur = (l0_sq < l1_sq) ? e0 : e1;
+    output.push_back(cur);
+    // now keep trying to move to the same point again
+  }
+  // TODO invariant that all nodes were visited
+
+  // push final waypoint
+  output.push_back(input.back());
+  return output;
+}
+
 const std::vector<glm::vec3> NavMesh::getPath(const glm::vec3 &start,
     const glm::vec3 &end) const {
   std::vector<glm::vec3> path;
@@ -244,10 +313,9 @@ const std::vector<glm::vec3> NavMesh::getPath(const glm::vec3 &start,
 
     // If we've reached the destination, backtrack and return
     if (current_face == end_face) {
-      auto ret = reconstructPath(came_from, current_face);
-      ret.push_back(end);
-      // TODO refine path
-      return ret;
+      auto path = reconstructPath(came_from, current_face);
+      path.push_back(end);
+      return refinePath(start, path);
     }
 
     open.erase(current_face);

@@ -36,6 +36,12 @@ bool pointInPolygon(const glm::vec3 &point,
 
 const float NO_INTERSECTION = -1.f;
 
+float segmentLineIntersection(
+  const glm::vec2 &start,
+  const glm::vec2 &end,
+  const glm::vec2 &l0,
+  const glm::vec2 &l1);
+
 // returns time of intersection or NO_INTERSECTION
 // NOTE this will not return an intersection if the origin lies on
 // a box plane
