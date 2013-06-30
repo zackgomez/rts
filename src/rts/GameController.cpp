@@ -91,6 +91,7 @@ GameController::~GameController() {
 
 void GameController::onCreate() {
   SDL_ShowCursor(0);
+  SDL_WM_GrabInput(SDL_GRAB_ON);
   // TODO(zack): delete texture
   glGenTextures(1, &visTex_);
   glBindTexture(GL_TEXTURE_2D, visTex_);
@@ -201,6 +202,7 @@ void GameController::onCreate() {
 
 void GameController::onDestroy() {
   SDL_ShowCursor(1);
+  SDL_WM_GrabInput(SDL_GRAB_OFF);
   Renderer::get()->setEntityOverlayRenderer(Renderer::EntityOverlayRenderer());
   getUI()->clearWidgets();
   glDeleteTextures(1, &visTex_);
@@ -590,9 +592,6 @@ void GameController::keyPress(SDL_keysym keysym) {
       renderNavMesh_ = !renderNavMesh_;
     } else if (key == SDLK_BACKSPACE) {
       Renderer::get()->resetCameraRotation();
-    } else if (key == SDLK_h) {
-      // Debug commands
-      SDL_WM_GrabInput(SDL_GRAB_ON);
     } else if (!player_->getSelection().empty()) {
       // Handle unit commands
       // Order types
