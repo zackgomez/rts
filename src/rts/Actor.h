@@ -35,13 +35,12 @@ class Actor : public GameEntity {
   }
 
   struct UIInfo {
-    glm::vec2 health;
-    glm::vec2 health_bars;
+    std::vector<glm::vec2> healths;
     glm::vec2 mana;
     glm::vec2 production;
     glm::vec2 capture;
   };
-  const UIInfo& getUIInfo() const {
+  UIInfo getUIInfo() const {
     return uiInfo_;
   }
 

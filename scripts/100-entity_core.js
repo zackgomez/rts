@@ -440,11 +440,22 @@ function entityGetUIInfo(entity) {
   }
   
   if (entity.maxHealth_) {
-    ui_info.health = [entity.health_, entity.maxHealth_];
+    var bars = entity.bars_ ? entity.bars_ : 1;
+    var max_bars = entity.maxBars_ ? entity.maxBars_ : 1;
+
+    ui_info.healths = [];
+    var current = 0;
+    for (var i = 0; i < max_bars; i++) {
+      var cur = 0;
+      if (i < bars - 1) {
+        cur = entity.maxHealth_;
+      } else if (i == bars - 1) {
+        cur = entity.health_;
+      }
+      ui_info.healths.push([cur, entity.maxHealth_]);
+    }
   }
-  if (entity.maxBars_) {
-    ui_info.health_bars = [entity.bars_, entity.maxBars_];
-  }
+
   if (entity.maxMana_) {
     ui_info.mana = [entity.mana_, entity.maxMana_];
   }

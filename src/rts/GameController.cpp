@@ -757,48 +757,53 @@ void renderEntity(
     drawRectCenter(pos, size, cap_color);
   }
 
-  if (ui_info.health[1]) {
+  if (!ui_info.healths.empty()) {
     // Display the health bar
     // Health bar flashes white on red (instead of green on red) when it has
     // recently taken damage.
     glm::vec4 healthBarColor = vec4Param("hud.actor_health.color");
     float timeSinceDamage = Clock::secondsSince(actor->getLastTookDamage());
+    // TODO flash the specific bar, not the entire thingy
     if (timeSinceDamage < fltParam("hud.actor_health.flash_duration")) {
       healthBarColor = vec4Param("hud.actor_health.flash_color");
     }
-
-    float health = ui_info.health[0];
-    float max_health = ui_info.health[1];
-    int8_t ndiv = 0;
-    if (ui_info.health_bars[1]) {
-      ndiv = ui_info.health_bars[1];
-      max_health = max_health * ui_info.health_bars[1];
-      health += ui_info.health[1] * std::max(ui_info.health_bars[0] - 1, 0.f);
+    float total_health = 0.f;
+    for (auto h : ui_info.healths) {
+      total_health += h[1];
     }
 
-    float healthFact = glm::max(
-        0.f,
-        health / max_health);
     glm::vec2 size = vec2Param("hud.actor_health.dim");
-    glm::vec2 pos = coord - vec2Param("hud.actor_health.pos");
-    // Red underneath for max health
-    drawRectCenter(pos, size, vec4Param("hud.actor_health.bg_color"));
-    // Green on top for current health
-    pos.x -= size.x * (1.f - healthFact) / 2.f;
-    size.x *= healthFact;
-    drawRectCenter(pos, size, healthBarColor);
-    if (ndiv > 1) {
-      glm::vec2 size = vec2Param("hud.actor_health.dim");
-      glm::vec2 pos = coord - vec2Param("hud.actor_health.pos");
-      pos -= size / 2.f;
-      float w = size.x / ndiv;
-      float x = pos.x + w;
-      for (int i = 0; i < ndiv; i++, x += w) {
+    glm::vec2 bottom_left = coord - vec2Param("hud.actor_health.pos") - size / 2.f;
+    float s = 0.f;
+    bool first = true;
+    for (auto h : ui_info.healths) {
+      float health = h[0];
+      float max_health = h[1];
+      float bar_size = max_health / total_health;
+      glm::vec2 p = bottom_left + glm::vec2(size.x * s / total_health, 0.f);
+
+      glm::vec2 total_size = glm::vec2(bar_size * size.x, size.y);
+      glm::vec2 total_center = p + total_size / 2.f;
+
+      glm::vec2 cur_size = glm::vec2(
+        total_size.x * health / max_health,
+        size.y);
+      glm::vec2 cur_center = p + cur_size / 2.f;
+
+      s += max_health;
+
+      // Red underneath for max health
+      drawRectCenter(total_center, total_size, vec4Param("hud.actor_health.bg_color"));
+      // Green on top for current health
+      drawRectCenter(cur_center, cur_size, healthBarColor);
+      if (!first) {
+        // Draw separator
         drawLine(
-            glm::vec2(x, pos.y),
-            glm::vec2(x, pos.y + size.y),
-            glm::vec4(0, 0, 0, 1));
+          glm::vec2(p.x, p.y),
+          glm::vec2(p.x, p.y + size.y),
+          glm::vec4(0, 0, 0, 1));
       }
+      first = false;
     }
   }
 

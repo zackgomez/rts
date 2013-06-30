@@ -178,6 +178,7 @@ void Actor::update(float dt) {
 
 void Actor::updateUIInfo() {
   memset(&uiInfo_, 0, sizeof(uiInfo_));
+  uiInfo_.healths = std::vector<glm::vec2>();
 
   using namespace v8;
   auto script = Game::get()->getScript();
@@ -198,15 +199,14 @@ void Actor::updateUIInfo() {
     uiInfo_.production = script->jsToVec2(
         Handle<Array>::Cast(jsinfo->Get(prod)));
   }
-  auto health = String::New("health");
-  if (jsinfo->Has(health)) {
-    uiInfo_.health = script->jsToVec2(
-        Handle<Array>::Cast(jsinfo->Get(health)));
-  }
-  auto health_bars = String::New("health_bars");
-  if (jsinfo->Has(health_bars)) {
-    uiInfo_.health_bars = script->jsToVec2(
-        Handle<Array>::Cast(jsinfo->Get(health_bars)));
+  auto healths = String::New("healths");
+  if (jsinfo->Has(healths)) {
+    auto bars = Handle<Array>::Cast(jsinfo->Get(healths));
+    for (int i = 0; i < bars->Length(); i++) {
+      glm::vec2 health = script->jsToVec2(
+        Handle<Array>::Cast(bars->Get(i)));
+      uiInfo_.healths.push_back(health);
+    }
   }
   auto mana = String::New("mana");
   if (jsinfo->Has(mana)) {
