@@ -49,7 +49,7 @@ var EntityDefs = {
       reinforce: new ReinforceAction({
         req_cost: 10,
         cooldown_name: 'reinforce',
-        cooldown: 1.0,
+        cooldown: 5.0,
         icon: 'repair_icon',
       }),
       snipe: new SnipeAction({
@@ -97,7 +97,7 @@ var EntityDefs = {
       reinforce: new ReinforceAction({
         req_cost: 5,
         cooldown_name: 'reinforce',
-        cooldown: 1.0,
+        cooldown: 4.0,
         icon: 'repair_icon',
       }),
       teleport: new TeleportAction({
