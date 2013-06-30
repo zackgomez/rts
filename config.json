@@ -101,7 +101,7 @@
   "global" :
   {
     "defaultColor"  : [1, 1, 1],
-    "pointsToWin"   : 100,
+    "pointsToWin"   : 500,
     "startingRequisition" : 100,
 
     "bumpSpeed" : 1.0

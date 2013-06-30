@@ -4,7 +4,7 @@
 var Weapons = {
   rifle: {
     type: 'ranged',
-    range: 6.0,
+    range: 8.0,
     damage: 10.0,
     cooldown_name: 'rifle_cd',
     cooldown: 1.0,
@@ -34,8 +34,8 @@ var EntityDefs = {
     default_state: UnitIdleState,
     size: [0.6, 0.6, 1.25],
     speed: 3.0,
-    sight: 8.0,
-    health: 20.0,
+    sight: 6.0,
+    health: 100.0,
     health_bars: 5,
     capture_range: 1.0,
     mana: 100,
@@ -56,7 +56,7 @@ var EntityDefs = {
         range: 7.0,
         cooldown_name: 'snipe',
         cooldown: 10.0,
-        damage: 50.0,
+        damage: 100.0,
         mana_cost: 50,
         icon: 'snipe_icon',
       }),
@@ -82,8 +82,9 @@ var EntityDefs = {
     default_state: UnitIdleState,
     size: [0.6, 0.6, 1.0],
     speed: 4.5,
-    sight: 7.0,
+    sight: 9.0,
     health: 50.0,
+    health_bars: 4,
     capture_range: 1.0,
     mana: 100,
     weapon: 'advanced_melee',
@@ -93,8 +94,14 @@ var EntityDefs = {
       };
     },
     actions: {
+      reinforce: new ReinforceAction({
+        req_cost: 5,
+        cooldown_name: 'reinforce',
+        cooldown: 1.0,
+        icon: 'repair_icon',
+      }),
       teleport: new TeleportAction({
-        range: 6.0,
+        range: 8.0,
         cooldown_name: 'teleport',
         cooldown: 2.0,
         mana_cost: 55,
