@@ -435,6 +435,7 @@ function entityGetUIInfo(entity) {
   if (entity.hasProperty(P_CAPPABLE)) {
     if (entity.cappingPlayerID_) {
       ui_info.capture = [entity.capAmount_, 5.0];
+      ui_info.cappingPlayerID = entity.cappingPlayerID_;
     }
     return ui_info;
   }

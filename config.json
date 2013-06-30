@@ -94,6 +94,10 @@
       "cooldown" : {
         "vert" : "shaders/texsimple.v.glsl",
         "frag" : "shaders/cooldown_rect.f.glsl"
+      },
+      "vp_indicator" : {
+        "vert" : "shaders/texsimple.v.glsl",
+        "frag" : "shaders/vp_indicator.f.glsl"
       }
     }
   },
@@ -243,6 +247,12 @@
         "center"     : [60.0, 25],
         "dim"        : [70, 50],
         "fontHeight" : 32.0,
+        "bgcolor"    : [0.4, 0.4, 0.4, 1.0]
+      },
+      "vpindicators" : {
+        "type"       : "CustomWidget",
+        "center"     : [50.0, 100],
+        "dim"        : [30, 30],
         "bgcolor"    : [0.4, 0.4, 0.4, 1.0]
       }
     },

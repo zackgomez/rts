@@ -12,6 +12,7 @@ class UI;
 class UIWidget;
 UIWidget *createWidget(const std::string &paramName);
 void createWidgets(UI *ui, const std::string &widgetGroupName);
+glm::vec2 uiVec2Param(const std::string &name);
 
 class UIWidget {
  public:
@@ -24,6 +25,7 @@ class UIWidget {
 
   virtual glm::vec2 getCenter() const = 0;
   virtual glm::vec2 getSize() const = 0;
+
 
   UI *getUI() {
     return ui_;
