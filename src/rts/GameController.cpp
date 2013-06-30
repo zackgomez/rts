@@ -660,7 +660,10 @@ id_t GameController::selectEntity(const glm::vec2 &screenCoord) const {
 std::set<id_t> GameController::selectEntities(
   const glm::vec2 &start, const glm::vec2 &end, id_t pid) const {
   assertPid(pid);
-  std::set<id_t> ret;
+  // returnedEntities is a subset of those the user boxed, depending on some 
+  // selection criteria
+  std::set<GameEntity *> boxedEntities;
+  std::set<id_t> returnedEntities;
 
   glm::vec2 terrainStart = Renderer::get()->screenToTerrain(start).xy;
   glm::vec2 terrainEnd = Renderer::get()->screenToTerrain(end).xy;
@@ -674,6 +677,7 @@ std::set<id_t> GameController::selectEntities(
   glm::vec2 center = (terrainStart + terrainEnd) / 2.f;
   glm::vec2 size = glm::abs(terrainEnd - terrainStart);
   Rect dragRect(center, size, 0.f);
+  bool onlySelectUnits = false;
 
   for (const auto &pair : Renderer::get()->getEntities()) {
     auto e = pair.second;
@@ -684,11 +688,27 @@ std::set<id_t> GameController::selectEntities(
     auto ge = (GameEntity *) e;
     if (ge->getPlayerID() == pid
         && boxInBox(dragRect, ge->getRect(Renderer::get()->getSimDT()))) {
-      ret.insert(ge->getID());
+      boxedEntities.insert(ge);
+      std::cout << ge->hasProperty(GameEntity::P_UNIT) << std::endl;
+      if (ge->hasProperty(GameEntity::P_UNIT)) {
+        onlySelectUnits = true;
+      }
     }
   }
-
-  return ret;
+  if (onlySelectUnits) {
+    for (const auto &e : boxedEntities) {
+      if (e->hasProperty(GameEntity::P_UNIT)) {
+        returnedEntities.insert(e->getID());
+      }
+    }
+  }
+  else {
+    // Just grab all
+    for (const auto &e : boxedEntities) {
+      returnedEntities.insert(e->getID());
+    }
+  }
+  return returnedEntities;
 }
 
 void GameController::highlight(const glm::vec2 &mapCoord) {
