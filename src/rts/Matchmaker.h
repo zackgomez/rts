@@ -33,6 +33,7 @@ class Matchmaker {
 
   std::vector<Player *> waitPlayers();
   void signalReady(const std::string &mode);
+  void signalStop();
 
   /*
    * Sets up a debug game with a local and dummy player on the 2 player debug

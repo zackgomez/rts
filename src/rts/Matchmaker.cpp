@@ -61,6 +61,7 @@ NetConnectionPtr attemptConnection(
 
 const std::string Matchmaker::MODE_SINGLEPLAYER = "sp";
 const std::string Matchmaker::MODE_MATCHMAKING = "mm";
+const std::string MODE_QUIT = "q";
 
 Matchmaker::Matchmaker(const Json::Value &player)
   : name_(player["name"].asString()),
@@ -81,6 +82,9 @@ std::vector<Player *> Matchmaker::waitPlayers() {
     return doServerSetup(
         strParam("local.matchmakingHost"),
         strParam("local.matchmakingPort"));
+  } else if (mode_ == MODE_QUIT) {
+    // TODO(zack): this is lolz
+    exit(0);
   } else {
     invariant_violation("Unknown matchmaking mode");
   }
@@ -90,6 +94,11 @@ void Matchmaker::signalReady(const std::string &mode) {
   invariant(mode == MODE_SINGLEPLAYER || mode == MODE_MATCHMAKING,
       "unknown matchmaking mode");
   mode_ = mode;
+  playersReadyCondVar_.notify_all();
+}
+
+void Matchmaker::signalStop() {
+  mode_ = MODE_QUIT;
   playersReadyCondVar_.notify_all();
 }
 

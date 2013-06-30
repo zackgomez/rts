@@ -46,6 +46,7 @@ void MatchmakerController::onCreate() {
 
   ((StaticWidget*)getUI()->getWidget("matchmaker_menu.quit_button"))
     ->setOnPressListener([=] () -> bool {
+        matchmaker_->signalStop();
         Renderer::get()->signalShutdown();
         return true;
       });
