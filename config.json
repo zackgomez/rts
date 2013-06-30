@@ -280,7 +280,7 @@
     "single_player_button" : {
       "type"       : "TextWidget",
       "text"       : "Start Singleplayer",
-      "pos"        : [35.0, 35.0],
+      "pos"        : [35.0, 25.0],
       "dim"        : [30.0, 5.0],
       "fontHeight" : 24.0,
       "bgcolor"    : [0.8, 0.8, 0.8, 0.8]
@@ -288,7 +288,15 @@
     "matchmaking_button" : {
       "type"       : "TextWidget",
       "text"       : "Start Matchmaking",
-      "pos"        : [35.0, 45.0],
+      "pos"        : [35.0, 35.0],
+      "dim"        : [30.0, 5.0],
+      "fontHeight" : 24.0,
+      "bgcolor"    : [0.8, 0.8, 0.8, 0.8]
+    },
+    "quit_button" : {
+      "type"       : "TextWidget",
+      "text"       : "Quit Game",
+      "pos"        : [35.0, 50.0],
       "dim"        : [30.0, 5.0],
       "fontHeight" : 24.0,
       "bgcolor"    : [0.8, 0.8, 0.8, 0.8]

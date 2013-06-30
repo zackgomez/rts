@@ -43,6 +43,12 @@ void MatchmakerController::onCreate() {
         matchmaker_->signalReady(Matchmaker::MODE_MATCHMAKING);
         return true;
         });
+
+  ((StaticWidget*)getUI()->getWidget("matchmaker_menu.quit_button"))
+    ->setOnPressListener([=] () -> bool {
+        Renderer::get()->signalShutdown();
+        return true;
+      });
         
   matchmaker_->registerListener([=] (const std::string &s) {
     infoWidget_->addMessage(s);
