@@ -60,7 +60,7 @@ var EntityDefs = {
         range: 5.0,
         cooldown_name: 'heal',
         cooldown: 8.0,
-        amount: 10.0,
+        amount: 50.0,
         mana_cost: 40,
         icon: 'heal_icon',
         hotkey: 'w',
