@@ -505,7 +505,6 @@ void GameController::mouseMotion(const glm::vec2 &screenCoord) {
 }
 
 void GameController::keyPress(SDL_keysym keysym) {
-  static const SDLKey MAIN_KEYS[] = {SDLK_q, SDLK_w, SDLK_e, SDLK_r};
   SDLKey key = keysym.sym;
   // TODO(zack) watch out for pausing here
   // Actions available in all player states:
@@ -569,7 +568,7 @@ void GameController::keyPress(SDL_keysym keysym) {
       renderNavMesh_ = !renderNavMesh_;
     } else if (key == SDLK_BACKSPACE) {
       Renderer::get()->resetCameraRotation();
-    } else if (key == SDLK_g) {
+    } else if (key == SDLK_h) {
       // Debug commands
       SDL_WM_GrabInput(SDL_GRAB_ON);
     } else if (!player_->getSelection().empty()) {
@@ -596,15 +595,12 @@ void GameController::keyPress(SDL_keysym keysym) {
         action["order"] = order;
         Game::get()->addAction(player_->getPlayerID(), action);
       } else {
-        // TODO(zack): use a map for MAIN_KEYS here
-        for (unsigned int i = 0; i < 4; i++) {
-          if (key == MAIN_KEYS[i]) {
-            auto sel = player_->getSelection().begin();
-            auto actor = (const Actor *)Game::get()->getEntity(*sel);
-            auto actions = actor->getActions();
-            if (i < actions.size()) {
-              handleUIAction(actions[i]);
-            }
+        auto sel = player_->getSelection().begin();
+        auto actor = (const Actor *)Game::get()->getEntity(*sel);
+        auto actions = actor->getActions();
+        for (auto &action : actions) {
+          if (action.hotkey && action.hotkey == key) {
+            handleUIAction(action);
             break;
           }
         }
@@ -868,7 +864,6 @@ void GameController::setEntityHotkey(id_t eid, char hotkey) {
 
   auto entity = Game::get()->getEntity(eid);
   if (entity && entity->getPlayerID() == player_->getPlayerID()) {
-    LOG(DEBUG) << "set hotkey " << eid << " " << hotkey << '\n';
     std::set<id_t> newsel;
     newsel.insert(eid);
     savedSelection_[hotkey] = newsel;
