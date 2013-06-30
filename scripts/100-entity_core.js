@@ -63,6 +63,9 @@ function entityInit(entity, params) {
   if (def.actions) {
     entity.actions_ = def.actions;
   }
+  if (def.hotkey) {
+    registerEntityHotkey(entity.getID(), def.hotkey);
+  }
 
   entity.state_ = new entity.defaultState_(params);
 
@@ -241,13 +244,12 @@ function entityResolve(entity, dt) {
     entity.onTookDamage();
   }
   // If out of health, check if there is a bar to remove, else die
-  while (entity.health_ <= 0.0) {
+  if (entity.health_ < 0.0) {
     if (entity.maxBars_ && entity.bars_ > 1) {
       entity.bars_ -= 1;
-      entity.health_ += entity.maxHealth_;
+      entity.health_ = entity.maxHealth_;
     } else {
       entity.destroy();
-      break;
     }
   }
 
