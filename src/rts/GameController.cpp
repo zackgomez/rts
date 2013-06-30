@@ -689,22 +689,13 @@ std::set<id_t> GameController::selectEntities(
     if (ge->getPlayerID() == pid
         && boxInBox(dragRect, ge->getRect(Renderer::get()->getSimDT()))) {
       boxedEntities.insert(ge);
-      std::cout << ge->hasProperty(GameEntity::P_UNIT) << std::endl;
       if (ge->hasProperty(GameEntity::P_UNIT)) {
         onlySelectUnits = true;
       }
     }
   }
-  if (onlySelectUnits) {
-    for (const auto &e : boxedEntities) {
-      if (e->hasProperty(GameEntity::P_UNIT)) {
-        returnedEntities.insert(e->getID());
-      }
-    }
-  }
-  else {
-    // Just grab all
-    for (const auto &e : boxedEntities) {
+  for (const auto &e : boxedEntities) {
+    if (!onlySelectUnits || e->hasProperty(GameEntity::P_UNIT)) {
       returnedEntities.insert(e->getID());
     }
   }
