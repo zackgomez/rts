@@ -856,7 +856,10 @@ void renderEntity(
       s += max_health;
 
       // Red underneath for max health
-      drawRectCenter(total_center, total_size, vec4Param("hud.actor_health.bg_color"));
+      glm::vec4 bgcolor = health > 0
+        ? vec4Param("hud.actor_health.bg_color")
+        : vec4Param("hud.actor_health.disabled_bg_color");
+      drawRectCenter(total_center, total_size, bgcolor);
       // Green on top for current health
       drawRectCenter(cur_center, cur_size, healthBarColor);
       if (!first) {
