@@ -11,7 +11,7 @@ namespace rts {
 
 Actor::Actor(id_t id, const std::string &name, const Json::Value &params)
   : GameEntity(id, name, params) {
-
+  resetUIInfo();
   setMeshName(strParam("model"));
   setScale(glm::vec3(fltParam("modelSize")));
   resetTexture();
@@ -176,9 +176,13 @@ void Actor::update(float dt) {
   checkJSResult(result, try_catch.Exception(), "entityUpdate:");
 }
 
-void Actor::updateUIInfo() {
+void Actor::resetUIInfo() {
   memset(&uiInfo_, 0, sizeof(uiInfo_));
   uiInfo_.healths = std::vector<glm::vec2>();
+}
+
+void Actor::updateUIInfo() {
+  resetUIInfo();
 
   using namespace v8;
   auto script = Game::get()->getScript();
@@ -217,6 +221,12 @@ void Actor::updateUIInfo() {
   if (jsinfo->Has(capture)) {
     uiInfo_.capture = script->jsToVec2(
         Handle<Array>::Cast(jsinfo->Get(capture)));
+  }
+
+  auto cap_pid = String::New("cappingPlayerID");
+  uiInfo_.capture_pid = 0;
+  if (jsinfo->Has(cap_pid)) {
+    uiInfo_.capture_pid = jsinfo->Get(cap_pid)->IntegerValue();
   }
 }
 

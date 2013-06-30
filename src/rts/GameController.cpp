@@ -212,16 +212,6 @@ void GameController::renderExtra(float dt) {
   renderDragRect(leftDrag_, leftStart_, lastMousePos_, dt);
   renderHighlights(highlights_, dt);
 
-  // render cursor
-  const auto res = Renderer::get()->getResolution();
-  const float cursor_size = std::min(res.x, res.y) * 0.05f;
-  GLuint texture = getCursorTexture();
-  drawTextureCenter(
-      lastMousePos_,
-      glm::vec2(cursor_size),
-      texture, glm::vec4(0, 0, 1, 1));
-
-
   if (!action_.name.empty()) {
     GameEntity *e = Game::get()->getEntity(action_.owner);
     invariant(e, "Unable to find action owner");
@@ -239,6 +229,52 @@ void GameController::renderExtra(float dt) {
         glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 0.15f)), glm::vec3(0.8)),
         glm::vec4(0.6, 0.6, 0.2, 0.75f));
   }
+
+  // render VP controller indicators
+  std::vector<Actor*> vp;
+  for (auto eid : Renderer::get()->getEntities()) {
+    if (!eid.second->hasProperty(GameEntity::P_GAMEENTITY)) continue;
+    GameEntity *e = (GameEntity*) eid.second;
+    if (e->getName() == "victory_point") {
+      vp.push_back((Actor*) e);
+    }
+  }
+  for (int i = 0; i < vp.size(); i++) {
+    glm::vec2 size = vec2Param("ui.widgets.vpindicators.dim");
+    glm::vec2 center = uiVec2Param("ui.widgets.vpindicators.center") + 
+      glm::vec2((i - (int)(vp.size() / 2)) * size.x * 1.5, 0);
+    id_t pid = vp[i]->getPlayerID();
+    glm::vec4 ownerColor = vec4Param("ui.widgets.vpindicators.bgcolor");
+    if (pid != NO_PLAYER) 
+      ownerColor = glm::vec4(Game::get()->getPlayer(pid)->getColor(), 1.0);
+    glm::vec4 capColor = vec4Param("ui.widgets.vpindicators.bgcolor");
+    id_t cap_pid = vp[i]->getUIInfo().capture_pid;
+    if (cap_pid != NO_PLAYER) 
+      capColor = glm::vec4(Game::get()->getPlayer(cap_pid)->getColor(), 1.0);
+    glm::vec2 capture = vp[i]->getUIInfo().capture;
+    Shader *shader = ResourceManager::get()->getShader("vp_indicator");
+    shader->makeActive();
+    if (capture[1] > 0) {
+      shader->uniform1f("capture", capture[0] / capture[1]);
+    } else {
+      shader->uniform1f("capture", 0);
+    }
+    shader->uniform4f("player_color", ownerColor);
+    shader->uniform4f("cap_color", capColor);
+    shader->uniform4f("texcoord", glm::vec4(0, 0, 1, 1));
+    drawShaderCenter(center, size);
+  }
+
+  // render cursor
+  glDisable(GL_DEPTH_TEST);
+  const auto res = Renderer::get()->getResolution();
+  const float cursor_size = std::min(res.x, res.y) * 0.05f;
+  GLuint texture = getCursorTexture();
+  drawTextureCenter(
+      lastMousePos_,
+      glm::vec2(cursor_size),
+      texture, glm::vec4(0, 0, 1, 1));
+  glEnable(GL_DEPTH_TEST);
 }
 
 GLuint GameController::getCursorTexture() const {
