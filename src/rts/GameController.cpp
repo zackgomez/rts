@@ -110,12 +110,10 @@ void GameController::onCreate() {
         leftDragMinimap_ = true;
       }
       if (button == SDL_BUTTON_RIGHT) {
-        std::cout << "minimap pos = " << pos << std::endl;
         glm::vec3 v3;
         v3.x = pos.x * Renderer::get()->getMapSize().x;
         v3.y = -1 * pos.y * Renderer::get()->getMapSize().y;
         Json::Value order = handleRightClick(0, NULL, v3);
-        std::cout << "order = " << order << std::endl;
         attemptIssueOrder(order);
       }
     });
@@ -450,7 +448,8 @@ void GameController::attemptIssueOrder(Json::Value order) {
 
 
 
-Json::Value GameController::handleRightClick(const id_t eid, const GameEntity *entity, 
+Json::Value GameController::handleRightClick(const id_t eid, 
+  const GameEntity *entity, 
   const glm::vec3 &loc) {
   Json::Value order;
   // TODO(connor) make right click actions on minimap

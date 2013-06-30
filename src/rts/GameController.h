@@ -31,7 +31,7 @@ class GameController : public Controller {
   virtual void keyPress(SDL_keysym key) override;
   virtual void keyRelease(SDL_keysym key) override;
 
-	virtual void updateMapShader(Shader *shader) const;
+  virtual void updateMapShader(Shader *shader) const;
 
   void setEntityHotkey(id_t eid, char hotkey);
 
@@ -64,17 +64,17 @@ class GameController : public Controller {
   std::vector<MapHighlight> highlights_;
   std::map<id_t, float> entityHighlights_;
 
-	bool renderNavMesh_;
+  bool renderNavMesh_;
 
   // TODO(zack): move to renderer/engine as a camera velocity
   glm::vec2 cameraPanDir_;
   float zoom_;
 
-	GLuint visTex_;
+  GLuint visTex_;
 
 
   void minimapUpdateCamera(const glm::vec2 &screenCoord);
-	void handleUIAction(const UIAction &action);
+  void handleUIAction(const UIAction &action);
   // returns NO_ENTITY if no acceptable entity near click
   id_t selectEntity(const glm::vec2 &screenCoord) const;
   std::set<id_t> selectEntities(const glm::vec2 &start,
