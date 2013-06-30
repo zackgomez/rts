@@ -48,6 +48,7 @@ var ActionPrototype = {
 function ReinforceAction(params) {
   this.targeting = TargetingTypes.NONE;
   this.params = params;
+  this.params.hotkey = 'g';
 
   this.getTooltip = function (entity) {
     return 'Reinforce' +

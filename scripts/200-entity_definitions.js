@@ -47,12 +47,6 @@ var EntityDefs = {
       };
     },
     actions: {
-      reinforce: new ReinforceAction({
-        req_cost: 10,
-        cooldown_name: 'reinforce',
-        cooldown: 5.0,
-        icon: 'repair_icon',
-      }),
       snipe: new SnipeAction({
         range: 7.0,
         cooldown_name: 'snipe',
@@ -60,6 +54,7 @@ var EntityDefs = {
         damage: 100.0,
         mana_cost: 50,
         icon: 'snipe_icon',
+        hotkey: 'q',
       }),
       heal: new HealAction({
         range: 5.0,
@@ -68,6 +63,13 @@ var EntityDefs = {
         amount: 10.0,
         mana_cost: 40,
         icon: 'heal_icon',
+        hotkey: 'w',
+      }),
+      reinforce: new ReinforceAction({
+        req_cost: 10,
+        cooldown_name: 'reinforce',
+        cooldown: 5.0,
+        icon: 'repair_icon',
       }),
     },
   },
@@ -96,18 +98,19 @@ var EntityDefs = {
       };
     },
     actions: {
-      reinforce: new ReinforceAction({
-        req_cost: 5,
-        cooldown_name: 'reinforce',
-        cooldown: 4.0,
-        icon: 'repair_icon',
-      }),
       teleport: new TeleportAction({
         range: 8.0,
         cooldown_name: 'teleport',
         cooldown: 2.0,
         mana_cost: 55,
         icon: 'teleport_icon',
+        hotkey: 'q',
+      }),
+      reinforce: new ReinforceAction({
+        req_cost: 5,
+        cooldown_name: 'reinforce',
+        cooldown: 4.0,
+        icon: 'repair_icon',
       }),
     },
   },
@@ -134,12 +137,14 @@ var EntityDefs = {
         req_cost: 100,
         time_cost: 5.0,
         icon: 'ranged_icon',
+        hotkey: 'q',
       }),
       prod_melee: new ProductionAction({
         prod_name: 'melee_unit',
         req_cost: 70,
         time_cost: 2.5,
         icon: 'melee_icon',
+        hotkey: 'w',
       }),
     },
   },

@@ -238,6 +238,7 @@ void Actor::updateActions() {
 
   auto name = String::New("name");
   auto icon = String::New("icon");
+  auto hotkey = String::New("hotkey");
   auto tooltip = String::New("tooltip");
   auto targeting = String::New("targeting");
   auto range = String::New("range");
@@ -250,6 +251,8 @@ void Actor::updateActions() {
     uiaction.owner = getID();
     uiaction.name = *String::AsciiValue(jsaction->Get(name));
     uiaction.icon = *String::AsciiValue(jsaction->Get(icon));
+    std::string hotkey_str = *String::AsciiValue(jsaction->Get(hotkey));
+    uiaction.hotkey = !hotkey_str.empty() ? hotkey_str[0] : '\0';
     uiaction.tooltip = *String::AsciiValue(jsaction->Get(tooltip));
     uiaction.targeting = static_cast<UIAction::TargetingType>(
         jsaction->Get(targeting)->IntegerValue());

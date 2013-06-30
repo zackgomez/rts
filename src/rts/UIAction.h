@@ -21,6 +21,7 @@ struct UIAction {
 
   id_t owner;
   std::string name;
+  char hotkey;
   std::string icon;
   std::string tooltip;
   TargetingType targeting;

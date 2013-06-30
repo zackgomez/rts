@@ -415,6 +415,7 @@ function entityGetActions(entity) {
     var action = entity.actions_[action_name];
     actions.push({
       name: action_name,
+      hotkey: action.params.hotkey,
       icon: action.getIcon(entity),
       tooltip: action.getTooltip(entity),
       targeting: action.targeting,
