@@ -30,6 +30,7 @@ Renderer::Renderer()
     resolution_(vec2Param("local.resolution")),
     timeMultiplier_(1.f),
     lastTickTime_(Clock::now()),
+    firstTick_(Clock::now()),
     lastRender_(Clock::now()),
     mapSize_(0.f),
     nextEntityID_(STARTING_EID) {

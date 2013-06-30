@@ -53,7 +53,8 @@
       "snipe_icon" : "images/snipe_icon.png",
       "repair_icon" : "images/repair_icon.png",
       "cursor_normal" : "images/cursor-normal.png",
-      "cursor_action" : "images/cursor-action.png"
+      "cursor_action" : "images/cursor-action.png",
+      "lightning1" : "images/lightning1.png"
     },
     "depthFields" : {
       "steamLogo"  : {
@@ -98,6 +99,10 @@
       "vp_indicator" : {
         "vert" : "shaders/texsimple.v.glsl",
         "frag" : "shaders/vp_indicator.f.glsl"
+      },
+      "scorebar" : {
+        "vert" : "shaders/texsimple.v.glsl",
+        "frag" : "shaders/scorebar.f.glsl"
       }
     }
   },
@@ -238,22 +243,28 @@
       },
       "vicdisplay-1" : {
         "type"       : "TextWidget",
-        "center"     : [40.0, 25],
+        "center"     : [30.0, 25],
         "dim"        : [70, 50],
         "fontHeight" : 32.0,
         "bgcolor"    : [0.4, 0.4, 0.4, 1.0]
       },
       "vicdisplay-2" : {
         "type"       : "TextWidget",
-        "center"     : [60.0, 25],
+        "center"     : [70.0, 25],
         "dim"        : [70, 50],
         "fontHeight" : 32.0,
         "bgcolor"    : [0.4, 0.4, 0.4, 1.0]
       },
       "vpindicators" : {
         "type"       : "CustomWidget",
-        "center"     : [50.0, 100],
+        "center"     : [50.0, 60],
         "dim"        : [30, 30],
+        "bgcolor"    : [0.4, 0.4, 0.4, 1.0]
+      },
+      "scorebar"     : {
+        "type"       : "CustomWidget",
+        "center"     : [50.0, 20],
+        "dim"        : [30.0, 20],
         "bgcolor"    : [0.4, 0.4, 0.4, 1.0]
       }
     },

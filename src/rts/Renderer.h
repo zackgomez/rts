@@ -77,6 +77,9 @@ class Renderer {
   void setLastTickTime(const Clock::time_point &t) {
     lastTickTime_ = t;
   }
+  float getRenderTime() {
+    return Clock::secondsSince(firstTick_);
+  }
   void setTimeMultiplier(float t) {
     timeMultiplier_ = t;
   }
@@ -170,6 +173,7 @@ class Renderer {
   // Used to interpolate, last tick seen, and dt since last tick
   Clock::time_point lastTickTime_;
   float simdt_;
+  Clock::time_point firstTick_;
   // For updating purely render aspects
   Clock::time_point lastRender_;
   float renderdt_;

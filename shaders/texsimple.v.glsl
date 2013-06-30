@@ -17,4 +17,6 @@ void main()
     frag_texcoord = vec2(position.x, position.y) + vec2(0.5f); //[0,1]
     frag_texcoord *= size; // [0, size]
     frag_texcoord += tc0; // [tc0, tc1]
+
+    gl_TexCoord[0] = gl_MultiTexCoord0;
 }

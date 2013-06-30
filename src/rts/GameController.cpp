@@ -230,6 +230,63 @@ void GameController::renderExtra(float dt) {
         glm::vec4(0.6, 0.6, 0.2, 0.75f));
   }
 
+  //TODO(connor): maybe make these a function elsewhere
+  // render scorebar
+  int t1score = Game::get()->getVictoryPoints(STARTING_TID);
+  int t2score = Game::get()->getVictoryPoints(STARTING_TID + 1);
+  int totalscore = fltParam("global.pointsToWin");
+  float factor =
+    (float)(totalscore - t2score) / (2 * totalscore - t1score - t2score);
+  Shader *shader = ResourceManager::get()->getShader("scorebar");
+  shader->makeActive();
+  glm::vec2 center = uiVec2Param("ui.widgets.scorebar.center");
+  glm::vec2 size = uiVec2Param("ui.widgets.scorebar.dim");
+  shader->uniform1f("factor", factor);
+
+  // get team colors
+  glm::vec4 t1color;
+  glm::vec4 t2color;
+  id_t pid = STARTING_PID;
+  while (true) {
+    const Player *p = Game::get()->getPlayer(pid);
+    if (p->getTeamID() == STARTING_TID) {
+      t1color = glm::vec4(p->getColor(), 1);
+      break;
+    }
+    pid++;
+  }
+  pid = STARTING_PID;
+  while (true) {
+    const Player *p = Game::get()->getPlayer(pid);
+    if (p->getTeamID() == STARTING_TID + 1) {
+      t2color = glm::vec4(p->getColor(), 1);
+      break;
+    }
+    pid++;
+  }
+  glm::vec2 vp_count(0);
+  for (auto eid : Renderer::get()->getEntities()) {
+    if (!eid.second->hasProperty(GameEntity::P_GAMEENTITY)) continue;
+    GameEntity *e = (GameEntity*) eid.second;
+    if (e->getName() == "victory_point") {
+      if (e->getTeamID() == STARTING_TID) vp_count[0] += 1;
+      if (e->getTeamID() == STARTING_TID + 1) vp_count[1] += 1;
+    }
+  }
+  shader->uniform2f("vp_count", vp_count);
+  shader->uniform4f("color1", t1color);
+  shader->uniform4f("color2", t2color);
+  shader->uniform4f("texcoord", glm::vec4(0, 0, 1, 1));
+  GLuint tex = ResourceManager::get()->getTexture("lightning1");
+  glActiveTexture(GL_TEXTURE0);
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, tex);
+  shader->uniform1i("tex", 0);
+  float t = Renderer::get()->getRenderTime();
+  shader->uniform1f("t", t);
+
+  drawShaderCenter(center, size);
+
   // render VP controller indicators
   std::vector<Actor*> vp;
   for (auto eid : Renderer::get()->getEntities()) {
