@@ -83,8 +83,7 @@ std::vector<Player *> Matchmaker::waitPlayers() {
         strParam("local.matchmakingHost"),
         strParam("local.matchmakingPort"));
   } else if (mode_ == MODE_QUIT) {
-    // TODO(zack): this is lolz
-    exit(0);
+    throw matchmaker_quit_exception();
   } else {
     invariant_violation("Unknown matchmaking mode");
   }

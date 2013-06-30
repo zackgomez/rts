@@ -24,6 +24,9 @@ class matchmaker_exception : public exception_with_trace {
   }
 };
 
+class matchmaker_quit_exception : public std::exception {
+};
+
 class Matchmaker {
  public:
   static const std::string MODE_SINGLEPLAYER;
@@ -31,6 +34,7 @@ class Matchmaker {
   
   explicit Matchmaker(const Json::Value &playerConfig);
 
+  // Returns players array, or throws an exception
   std::vector<Player *> waitPlayers();
   void signalReady(const std::string &mode);
   void signalStop();

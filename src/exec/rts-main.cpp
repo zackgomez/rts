@@ -114,6 +114,9 @@ void matchmakerThread() {
   while (players.empty()) {
     try {
       players = matchmaker.waitPlayers();
+    } catch (rts::matchmaker_quit_exception &e) {
+      LOG(INFO) << "got quit signal from matchmaker\n";
+      return;
     } catch (std::exception &e) {
       LOG(FATAL) << "caught exception: " << e.what() << '\n';
     }
