@@ -63,6 +63,9 @@ function entityInit(entity, params) {
   if (def.actions) {
     entity.actions_ = def.actions;
   }
+  if (def.hotkey) {
+    registerEntityHotkey(entity.getID(), def.hotkey);
+  }
 
   entity.state_ = new entity.defaultState_(params);
 

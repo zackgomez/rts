@@ -521,21 +521,20 @@ void GameController::keyPress(SDL_keysym keysym) {
       cameraPanDir_.y = 1.f;
     }
   // Control group binding and recalling
-  } else if (key >= '0' && key <= '9') {
-    int ctrlIndex = key - '0';
+  } else if (savedSelection_.count(key)) {
     if (ctrl_) {
-      savedSelection_[ctrlIndex] = player_->getSelection();
+      savedSelection_[key] = player_->getSelection();
     } else {
       // center camera for double tapping
-      if (!savedSelection_[ctrlIndex].empty()){
-        if (player_->getSelection() == savedSelection_[ctrlIndex]) {
+      if (!savedSelection_[key].empty()){
+        if (player_->getSelection() == savedSelection_[key]) {
           id_t eid = (*player_->getSelection().begin());
           auto entity = Game::get()->getEntity(eid);
           glm::vec3 pos = entity->getPosition();
           Renderer::get()->setCameraLookAt(pos);
         }
       }
-      player_->setSelection(savedSelection_[ctrlIndex]);
+      player_->setSelection(savedSelection_[key]);
     }
   } else if (key == SDLK_DOWN) {
     if (alt_) {
@@ -849,6 +848,20 @@ void GameController::updateMapShader(Shader *shader) const {
   glActiveTexture(GL_TEXTURE0);
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, visTex_);
+}
+
+void GameController::setEntityHotkey(id_t eid, char hotkey) {
+  invariant(
+    hotkey == '`' || hotkey - '0' >= 0 && hotkey - '0' <= 9,
+    "invalid hotkey character");
+
+  auto entity = Game::get()->getEntity(eid);
+  if (entity && entity->getPlayerID() == player_->getPlayerID()) {
+    LOG(DEBUG) << "set hotkey " << eid << " " << hotkey << '\n';
+    std::set<id_t> newsel;
+    newsel.insert(eid);
+    savedSelection_[hotkey] = newsel;
+  }
 }
 
 void GameController::handleUIAction(const UIAction &action) {

@@ -3,6 +3,7 @@
 #include "common/util.h"
 #include "rts/Actor.h"
 #include "rts/Game.h"
+#include "rts/GameController.h"
 #include "rts/Player.h"
 #include "rts/Renderer.h"
 #include "rts/ResourceManager.h"
@@ -116,6 +117,23 @@ static Handle<Value> jsGetNearbyEntities(const Arguments &args) {
         checkJSResult(ret, try_catch.Exception(), "getNearbyEntities callback:");
         return ret->BooleanValue();
       });
+
+  return Undefined();
+}
+
+static Handle<Value> jsRegisterEntityHotkey(const Arguments &args) {
+  invariant(args.Length() == 2, "expected 2 args: entity, hotkey");
+  HandleScope scope(args.GetIsolate());
+
+  auto script = Game::get()->getScript();
+
+  id_t eid = args[0]->IntegerValue();
+  std::string hotkey_str = *String::AsciiValue(args[1]);
+  invariant(hotkey_str.size() == 1, "expected one char hotkey");
+
+  const int argc = 1;
+  auto gc = (GameController *)Renderer::get()->getController();
+  gc->setEntityHotkey(eid, hotkey_str[0]);
 
   return Undefined();
 }
@@ -447,6 +465,9 @@ void GameScript::init() {
   global->Set(
       String::New("GetNearbyEntities"),
       FunctionTemplate::New(jsGetNearbyEntities));
+  global->Set(
+      String::New("registerEntityHotkey"),
+      FunctionTemplate::New(jsRegisterEntityHotkey));
 
   context_.Reset(isolate_, Context::New(isolate_, nullptr, global));
   Context::Scope context_scope(isolate_, context_);

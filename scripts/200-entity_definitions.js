@@ -40,6 +40,7 @@ var EntityDefs = {
     capture_range: 1.0,
     mana: 100,
     weapon: 'rifle',
+    hotkey: '1',
     getEffects: function (entity) {
       return {
         mana_regen: makeManaRegenEffect(2.5),
@@ -87,6 +88,7 @@ var EntityDefs = {
     health_bars: 4,
     capture_range: 1.0,
     mana: 100,
+    hotkey: '2',
     weapon: 'advanced_melee',
     getEffects: function (entity) {
       return {
@@ -119,6 +121,7 @@ var EntityDefs = {
     size: [2.5, 2.5, 1.65],
     sight: 5.0,
     health: 700.0,
+    hotkey: '`',
     getEffects: function (entity) {
       return {
         req_gen: makeReqGenEffect(1.0),
