@@ -109,6 +109,15 @@ void GameController::onCreate() {
       if (button == SDL_BUTTON_LEFT) {
         leftDragMinimap_ = true;
       }
+      if (button == SDL_BUTTON_RIGHT) {
+        std::cout << "minimap pos = " << pos << std::endl;
+        glm::vec3 v3;
+        v3.x = pos.x * Renderer::get()->getMapSize().x;
+        v3.y = -1 * pos.y * Renderer::get()->getMapSize().y;
+        Json::Value order = handleRightClick(0, NULL, v3);
+        std::cout << "order = " << order << std::endl;
+        attemptIssueOrder(order);
+      }
     });
 
   auto actionFunc = [=]() -> std::vector<UIAction> {
@@ -415,44 +424,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
       }
     }
   } else if (button == SDL_BUTTON_RIGHT) {
-    // TODO(connor) make right click actions on minimap
-    // If there is an order, it is canceled by right click
-    if (!order_.empty() || !action_.name.empty()) {
-      order_.clear();
-      action_.name.clear();
-    } else {
-      // Otherwise default to some right click actions
-      // If right clicked on enemy unit (and we have a selection)
-      // go attack them
-      if (entity && entity->getTeamID() != player_->getTeamID()
-          && !player_->getSelection().empty()) {
-        // Visual feedback
-        highlightEntity(entity->getID());
-
-        // Queue up action
-        if (entity->hasProperty(GameEntity::P_CAPPABLE)) {
-          order["type"] = OrderTypes::CAPTURE;
-        } else {
-          order["type"] = OrderTypes::ATTACK;
-        }
-        order["entity"] = toJson(player_->getSelection());
-        order["target_id"] = toJson(eid);
-      // If we have a selection, and they didn't click on the current
-      // selection, move them to target
-      } else if (!player_->getSelection().empty()
-          && (!entity || !player_->getSelection().count(eid))) {
-        //loc.x/y wil be -/+HUGE_VAL if outside map bounds
-        if (loc.x != HUGE_VAL && loc.y != HUGE_VAL && loc.x != -HUGE_VAL && loc.y != -HUGE_VAL) {
-          // Visual feedback
-          highlight(glm::vec2(loc.x, loc.y));
-
-          // Queue up action
-          order["type"] = OrderTypes::MOVE;
-          order["entity"] = toJson(player_->getSelection());
-          order["target"] = toJson(loc);
-        }
-      }
-    }
+    order = handleRightClick(eid, entity, loc);
   } else if (button == SDL_BUTTON_WHEELUP) {
     Renderer::get()->zoomCamera(-fltParam("local.mouseZoomSpeed"));
   } else if (button == SDL_BUTTON_WHEELDOWN) {
@@ -462,13 +434,64 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
   if (!Game::get()->isPaused()) {
     // Mutate, if game isn't paused
     player_->setSelection(newSelect);
-    if (order.isMember("type")) {
-      PlayerAction action;
-      action["type"] = ActionTypes::ORDER;
-      action["order"] = order;
-      Game::get()->addAction(player_->getPlayerID(), action);
+    attemptIssueOrder(order);
+  }
+}
+
+void GameController::attemptIssueOrder(Json::Value order) {
+  if (!Game::get()->isPaused() && order.isMember("type")) {
+    PlayerAction action;
+    action["type"] = ActionTypes::ORDER;
+    action["order"] = order;
+    Game::get()->addAction(player_->getPlayerID(), action);
+  }
+}
+
+
+
+
+Json::Value GameController::handleRightClick(const id_t eid, const GameEntity *entity, 
+  const glm::vec3 &loc) {
+  Json::Value order;
+  // TODO(connor) make right click actions on minimap
+  // If there is an order, it is canceled by right click
+  if (!order_.empty() || !action_.name.empty()) {
+    order_.clear();
+    action_.name.clear();
+  } else {
+    // Otherwise default to some right click actions
+    // If right clicked on enemy unit (and we have a selection)
+    // go attack them
+    if (entity && entity->getTeamID() != player_->getTeamID()
+        && !player_->getSelection().empty()) {
+      // Visual feedback
+      highlightEntity(entity->getID());
+
+      // Queue up action
+      if (entity->hasProperty(GameEntity::P_CAPPABLE)) {
+        order["type"] = OrderTypes::CAPTURE;
+      } else {
+        order["type"] = OrderTypes::ATTACK;
+      }
+      order["entity"] = toJson(player_->getSelection());
+      order["target_id"] = toJson(eid);
+    // If we have a selection, and they didn't click on the current
+    // selection, move them to target
+    } else if (!player_->getSelection().empty()
+        && (!entity || !player_->getSelection().count(eid))) {
+      //loc.x/y wil be -/+HUGE_VAL if outside map bounds
+      if (loc.x != HUGE_VAL && loc.y != HUGE_VAL && loc.x != -HUGE_VAL && loc.y != -HUGE_VAL) {
+        // Visual feedback
+        highlight(glm::vec2(loc.x, loc.y));
+
+        // Queue up action
+        order["type"] = OrderTypes::MOVE;
+        order["entity"] = toJson(player_->getSelection());
+        order["target"] = toJson(loc);
+      }
     }
   }
+  return order;
 }
 
 void GameController::mouseUp(const glm::vec2 &screenCoord, int button) {

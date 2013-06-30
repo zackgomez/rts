@@ -8,6 +8,7 @@
 namespace rts {
 
 class LocalPlayer;
+class GameEntity;
 struct UIAction;
 
 struct MapHighlight {
@@ -80,8 +81,12 @@ class GameController : public Controller {
       const glm::vec2 &end, id_t pid) const;
   void highlight(const glm::vec2 &mapCoord);
   void highlightEntity(id_t eid);
+  Json::Value handleRightClick(const id_t eid, const GameEntity *entity, 
+    const glm::vec3 &loc);
 
   GLuint getCursorTexture() const;
+
+  void attemptIssueOrder(Json::Value order);
 
   // For control groups
   std::map<char, std::set<id_t>> savedSelection_;
