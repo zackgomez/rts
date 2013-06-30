@@ -65,18 +65,29 @@ function ReinforceAction(params) {
       }
       return true;
     });
+    var disabled_part = false;
+    for (var i = 0; i < entity.parts_.length; i++) {
+      if (entity.parts_[i].getHealth() <= 0.0) {
+        disabled_part = i;
+      }
+    }
     return GetRequisition(entity.getPlayerID()) >= this.params.req_cost
-    && entity.bars_ < entity.maxBars_
-    && near_base;
+      && disabled_part !== false
+      && near_base;
   }
 
   this.exec = function (entity, target) {
     Log(entity.getID(), 'repairing');
-    if (!entity.maxBars_) {
-      throw new Error('Trying to repair entity without bars');
+    if (!entity.parts_) {
+      throw new Error('Trying to repair entity without parts');
     }
 
-    entity.bars_ += 1;
+    for (var i = 0; i < entity.parts_.length; i++) {
+      if (entity.parts_[i].getHealth() <= 0) {
+        entity.parts_[i].setHealth(entity.parts_[i].getMaxHealth());
+        break;
+      }
+    }
     AddRequisition(entity.getPlayerID(), -this.params.req_cost, entity.getID());
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
   }

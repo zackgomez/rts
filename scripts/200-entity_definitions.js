@@ -35,11 +35,28 @@ var EntityDefs = {
     size: [0.6, 0.6, 1.25],
     speed: 3.0,
     sight: 6.0,
-    health: 100.0,
-    health_bars: 5,
     capture_range: 1.0,
     mana: 100,
     weapon: 'rifle',
+    getParts: function (entity) {
+      return [
+        makePart({
+          health: 100,
+        }),
+        makePart({
+          health: 100,
+        }),
+        makePart({
+          health: 100,
+        }),
+        makePart({
+          health: 100,
+        }),
+        makePart({
+          health: 100,
+        }),
+      ];
+    },
     hotkey: '1',
     getEffects: function (entity) {
       return {
@@ -68,7 +85,7 @@ var EntityDefs = {
       reinforce: new ReinforceAction({
         req_cost: 10,
         cooldown_name: 'reinforce',
-        cooldown: 5.0,
+        cooldown: 7.0,
         icon: 'repair_icon',
       }),
     },
@@ -86,12 +103,26 @@ var EntityDefs = {
     size: [0.6, 0.6, 1.0],
     speed: 4.5,
     sight: 9.0,
-    health: 50.0,
-    health_bars: 4,
     capture_range: 1.0,
     mana: 100,
     hotkey: '2',
     weapon: 'advanced_melee',
+    getParts: function (entity) {
+      return [
+        makePart({
+          health: 50,
+        }),
+        makePart({
+          health: 50,
+        }),
+        makePart({
+          health: 50,
+        }),
+        makePart({
+          health: 50,
+        }),
+      ];
+    },
     getEffects: function (entity) {
       return {
         mana_regen: makeManaRegenEffect(5.0),
@@ -109,7 +140,7 @@ var EntityDefs = {
       reinforce: new ReinforceAction({
         req_cost: 5,
         cooldown_name: 'reinforce',
-        cooldown: 4.0,
+        cooldown: 5.0,
         icon: 'repair_icon',
       }),
     },
@@ -123,7 +154,13 @@ var EntityDefs = {
     ],
     size: [2.5, 2.5, 1.65],
     sight: 5.0,
-    health: 700.0,
+    getParts: function (entity) {
+      return [
+        makePart({
+          health: 700,
+        }),
+      ];
+    },
     hotkey: '`',
     getEffects: function (entity) {
       return {

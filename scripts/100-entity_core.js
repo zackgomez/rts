@@ -32,17 +32,12 @@ function entityInit(entity, params) {
   if (def.default_state) {
     entity.defaultState_ = def.default_state;
   }
-  if (def.health) {
-    entity.maxHealth_ = def.health;
-    entity.health_ = entity.maxHealth_;
+  if (def.getParts) {
+    entity.parts_ = def.getParts();
   }
   if (def.mana) {
-      entity.maxMana_ = def.mana;
-      entity.mana_ = entity.maxMana_;
-  }
-  if (def.health_bars) {
-    entity.maxBars_ = def.health_bars;
-    entity.bars_ = entity.maxBars_;
+    entity.maxMana_ = def.mana;
+    entity.mana_ = entity.maxMana_;
   }
   if (def.cap_time) {
     entity.capTime_ = def.cap_time;
@@ -237,18 +232,32 @@ function entityResolve(entity, dt) {
   }
 
   // Health
-  var healing = entity.deltas.healing + dt * entity.deltas.healing_rate;
-  var health_delta = healing - entity.deltas.damage;
-  entity.health_ = Math.min(entity.health_ + health_delta, entity.maxHealth_);
-  if (entity.deltas.damage) {
-    entity.onTookDamage();
-  }
-  // If out of health, check if there is a bar to remove, else die
-  if (entity.health_ < 0.0) {
-    if (entity.maxBars_ && entity.bars_ > 1) {
-      entity.bars_ -= 1;
-      entity.health_ = entity.maxHealth_;
-    } else {
+  if (entity.parts_) {
+    var healing = entity.deltas.healing + dt * entity.deltas.healing_rate;
+    var health_delta = healing - entity.deltas.damage;
+
+    if (entity.deltas.damage) {
+      entity.onTookDamage();
+    }
+
+    var candidate_parts = [];
+    for (var i = 0; i < entity.parts_.length; i++) {
+      if (entity.parts_[i].getHealth() > 0) {
+        candidate_parts.push(i);
+      }
+    }
+    if (candidate_parts.length > 0) {
+      var idx = candidate_parts[Math.floor(Math.random()*candidate_parts.length)];
+      entity.parts_[idx].addHealth(health_delta);
+    }
+    var alive = false;
+    for (var i = 0; i < entity.parts_.length; i++) {
+      if (entity.parts_[i].getHealth() > 0) {
+        alive = true;
+        break;
+      }
+    }
+    if (!alive) {
       entity.destroy();
     }
   }
@@ -305,8 +314,8 @@ function entityHandleMessage(entity, msg) {
       entity.deltas.capture[from_pid] = msg.cap;
     }
   } else if (msg.type == MessageTypes.ATTACK) {
-    if (!entity.maxHealth_) {
-      Log('Entity without health received attack message');
+    if (!entity.parts_) {
+      Log('Entity without parts received attack message');
       return;
     }
     if (msg.damage < 0) {
@@ -443,20 +452,13 @@ function entityGetUIInfo(entity) {
     return ui_info;
   }
   
-  if (entity.maxHealth_) {
-    var bars = entity.bars_ ? entity.bars_ : 1;
-    var max_bars = entity.maxBars_ ? entity.maxBars_ : 1;
-
-    ui_info.healths = [];
-    var current = 0;
-    for (var i = 0; i < max_bars; i++) {
-      var cur = 0;
-      if (i < bars - 1) {
-        cur = entity.maxHealth_;
-      } else if (i == bars - 1) {
-        cur = entity.health_;
-      }
-      ui_info.healths.push([cur, entity.maxHealth_]);
+  ui_info.healths = [];
+  if (entity.parts_) {
+    for (var i = 0; i < entity.parts_.length; i++) {
+      ui_info.healths.push([
+          entity.parts_[i].getHealth(),
+          entity.parts_[i].getMaxHealth(),
+        ]);
     }
   }
 
