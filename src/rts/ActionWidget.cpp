@@ -60,6 +60,10 @@ void ActionWidget::render(float dt) {
 
     if (action_hover && hoverTimer_ > fltParam("local.tooltipDelay")) {
       tooltip = action.tooltip;
+      if (action.hotkey) {
+        tooltip += "\nHotkey: ";
+        tooltip += action.hotkey;
+      }
       draw_tooltip = true;
     }
 
