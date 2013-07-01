@@ -19,7 +19,12 @@ void main()
     if (2 * capture - 1.0 > -p.y) {
       color = cap_color;
     }
-    float highlight = max(0, dot(normal, lightdir));
+    vec4 diffuse = color * max(0, dot(normal, lightdir));
+    // specular component
+    float shininess = 20.f;
+    vec3 eyeVec = normalize(-normal);  // frag/lightpos are in eye space
+    vec3 lightVec = normalize(reflect(lightdir, normal));
+    float specPower = pow(max(dot(eyeVec, lightVec), 0.0), shininess);
 
-    gl_FragColor = color + highlight * vec4(0.5);
+    gl_FragColor = color + diffuse + specPower * vec4(1.0);
 }
