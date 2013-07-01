@@ -192,6 +192,46 @@ function SnipeAction(params) {
 }
 SnipeAction.prototype = ActionPrototype;
 
+function CenteredAOEAction(params) {
+  this.targeting = TargetingTypes.NONE;
+  this.params = params;
+
+  this.getTooltip = function (entity) {
+    return 'Spinning Storm' +
+      '\nDeals AOE damage in a radius around the unit' +
+      '\nDamage: ' + this.params.damage +
+      '\nRange: ' + this.params.radius +
+      '\nMana Cost: ' + this.params.mana_cost +
+      '\nCooldown: ' + this.params.cooldown;
+  }
+
+  this.hasResources = function (entity) {
+    return entity.mana_ > this.params.mana_cost;
+  }
+
+  this.exec = function (entity, target) {
+    entity.mana_ -= this.params.mana_cost;
+    entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
+
+    Log('AOE blast at', entity.getPosition2(), 'for', this.params.damage);
+    var damage = this.params.damage;
+    entity.getNearbyEntities(
+      this.params.radius,
+      function (candidate) {
+        if (candidate.getTeamID() != entity.getTeamID()
+            && candidate.hasProperty(P_TARGETABLE)) {
+          SendMessage({
+            to: candidate.getID(),
+            from: entity.getID(),
+            type: MessageTypes.ATTACK,
+            damage: damage,
+          });
+        }
+      });
+  }
+}
+CenteredAOEAction.prototype = ActionPrototype;
+
 function HealAction(params) {
   this.targeting = TargetingTypes.ALLY;
   this.params = params;

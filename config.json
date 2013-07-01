@@ -37,24 +37,25 @@
       "victory_point" : "models/vic_point.obj",
       "req_point"     : "models/req.obj",
       "cube"          : "models/cube.obj",
-      "hero"          : "models/Master Chief.obj"
+      "hero"          : "models/Master Chief.obj",
+      "larry"         : "models/larry.obj"
     },
     "textures" :
     {
-      "minimap"    : "images/UI/minimap_underlay.png",
-      "unit_panel" : "images/UI/actor_underlay.png",
-      "topbar"     : "images/UI/top_bar_1280.png",
-      "vp"         : "images/vp-tex-1024.png",
-      "collision-tex" : "images/collision-tex-1024.png",
-      "melee_icon"  : "images/melee_icon.png",
-      "ranged_icon" : "images/ranged_icon.png",
-      "teleport_icon" : "images/teleport_icon.png",
-      "heal_icon" : "images/HealStyle1TestDark.png",
-      "snipe_icon" : "images/snipe_icon.png",
-      "repair_icon" : "images/repair_icon.png",
-      "cursor_normal" : "images/cursor-normal.png",
-      "cursor_action" : "images/cursor-action.png",
-      "lightning1" : "images/lightning1.png"
+      "minimap": "images/UI/minimap_underlay.png",
+      "unit_panel": "images/UI/actor_underlay.png",
+      "topbar": "images/UI/top_bar_1280.png",
+      "vp": "images/vp-tex-1024.png",
+      "collision-tex": "images/collision-tex-1024.png",
+      "melee_icon": "images/melee_icon.png",
+      "ranged_icon": "images/ranged_icon.png",
+      "teleport_icon": "images/teleport_icon.png",
+      "heal_icon": "images/HealStyle1TestDark.png",
+      "snipe_icon": "images/snipe_icon.png",
+      "repair_icon": "images/repair_icon.png",
+      "cursor_normal": "images/cursor-normal.png",
+      "cursor_action": "images/cursor-action.png",
+      "lightning1": "images/lightning1.png"
     },
     "depthFields" : {
       "steamLogo"  : {
@@ -118,8 +119,14 @@
 
   "unit" :
   {
-    "model"        : "hero",
-    "modelSize"    : 0.025
+    "model": "hero",
+    "modelSize": 0.025
+  },
+
+  "tanky_melee_unit":
+  {
+    "model" : "larry",
+    "modelSize" : 0.20
   },
 
   "projectile" :

@@ -16,6 +16,13 @@ var Weapons = {
     cooldown_name: 'advanced_melee_cd',
     cooldown: 0.5,
   },
+  tanky_melee: {
+    type: 'melee',
+    range: 1.0,
+    damage: 25.0,
+    cooldown_name: 'tanky_melee_cd',
+    cooldown: 1.5,
+  }
 }
 
 // --
@@ -145,6 +152,62 @@ var EntityDefs = {
       }),
     },
   },
+  tanky_melee_unit: {
+    properties: [
+      P_ACTOR,
+      P_UNIT,
+      P_TARGETABLE,
+      P_RENDERABLE,
+      P_COLLIDABLE,
+      P_MOBILE,
+    ],
+    default_state: UnitIdleState,
+    size: [1.6, 1.6, 1.0],
+    speed: 3.0,
+    sight: 6.0,
+    capture_range: 1.0,
+    mana: 80,
+    hotkey: '3',
+    weapon: 'tanky_melee',
+    getParts: function (entity) {
+      return [
+        makePart({
+          health: 150,
+        }),
+        makePart({
+          health: 150,
+        }),
+        makePart({
+          health: 150,
+        }),
+        makePart({
+          health: 150,
+        }),
+      ];
+    },
+    getEffects: function (entity) {
+      return {
+        mana_regen: makeManaRegenEffect(2.5),
+      };
+    },
+    actions: {
+      blast: new CenteredAOEAction({
+        mana_cost: 50,
+        radius: 3.0,
+        damage: 30,
+        cooldown: 15.0,
+        cooldown_name: 'centered_aoe_blast',
+        icon: 'melee_icon',
+        hotkey: 'q',
+      }),
+      reinforce: new ReinforceAction({
+        req_cost: 5,
+        cooldown_name: 'reinforce',
+        cooldown: 5.0,
+        icon: 'repair_icon',
+      }),
+    },
+  },
   base: {
     properties: [
       P_ACTOR,
@@ -182,6 +245,13 @@ var EntityDefs = {
         time_cost: 2.5,
         icon: 'melee_icon',
         hotkey: 'w',
+      }),
+      prod_tanky_melee: new ProductionAction({
+        prod_name: 'tanky_melee_unit',
+        req_cost: 190,
+        time_cost: 6.0,
+        icon: 'melee_icon',
+        hotkey: 'e',
       }),
     },
   },
