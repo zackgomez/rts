@@ -234,22 +234,40 @@ function entityResolve(entity, dt) {
   // Health
   if (entity.parts_) {
     var healing = entity.deltas.healing + dt * entity.deltas.healing_rate;
-    var health_delta = healing - entity.deltas.damage;
+    var damage = entity.deltas.damage;
+    var nparts = entity.parts_.length;
 
-    if (entity.deltas.damage) {
-      entity.onTookDamage();
-    }
-
-    var candidate_parts = [];
-    for (var i = 0; i < entity.parts_.length; i++) {
-      if (entity.parts_[i].getHealth() > 0) {
-        candidate_parts.push(i);
+    if (healing > 0) {
+      // Find part with lowest damage
+      var lowest_health = Infinity;
+      var best_ind = null;
+      for (var i = 0; i < nparts; i++) {
+        var cur = entity.parts_[i].getHealth();
+        if (cur < entity.parts_[i].getMaxHealth() < lowest_health) {
+          lowest_heath = cur;
+          best_ind = i;
+        }
+      }
+      if (best_ind) {
+        entity.parts_[best_ind].addHealth(healing);
       }
     }
-    if (candidate_parts.length > 0) {
-      var idx = candidate_parts[Math.floor(Math.random()*candidate_parts.length)];
-      entity.parts_[idx].addHealth(health_delta);
+
+    if (damage > 0) {
+      entity.onTookDamage();
+      // Pick the last part with health
+      var damaged_part = null;
+      for (var i = nparts - 1; i >= 0; i--) {
+        if (entity.parts_[i].getHealth() > 0) {
+          damaged_part = i;
+          break;
+        }
+      }
+      if (damaged_part) {
+        entity.parts_[damaged_part].addHealth(-damage);
+      }
     }
+
     var alive = false;
     for (var i = 0; i < entity.parts_.length; i++) {
       if (entity.parts_[i].getHealth() > 0) {
