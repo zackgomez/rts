@@ -29,6 +29,13 @@ void main()
     }
     float glow_falloff = 3 * (sin(max(vp_count.x, vp_count.y) * t) + 8);
     vec4 glow = max((1 - abs(factor - p.x) * glow_falloff), 0) * vec4(1, 1, 1, 1);
+    float fade_factor = max(0, (factor - abs(factor - p.x))) * 2; 
+    float red_alpha = 0.0;
+    if (p.x > 0.8 && factor >= 0.8) {
+      red_alpha = (p.x - 0.8) * 2.5 * (1 + sin(3 * t));
+    } else if (p.x < 0.2 && factor <= 0.2) {
+      red_alpha = (0.5 - 2.5 * p.x) * (1 + sin(3 * t));
+    }
 
-    gl_FragColor = color + max(0, (factor - abs(factor - p.x))) * 2 * texcolor + glow;
+    gl_FragColor = vec4(red_alpha, 0, 0, 1) + (1 - red_alpha) * (color + fade_factor * texcolor + glow);
 }
