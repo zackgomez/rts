@@ -33,5 +33,5 @@ void main()
       red_alpha = (radius - 0.8) * 5 * sin(3 * t);
     }
 
-    gl_FragColor = color + diffuse + specPower * vec4(1.0);
+    gl_FragColor = vec4(red_alpha, 0, 0, 1) + (1-red_alpha) * (color + diffuse + specPower * vec4(1.0));
 }
