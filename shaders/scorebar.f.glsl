@@ -30,5 +30,5 @@ void main()
     float glow_falloff = 3 * (sin(max(vp_count.x, vp_count.y) * t) + 8);
     vec4 glow = max((1 - abs(factor - p.x) * glow_falloff), 0) * vec4(1, 1, 1, 1);
 
-    gl_FragColor = color + (factor - abs(factor - p.x)) * 2 * texcolor + glow;
+    gl_FragColor = color + max(0, (factor - abs(factor - p.x))) * 2 * texcolor + glow;
 }
