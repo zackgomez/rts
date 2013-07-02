@@ -112,6 +112,7 @@ TickChecksum Game::checksum() {
   TickChecksum ret;
   ret.entity_checksum = chksum.getChecksum();
   ret.action_checksum = actionChecksummer_.getChecksum();
+  ret.random_checksum = random_->getLastValue();
   actionChecksummer_ = Checksum();
 
   return ret;
@@ -226,6 +227,11 @@ void Game::update(float dt) {
         LOG(ERROR) << tick_ << ": action checksum mismatch (theirs): "
           << remoteChecksum.action_checksum << " vs (ours): "
           << recordedChecksum.action_checksum << '\n';
+      }
+      if (remoteChecksum.random_checksum != recordedChecksum.random_checksum) {
+        LOG(ERROR) << tick_ << ": random checksum mismatch (theirs): "
+          << remoteChecksum.random_checksum << " vs (ours): "
+          << recordedChecksum.random_checksum << '\n';
       }
     }
   }
@@ -512,6 +518,7 @@ Json::Value TickChecksum::toJson() const {
   Json::Value ret;
   ret["action"] = action_checksum;
   ret["entity"] = entity_checksum;
+  ret["random"] = random_checksum;
   return ret;
 }
 };  // rts

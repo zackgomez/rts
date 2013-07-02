@@ -25,6 +25,7 @@ struct ChatMessage;
 struct TickChecksum {
   checksum_t entity_checksum;
   checksum_t action_checksum;
+  float random_checksum;
 
   TickChecksum() {}
   TickChecksum(const Json::Value &val);
