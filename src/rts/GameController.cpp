@@ -313,12 +313,19 @@ void GameController::renderExtra(float dt) {
     shader->makeActive();
     if (capture[1] > 0) {
       shader->uniform1f("capture", capture[0] / capture[1]);
+      if (pid == player_->getPlayerID()) {
+        shader->uniform1i("danger", 1);
+      } else {
+        shader->uniform1i("danger", 0);
+      }
     } else {
       shader->uniform1f("capture", 0);
+      shader->uniform1i("danger", 0);
     }
     shader->uniform4f("player_color", ownerColor);
     shader->uniform4f("cap_color", capColor);
     shader->uniform4f("texcoord", glm::vec4(0, 0, 1, 1));
+    shader->uniform1f("t", t);
     drawShaderCenter(center, size);
   }
 
