@@ -23,6 +23,10 @@ void checkJSResult(
   }
 }
 
+static Handle<Value> jsGameRandom(const Arguments &args) {
+  return Number::New(Game::get()->gameRandom());
+}
+
 static Handle<Value> jsGetEntity(const Arguments &args) {
   if (args.Length() < 1) return Undefined();
   HandleScope scope(args.GetIsolate());
@@ -104,19 +108,19 @@ static Handle<Value> jsGetNearbyEntities(const Arguments &args) {
   float radius = args[1]->NumberValue();
   Handle<Function> callback = Handle<Function>::Cast(args[2]);
 
-  const int argc = 1;
   Renderer::get()->getNearbyEntities(pos, radius,
-      [&](const ModelEntity *e) -> bool {
-        if (!e->hasProperty(GameEntity::P_GAMEENTITY)) {
-          return true;
-        }
-        TryCatch try_catch;
-        auto jsEntity = Game::get()->getScript()->getEntity(e->getID());
-        Handle<Value> argv[1] = {jsEntity};
-        auto ret = callback->Call(args.Holder(), argc, argv);
-        checkJSResult(ret, try_catch.Exception(), "getNearbyEntities callback:");
-        return ret->BooleanValue();
-      });
+    [&](const ModelEntity *e) -> bool {
+      if (!e->hasProperty(GameEntity::P_GAMEENTITY)) {
+        return true;
+      }
+      TryCatch try_catch;
+      auto jsEntity = Game::get()->getScript()->getEntity(e->getID());
+      const int argc = 1;
+      Handle<Value> argv[argc] = {jsEntity};
+      auto ret = callback->Call(args.Holder(), argc, argv);
+      checkJSResult(ret, try_catch.Exception(), "getNearbyEntities callback:");
+      return ret->BooleanValue();
+    });
 
   return Undefined();
 }
@@ -125,13 +129,10 @@ static Handle<Value> jsRegisterEntityHotkey(const Arguments &args) {
   invariant(args.Length() == 2, "expected 2 args: entity, hotkey");
   HandleScope scope(args.GetIsolate());
 
-  auto script = Game::get()->getScript();
-
   id_t eid = args[0]->IntegerValue();
   std::string hotkey_str = *String::AsciiValue(args[1]);
   invariant(hotkey_str.size() == 1, "expected one char hotkey");
 
-  const int argc = 1;
   auto gc = (GameController *)Renderer::get()->getController();
   gc->setEntityHotkey(eid, hotkey_str[0]);
 
@@ -447,6 +448,9 @@ void GameScript::init() {
   global->Set(
       String::New("Log"),
       FunctionTemplate::New(jsLog));
+  global->Set(
+      String::New("GameRandom"),
+      FunctionTemplate::New(jsGameRandom));
   global->Set(
       String::New("GetRequisition"),
       FunctionTemplate::New(jsGetRequisition));

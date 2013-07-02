@@ -256,15 +256,16 @@ function entityResolve(entity, dt) {
     if (damage > 0) {
       entity.onTookDamage();
       // Pick the last part with health
-      var damaged_part = null;
+      var candidate_parts = [];
       for (var i = nparts - 1; i >= 0; i--) {
-        if (entity.parts_[i].getHealth() > 0) {
-          damaged_part = i;
-          break;
+        var part = entity.parts_[i];
+        if (part.getHealth() > 0) {
+          candidate_parts.push(part);
         }
       }
-      if (damaged_part) {
-        entity.parts_[damaged_part].addHealth(-damage);
+      if (candidate_parts.length) {
+        var part = candidate_parts[Math.floor(GameRandom() * candidate_parts.length)];
+        part.addHealth(-damage);
       }
     }
 

@@ -32,6 +32,7 @@ struct TickChecksum {
   bool operator!=(const TickChecksum &rhs) const;
   Json::Value toJson() const;
 };
+class GameRandom;
 
 // Handles the game logic and player actions, is very multithread aware.
 class Game {
@@ -95,6 +96,9 @@ class Game {
     chatListener_ = cl;
   }
 
+  // Returns a value [0, 1), should be the same across all clients
+  float gameRandom();
+
  private:
   void initScripts();
   void handleOrder(id_t playerID, const PlayerAction &action);
@@ -134,6 +138,7 @@ class Game {
   bool running_;
 
   ChatListener chatListener_;
+  GameRandom *random_;
 
   static Game *instance_;
 };
