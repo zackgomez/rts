@@ -132,9 +132,25 @@ static Handle<Value> jsRegisterEntityHotkey(const Arguments &args) {
   id_t eid = args[0]->IntegerValue();
   std::string hotkey_str = *String::AsciiValue(args[1]);
   invariant(hotkey_str.size() == 1, "expected one char hotkey");
+  char hotkey = hotkey_str[0];
+  invariant(
+      isControlGroupHotkey(hotkey),
+      "unexpected hotkey for control group " + hotkey);
 
-  auto gc = (GameController *)Renderer::get()->getController();
-  gc->setEntityHotkey(eid, hotkey_str[0]);
+  auto entity = Game::get()->getEntity(eid);
+  if (!entity) {
+    return Undefined();
+  }
+  auto player = Game::get()->getPlayer(entity->getPlayerID());
+  if (!player || !player->isLocal()) {
+    return Undefined();
+  }
+
+  std::set<id_t> sel;
+  sel.insert(eid);
+
+  auto lp = (LocalPlayer *)player;
+  lp->addSavedSelection(hotkey, sel);
 
   return Undefined();
 }

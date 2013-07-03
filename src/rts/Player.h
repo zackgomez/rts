@@ -77,6 +77,10 @@ class Player {
     return color_;
   }
 
+  virtual bool isLocal() const {
+    return false;
+  }
+
  protected:
   id_t playerID_;
   id_t teamID_;
@@ -85,6 +89,9 @@ class Player {
 
   Game *game_;
 };
+
+// TODO(zack): find a home for this function
+bool isControlGroupHotkey(int hotkey);
 
 class LocalPlayer : public Player {
  public:
@@ -98,6 +105,10 @@ class LocalPlayer : public Player {
 
   virtual void startTick(tick_t tick);
   virtual bool isReady() const;
+
+  virtual bool isLocal() const {
+    return true;
+  }
 
   void setSelection(const std::set<id_t> &selection) {
     selection_ = selection;
@@ -113,12 +124,28 @@ class LocalPlayer : public Player {
   }
   virtual bool visibleEntity(const GameEntity *entity) const;
 
+  virtual void addSavedSelection(char hotkey, const std::set<id_t> &sel) {
+    savedSelections_[hotkey] = sel;
+  }
+  const std::map<char, std::set<id_t>> getSavedSelections() const {
+    return savedSelections_;
+  }
+  std::set<id_t> getSavedSelection(char hotkey) const {
+    auto it = savedSelections_.find(hotkey);
+    if (it == savedSelections_.end()) {
+      return std::set<id_t>();
+    }
+    return it->second;
+  }
+
+
  private:
   void addAction(const PlayerAction &a);
 
   std::queue<PlayerAction> actions_;
   std::mutex actionMutex_;
   std::set<id_t> selection_;
+  std::map<char, std::set<id_t>> savedSelections_;
 };
 
 class DummyPlayer : public Player {

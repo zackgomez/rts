@@ -76,4 +76,8 @@ std::vector<PlayerAction> DummyPlayer::getActions() {
 
   return ret;
 }
+
+bool isControlGroupHotkey(int hotkey) {
+  return (hotkey == '`') || (hotkey >= '0' && hotkey <= '9');
+}
 };  // rts
