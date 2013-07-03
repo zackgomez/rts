@@ -3,7 +3,7 @@
   "game" :
   {
     "name"      : "Ragnarok 0.3",
-    "simrate"   : 10.0,
+    "simrate"   : 20.0,
     "version"   : "v0.31",
 
     // grid cells per game unit

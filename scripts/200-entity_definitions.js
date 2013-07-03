@@ -88,7 +88,7 @@ var EntityDefs = {
         cooldown_name: 'heal',
         cooldown: 8.0,
         healing: 50.0,
-        health_target: HEALTH_TARGET_LOWEST,
+        health_target: HEALTH_TARGET_AOE,
         mana_cost: 40,
         icon: 'heal_icon',
         hotkey: 'w',
