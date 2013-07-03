@@ -246,7 +246,6 @@ static Handle<Value> entityAddEffect(const Arguments &args) {
   auto script = Game::get()->getScript();
   HandleScope scope(args.GetIsolate());
   std::string name(*String::AsciiValue(args[0]));
-  Json::Value params = script->jsToJSON(Handle<Object>::Cast(args[0]));
 
   entity->addExtraEffect(makeEntityEffect(
         entity,
@@ -407,15 +406,6 @@ static Handle<Value> entitySetPlayerID(const Arguments &args) {
   return Undefined();
 }
 
-static Handle<Value> entityOnTookDamage(const Arguments &args) {
-  HandleScope scope(args.GetIsolate());
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  Actor *e = static_cast<Actor *>(wrap->Value());
-  e->setTookDamage();
-  return Undefined();
-}
-
 GameScript::GameScript()
   : isolate_(nullptr) {
 }
@@ -546,9 +536,6 @@ void GameScript::init() {
   entityTemplate_->Set(
       String::New("addEffect"),
       FunctionTemplate::New(entityAddEffect));
-  entityTemplate_->Set(
-      String::New("onTookDamage"),
-      FunctionTemplate::New(entityOnTookDamage));
   
   loadScripts();
 }

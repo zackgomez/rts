@@ -888,12 +888,6 @@ void renderEntity(
     // Display the health bar
     // Health bar flashes white on red (instead of green on red) when it has
     // recently taken damage.
-    glm::vec4 healthBarColor = vec4Param("hud.actor_health.color");
-    float timeSinceDamage = Clock::secondsSince(actor->getLastTookDamage());
-    // TODO flash the specific bar, not the entire thingy
-    if (timeSinceDamage < fltParam("hud.actor_health.flash_duration")) {
-      healthBarColor = vec4Param("hud.actor_health.flash_color");
-    }
     float total_health = 0.f;
     for (auto h : ui_info.healths) {
       total_health += h[1];
@@ -903,6 +897,7 @@ void renderEntity(
     glm::vec2 bottom_left = coord - vec2Param("hud.actor_health.pos") - size / 2.f;
     float s = 0.f;
     bool first = true;
+    int i = 0;
     for (auto h : ui_info.healths) {
       float health = h[0];
       float max_health = h[1];
@@ -923,6 +918,12 @@ void renderEntity(
       glm::vec4 bgcolor = health > 0
         ? vec4Param("hud.actor_health.bg_color")
         : vec4Param("hud.actor_health.disabled_bg_color");
+      auto healthBarColor = vec4Param("hud.actor_health.color");
+      float timeSinceDamage = Clock::secondsSince(actor->getLastTookDamage(i++));
+      // TODO flash the specific bar, not the entire thingy
+      if (timeSinceDamage < fltParam("hud.actor_health.flash_duration")) {
+        healthBarColor = vec4Param("hud.actor_health.flash_color");
+      }
       drawRectCenter(total_center, total_size, bgcolor);
       // Green on top for current health
       drawRectCenter(cur_center, cur_size, healthBarColor);

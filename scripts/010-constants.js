@@ -57,6 +57,10 @@ function vecAdd(v1, v2) {
 
 function invariant(condition, message) {
   if (!condition) {
-    throw new Error('invariant failed: ' + message);
+    invariant_violation(message);
   }
+}
+
+function invariant_violation(message) {
+  throw new Error('invariant_violation: ' + message);
 }

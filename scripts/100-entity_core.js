@@ -183,40 +183,52 @@ function entityInit(entity, params) {
     }
     return true;
   }
+
   entity.updatePartHealth = function (health_target, amount) {
-  if (health_target == HEALTH_TARGET_AOE) {
-    this.parts_.forEach(function (part) {
-      if (part.getHealth() > 0) {
+    var modified_parts = [];
+    if (health_target == HEALTH_TARGET_AOE) {
+      var i = 0;
+      this.parts_.forEach(function (part) {
+        if (part.getHealth() > 0) {
+          part.addHealth(amount);
+          modified_parts.push(i);
+        }
+        i++;
+      });
+    } else if (health_target == HEALTH_TARGET_RANDOM) {
+      // Pick the last part with health
+      var candidate_parts = [];
+      this.parts_.forEach(function (part) {
+        if (part.getHealth() > 0) {
+          candidate_parts.push(part);
+        }
+      });
+      if (candidate_parts.length) {
+        var part_idx = Math.floor(GameRandom() * candidate_parts.length);
+        var part = candidate_parts[part_idx];
         part.addHealth(amount);
+        modified_parts.push(part_idx);
       }
-    });
-  } else if (health_target == HEALTH_TARGET_RANDOM) {
-    // Pick the last part with health
-    var candidate_parts = [];
-    this.parts_.forEach(function (part) {
-      if (part.getHealth() > 0) {
-        candidate_parts.push(part);
+    } else if (health_target == HEALTH_TARGET_LOWEST) {
+      var best_part = null;
+      var best_idx = null;
+      for (var i = 0; i < entity.parts_.length; i++) {
+        var part = entity.parts_[i];
+        var health = part.getHealth();
+        if (health > 0 && (!best_part || health < best_part.getHealth())) {
+          best_part = part;
+          best_idx = i;
+        }
       }
-    });
-    if (candidate_parts.length) {
-      var part = candidate_parts[Math.floor(GameRandom() * candidate_parts.length)];
-      part.addHealth(amount);
+      if (best_part) {
+        best_part.addHealth(amount);
+        modified_parts.push(best_idx);
+      }
+    } else {
+      invariant_violation('Unknown health target ' + health_target);
     }
-  } else if (health_target == HEALTH_TARGET_LOWEST) {
-    var best_part = null;
-    entity.parts_.forEach(function (part) {
-      var health = part.getHealth() 
-      if (health > 0 && (!best_part || health < best_part.getHealth())) {
-        best_part = part;
-      }
-    });
-    if (best_part) {
-      best_part.addHealth(amount);
-    }
-  } else {
-    invariant_violation('Unknown health target ' + health_target);
+    return modified_parts;
   }
-}
 }
 
 // Helper function that clears out the deltas at the end of the resolve.
@@ -291,8 +303,14 @@ function entityResolve(entity, dt) {
         continue;
       }
 
-      entity.onTookDamage();
-      entity.updatePartHealth(damage_obj.health_target, -damage_obj.damage);
+      var modified_parts = entity.updatePartHealth(
+        damage_obj.health_target,
+        -damage_obj.damage
+      );
+      Log('modified parts:', modified_parts, modified_parts[0]);
+      entity.addEffect('on_damage', {
+        parts: modified_parts
+      });
     }
 
     var alive = false;

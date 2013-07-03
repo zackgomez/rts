@@ -20,6 +20,18 @@ Actor::Actor(id_t id, const std::string &name, const Json::Value &params)
 Actor::~Actor() {
 }
 
+Clock::time_point Actor::getLastTookDamage(uint32_t part) const {
+  auto it = lastTookDamage_.find(part);
+  if (it != lastTookDamage_.end()) {
+    return it->second;
+  }
+  return Clock::time_point();
+}
+
+void Actor::setTookDamage(int part_idx) {
+  lastTookDamage_[part_idx] = Clock::now();
+}
+
 const std::vector<UIAction> &Actor::getActions() const {
   return actions_;
 }

@@ -21,13 +21,9 @@ class Actor : public GameEntity {
 
   const std::vector<UIAction> &getActions() const;
 
-  Clock::time_point getLastTookDamage() const {
-    return lastTookDamage_;
-  }
-  
-  void setTookDamage() {
-    lastTookDamage_ = Clock::now();
-  }
+  Clock::time_point getLastTookDamage(uint32_t part) const;
+  void setTookDamage(int part_idx);
+
   // Used to change owners, e.g. for a capture
   void setPlayerID(id_t pid) {
     playerID_ = pid;
@@ -58,7 +54,7 @@ class Actor : public GameEntity {
   void updateActions();
 
   // Used by the render
-  Clock::time_point lastTookDamage_;
+  std::map<uint32_t, Clock::time_point> lastTookDamage_;
 };
 };  // namespace rts
 
