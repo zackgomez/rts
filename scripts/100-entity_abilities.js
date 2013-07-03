@@ -188,7 +188,7 @@ function SnipeAction(params) {
       type: MessageTypes.ATTACK,
       damage: this.params.damage,
       damage_type: 'ranged',
-      damage_target: DAMAGE_TARGET_RANDOM,
+      health_target: HEALTH_TARGET_RANDOM,
     });
   }
 }
@@ -229,7 +229,7 @@ function CenteredAOEAction(params) {
             type: MessageTypes.ATTACK,
             damage: damage,
             damage_type: damage_type,
-            damage_target: DAMAGE_TARGET_AOE,
+            health_target: HEALTH_TARGET_AOE,
           });
           return true;
         }

@@ -17,8 +17,8 @@ NO_TEAM = 0;
 
 // -- Damage Types --
 // --
-DAMAGE_TARGET_AOE = -1;
-DAMAGE_TARGET_RANDOM = -2;
+HEALTH_TARGET_AOE = -1;
+HEALTH_TARGET_RANDOM = -2;
 
 MessageTypes = {
   ATTACK: 'ATTACK',

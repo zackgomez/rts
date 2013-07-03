@@ -167,7 +167,7 @@ function entityInit(entity, params) {
           target_id: target.getID(),
           damage: weapon.damage,
           damage_type: weapon.damage_type,
-          damage_target: weapon.damage_target,
+          health_target: weapon.health_target,
         };
         SpawnEntity('projectile', params);
       } else {
@@ -177,7 +177,7 @@ function entityInit(entity, params) {
           type: MessageTypes.ATTACK,
           damage: weapon.damage,
           damage_type: weapon.damage_type,
-          damage_target: weapon.damage_target,
+          health_target: weapon.health_target,
         });
       }
     }
@@ -261,13 +261,13 @@ function entityResolve(entity, dt) {
       if (damage_obj.damage <= 0) {
         continue;
       }
-      if (damage_obj.damage_target == DAMAGE_TARGET_AOE) {
+      if (damage_obj.health_target == HEALTH_TARGET_AOE) {
         entity.parts_.forEach(function (part) {
           if (part.getHealth() > 0) {
             part.addHealth(-damage_obj.damage);
           }
         });
-      } else if (damage_obj.damage_target == DAMAGE_TARGET_RANDOM) {
+      } else if (damage_obj.health_target == HEALTH_TARGET_RANDOM) {
         // Pick the last part with health
         var candidate_parts = [];
         entity.parts_.forEach(function (part) {
@@ -354,10 +354,10 @@ function entityHandleMessage(entity, msg) {
       'expected positive damage in attack message'
     );
     invariant(msg.damage_type, 'missing damage type in attack message');
-    invariant(msg.damage_target, 'missing damage target in attack message');
+    invariant(msg.health_target, 'missing health target in attack message');
     entity.deltas.damage_list.push({
       damage: msg.damage,
-      damage_target: msg.damage_target,
+      health_target: msg.health_target,
       damage_type: msg.damage_type,
     });
   } else if (msg.type == MessageTypes.ADD_DELTA) {

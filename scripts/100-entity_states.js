@@ -169,7 +169,7 @@ function ProjectileState(params) {
   this.targetID = params.target_id;
   this.damage = params.damage;
   this.damage_type = params.damage_type;
-  this.damage_target = params.damage_target;
+  this.health_target = params.health_target;
 
   this.update = function (entity) {
     var target = GetEntity(this.targetID);
@@ -186,7 +186,7 @@ function ProjectileState(params) {
         type: MessageTypes.ATTACK,
         damage: this.damage,
         damage_type: this.damage_type,
-        damage_target: this.damage_target,
+        health_target: this.health_target,
       });
       entity.destroy();
     }
