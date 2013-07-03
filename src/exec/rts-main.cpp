@@ -45,16 +45,16 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
   const float simrate = fltParam("game.simrate");
   const float simdt = 1.f / simrate;
 
+  Clock::time_point last = Clock::now();
+  FPSCalculator updateTimer(10);
+
+  game->start();
+
   auto controller = new rts::GameController(
     (rts::LocalPlayer *) Game::get()->getPlayer(localPlayerID));
   Renderer::get()->postToMainThread([=] () {
     Renderer::get()->setController(controller);
   });
-
-  Clock::time_point last = Clock::now();
-  FPSCalculator updateTimer(10);
-
-  game->start();
 
   while (game->isRunning()) {
     game->update(simdt);

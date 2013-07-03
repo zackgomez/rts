@@ -33,8 +33,6 @@ class GameController : public Controller {
 
   virtual void updateMapShader(Shader *shader) const;
 
-  void setEntityHotkey(id_t eid, char hotkey);
-
   // Accessors
   // returns glm::vec4(HUGE_VAL) for no rect, or glm::vec4(start, end)
   glm::vec4 getDragRect() const;
@@ -87,9 +85,6 @@ class GameController : public Controller {
   GLuint getCursorTexture() const;
 
   void attemptIssueOrder(Json::Value order);
-
-  // For control groups
-  std::map<char, std::set<id_t>> savedSelection_;
 };
 };  // rts
 
