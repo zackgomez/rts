@@ -244,7 +244,7 @@ function HealAction(params) {
 
   this.getTooltip = function (entity) {
     return 'Heal' +
-      '\nAmount:' + this.params.amount +
+      '\nAmount:' + this.params.healing +
       '\nCooldown:' + this.params.cooldown;
   }
 
@@ -262,14 +262,13 @@ function HealAction(params) {
     entity.mana_ -= this.params.mana_cost;
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
 
-    Log('Healing', target, 'for', this.params.amount);
+    Log('Healing', target, 'for', this.params.healing);
     SendMessage({
       to: target,
       from: entity.getID(),
-      type: MessageTypes.ADD_DELTA,
-      deltas: {
-        healing: this.params.amount,
-      },
+      type: MessageTypes.HEAL,
+      healing: this.params.healing,
+      health_target: this.params.health_target,
     });
 
     target_entity.addEffect('heal', {});

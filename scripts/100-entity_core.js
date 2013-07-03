@@ -183,6 +183,40 @@ function entityInit(entity, params) {
     }
     return true;
   }
+  entity.updatePartHealth = function (health_target, amount) {
+  if (health_target == HEALTH_TARGET_AOE) {
+    this.parts_.forEach(function (part) {
+      if (part.getHealth() > 0) {
+        part.addHealth(amount);
+      }
+    });
+  } else if (health_target == HEALTH_TARGET_RANDOM) {
+    // Pick the last part with health
+    var candidate_parts = [];
+    this.parts_.forEach(function (part) {
+      if (part.getHealth() > 0) {
+        candidate_parts.push(part);
+      }
+    });
+    if (candidate_parts.length) {
+      var part = candidate_parts[Math.floor(GameRandom() * candidate_parts.length)];
+      part.addHealth(amount);
+    }
+  } else if (health_target == HEALTH_TARGET_LOWEST) {
+    var best_part = null;
+    entity.parts_.forEach(function (part) {
+      var health = part.getHealth() 
+      if (health > 0 && (!best_part || health < best_part.getHealth())) {
+        best_part = part;
+      }
+    });
+    if (best_part) {
+      best_part.addHealth(amount);
+    }
+  } else {
+    invariant_violation('Unknown health target ' + health_target);
+  }
+}
 }
 
 // Helper function that clears out the deltas at the end of the resolve.
@@ -190,7 +224,7 @@ function entityResetDeltas(entity) {
   entity.deltas = {
     capture: {},
     damage_list: [],
-    healing: 0,
+    healing_list: [],
     healing_rate: 0,
     vp_rate: 0,
     req_rate: 0,
@@ -235,22 +269,17 @@ function entityResolve(entity, dt) {
     AddVPs(entity.getTeamID(), amount, entity.getID());
   }
 
-  // Healting
-  var healing = entity.deltas.healing + dt * entity.deltas.healing_rate;
-  if (entity.parts_ && healing > 0) {
-    // Find part with lowest damage
-    var lowest_health = Infinity;
-    var best_ind = null;
-    for (var i = 0; i < entity.parts_.length; i++) {
-      var cur = entity.parts_[i].getHealth();
-      if (cur > 0 && cur < entity.parts_[i].getMaxHealth() && cur < lowest_health) {
-        lowest_health = cur;
-        best_ind = i;
-      }
-    }
-    if (best_ind !== null) {
-      entity.parts_[best_ind].addHealth(healing);
-    }
+  // Healing
+  if (entity.deltas.healing_rate) {
+    entity.deltas.healing_list.push({
+      healing: dt * entity.deltas.healing_rate,
+      health_target: HEALTH_TARGET_AOE,
+    });
+  }
+  if (entity.parts_) {
+    entity.deltas.healing_list.forEach(function (healing_obj) {
+      entity.updatePartHealth(healing_obj.health_target, healing_obj.healing);
+    });
   }
 
   var ndamages = entity.deltas.damage_list.length;
@@ -261,28 +290,9 @@ function entityResolve(entity, dt) {
       if (damage_obj.damage <= 0) {
         continue;
       }
-      if (damage_obj.health_target == HEALTH_TARGET_AOE) {
-        entity.parts_.forEach(function (part) {
-          if (part.getHealth() > 0) {
-            part.addHealth(-damage_obj.damage);
-          }
-        });
-      } else if (damage_obj.health_target == HEALTH_TARGET_RANDOM) {
-        // Pick the last part with health
-        var candidate_parts = [];
-        entity.parts_.forEach(function (part) {
-          if (part.getHealth() > 0) {
-            candidate_parts.push(part);
-          }
-        });
-        if (candidate_parts.length) {
-          var part = candidate_parts[Math.floor(GameRandom() * candidate_parts.length)];
-          part.addHealth(-damage_obj.damage);
-          entity.onTookDamage();
-        }
-      } else {
-        invariant_violation('Unknown damage target ' + damage_obj.target);
-      }
+
+      entity.onTookDamage();
+      entity.updatePartHealth(damage_obj.health_target, -damage_obj.damage);
     }
 
     var alive = false;
@@ -359,6 +369,16 @@ function entityHandleMessage(entity, msg) {
       damage: msg.damage,
       health_target: msg.health_target,
       damage_type: msg.damage_type,
+    });
+  } else if (msg.type == MessageTypes.HEAL) {
+    invariant(
+      msg.healing && msg.healing > 0,
+      'entity without parts received heal message'
+    );
+    invariant(msg.health_target, 'missing health target in heal message');
+    entity.deltas.healing_list.push({
+      healing: msg.healing,
+      health_target: msg.health_target,
     });
   } else if (msg.type == MessageTypes.ADD_DELTA) {
     for (var name in msg.deltas) {
@@ -476,6 +496,7 @@ function entityGetActions(entity) {
 
   return actions;
 }
+
 
 // Returns info about this entity, like health or mana.
 // It is used by the UI to display this information
