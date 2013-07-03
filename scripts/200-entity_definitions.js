@@ -3,23 +3,26 @@
 // --
 var Weapons = {
   rifle: {
-    type: 'ranged',
     range: 8.0,
-    damage: 10.0,
+    damage: 15.0,
+    damage_type: 'ranged',
+    damage_target: DAMAGE_TARGET_RANDOM,
     cooldown_name: 'rifle_cd',
     cooldown: 1.0,
   },
   advanced_melee: {
-    type: 'melee',
     range: 1.0,
-    damage: 6.0,
+    damage: 10.0,
+    damage_type: 'melee',
+    damage_target: DAMAGE_TARGET_RANDOM,
     cooldown_name: 'advanced_melee_cd',
     cooldown: 0.5,
   },
   tanky_melee: {
-    type: 'melee',
     range: 1.0,
-    damage: 25.0,
+    damage: 10.0,
+    damage_type: 'melee',
+    damage_target: DAMAGE_TARGET_AOE,
     cooldown_name: 'tanky_melee_cd',
     cooldown: 1.5,
   }
@@ -163,7 +166,7 @@ var EntityDefs = {
     ],
     default_state: UnitIdleState,
     size: [1.6, 1.6, 1.0],
-    speed: 3.0,
+    speed: 2.8,
     sight: 6.0,
     capture_range: 1.0,
     mana: 80,
@@ -192,9 +195,10 @@ var EntityDefs = {
     },
     actions: {
       blast: new CenteredAOEAction({
-        mana_cost: 50,
+        mana_cost: 60,
         radius: 3.0,
-        damage: 30,
+        damage: 35,
+        damage_type: 'melee',
         cooldown: 15.0,
         cooldown_name: 'centered_aoe_blast',
         icon: 'melee_icon',

@@ -188,6 +188,7 @@ function SnipeAction(params) {
       type: MessageTypes.ATTACK,
       damage: this.params.damage,
       damage_type: 'ranged',
+      damage_target: DAMAGE_TARGET_RANDOM,
     });
   }
 }
@@ -216,6 +217,7 @@ function CenteredAOEAction(params) {
 
     Log('AOE blast at', entity.getPosition2(), 'for', this.params.damage);
     var damage = this.params.damage;
+    var damage_type = this.params.damage_type;
     entity.getNearbyEntities(
       this.params.radius,
       function (candidate) {
@@ -226,8 +228,10 @@ function CenteredAOEAction(params) {
             from: entity.getID(),
             type: MessageTypes.ATTACK,
             damage: damage,
-            damage_type: 'melee',
+            damage_type: damage_type,
+            damage_target: DAMAGE_TARGET_AOE,
           });
+          return true;
         }
       });
   }

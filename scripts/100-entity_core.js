@@ -160,13 +160,14 @@ function entityInit(entity, params) {
     if (!this.hasCooldown(weapon.cooldown_name)) {
       this.addCooldown(weapon.cooldown_name, weapon.cooldown);
 
-      if (weapon.type == 'ranged') {
+      if (weapon.damage_type == 'ranged') {
         var params = {
           pid: this.getPlayerID(),
           pos: this.getPosition2(),
           target_id: target.getID(),
           damage: weapon.damage,
-          damage_type: 'ranked',
+          damage_type: weapon.damage_type,
+          damage_target: weapon.damage_target,
         };
         SpawnEntity('projectile', params);
       } else {
@@ -175,7 +176,8 @@ function entityInit(entity, params) {
           from: this.getID(),
           type: MessageTypes.ATTACK,
           damage: weapon.damage,
-          damage_type: 'melee',
+          damage_type: weapon.damage_type,
+          damage_target: weapon.damage_target,
         });
       }
     }
@@ -247,7 +249,6 @@ function entityResolve(entity, dt) {
       }
     }
     if (best_ind !== null) {
-      Log(best_ind, ' healing for ', healing, 'lowest', lowest_health);
       entity.parts_[best_ind].addHealth(healing);
     }
   }
@@ -260,28 +261,36 @@ function entityResolve(entity, dt) {
       if (damage_obj.damage <= 0) {
         continue;
       }
-      // Pick the last part with health
-      var candidate_parts = [];
-      for (var i = nparts - 1; i >= 0; i--) {
-        var part = entity.parts_[i];
-        if (part.getHealth() > 0) {
-          candidate_parts.push(part);
+      if (damage_obj.damage_target == DAMAGE_TARGET_AOE) {
+        entity.parts_.forEach(function (part) {
+          if (part.getHealth() > 0) {
+            part.addHealth(-damage_obj.damage);
+          }
+        });
+      } else if (damage_obj.damage_target == DAMAGE_TARGET_RANDOM) {
+        // Pick the last part with health
+        var candidate_parts = [];
+        entity.parts_.forEach(function (part) {
+          if (part.getHealth() > 0) {
+            candidate_parts.push(part);
+          }
+        });
+        if (candidate_parts.length) {
+          var part = candidate_parts[Math.floor(GameRandom() * candidate_parts.length)];
+          part.addHealth(-damage_obj.damage);
+          entity.onTookDamage();
         }
-      }
-      if (candidate_parts.length) {
-        var part = candidate_parts[Math.floor(GameRandom() * candidate_parts.length)];
-        part.addHealth(-damage_obj.damage);
-        entity.onTookDamage();
+      } else {
+        invariant_violation('Unknown damage target ' + damage_obj.target);
       }
     }
 
     var alive = false;
-    for (var i = 0; i < nparts; i++) {
-      if (entity.parts_[i].getHealth() > 0) {
+    entity.parts_.forEach(function (part) {
+      if (part.getHealth() > 0) {
         alive = true;
-        break;
       }
-    }
+    });
     if (!alive) {
       entity.destroy();
     }
@@ -345,9 +354,11 @@ function entityHandleMessage(entity, msg) {
       'expected positive damage in attack message'
     );
     invariant(msg.damage_type, 'missing damage type in attack message');
+    invariant(msg.damage_target, 'missing damage target in attack message');
     entity.deltas.damage_list.push({
       damage: msg.damage,
-      type: msg.damage_type,
+      damage_target: msg.damage_target,
+      damage_type: msg.damage_type,
     });
   } else if (msg.type == MessageTypes.ADD_DELTA) {
     for (var name in msg.deltas) {
