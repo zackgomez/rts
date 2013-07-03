@@ -234,11 +234,19 @@ void Actor::updateUIInfo() {
     uiInfo_.capture = script->jsToVec2(
         Handle<Array>::Cast(jsinfo->Get(capture)));
   }
-
   auto cap_pid = String::New("cappingPlayerID");
   uiInfo_.capture_pid = 0;
   if (jsinfo->Has(cap_pid)) {
     uiInfo_.capture_pid = jsinfo->Get(cap_pid)->IntegerValue();
+  }
+  auto hotkey = String::New("hotkey");
+  if (jsinfo->Has(hotkey)) {
+    std::string hotkey_str = *String::AsciiValue(jsinfo->Get(hotkey));
+    if (!hotkey_str.empty()) {
+      invariant(hotkey_str.size() == 1, "expected single character hotkey string");
+      uiInfo_.hotkey = hotkey_str[0];
+      invariant(isControlGroupHotkey(uiInfo_.hotkey), "bad hotkey in uiinfo");
+    }
   }
 }
 

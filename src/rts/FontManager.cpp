@@ -53,11 +53,12 @@ void FontManager::drawString(const std::string &s, const glm::vec2 &pos,
 }
 
 const char * FontManager::makeColorCode(const glm::vec3 &color) {
-  static char buf[4];
+  static char buf[5];
   buf[0] = COLOR_CNTRL_CH;
   for (int i = 0; i < 3; i++) {
     buf[i+1] = static_cast<char>(color[i] * 255);
   }
+  buf[4] = '\0';
 
   return buf;
 }

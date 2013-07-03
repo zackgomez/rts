@@ -184,6 +184,10 @@
   // GRAPHICS PARAMS
   "hud" :
   {
+    "actor_hotkey": {
+      "pos": [-55, -25],
+      "font_size": 24
+    },
     "actor_health" : 
     {
       "dim" : [80, 5],

@@ -36,6 +36,7 @@ class Actor : public GameEntity {
     glm::vec2 production;
     glm::vec2 capture;
     id_t capture_pid;
+    char hotkey;
   };
   UIInfo getUIInfo() const {
     return uiInfo_;

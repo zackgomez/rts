@@ -872,6 +872,18 @@ void renderEntity(
   auto actor = (const Actor *)e;
   const auto ui_info = actor->getUIInfo();
 
+  // Hotkey
+  if (actor->getPlayerID() == localPlayer->getPlayerID()
+      && ui_info.hotkey >= '0' && ui_info.hotkey <= '9') {
+    std::string s;
+    s.append(FontManager::get()->makeColorCode(glm::vec3(1,1,1)));
+    s.push_back(ui_info.hotkey);
+    FontManager::get()->drawString(
+        s,
+        coord + vec2Param("hud.actor_hotkey.pos"),
+        fltParam("hud.actor_hotkey.font_size"));
+  }
+
   // Cap status
   if (ui_info.capture[1]) {
     float capFact = glm::max(ui_info.capture[0] / ui_info.capture[1], 0.f);

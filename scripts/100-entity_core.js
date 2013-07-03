@@ -60,6 +60,7 @@ function entityInit(entity, params) {
   }
   if (def.hotkey) {
     registerEntityHotkey(entity.getID(), def.hotkey);
+    entity.hotkey_ = def.hotkey;
   }
 
   entity.state_ = new entity.defaultState_(params);
@@ -535,6 +536,10 @@ function entityGetUIInfo(entity) {
           entity.parts_[i].getMaxHealth(),
         ]);
     }
+  }
+
+  if (entity.hotkey_) {
+    ui_info.hotkey = entity.hotkey_;
   }
 
   if (entity.maxMana_) {
