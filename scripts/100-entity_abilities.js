@@ -187,6 +187,7 @@ function SnipeAction(params) {
       from: entity.getID(),
       type: MessageTypes.ATTACK,
       damage: this.params.damage,
+      damage_type: 'ranged',
     });
   }
 }
@@ -225,6 +226,7 @@ function CenteredAOEAction(params) {
             from: entity.getID(),
             type: MessageTypes.ATTACK,
             damage: damage,
+            damage_type: 'melee',
           });
         }
       });

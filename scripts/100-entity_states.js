@@ -168,6 +168,7 @@ function TargetedAbilityState(params) {
 function ProjectileState(params) {
   this.targetID = params.target_id;
   this.damage = params.damage;
+  this.damage_type = params.damage_type;
 
   this.update = function (entity) {
     var target = GetEntity(this.targetID);
@@ -183,6 +184,7 @@ function ProjectileState(params) {
         from: entity.getID(),
         type: MessageTypes.ATTACK,
         damage: this.damage,
+        damage_type: this.damage_type,
       });
       entity.destroy();
     }

@@ -166,6 +166,7 @@ function entityInit(entity, params) {
           pos: this.getPosition2(),
           target_id: target.getID(),
           damage: weapon.damage,
+          damage_type: 'ranked',
         };
         SpawnEntity('projectile', params);
       } else {
@@ -174,6 +175,7 @@ function entityInit(entity, params) {
           from: this.getID(),
           type: MessageTypes.ATTACK,
           damage: weapon.damage,
+          damage_type: 'melee',
         });
       }
     }
@@ -185,7 +187,7 @@ function entityInit(entity, params) {
 function entityResetDeltas(entity) {
   entity.deltas = {
     capture: {},
-    damage: 0,
+    damage_list: [],
     healing: 0,
     healing_rate: 0,
     vp_rate: 0,
@@ -231,30 +233,33 @@ function entityResolve(entity, dt) {
     AddVPs(entity.getTeamID(), amount, entity.getID());
   }
 
-  // Health
-  if (entity.parts_) {
-    var healing = entity.deltas.healing + dt * entity.deltas.healing_rate;
-    var damage = entity.deltas.damage;
-    var nparts = entity.parts_.length;
-
-    if (healing > 0) {
-      // Find part with lowest damage
-      var lowest_health = Infinity;
-      var best_ind = null;
-      for (var i = 0; i < nparts; i++) {
-        var cur = entity.parts_[i].getHealth();
-        if (cur < entity.parts_[i].getMaxHealth() < lowest_health) {
-          lowest_heath = cur;
-          best_ind = i;
-        }
-      }
-      if (best_ind) {
-        entity.parts_[best_ind].addHealth(healing);
+  // Healting
+  var healing = entity.deltas.healing + dt * entity.deltas.healing_rate;
+  if (entity.parts_ && healing > 0) {
+    // Find part with lowest damage
+    var lowest_health = Infinity;
+    var best_ind = null;
+    for (var i = 0; i < entity.parts_.length; i++) {
+      var cur = entity.parts_[i].getHealth();
+      if (cur > 0 && cur < entity.parts_[i].getMaxHealth() && cur < lowest_health) {
+        lowest_health = cur;
+        best_ind = i;
       }
     }
+    if (best_ind !== null) {
+      Log(best_ind, ' healing for ', healing, 'lowest', lowest_health);
+      entity.parts_[best_ind].addHealth(healing);
+    }
+  }
 
-    if (damage > 0) {
-      entity.onTookDamage();
+  var ndamages = entity.deltas.damage_list.length;
+  if (entity.parts_ && ndamages) {
+    var nparts = entity.parts_.length;
+    for (var j = 0; j < ndamages; j++) {
+      var damage_obj = entity.deltas.damage_list[j];
+      if (damage_obj.damage <= 0) {
+        continue;
+      }
       // Pick the last part with health
       var candidate_parts = [];
       for (var i = nparts - 1; i >= 0; i--) {
@@ -265,12 +270,13 @@ function entityResolve(entity, dt) {
       }
       if (candidate_parts.length) {
         var part = candidate_parts[Math.floor(GameRandom() * candidate_parts.length)];
-        part.addHealth(-damage);
+        part.addHealth(-damage_obj.damage);
+        entity.onTookDamage();
       }
     }
 
     var alive = false;
-    for (var i = 0; i < entity.parts_.length; i++) {
+    for (var i = 0; i < nparts; i++) {
       if (entity.parts_[i].getHealth() > 0) {
         alive = true;
         break;
@@ -333,15 +339,16 @@ function entityHandleMessage(entity, msg) {
       entity.deltas.capture[from_pid] = msg.cap;
     }
   } else if (msg.type == MessageTypes.ATTACK) {
-    if (!entity.parts_) {
-      Log('Entity without parts received attack message');
-      return;
-    }
-    if (msg.damage < 0) {
-      Log('Ignoring attack with negative damage');
-      return;
-    }
-    entity.deltas.damage += msg.damage;
+    invariant(entity.parts_, 'Entity without parts received attack message');
+    invariant(
+      msg.damage && msg.damage > 0,
+      'expected positive damage in attack message'
+    );
+    invariant(msg.damage_type, 'missing damage type in attack message');
+    entity.deltas.damage_list.push({
+      damage: msg.damage,
+      type: msg.damage_type,
+    });
   } else if (msg.type == MessageTypes.ADD_DELTA) {
     for (var name in msg.deltas) {
       entity.deltas[name] += msg.deltas[name];
