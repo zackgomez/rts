@@ -984,7 +984,7 @@ void GameController::updateMapShader(Shader *shader) const {
 
 void GameController::setEntityHotkey(id_t eid, char hotkey) {
   invariant(
-    hotkey == '`' || hotkey - '0' >= 0 && hotkey - '0' <= 9,
+    hotkey == '`' || (hotkey - '0' >= 0 && hotkey - '0' <= 9),
     "invalid hotkey character");
 
   auto entity = Game::get()->getEntity(eid);

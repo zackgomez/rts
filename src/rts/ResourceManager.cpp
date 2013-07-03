@@ -117,7 +117,6 @@ std::vector<std::pair<std::string, std::string>> ResourceManager::getOrderedScri
     "missing scripts directory");
 
   std::vector<std::pair<int, std::string>> paths;
-  Json::Reader reader;
   auto it = fs::directory_iterator(scripts_path);
   for ( ; it != fs::directory_iterator(); it++) {
     auto dir_ent = *it;
@@ -129,19 +128,23 @@ std::vector<std::pair<std::string, std::string>> ResourceManager::getOrderedScri
     if (filepath.extension() != ".js" || filename.empty() || filename[0] == '.') {
       continue;
     }
-    bool inserted = false;
     uint32_t n;
+    if (sscanf(filename.c_str(), "%d-", &n) == EOF) {
+      // on error, wrap to end
+      n = -1;
+    }
+
+    // Insert into sorted array
+    bool inserted = false;
     auto pit = paths.begin(); 
     for (; pit != paths.end(); pit++) {
-      if (sscanf(pit->second.c_str(), "%d-", &n) == EOF) {
-        // on error, wrap to end
-        n = -1;
-      }
       if (n < pit->first) {
         paths.insert(pit, make_pair(n, dir_ent.path().string()));
         inserted = true;
+        break;
       }
     }
+    // Put at end if haven't inserted already
     if (!inserted) {
       paths.insert(pit, make_pair(n, dir_ent.path().string()));
     }

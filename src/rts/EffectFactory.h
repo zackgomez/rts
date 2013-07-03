@@ -1,6 +1,7 @@
 #ifndef SRC_RTS_EFFECTFACTORY_H_
 #define SRC_RTS_EFFECTFACTORY_H_
 #include <functional>
+#include <string>
 #include <v8.h>
 
 namespace rts {

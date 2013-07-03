@@ -58,7 +58,6 @@ RenderFunction makeEntityEffect(
     std::vector<int> parts_vec;
     for (int i = 0; i < parts->Length(); i++) {
       int idx = parts->Get(i)->IntegerValue();
-      LOG(DEBUG) << "part damage: " << idx << '\n';
       ((Actor *)entity)->setTookDamage(idx);
       parts_vec.push_back(idx);
     }

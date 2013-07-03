@@ -307,7 +307,6 @@ function entityResolve(entity, dt) {
         damage_obj.health_target,
         -damage_obj.damage
       );
-      Log('modified parts:', modified_parts, modified_parts[0]);
       entity.addEffect('on_damage', {
         parts: modified_parts
       });
