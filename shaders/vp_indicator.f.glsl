@@ -8,6 +8,7 @@ uniform float t;
 varying vec2 frag_texcoord;
 
 const float PI = 3.1415926;
+const float danger_radius = 0.6;
 
 void main()
 {
@@ -29,8 +30,8 @@ void main()
     float specPower = pow(max(dot(eyeVec, lightVec), 0.0), shininess);
 
     float red_alpha = 0;
-    if (radius > 0.8 && danger) {
-      red_alpha = (radius - 0.8) * 5 * sin(3 * t);
+    if (radius >  danger_radius && danger) {
+      red_alpha = (radius - danger_radius) * 5 * sin(3 * t);
     }
 
     gl_FragColor = vec4(red_alpha, 0, 0, 1) + (1-red_alpha) * (color + diffuse + specPower * vec4(1.0));
