@@ -21,18 +21,18 @@
 // range/cooldown parameters
 var ActionPrototype = {
   getState: function (entity) {
-    if (!this.hasResources(entity)) {
-      return ActionStates.DISABLED;
-    } else if (this.params.cooldown_name &&
-               entity.hasCooldown(this.params.cooldown_name)) {
+    if (this.params.cooldown_name
+        && entity.hasCooldown(this.params.cooldown_name)) {
       return ActionStates.COOLDOWN;
+    } else if (!this.isEnabled(entity)) {
+      return ActionStates.DISABLED;
     }
     return ActionStates.ENABLED;
   },
 
   // Override this if your ability has a resource cost that can disable the
   // ability.
-  hasResources: function (entity) {
+  isEnabled: function (entity) {
     return true;
   },
 
@@ -55,7 +55,7 @@ function ReinforceAction(params) {
       '\nreq: ' + this.params.req_cost;
   }
 
-  this.hasResources = function (entity) {
+  this.isEnabled = function (entity) {
     var near_base = false;
     // TODO(zack): unhardcode this radius
     entity.getNearbyEntities(5.0, function (e) {
@@ -106,7 +106,7 @@ function ProductionAction(params) {
       '\ntime: ' + this.params.time_cost;
   }
 
-  this.hasResources = function (entity) {
+  this.isEnabled = function (entity) {
     var owner = Players.getPlayerInfo(entity.getPlayerID());
     var unit_constructed = this.params.prod_name in owner.units;
 
@@ -145,7 +145,7 @@ function TeleportAction(params) {
       '\nCooldown:'+this.params.cooldown;
   }
 
-  this.hasResources = function (entity) {
+  this.isEnabled = function (entity) {
     return entity.mana_ > this.params.mana_cost;
   }
 
@@ -167,7 +167,7 @@ function SnipeAction(params) {
       '\nCooldown:' + this.params.cooldown;
   }
 
-  this.hasResources = function (entity) {
+  this.isEnabled = function (entity) {
     return entity.mana_ > this.params.mana_cost;
   }
 
@@ -207,7 +207,7 @@ function CenteredAOEAction(params) {
       '\nCooldown: ' + this.params.cooldown;
   }
 
-  this.hasResources = function (entity) {
+  this.isEnabled = function (entity) {
     return entity.mana_ > this.params.mana_cost;
   }
 
@@ -248,7 +248,7 @@ function HealAction(params) {
       '\nCooldown:' + this.params.cooldown;
   }
 
-  this.hasResources = function (entity) {
+  this.isEnabled = function (entity) {
     return entity.mana_ > this.params.mana_cost;
   }
 
