@@ -198,12 +198,52 @@ std::vector<glm::vec3> NavMesh::reconstructPath(
   return ret;
 }
 
+glm::vec2 NavMesh::closestPointInMesh(const glm::vec2 &p) const {
+  float closest_dist = HUGE_VAL;
+  float closest_t = -1;
+  glm::vec2 closest_norm;
+  glm::vec2 closest_p;
+  glm::vec2 closest_v1;
+  glm::vec2 closest_v2;
+  // need to quadtree this as well..
+  for (HalfEdge *he : halfedges_) {
+    glm::vec2 v1(he->start->position);
+    glm::vec2 v2(he->next->start->position);
+    glm::vec2 dir = v2 - v1;
+    glm::vec2 norm = glm::normalize(glm::vec2(-dir.y, dir.x));
+
+    // how far we want to test, maybe should be a variable of map size?
+    const float test_length = 10.f;
+    float t = segmentLineIntersection(
+      glm::vec2(p),
+      // just extend p out in a direction by some large amount
+      glm::vec2(p + norm * test_length),
+      v1,
+      v2);
+    if (t == NO_INTERSECTION) continue;
+
+    // to ensure we are pushed out of the border, not on it.
+    float epsilon = 0.01f;
+    glm::vec2 test_p = p + (t + epsilon) * norm * test_length;
+    float dist = glm::distance(p, test_p);
+    if (dist < closest_dist) {
+      closest_v1 = v1;
+      closest_v2 = v2;
+      closest_t = t;
+      closest_norm = norm;
+      closest_dist = dist;
+      closest_p = test_p + 0.1f * norm;
+    }
+  }
+  return closest_p;
+}
+
 std::tuple<glm::vec3, glm::vec3, float> NavMesh::firstIntersectingEdge(
     const glm::vec3 &start,
     const glm::vec3 &end) const {
   float best_t = glm::length(end - start);
   HalfEdge *best_edge = nullptr;
-   // stupid implementation, use quad tree when available
+  // stupid implementation, use quad tree when available
   for (int i = 0; i < halfedges_.size(); i++) {
     auto *he = halfedges_[i];
     if (he == he->next) {
@@ -268,17 +308,22 @@ std::vector<glm::vec3> NavMesh::refinePath(
 
 const std::vector<glm::vec3> NavMesh::getPath(const glm::vec3 &start,
     const glm::vec3 &end) const {
+  // used just in case the end vector isn't in the navmesh
+  glm::vec3 real_end = end;
   std::vector<glm::vec3> path;
   Face *start_face = getContainingPolygon(start);
   Face *end_face = getContainingPolygon(end);
-  // if the point is not in the navmesh, for now just return
-  if (start_face == NULL || end_face == NULL) {
+  if (start_face == NULL) {
     path.push_back(end);
     return path;
   }
+  if (end_face == NULL) {
+    real_end = glm::vec3(closestPointInMesh(glm::vec2(end)), 0);
+    end_face = getContainingPolygon(real_end);
+  }
   // if the start and end are in the same polygon, we're done
   if (start_face == end_face) {
-    path.push_back(end);
+    path.push_back(real_end);
     return path;
   }
 
@@ -291,7 +336,7 @@ const std::vector<glm::vec3> NavMesh::getPath(const glm::vec3 &start,
   std::map<Face*, float> f_score;
 
   g_score[start_face] = 0;
-  f_score[start_face] = glm::distance(start, end);
+  f_score[start_face] = glm::distance(start, real_end);
 
   open.insert(start_face);
 
@@ -310,7 +355,7 @@ const std::vector<glm::vec3> NavMesh::getPath(const glm::vec3 &start,
     // If we've reached the destination, backtrack and return
     if (current_face == end_face) {
       auto path = reconstructPath(came_from, current_face);
-      path.push_back(end);
+      path.push_back(real_end);
       return refinePath(start, path);
     }
 
@@ -335,7 +380,7 @@ const std::vector<glm::vec3> NavMesh::getPath(const glm::vec3 &start,
         if (!open.count(neighbor) || neighbor_g_score < g_score[neighbor]) {
           came_from[neighbor] = current_face;
           g_score[neighbor] = neighbor_g_score;
-          f_score[neighbor] = g_score[neighbor] + glm::distance(getCenter(neighbor), end);
+          f_score[neighbor] = g_score[neighbor] + glm::distance(getCenter(neighbor), real_end);
           open.insert(neighbor);
         }
       }

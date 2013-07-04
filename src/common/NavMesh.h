@@ -42,6 +42,7 @@ class NavMesh {
   Vertex* findVertex(const glm::vec3 &pos) const;
 
   // finds all neighbors of the input vertex
+  glm::vec2 closestPointInMesh(const glm::vec2 &p) const;
   std::vector<Vertex*> getNeighbors(Vertex *vert) const;
   static std::vector<glm::vec3> reconstructPath(
     const std::map<const Face *, const Face *> &came_from,
