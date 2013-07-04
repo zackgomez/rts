@@ -7,6 +7,7 @@
 #include "rts/Player.h"
 #include "rts/Renderer.h"
 #include "rts/ResourceManager.h"
+#include "rts/VisibilityMap.h"
 
 using namespace v8;
 
@@ -193,14 +194,28 @@ static Handle<Value> entityDistanceToEntity(const Arguments &args) {
   return scope.Close(Number::New(dist));
 }
 
-static Handle<Value> entityRemainStationary(const Arguments &args) {
+static Handle<Value> entityIsVisibleTo(const Arguments &args) {
+  invariant(args.Length() == 1, "expected (id_t pid)");
   HandleScope scope(args.GetIsolate());
 
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
 
-  entity->remainStationary();
+  id_t pid = args[0]->IntegerValue();
+
+  auto vismap = Game::get()->getVisibilityMap(pid);
+  bool visible = vismap->locationVisible(entity->getPosition2());
+
+  return scope.Close(Boolean::New(visible));
+}
+
+static Handle<Value> entityRemainStationary(const Arguments &args) {
+  HandleScope scope(args.GetIsolate());
+
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
 
   return Undefined();
 }
@@ -533,6 +548,9 @@ void GameScript::init() {
   entityTemplate_->Set(
       String::New("distanceToPoint"),
       FunctionTemplate::New(entityDistanceToPoint));
+  entityTemplate_->Set(
+      String::New("isVisibleTo"),
+      FunctionTemplate::New(entityIsVisibleTo));
 
   entityTemplate_->Set(
       String::New("addEffect"),
