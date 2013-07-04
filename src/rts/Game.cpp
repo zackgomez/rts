@@ -123,6 +123,7 @@ void Game::start() {
   auto lock = std::unique_lock<std::mutex>(actionMutex_);
   pause();
 
+  using namespace v8;
   script_.init();
   v8::Locker locker(script_.getIsolate());
   v8::Context::Scope context_scope(script_.getContext());
@@ -146,6 +147,22 @@ void Game::start() {
     for (auto player : players_) {
       player->startTick(tick_);
     }
+  }
+  
+  HandleScope scope(script_.getIsolate());
+  auto global = script_.getGlobal();
+
+  // Setup teams in JS.
+  for (auto it : teams_) {
+    TryCatch try_catch;
+    const int argc = 1;
+    Handle<Value> argv[argc] = {Integer::New(it)};
+    Handle<Object> teamsAPI = Handle<Object>::Cast(
+         global->Get(String::New("Teams")));
+    Handle<Function> addTeam = Handle<Function>::Cast(
+          teamsAPI->Get(String::New("addTeam")));
+    auto ret = addTeam->Call(global, argc, argv);
+    checkJSResult(ret, try_catch.Exception(), "Game::start()");
   }
 
   // Game is ready to go!
@@ -316,6 +333,9 @@ void Game::update(float dt) {
     }
   }
 
+  // Synchronize with JS about # victory points.
+  readVPs();
+
   // Check to see if this player has won
   for (auto it : victoryPoints_) {
     if (it.second > intParam("global.pointsToWin")) {
@@ -348,12 +368,6 @@ void Game::addResources(
   if (resource_type == ResourceType::REQUISITION) {
     resources_[pid].requisition += amount;
   }
-}
-
-void Game::addVPs(id_t tid, float amount, id_t from) {
-  assertTid(tid);
-  invariant(victoryPoints_.count(tid), "unknown team for vp add");
-    victoryPoints_[tid] += amount;
 }
 
 void Game::addAction(id_t pid, const PlayerAction &act) {
@@ -439,6 +453,29 @@ const PlayerResources& Game::getResources(id_t pid) const {
   invariant(it != resources_.end(),
       "Unknown playerID to get resources for");
   return it->second;
+}
+
+// Populate victoryPoints_ map from JS values.
+void Game::readVPs() {
+  using namespace v8;
+  auto script = Game::get()->getScript();
+  HandleScope scope(script->getIsolate());
+  TryCatch try_catch;
+  auto global = script->getGlobal();
+
+  Handle<Object> teamsAPI = Handle<Object>::Cast(
+     global->Get(String::New("Teams")));
+
+  for (auto tid : teams_) {
+    const int argc = 1;
+    Handle<Value> argv[argc] = {Integer::New(tid)};
+    Handle<Function> getPointsFunction = Handle<Function>::Cast(
+        teamsAPI->Get(String::New("getVictoryPoints")));
+    Handle<Value> ret = getPointsFunction->Call(global, argc, argv);
+
+    checkJSResult(ret, try_catch.Exception(), "readVPs");
+    victoryPoints_[tid] = ret->IntegerValue();
+  }
 }
 
 float Game::getVictoryPoints(id_t tid) const {
