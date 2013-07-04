@@ -31,7 +31,7 @@ void main()
 
     float red_alpha = 0;
     if (radius >  danger_radius && danger) {
-      red_alpha = (radius - danger_radius) * 5 * sin(3 * t);
+      red_alpha = (radius - danger_radius) * 2.5 * (1 + sin(3 * t));
     }
 
     gl_FragColor = vec4(red_alpha, 0, 0, 1) + (1-red_alpha) * (color + diffuse + specPower * vec4(1.0));
