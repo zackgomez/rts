@@ -8,7 +8,7 @@ Teams = (function() {
   var teams = {};
 
   function verifyTeam(tid) {
-    invariant(teams[tid] === undefined, 
+    invariant(teams[tid] !== undefined, 
       "Teams API: Must provide a valid team ID for Teams API calls");
   }
 
@@ -20,9 +20,8 @@ Teams = (function() {
 
   TeamsAPI.setVictoryPoints = function(tid, numPoints) {
     verifyTeam(tid);
-    if (typeof numPoints !== "number") {
-      throw "Must set victory points to a number.";
-    }
+    invariant(typeof numPoints === "number", 
+        "Must set victory points to a number.");
     teams[tid].victoryPoints = numPoints;
   };
 
