@@ -105,7 +105,8 @@ function entityInit(entity, params) {
       // TODO(zack): only consider 'visible' enemies
       return target.getPlayerID() != NO_PLAYER
         && target.getTeamID() != this.getTeamID()
-        && target.hasProperty(P_TARGETABLE);
+        && target.hasProperty(P_TARGETABLE)
+        && target.isVisibleTo(entity.getPlayerID());
     }.bind(this);
 
     // Default to previous target
@@ -279,7 +280,7 @@ function entityResolve(entity, dt) {
   }
   if (entity.deltas.vp_rate) {
     var amount = dt * entity.deltas.vp_rate;
-    AddVPs(entity.getTeamID(), amount, entity.getID());
+    Teams.addVPs(entity.getTeamID(), amount, entity.getID());
   }
 
   // Healing

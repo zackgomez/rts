@@ -75,7 +75,6 @@ class Game {
       ResourceType type,
       float amount,
       id_t from);
-  void addVPs(id_t tid, float amount, id_t from);
 
   const GameEntity * spawnEntity(
       const std::string &name,
@@ -90,7 +89,7 @@ class Game {
 
   const PlayerResources& getResources(id_t pid) const;
   float getVictoryPoints(id_t tid) const;
-  const VisibilityMap* getVisibilityMap(id_t tid) const;
+  const VisibilityMap* getVisibilityMap(id_t pid) const;
 
   typedef std::function<void(id_t pid, const Message&)> ChatListener;
   void setChatListener(ChatListener cl) {
@@ -101,7 +100,6 @@ class Game {
   float gameRandom();
 
  private:
-  void initScripts();
   void handleOrder(id_t playerID, const PlayerAction &action);
   // Returns true if all the players have submitted input for the current tick_
   bool updatePlayers();
@@ -110,6 +108,9 @@ class Game {
   TickChecksum checksum();
   void pause();
   void unpause();
+
+  // Load the victory points from JS.
+  void readVPs();
 
   std::mutex actionMutex_;
 

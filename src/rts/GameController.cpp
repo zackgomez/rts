@@ -68,6 +68,8 @@ void renderDragRect(bool enabled, const glm::vec2 &start, const glm::vec2 &end, 
   drawRect(start, end - start, color);
 }
 
+// Todo. This gets called before JS is initialized. Return 0 until we know 
+// what the hell is going on.
 std::string getVPString(id_t team) {
   return std::to_string((int)Game::get()->getVictoryPoints(team));
 }

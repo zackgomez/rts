@@ -22,10 +22,10 @@ function UnitIdleState() {
     entity.remainStationary();
 
     var target = entity.findTarget(this.targetID);
-    this.targetID = target ? target.getID() : null;
     if (target) {
       entity.pursue(target);
     }
+    this.targetID = target ? target.getID() : null;
 
     return null;
   }

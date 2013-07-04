@@ -70,7 +70,7 @@ class Player {
    * Called to determine if the given GameEntity contributes to this player's
    * vision.
    */
-  virtual bool visibleEntity(const GameEntity *entity) const = 0;
+  virtual bool visibleEntity(const GameEntity *e) const;
 
   /* Returns this player's color. */
   glm::vec3 getColor() const {
@@ -122,7 +122,6 @@ class LocalPlayer : public Player {
   const std::set<id_t>& getSelection() const {
     return selection_;
   }
-  virtual bool visibleEntity(const GameEntity *entity) const;
 
   virtual void addSavedSelection(char hotkey, const std::set<id_t> &sel) {
     savedSelections_[hotkey] = sel;
@@ -155,7 +154,6 @@ class DummyPlayer : public Player {
   virtual void startTick(tick_t tick);
   virtual bool isReady() const { return true; }
   virtual void playerAction(id_t playerID, const PlayerAction &action) { }
-  virtual bool visibleEntity(const GameEntity *) const { return false; }
 
  private:
   std::queue<PlayerAction> actions_;

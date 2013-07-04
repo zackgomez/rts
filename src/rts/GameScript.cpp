@@ -7,6 +7,7 @@
 #include "rts/Player.h"
 #include "rts/Renderer.h"
 #include "rts/ResourceManager.h"
+#include "rts/VisibilityMap.h"
 
 using namespace v8;
 
@@ -87,24 +88,13 @@ static Handle<Value> jsAddRequisition(const Arguments &args) {
   return Undefined();
 }
 
-static Handle<Value> jsAddVPs(const Arguments &args) {
-  if (args.Length() < 3) return Undefined();
-  HandleScope scope(args.GetIsolate());
-
-  id_t pid = args[0]->IntegerValue();
-  float amount = args[1]->NumberValue();
-  id_t from_eid = args[2]->IntegerValue();
-  Game::get()->addVPs(pid, amount, from_eid);
-
-  return Undefined();
-}
-
 static Handle<Value> jsGetNearbyEntities(const Arguments &args) {
   invariant(args.Length() == 3, "expected 3 args: pos2, radius, callback");
   HandleScope scope(args.GetIsolate());
 
   auto script = Game::get()->getScript();
-  glm::vec3 pos = glm::vec3(script->jsToVec2(Handle<Array>::Cast(args[0])), 0.f);
+  glm::vec3 pos = glm::vec3(script->jsToVec2(
+      Handle<Array>::Cast(args[0])), 0.f);
   float radius = args[1]->NumberValue();
   Handle<Function> callback = Handle<Function>::Cast(args[2]);
 
@@ -202,6 +192,22 @@ static Handle<Value> entityDistanceToEntity(const Arguments &args) {
   float dist = entity->distanceToEntity(target);
 
   return scope.Close(Number::New(dist));
+}
+
+static Handle<Value> entityIsVisibleTo(const Arguments &args) {
+  invariant(args.Length() == 1, "expected (id_t pid)");
+  HandleScope scope(args.GetIsolate());
+
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
+
+  id_t pid = args[0]->IntegerValue();
+
+  auto vismap = Game::get()->getVisibilityMap(pid);
+  bool visible = vismap->locationVisible(entity->getPosition2());
+
+  return scope.Close(Boolean::New(visible));
 }
 
 static Handle<Value> entityRemainStationary(const Arguments &args) {
@@ -463,9 +469,6 @@ void GameScript::init() {
       String::New("AddRequisition"),
       FunctionTemplate::New(jsAddRequisition));
   global->Set(
-      String::New("AddVPs"),
-      FunctionTemplate::New(jsAddVPs));
-  global->Set(
       String::New("GetEntity"),
       FunctionTemplate::New(jsGetEntity));
   global->Set(
@@ -547,11 +550,14 @@ void GameScript::init() {
   entityTemplate_->Set(
       String::New("distanceToPoint"),
       FunctionTemplate::New(entityDistanceToPoint));
+  entityTemplate_->Set(
+      String::New("isVisibleTo"),
+      FunctionTemplate::New(entityIsVisibleTo));
 
   entityTemplate_->Set(
       String::New("addEffect"),
       FunctionTemplate::New(entityAddEffect));
-  
+
   loadScripts();
 }
 
@@ -567,14 +573,16 @@ void GameScript::loadScripts() {
     Handle<Script> script = Script::Compile(String::New(contents.c_str()));
     if (script.IsEmpty()) {
       String::AsciiValue e_str(try_catch.Exception());
-      LOG(ERROR) << "Unable to compile script '" << filename << "': " << *e_str << '\n';
+      LOG(ERROR) << "Unable to compile script '" << filename << "': " << 
+          *e_str << '\n';
       invariant_violation("Error loading javascript");
     }
 
     Handle<Value> result = script->Run();
     if (result.IsEmpty()) {
       String::AsciiValue e_str(try_catch.Exception());
-      LOG(ERROR) << "Unable to run script '" << filename << "': " << *e_str << '\n';
+      LOG(ERROR) << "Unable to run script '" << filename << "': " << 
+          *e_str << '\n';
       invariant_violation("Error loading javascript");
     }
   }
