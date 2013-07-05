@@ -15,6 +15,7 @@ NO_PLAYER = 0;
 NO_ENTITY = 0;
 NO_TEAM = 0;
 
+// --
 // -- Damage Types --
 // --
 HEALTH_TARGET_AOE = -1;
@@ -41,9 +42,6 @@ ActionStates = {
   ENABLED: 1,
   COOLDOWN: 2,
 };
-
-var RETREAT_COOLDOWN = 0.3;
-var RETREAT_COOLDOWN_NAME = 'retreat_state';
 
 // --
 // -- Utility --

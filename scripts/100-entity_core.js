@@ -8,6 +8,7 @@
 function entityInit(entity, params) {
   entity.defaultState_ = NullState;
   entity.cooldowns_ = {};
+  entity.retreat_ = false;
   entityResetDeltas(entity);
   var name = entity.getName();
   var def = EntityDefs[name];
@@ -399,7 +400,7 @@ function entityHandleOrder(entity, order) {
 
   var type = order.type;
   // Ignore orders when retreating
-  if (entity.hasCooldown('retreat_state')) {
+  if (entity.retreat_) {
     Log(entity.getID(), 'is ignoring order', type, 'in retreat');
     return;
   }
@@ -409,7 +410,7 @@ function entityHandleOrder(entity, order) {
       target: order.target,
     });
   } else if (type == 'RETREAT') {
-    entity.addCooldown(RETREAT_COOLDOWN_NAME, RETREAT_COOLDOWN);
+    entity.retreat_ = true;
     entity.state_ = new RetreatState();
   } else if (type == 'STOP') {
     entity.state_ = new UnitIdleState();
@@ -532,7 +533,7 @@ function entityGetUIInfo(entity) {
     ui_info.hotkey = entity.hotkey_;
   }
 
-  ui_info.retreat = entity.hasCooldown(RETREAT_COOLDOWN_NAME);
+  ui_info.retreat = entity.retreat_;
 
   if (entity.maxMana_) {
     ui_info.mana = [entity.mana_, entity.maxMana_];

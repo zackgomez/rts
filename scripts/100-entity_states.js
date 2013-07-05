@@ -170,17 +170,15 @@ function RetreatState(params) {
     var player = Players.getPlayer(entity.getPlayerID());
     var retreat_point = player.getRetreatLocation();
 
-    if (!entity.hasCooldown(RETREAT_COOLDOWN_NAME)) {
-      return new entity.defaultState_;
-    }
+    invariant(entity.retreat_, "Must be retreating while in RetreatState");
 
     var threshold = 0.1;
-    if (!entity.distanceToPoint(retreat_point) < threshold) {
-      entity.addCooldown(RETREAT_COOLDOWN_NAME, RETREAT_COOLDOWN);
+    if (entity.distanceToPoint(retreat_point) > threshold) {
       entity.deltas.max_speed_percent *= EntityConsts.retreat_speed;
       entity.moveTowards(retreat_point);
     } else {
-      entity.remainStationary();
+      entity.retreat_ = false;
+      return new entity.defaultState_;
     }
 
     return null;
