@@ -177,13 +177,14 @@ function RetreatState(params) {
     var threshold = 0.1;
     if (!entity.distanceToPoint(retreat_point) < threshold) {
       entity.addCooldown(RETREAT_COOLDOWN_NAME, RETREAT_COOLDOWN);
+      entity.deltas.max_speed_percent *= EntityConsts.retreat_speed;
       entity.moveTowards(retreat_point);
     } else {
       entity.remainStationary();
     }
 
     return null;
-  }
+  };
 }
 
 function ProjectileState(params) {

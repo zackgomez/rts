@@ -28,6 +28,10 @@ var Weapons = {
   }
 }
 
+var EntityConsts = {
+  retreat_speed: 1.5,
+}
+
 // --
 // -- Entity Definitions --
 // --

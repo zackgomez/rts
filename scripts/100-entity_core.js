@@ -243,6 +243,7 @@ function entityResetDeltas(entity) {
     vp_rate: 0,
     req_rate: 0,
     mana_regen_rate: 0,
+    max_speed_percent: 1,
   };
 }
 
@@ -349,7 +350,8 @@ function entityResolve(entity, dt) {
   }
 
   // Attributes
-  entity.setMaxSpeed(entity.maxSpeed_);
+  var speed_modifier = entity.deltas.max_speed_percent;
+  entity.setMaxSpeed(speed_modifier * entity.maxSpeed_);
   entity.setSight(entity.sight_);
 
   // Resolved!
