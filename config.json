@@ -55,7 +55,8 @@
       "repair_icon": "images/repair_icon.png",
       "cursor_normal": "images/cursor-normal.png",
       "cursor_action": "images/cursor-action.png",
-      "lightning1": "images/lightning1.png"
+      "lightning1": "images/lightning1.png",
+      "retreat_emblem": "images/retreat_emblem.png"
     },
     "depthFields" : {
       "steamLogo"  : {
@@ -209,6 +210,11 @@
       "dim" : [80, 5],
       "pos" : [0, 0],
       "color" : [0.5, 0.5, 0.5, 1.0]
+    },
+    "actor_retreat": {
+      "dim": [60, 60],
+      "pos": [0, 30],
+      "texture": "retreat_emblem"
     },
     "minDragDistance" : 10
   },

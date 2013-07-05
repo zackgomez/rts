@@ -173,7 +173,6 @@ function RetreatState(params) {
     if (!entity.hasCooldown(RETREAT_COOLDOWN_NAME)) {
       return new entity.defaultState_;
     }
-    Log('here');
 
     var threshold = 0.1;
     if (!entity.distanceToPoint(retreat_point) < threshold) {

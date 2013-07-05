@@ -551,6 +551,8 @@ function entityGetUIInfo(entity) {
     ui_info.hotkey = entity.hotkey_;
   }
 
+  ui_info.retreat = entity.hasCooldown(RETREAT_COOLDOWN_NAME);
+
   if (entity.maxMana_) {
     ui_info.mana = [entity.mana_, entity.maxMana_];
   }

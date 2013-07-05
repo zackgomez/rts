@@ -210,11 +210,6 @@ void Actor::updateUIInfo() {
   checkJSResult(ret, try_catch.Exception(), "entityGetUIInfo:");
 
   auto jsinfo = ret->ToObject();
-  auto prod = String::New("production");
-  if (jsinfo->Has(prod)) {
-    uiInfo_.production = script->jsToVec2(
-        Handle<Array>::Cast(jsinfo->Get(prod)));
-  }
   auto healths = String::New("healths");
   if (jsinfo->Has(healths)) {
     auto bars = Handle<Array>::Cast(jsinfo->Get(healths));
@@ -238,6 +233,11 @@ void Actor::updateUIInfo() {
   uiInfo_.capture_pid = 0;
   if (jsinfo->Has(cap_pid)) {
     uiInfo_.capture_pid = jsinfo->Get(cap_pid)->IntegerValue();
+  }
+  auto retreat = String::New("retreat");
+  uiInfo_.retreat = false;
+  if (jsinfo->Has(retreat)) {
+    uiInfo_.retreat = jsinfo->Get(retreat)->BooleanValue();
   }
   auto hotkey = String::New("hotkey");
   if (jsinfo->Has(hotkey)) {

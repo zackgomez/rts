@@ -978,6 +978,14 @@ void renderEntity(
     drawRectCenter(pos, size, manaBarColor);
   }
 
+  if (ui_info.retreat) {
+    glm::vec2 size = vec2Param("hud.actor_retreat.dim");
+    glm::vec2 pos = coord - vec2Param("hud.actor_retreat.pos");
+    std::string texname = strParam("hud.actor_retreat.texture");
+    auto tex = ResourceManager::get()->getTexture(texname);
+    drawTextureCenter(pos, size, tex);
+  }
+
   glEnable(GL_DEPTH_TEST);
   // Render path if selected
   if (localPlayer->isSelected(actor->getID())) {
