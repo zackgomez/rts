@@ -9,7 +9,7 @@ var Players = (function() {
   // Private state
   var players = {};
 
-  PlayersAPI.getPlayerInfo = function(pid) {
+  PlayersAPI.getPlayer = function(pid) {
     return players[pid];
   };
 
@@ -30,20 +30,29 @@ var Players = (function() {
       });
     var base_entity = GetEntity(base_id);
 
+    var retreat_location = vecAdd(
+      base_entity.getPosition2(),
+      vecMul(base_entity.getDirection(), 3)
+    );
+
     var unit_id = SpawnEntity(
       'unit',
       {
         pid: pid,
-        pos: vecAdd(base_entity.getPosition2(), base_entity.getDirection()),
+        pos: retreat_location,
         angle: base_entity.getAngle(),
       });
-
-    players[pid] = {
-      units: {
-        base: base_id,
-        unit: unit_id,
-      }
-    };
+      var player =  {
+        retreat_location: retreat_location,
+        units: {
+          base: base_id,
+          unit: unit_id,
+        },
+        getRetreatLocation: function () {
+          return retreat_location;
+        }
+      };
+      players[pid] = player;
   };
 
   PlayersAPI.playerUpdate = function (player) {

@@ -42,6 +42,9 @@ ActionStates = {
   COOLDOWN: 2,
 };
 
+var RETREAT_COOLDOWN = 0.3;
+var RETREAT_COOLDOWN_NAME = 'retreat_state';
+
 // --
 // -- Utility --
 // --
@@ -51,6 +54,14 @@ function vecAdd(v1, v2) {
   var ret = [];
   for (var i = 0; i < v1.length; i++) {
     ret.push(v1[i] + v2[i]);
+  }
+  return ret;
+}
+
+function vecMul(v, s) {
+  var ret = [];
+  for (var i = 0; i < v.length; i++) {
+    ret.push(v[i] * s);
   }
   return ret;
 }

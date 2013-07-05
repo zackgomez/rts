@@ -416,12 +416,20 @@ function entityHandleOrder(entity, order) {
     return;
   }
 
-  // TODO(zack): replace if/else if/else block
   var type = order.type;
+  // Ignore orders when retreating
+  if (entity.hasCooldown('retreat_state')) {
+    Log(entity.getID(), 'is ignoring order', type, 'in retreat');
+    return;
+  }
+
   if (type == 'MOVE') {
     entity.state_ = new UnitMoveState({
       target: order.target,
     });
+  } else if (type == 'RETREAT') {
+    entity.addCooldown(RETREAT_COOLDOWN_NAME, RETREAT_COOLDOWN);
+    entity.state_ = new RetreatState();
   } else if (type == 'STOP') {
     entity.state_ = new UnitIdleState();
   } else if (type == 'CAPTURE') {

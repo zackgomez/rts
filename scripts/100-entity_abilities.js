@@ -107,7 +107,7 @@ function ProductionAction(params) {
   }
 
   this.isEnabled = function (entity) {
-    var owner = Players.getPlayerInfo(entity.getPlayerID());
+    var owner = Players.getPlayer(entity.getPlayerID());
     var unit_constructed = this.params.prod_name in owner.units;
 
     // Always disabled if unit is already produced
