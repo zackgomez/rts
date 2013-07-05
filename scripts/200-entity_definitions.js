@@ -1,34 +1,4 @@
 // --
-// -- Weapon Definitions --
-// --
-var Weapons = {
-  rifle: {
-    range: 8.0,
-    damage: 15.0,
-    damage_type: 'ranged',
-    health_target: HEALTH_TARGET_RANDOM,
-    cooldown_name: 'rifle_cd',
-    cooldown: 1.0,
-  },
-  advanced_melee: {
-    range: 1.0,
-    damage: 10.0,
-    damage_type: 'melee',
-    health_target: HEALTH_TARGET_RANDOM,
-    cooldown_name: 'advanced_melee_cd',
-    cooldown: 0.5,
-  },
-  tanky_melee: {
-    range: 1.0,
-    damage: 10.0,
-    damage_type: 'melee',
-    health_target: HEALTH_TARGET_AOE,
-    cooldown_name: 'tanky_melee_cd',
-    cooldown: 1.5,
-  }
-}
-
-// --
 // -- Entity Definitions --
 // --
 var EntityDefs = {

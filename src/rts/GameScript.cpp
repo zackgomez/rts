@@ -217,6 +217,8 @@ static Handle<Value> entityRemainStationary(const Arguments &args) {
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
 
+  entity->remainStationary();
+
   return Undefined();
 }
 
