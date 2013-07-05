@@ -49,7 +49,7 @@ function entityInit(entity, params) {
     entity.captureRange_ = def.capture_range;
   }
   if (def.weapon) {
-    entity.weapon_ = Weapons[def.weapon];
+    entity.weapon_ = Weapons.newWeapon(def.weapon);
   }
   entity.effects_ = {};
   if (def.getEffects) {
@@ -155,33 +155,12 @@ function entityInit(entity, params) {
     var weapon = this.weapon_;
 
     var dist = this.distanceToEntity(target);
-    if (dist > weapon.range) {
+    if (dist > weapon.getRange()) {
       return false;
     }
 
-    if (!this.hasCooldown(weapon.cooldown_name)) {
-      this.addCooldown(weapon.cooldown_name, weapon.cooldown);
-
-      if (weapon.damage_type == 'ranged') {
-        var params = {
-          pid: this.getPlayerID(),
-          pos: this.getPosition2(),
-          target_id: target.getID(),
-          damage: weapon.damage,
-          damage_type: weapon.damage_type,
-          health_target: weapon.health_target,
-        };
-        SpawnEntity('projectile', params);
-      } else {
-        SendMessage({
-          to: target.getID(),
-          from: this.getID(),
-          type: MessageTypes.ATTACK,
-          damage: weapon.damage,
-          damage_type: weapon.damage_type,
-          health_target: weapon.health_target,
-        });
-      }
+    if (weapon.ready(this)) {
+      weapon.fire(entity, target.getID());
     }
     return true;
   }
