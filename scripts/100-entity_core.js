@@ -69,7 +69,7 @@ function entityInit(entity, params) {
   // Set some functions on the entity
   entity.hasCooldown = function (name) {
     return name in this.cooldowns_;
-  }
+  };
   entity.addCooldown = function (name, t) {
     if (this.cooldowns_[name]) {
       this.cooldowns_[name] = {
@@ -82,14 +82,14 @@ function entityInit(entity, params) {
         maxt: t,
       };
     }
-  }
+  };
   entity.getCooldownPercent = function (name) {
     if (!(name in this.cooldowns_)) {
       return 0;
     }
     var cd = this.cooldowns_[name];
     return cd.t / cd.maxt;
-  }
+  };
 
   // Find entities near the current one.
   // Calls the passed callback for each entity in range.
@@ -97,17 +97,17 @@ function entityInit(entity, params) {
   // there are no more
   entity.getNearbyEntities = function (range, callback) {
     GetNearbyEntities(entity.getPosition2(), range, callback);
-  }
+  };
 
   // @return Entity object or null if no target
   entity.findTarget = function (previous_target_id) {
     // Only looking for targetable entities belonging to enemy teams
     var is_viable_target = function (target) {
       // TODO(zack): only consider 'visible' enemies
-      return target.getPlayerID() != NO_PLAYER
-        && target.getTeamID() != this.getTeamID()
-        && target.hasProperty(P_TARGETABLE)
-        && target.isVisibleTo(entity.getPlayerID());
+      return target.getPlayerID() != NO_PLAYER &&
+        target.getTeamID() != this.getTeamID() &&
+        target.hasProperty(P_TARGETABLE) &&
+        target.isVisibleTo(entity.getPlayerID());
     }.bind(this);
 
     // Default to previous target
@@ -134,7 +134,7 @@ function entityInit(entity, params) {
     }.bind(this));
 
     return new_target;
-  }
+  };
 
 
   // Chases after a target, attacking it whenever possible
@@ -144,7 +144,7 @@ function entityInit(entity, params) {
     } else {
       this.moveTowards(target.getPosition2());
     }
-  }
+  };
 
   // entity.attack attacks a target if it can.  Checks range and weapon
   // cooldowns
@@ -164,7 +164,7 @@ function entityInit(entity, params) {
       weapon.fire(entity, target.getID());
     }
     return true;
-  }
+  };
 
   entity.updatePartHealth = function (health_target, amount) {
     var modified_parts = [];
@@ -210,7 +210,7 @@ function entityInit(entity, params) {
       invariant_violation('Unknown health target ' + health_target);
     }
     return modified_parts;
-  }
+  };
 }
 
 // Helper function that clears out the deltas at the end of the resolve.
@@ -256,12 +256,12 @@ function entityResolve(entity, dt) {
 
   // Resources
   if (entity.deltas.req_rate) {
-    var amount = dt * entity.deltas.req_rate;
-    AddRequisition(entity.getPlayerID(), amount, entity.getID());
+    var req = dt * entity.deltas.req_rate;
+    AddRequisition(entity.getPlayerID(), req, entity.getID());
   }
   if (entity.deltas.vp_rate) {
-    var amount = dt * entity.deltas.vp_rate;
-    Teams.addVPs(entity.getTeamID(), amount, entity.getID());
+    var vps = dt * entity.deltas.vp_rate;
+    Teams.addVPs(entity.getTeamID(), vps, entity.getID());
   }
 
   // Healing
@@ -324,7 +324,7 @@ function entityResolve(entity, dt) {
       }
     }
   }
-  if (Object.keys(capture_values).length == 0) {
+  if (Object.keys(capture_values).length === 0) {
     entity.cappingPlayerID_ = null;
     entity.capAmount_ = 0;
   }
@@ -497,9 +497,9 @@ function entityGetActions(entity) {
       range: action.getRange(entity),
       state: action.getState(entity),
       // TODO(zack): this is hacky, move this into the valued returned by the state
-      cooldown: action.getState(entity) == ActionStates.COOLDOWN
-        ? 1 - entity.getCooldownPercent(action.params.cooldown_name)
-        : 0.0,
+      cooldown: action.getState(entity) == ActionStates.COOLDOWN ?
+        1 - entity.getCooldownPercent(action.params.cooldown_name) :
+        0.0,
     });
   }
 

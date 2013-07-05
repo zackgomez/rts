@@ -21,8 +21,8 @@
 // range/cooldown parameters
 var ActionPrototype = {
   getState: function (entity) {
-    if (this.params.cooldown_name
-        && entity.hasCooldown(this.params.cooldown_name)) {
+    if (this.params.cooldown_name &&
+        entity.hasCooldown(this.params.cooldown_name)) {
       return ActionStates.COOLDOWN;
     } else if (!this.isEnabled(entity)) {
       return ActionStates.DISABLED;
@@ -43,7 +43,7 @@ var ActionPrototype = {
   getRange: function (entity) {
     return this.params.range ? this.params.range : 0.0;
   },
-}
+};
 
 function ReinforceAction(params) {
   this.targeting = TargetingTypes.NONE;
@@ -53,7 +53,7 @@ function ReinforceAction(params) {
   this.getTooltip = function (entity) {
     return 'Reinforce' +
       '\nreq: ' + this.params.req_cost;
-  }
+  };
 
   this.isEnabled = function (entity) {
     var near_base = false;
@@ -71,10 +71,10 @@ function ReinforceAction(params) {
         disabled_part = i;
       }
     }
-    return GetRequisition(entity.getPlayerID()) >= this.params.req_cost
-      && disabled_part !== false
-      && near_base;
-  }
+    return GetRequisition(entity.getPlayerID()) >= this.params.req_cost &&
+      disabled_part !== false &&
+      near_base;
+  };
 
   this.exec = function (entity, target) {
     Log(entity.getID(), 'repairing');
@@ -90,7 +90,7 @@ function ReinforceAction(params) {
     }
     AddRequisition(entity.getPlayerID(), -this.params.req_cost, entity.getID());
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
-  }
+  };
 }
 ReinforceAction.prototype = ActionPrototype;
 
@@ -104,7 +104,7 @@ function ProductionAction(params) {
     return this.params.prod_name +
       '\nreq: ' + this.params.req_cost +
       '\ntime: ' + this.params.time_cost;
-  }
+  };
 
   this.isEnabled = function (entity) {
     var owner = Players.getPlayer(entity.getPlayerID());
@@ -121,7 +121,7 @@ function ProductionAction(params) {
       return true;
     }
     return GetRequisition(entity.getPlayerID()) > this.params.req_cost;
-  }
+  };
 
   this.exec = function (entity, target) {
     Log(entity.getID(), 'starting', this.params.prod_name);
@@ -132,7 +132,7 @@ function ProductionAction(params) {
       prod_name: this.params.prod_name,
       cooldown_name: this.params.cooldown_name,
     });
-  }
+  };
 }
 ProductionAction.prototype = ActionPrototype;
 
@@ -143,17 +143,17 @@ function TeleportAction(params) {
   this.getTooltip = function (entity) {
     return 'Teleport' +
       '\nCooldown:'+this.params.cooldown;
-  }
+  };
 
   this.isEnabled = function (entity) {
     return entity.mana_ > this.params.mana_cost;
-  }
+  };
 
   this.exec = function (entity, target) {
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
     entity.mana_ -= this.params.mana_cost;
     entity.warpPosition(target);
-  }
+  };
 }
 TeleportAction.prototype = ActionPrototype;
 
@@ -165,11 +165,11 @@ function SnipeAction(params) {
     return 'Snipe' +
       '\nDamage:' + this.params.damage +
       '\nCooldown:' + this.params.cooldown;
-  }
+  };
 
   this.isEnabled = function (entity) {
     return entity.mana_ > this.params.mana_cost;
-  }
+  };
 
   this.exec = function (entity, target) {
     var target_entity = GetEntity(target);
@@ -190,7 +190,7 @@ function SnipeAction(params) {
       damage_type: 'ranged',
       health_target: HEALTH_TARGET_RANDOM,
     });
-  }
+  };
 }
 SnipeAction.prototype = ActionPrototype;
 
@@ -205,11 +205,11 @@ function CenteredAOEAction(params) {
       '\nRange: ' + this.params.radius +
       '\nMana Cost: ' + this.params.mana_cost +
       '\nCooldown: ' + this.params.cooldown;
-  }
+  };
 
   this.isEnabled = function (entity) {
     return entity.mana_ > this.params.mana_cost;
-  }
+  };
 
   this.exec = function (entity, target) {
     entity.mana_ -= this.params.mana_cost;
@@ -221,8 +221,8 @@ function CenteredAOEAction(params) {
     entity.getNearbyEntities(
       this.params.radius,
       function (candidate) {
-        if (candidate.getTeamID() != entity.getTeamID()
-            && candidate.hasProperty(P_TARGETABLE)) {
+        if (candidate.getTeamID() != entity.getTeamID() &&
+            candidate.hasProperty(P_TARGETABLE)) {
           SendMessage({
             to: candidate.getID(),
             from: entity.getID(),
@@ -234,7 +234,7 @@ function CenteredAOEAction(params) {
           return true;
         }
       });
-  }
+  };
 }
 CenteredAOEAction.prototype = ActionPrototype;
 
@@ -246,11 +246,11 @@ function HealAction(params) {
     return 'Heal' +
       '\nAmount:' + this.params.healing +
       '\nCooldown:' + this.params.cooldown;
-  }
+  };
 
   this.isEnabled = function (entity) {
     return entity.mana_ > this.params.mana_cost;
-  }
+  };
 
   this.exec = function (entity, target) {
     var target_entity = GetEntity(target);
@@ -272,6 +272,6 @@ function HealAction(params) {
     });
 
     target_entity.addEffect('heal', {});
-  }
+  };
 }
 HealAction.prototype = ActionPrototype;

@@ -27,18 +27,18 @@ var Weapons = (function () {
       cooldown_name: 'tanky_melee_cd',
       cooldown: 1.5,
     }
-  }
+  };
 
   function Weapon(params) {
     this.params = params;
 
     this.getRange = function (entity) {
       return this.params.range;
-    }
+    };
 
     this.ready = function (entity) {
       return !entity.hasCooldown(this.params.cooldown_name);
-    }
+    };
 
     this.fire = function (entity, target_id) {
       entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
@@ -62,7 +62,7 @@ var Weapons = (function () {
           health_target: this.params.health_target,
         });
       }
-    }
+    };
   }
 
   exports.newWeapon = function (name) {
@@ -72,7 +72,7 @@ var Weapons = (function () {
     );
     var def = definitions[name];
     return new Weapon(def);
-  }
+  };
 
   return exports;
 })();

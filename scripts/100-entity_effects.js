@@ -49,7 +49,7 @@ function makeHealingAura(radius, amount) {
     });
 
     return true;
-  }
+  };
 }
 
 function makeManaRegenEffect(amount) {
@@ -58,7 +58,7 @@ function makeManaRegenEffect(amount) {
       entity.deltas.mana_regen_rate += amount;
     }
     return true;
-  }
+  };
 }
 
 function makeVpGenEffect(amount) {
@@ -69,7 +69,7 @@ function makeVpGenEffect(amount) {
 
     entity.deltas.vp_rate += amount;
     return true;
-  }
+  };
 }
 
 function makeReqGenEffect(amount) {
@@ -80,5 +80,5 @@ function makeReqGenEffect(amount) {
 
     entity.deltas.req_rate += amount;
     return true;
-  }
+  };
 }

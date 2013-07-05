@@ -1,6 +1,6 @@
 var EntityConsts = {
   retreat_speed: 1.5,
-}
+};
 
 // --
 // -- Entity Definitions --
@@ -275,4 +275,4 @@ var EntityDefs = {
     size: [0.6, 0.6, 0.3],
     default_state: ProjectileState,
   },
-}
+};

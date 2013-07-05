@@ -12,7 +12,7 @@
 function NullState(params) {
   this.update = function (entity) {
     return null;
-  }
+  };
 }
 
 function UnitIdleState() {
@@ -28,7 +28,7 @@ function UnitIdleState() {
     this.targetID = target ? target.getID() : null;
 
     return null;
-  }
+  };
 }
 
 function UnitMoveState(params) {
@@ -40,7 +40,7 @@ function UnitMoveState(params) {
 
     entity.moveTowards(this.target);
     return null;
-  }
+  };
 }
 
 function UnitCaptureState(params) {
@@ -48,9 +48,9 @@ function UnitCaptureState(params) {
 
   this.update = function (entity) {
     var target = GetEntity(this.targetID);
-    if (!target
-        || !target.hasProperty(P_CAPPABLE)
-        || target.getPlayerID() == entity.getPlayerID()) {
+    if (!target ||
+        !target.hasProperty(P_CAPPABLE) ||
+        target.getPlayerID() == entity.getPlayerID()) {
       return new UnitIdleState();
     }
 
@@ -67,7 +67,7 @@ function UnitCaptureState(params) {
       entity.moveTowards(target.getPosition2());
     }
     return null;
-  }
+  };
 }
 
 function UnitAttackState(params) {
@@ -76,14 +76,14 @@ function UnitAttackState(params) {
   this.update = function (entity) {
     var target = GetEntity(this.targetID);
     // TODO(zack): or if the target isn't visible
-    if (!target
-        || !target.hasProperty(P_TARGETABLE)
-        || target.getTeamID() == entity.getTeamID()) {
+    if (!target ||
+        !target.hasProperty(P_TARGETABLE) ||
+        target.getTeamID() == entity.getTeamID()) {
       return new UnitIdleState();
     }
 
     entity.pursue(target);
-  }
+  };
 }
 
 function UnitAttackMoveState(params) {
@@ -106,7 +106,7 @@ function UnitAttackMoveState(params) {
     }
 
     return null;
-  }
+  };
 }
 
 function HoldPositionState() {
@@ -120,7 +120,7 @@ function HoldPositionState() {
     if (targetEnemy) {
       entity.attack(targetEnemy);
     }
-  }
+  };
 }
 
 function UntargetedAbilityState(params) {
@@ -130,7 +130,7 @@ function UntargetedAbilityState(params) {
     this.action.exec(entity);
     var next_state = this.next_state.update(entity);
     return next_state ? next_state : this.next_state;
-  }
+  };
 }
 
 function LocationAbilityState(params) {
@@ -139,12 +139,12 @@ function LocationAbilityState(params) {
   this.update = function (entity) {
     if (entity.distanceToPoint(this.target) < this.action.getRange(entity)) {
       this.action.exec(entity, this.target);
-      return new entity.defaultState_;
+      return new entity.defaultState_();
     }
 
     entity.moveTowards(this.target);
     return null;
-  }
+  };
 }
 
 function TargetedAbilityState(params) {
@@ -153,16 +153,16 @@ function TargetedAbilityState(params) {
   this.update = function (entity) {
     var target = GetEntity(this.target_id);
     if (!target) {
-      return new entity.defaultState_;
+      return new entity.defaultState_();
     }
     // TODO(zack): some checking of visibility here
     if (entity.distanceToEntity(target) < this.action.getRange(entity)) {
       this.action.exec(entity, this.target_id);
-      return new entity.defaultState_;
+      return new entity.defaultState_();
     }
 
     entity.moveTowards(target.getPosition2()); return null;
-  }
+  };
 }
 
 function RetreatState(params) {
@@ -178,7 +178,7 @@ function RetreatState(params) {
       entity.moveTowards(retreat_point);
     } else {
       entity.retreat_ = false;
-      return new entity.defaultState_;
+      return new entity.defaultState_();
     }
 
     return null;
@@ -213,5 +213,5 @@ function ProjectileState(params) {
 
     entity.moveTowards(target.getPosition2());
     return null;
-  }
+  };
 }
