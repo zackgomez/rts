@@ -702,6 +702,14 @@ void GameController::keyPress(SDL_keysym keysym) {
         order_ = OrderTypes::ATTACK;
       } else if (key == SDLK_m) {
         order_ = OrderTypes::MOVE;
+      } else if (key == SDLK_x) {
+        Json::Value order;
+        order["type"] = OrderTypes::RETREAT;
+        order["entity"] = toJson(player_->getSelection());
+        PlayerAction action;
+        action["type"] = ActionTypes::ORDER;
+        action["order"] = order;
+        Game::get()->addAction(player_->getPlayerID(), action);
       } else if (key == SDLK_h) {
         Json::Value order;
         order["type"] = OrderTypes::HOLD_POSITION;
@@ -968,6 +976,14 @@ void renderEntity(
     pos.x -= size.x * (1.f - manaFact) / 2.f;
     size.x *= manaFact;
     drawRectCenter(pos, size, manaBarColor);
+  }
+
+  if (ui_info.retreat) {
+    glm::vec2 size = vec2Param("hud.actor_retreat.dim");
+    glm::vec2 pos = coord - vec2Param("hud.actor_retreat.pos");
+    std::string texname = strParam("hud.actor_retreat.texture");
+    auto tex = ResourceManager::get()->getTexture(texname);
+    drawTextureCenter(pos, size, tex);
   }
 
   glEnable(GL_DEPTH_TEST);

@@ -222,6 +222,7 @@ function entityResetDeltas(entity) {
     vp_rate: 0,
     req_rate: 0,
     mana_regen_rate: 0,
+    max_speed_percent: 1,
   };
 }
 
@@ -328,7 +329,8 @@ function entityResolve(entity, dt) {
   }
 
   // Attributes
-  entity.setMaxSpeed(entity.maxSpeed_);
+  var speed_modifier = entity.deltas.max_speed_percent;
+  entity.setMaxSpeed(speed_modifier * entity.maxSpeed_);
   entity.setSight(entity.sight_);
 
   // Resolved!
@@ -395,12 +397,20 @@ function entityHandleOrder(entity, order) {
     return;
   }
 
-  // TODO(zack): replace if/else if/else block
   var type = order.type;
+  // Ignore orders when retreating
+  if (entity.hasCooldown('retreat_state')) {
+    Log(entity.getID(), 'is ignoring order', type, 'in retreat');
+    return;
+  }
+
   if (type == 'MOVE') {
     entity.state_ = new UnitMoveState({
       target: order.target,
     });
+  } else if (type == 'RETREAT') {
+    entity.addCooldown(RETREAT_COOLDOWN_NAME, RETREAT_COOLDOWN);
+    entity.state_ = new RetreatState();
   } else if (type == 'STOP') {
     entity.state_ = new UnitIdleState();
   } else if (type == 'CAPTURE') {
@@ -521,6 +531,8 @@ function entityGetUIInfo(entity) {
   if (entity.hotkey_) {
     ui_info.hotkey = entity.hotkey_;
   }
+
+  ui_info.retreat = entity.hasCooldown(RETREAT_COOLDOWN_NAME);
 
   if (entity.maxMana_) {
     ui_info.mana = [entity.mana_, entity.maxMana_];

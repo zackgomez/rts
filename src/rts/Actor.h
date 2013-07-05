@@ -33,7 +33,7 @@ class Actor : public GameEntity {
   struct UIInfo {
     std::vector<glm::vec2> healths;
     glm::vec2 mana;
-    glm::vec2 production;
+    bool retreat;
     glm::vec2 capture;
     id_t capture_pid;
     char hotkey;
