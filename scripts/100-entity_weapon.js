@@ -42,11 +42,11 @@ var Weapons = (function () {
 
     this.fire = function (entity, target_id) {
       entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
-      if (this.damage_type == 'ranged') {
+      if (this.params.damage_type == 'ranged') {
         var params = {
           pid: entity.getPlayerID(),
           pos: entity.getPosition2(),
-          target_id: target.getID(),
+          target_id: target_id,
           damage: this.params.damage,
           damage_type: this.params.damage_type,
           health_target: this.params.health_target,
