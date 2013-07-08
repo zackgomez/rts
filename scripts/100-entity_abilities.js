@@ -43,6 +43,10 @@ var ActionPrototype = {
   getRange: function (entity) {
     return this.params.range ? this.params.range : 0.0;
   },
+
+  getRadius: function (entity) {
+    return this.params.radius ? this.params.radius : 0.0;
+  },
 };
 
 function ReinforceAction(params) {
@@ -202,7 +206,7 @@ function CenteredAOEAction(params) {
     return 'Spinning Storm' +
       '\nDeals AOE damage in a radius around the unit' +
       '\nDamage: ' + this.params.damage +
-      '\nRange: ' + this.params.radius +
+      '\nRadius: ' + this.params.radius +
       '\nMana Cost: ' + this.params.mana_cost +
       '\nCooldown: ' + this.params.cooldown;
   };

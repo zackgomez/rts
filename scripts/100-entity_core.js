@@ -495,6 +495,7 @@ function entityGetActions(entity) {
       tooltip: action.getTooltip(entity),
       targeting: action.targeting,
       range: action.getRange(entity),
+      radius: action.getRadius(entity),
       state: action.getState(entity),
       // TODO(zack): this is hacky, move this into the valued returned by the state
       cooldown: action.getState(entity) == ActionStates.COOLDOWN ?

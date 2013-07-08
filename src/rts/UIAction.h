@@ -26,6 +26,8 @@ struct UIAction {
   std::string tooltip;
   TargetingType targeting;
   float range;
+  // aoe radius
+  float radius;
   ActionState state;
   // Only relevant in COOLDOWN state
   float cooldown;

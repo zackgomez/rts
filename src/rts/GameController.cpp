@@ -236,11 +236,22 @@ void GameController::renderExtra(float dt) {
     GameEntity *e = Game::get()->getEntity(action_.owner);
     invariant(e, "Unable to find action owner");
 
+    glm::vec3 owner_pos = e->getPosition() + glm::vec3(0, 0, 0.1f);
     glm::mat4 transform = glm::scale(
-        glm::translate(glm::mat4(1.f), e->getPosition() + glm::vec3(0, 0, 0.1f)),
+        glm::translate(glm::mat4(1.f), owner_pos),
         glm::vec3(2 * action_.range));
 
     renderCircleColor(transform, glm::vec4(0, 0, 1, 1.5));
+
+    if (action_.radius > 0.f) {
+      glm::vec3 pos = action_.targeting == UIAction::TargetingType::NONE
+        ? owner_pos
+        : Renderer::get()->screenToTerrain(lastMousePos_);
+      glm::mat4 transform = glm::scale(
+          glm::translate(glm::mat4(1.f), pos),
+          glm::vec3(2 * action_.radius));
+      renderCircleColor(transform, glm::vec4(0, 0, 1, 1.0));
+    }
   }
 
   // TODO(zack): bit of hack here

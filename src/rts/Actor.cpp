@@ -272,6 +272,7 @@ void Actor::updateActions() {
   auto tooltip = String::New("tooltip");
   auto targeting = String::New("targeting");
   auto range = String::New("range");
+  auto radius = String::New("radius");
   auto state = String::New("state");
   auto cooldown = String::New("cooldown");
   Handle<Array> jsactions = Handle<Array>::Cast(ret);
@@ -287,6 +288,7 @@ void Actor::updateActions() {
     uiaction.targeting = static_cast<UIAction::TargetingType>(
         jsaction->Get(targeting)->IntegerValue());
     uiaction.range = jsaction->Get(range)->NumberValue();
+    uiaction.radius = jsaction->Get(radius)->NumberValue();
     uiaction.state = static_cast<UIAction::ActionState>(
         jsaction->Get(state)->Uint32Value());
     uiaction.cooldown = jsaction->Get(cooldown)->NumberValue();

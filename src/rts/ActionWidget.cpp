@@ -4,6 +4,8 @@
 #include "common/Collision.h"
 #include "common/ParamReader.h"
 #include "rts/FontManager.h"
+#include "rts/Game.h"
+#include "rts/Renderer.h"
 #include "rts/UIAction.h"
 
 namespace rts {
@@ -24,6 +26,7 @@ ActionWidget::~ActionWidget() {
 
 void ActionWidget::render(float dt) {
   auto actions = actionsFunc_();
+  const auto simdt = Renderer::get()->getSimDT();
 
   size_t num_actions = actions.size();
   // Center of the first box
@@ -56,6 +59,17 @@ void ActionWidget::render(float dt) {
       drawShaderCenter(center, size_);
     } else if (action.state == UIAction::DISABLED) {
       drawRectCenter(center, size_, glm::vec4(0, 0, 0, 0.5f));
+    }
+
+    if (action_hover && action.radius > 0) {
+      auto ent = Game::get()->getEntity(action.owner);
+      if (ent) {
+        auto pos = ent->getPosition(simdt) + glm::vec3(0, 0, 0.1f);
+        glm::mat4 transform = glm::scale(
+            glm::translate(glm::mat4(1.f), pos),
+            glm::vec3(action.radius * 2.f));
+        renderCircleColor(transform, glm::vec4(1.f), 1.5f);
+      }
     }
 
     if (action_hover && hoverTimer_ > fltParam("local.tooltipDelay")) {
