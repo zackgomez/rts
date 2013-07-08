@@ -948,11 +948,17 @@ void renderEntity(
 
       s += max_health;
 
-      // Red underneath for max health
       glm::vec4 bgcolor = health > 0
         ? vec4Param("hud.actor_health.bg_color")
         : vec4Param("hud.actor_health.disabled_bg_color");
-      auto healthBarColor = vec4Param("hud.actor_health.color");
+      glm::vec4 healthBarColor;
+      if (actor->getPlayerID() == localPlayer->getPlayerID()) {
+        healthBarColor = vec4Param("hud.actor_health.local_color");
+      } else if (actor->getTeamID() == localPlayer->getTeamID()) {
+        healthBarColor = vec4Param("hud.actor_health.team_color");
+      } else {
+        healthBarColor = vec4Param("hud.actor_health.enemy_color");
+      }
       float timeSinceDamage = Clock::secondsSince(actor->getLastTookDamage(i++));
       // TODO flash the specific bar, not the entire thingy
       if (timeSinceDamage < fltParam("hud.actor_health.flash_duration")) {
@@ -966,7 +972,7 @@ void renderEntity(
         drawLine(
           glm::vec2(p.x, p.y),
           glm::vec2(p.x, p.y + size.y),
-          glm::vec4(0, 0, 0, 1));
+          vec4Param("hud.actor_health.separator_color"));
       }
       first = false;
     }
