@@ -23,7 +23,7 @@ function UnitIdleState() {
 
     var target = entity.findTarget(this.targetID);
     if (target) {
-      entity.pursue(target);
+      entity.attack(target);
     }
     this.targetID = target ? target.getID() : null;
 
