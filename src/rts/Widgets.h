@@ -96,6 +96,8 @@ class TextWidget : public StaticWidget {
 
   void render(float dt);
 
+  void setColor(const glm::vec4 &color) { bgcolor_ = color; }
+
  private:
   float height_;
   glm::vec4 bgcolor_;

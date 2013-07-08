@@ -182,9 +182,13 @@ void GameController::onCreate() {
 
   ((TextWidget *)getUI()->getWidget("ui.widgets.vicdisplay-1"))
     ->setTextFunc(std::bind(getVPString, STARTING_TID));
+  ((TextWidget *)getUI()->getWidget("ui.widgets.vicdisplay-1"))
+    ->setColor(getTeamColor(STARTING_TID));
 
   ((TextWidget *)getUI()->getWidget("ui.widgets.vicdisplay-2"))
     ->setTextFunc(std::bind(getVPString, STARTING_TID + 1));
+  ((TextWidget *)getUI()->getWidget("ui.widgets.vicdisplay-2"))
+    ->setColor(getTeamColor(STARTING_TID + 1));
 
   ((TextWidget *)getUI()->getWidget("ui.widgets.reqdisplay"))
     ->setTextFunc([&]() -> std::string {
@@ -208,6 +212,20 @@ void GameController::onDestroy() {
   Renderer::get()->setEntityOverlayRenderer(Renderer::EntityOverlayRenderer());
   getUI()->clearWidgets();
   glDeleteTextures(1, &visTex_);
+}
+
+glm::vec4 GameController::getTeamColor(const id_t tid) const {
+  glm::vec4 tcolor;
+  id_t pid = STARTING_PID;
+  while (true) {
+    const Player *p = Game::get()->getPlayer(pid);
+    if (p->getTeamID() == tid) {
+      tcolor = glm::vec4(p->getColor(), 1);
+      break;
+    }
+    pid++;
+  }
+  return tcolor;
 }
 
 void GameController::renderExtra(float dt) {
@@ -246,26 +264,8 @@ void GameController::renderExtra(float dt) {
   shader->uniform1f("factor", factor);
 
   // get team colors
-  glm::vec4 t1color;
-  glm::vec4 t2color;
-  id_t pid = STARTING_PID;
-  while (true) {
-    const Player *p = Game::get()->getPlayer(pid);
-    if (p->getTeamID() == STARTING_TID) {
-      t1color = glm::vec4(p->getColor(), 1);
-      break;
-    }
-    pid++;
-  }
-  pid = STARTING_PID;
-  while (true) {
-    const Player *p = Game::get()->getPlayer(pid);
-    if (p->getTeamID() == STARTING_TID + 1) {
-      t2color = glm::vec4(p->getColor(), 1);
-      break;
-    }
-    pid++;
-  }
+  glm::vec4 t1color = getTeamColor(STARTING_TID);
+  glm::vec4 t2color = getTeamColor(STARTING_TID + 1);
   glm::vec2 vp_count(0);
   for (auto eid : Renderer::get()->getEntities()) {
     if (!eid.second->hasProperty(GameEntity::P_GAMEENTITY)) continue;

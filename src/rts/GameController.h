@@ -85,6 +85,8 @@ class GameController : public Controller {
   GLuint getCursorTexture() const;
 
   void attemptIssueOrder(Json::Value order);
+
+  glm::vec4 getTeamColor(const id_t tid) const;
 };
 };  // rts
 
