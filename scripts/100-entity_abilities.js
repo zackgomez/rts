@@ -24,6 +24,8 @@ var ActionPrototype = {
     if (this.params.cooldown_name &&
         entity.hasCooldown(this.params.cooldown_name)) {
       return ActionStates.COOLDOWN;
+    } else if (entity.retreat_) {
+      return ActionStates.DISABLED;
     } else if (!this.isEnabled(entity)) {
       return ActionStates.DISABLED;
     }

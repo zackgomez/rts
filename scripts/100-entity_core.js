@@ -450,6 +450,10 @@ function entityHandleAction(entity, action_name, args) {
     Log(entity.getID(), 'told to run unenabled action');
     return;
   }
+  if (entity.retreat_) {
+    Log(entity.getID(), 'told to execute action while in retreat');
+    return;
+  }
   if (action.targeting == TargetingTypes.NONE) {
     entity.state_ = new UntargetedAbilityState({
       action: action,
