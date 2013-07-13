@@ -8,17 +8,36 @@ var Weapons = (function () {
       damage: 15.0,
       damage_type: 'ranged',
       health_target: HEALTH_TARGET_RANDOM,
-      cooldown_name: 'rifle_cd',
-      cooldown: 1.0,
+      cooldown_name: 'rifle_weapon',
+      cooldowns: {
+        rifle_weapon: 1.0,
+      },
       on_hit_cooldowns: {},
+    },
+    basic_melee: {
+      range: 1.0,
+      damage: 5.0,
+      damage_type: 'melee',
+      health_target: HEALTH_TARGET_RANDOM,
+      cooldown_name: 'melee_weapon',
+      cooldowns: {
+        melee_weapon: 0.7,
+        melee_leash: 1.1,
+      },
+      on_hit_cooldowns: {
+        melee_leash: 1.1,
+      },
     },
     advanced_melee: {
       range: 1.0,
       damage: 10.0,
       damage_type: 'melee',
       health_target: HEALTH_TARGET_RANDOM,
-      cooldown_name: 'advanced_melee_cd',
-      cooldown: 0.5,
+      cooldown_name: 'melee_weapon',
+      cooldowns: {
+        melee_weapon: 0.5,
+        melee_leash: 1.1,
+      },
       on_hit_cooldowns: {
         melee_leash: 1.1,
       },
@@ -28,8 +47,11 @@ var Weapons = (function () {
       damage: 10.0,
       damage_type: 'melee',
       health_target: HEALTH_TARGET_AOE,
-      cooldown_name: 'tanky_melee_cd',
-      cooldown: 1.0,
+      cooldown_name: 'melee_weapon',
+      cooldowns: {
+        melee_weapon: 1.0,
+        melee_leash: 1.1,
+      },
       on_hit_cooldowns: {
         melee_leash: 1.1,
       },
@@ -44,6 +66,9 @@ var Weapons = (function () {
     };
 
     this.isEnabled = function (entity) {
+      if (this.params.damage_type === 'ranged') {
+        return !entity.hasCooldown('melee_leash');
+      }
       return true;
     };
 
@@ -52,7 +77,10 @@ var Weapons = (function () {
     };
 
     this.fire = function (entity, target_id) {
-      entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
+      for (var cd_name in this.params.cooldowns) {
+        Log('adding cd', cd_name);
+        entity.addCooldown(cd_name, this.params.cooldowns[cd_name]);
+      }
       if (this.params.damage_type == 'ranged') {
         var params = {
           pid: entity.getPlayerID(),

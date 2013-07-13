@@ -21,7 +21,7 @@ var EntityDefs = {
     sight: 6.0,
     capture_range: 1.0,
     mana: 100,
-    weapons: ['rifle'],
+    weapons: ['rifle', 'basic_melee'],
     getParts: function (entity) {
       return [
         makePart({
