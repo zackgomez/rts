@@ -49,8 +49,11 @@ function entityInit(entity, params) {
   if (def.capture_range) {
     entity.captureRange_ = def.capture_range;
   }
-  if (def.weapon) {
-    entity.weapon_ = Weapons.newWeapon(def.weapon);
+  entity.weapons_ = [];
+  if (def.weapons) {
+    for (var i = 0; i < def.weapons.length; i++) {
+      entity.weapons_.push(Weapons.newWeapon(def.weapons[i]));
+    }
   }
   entity.effects_ = {};
   if (def.getEffects) {
@@ -149,21 +152,23 @@ function entityInit(entity, params) {
   // entity.attack attacks a target if it can.  Checks range and weapon
   // cooldowns
   entity.attack = function (target) {
-    if (!this.weapon_) {
+    if (!this.weapons_) {
       Log(this.getID(), 'Told to attack without weapon');
       return false;
     }
-    var weapon = this.weapon_;
-
     var dist = this.distanceToEntity(target);
-    if (dist > weapon.getRange()) {
-      return false;
+
+    for (var i = 0; i < this.weapons_.length; i++) {
+      var weapon = this.weapons_[i];
+      if (weapon.isEnabled(this) && weapon.getRange() > dist) {
+        if (weapon.isReady(this)) {
+          weapon.fire(entity, target.getID());
+        }
+        return true;
+      }
     }
 
-    if (weapon.ready(this)) {
-      weapon.fire(entity, target.getID());
-    }
-    return true;
+    return false;
   };
 
   entity.updatePartHealth = function (health_target, amount) {

@@ -36,7 +36,11 @@ var Weapons = (function () {
       return this.params.range;
     };
 
-    this.ready = function (entity) {
+    this.isEnabled = function (entity) {
+      return true;
+    };
+
+    this.isReady = function (entity) {
       return !entity.hasCooldown(this.params.cooldown_name);
     };
 

@@ -21,7 +21,7 @@ var EntityDefs = {
     sight: 6.0,
     capture_range: 1.0,
     mana: 100,
-    weapon: 'rifle',
+    weapons: ['rifle'],
     getParts: function (entity) {
       return [
         makePart({
@@ -91,7 +91,7 @@ var EntityDefs = {
     capture_range: 1.0,
     mana: 100,
     hotkey: '2',
-    weapon: 'advanced_melee',
+    weapons: ['advanced_melee'],
     getParts: function (entity) {
       return [
         makePart({
@@ -146,7 +146,7 @@ var EntityDefs = {
     capture_range: 1.0,
     mana: 80,
     hotkey: '3',
-    weapon: 'tanky_melee',
+    weapons: ['tanky_melee'],
     getParts: function (entity) {
       return [
         makePart({
