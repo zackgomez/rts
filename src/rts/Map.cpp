@@ -37,6 +37,7 @@ void Map::init(const std::vector<Player *> &players) {
 
   Renderer::get()->setMapSize(getSize());
   Renderer::get()->setMapColor(getColor());
+  std::vector<std::tuple<glm::vec2, glm::vec2>> unpathable;
 
   Json::Value entities = definition_["entities"];
   for (int i = 0; i < entities.size(); i++) {
@@ -49,10 +50,14 @@ void Map::init(const std::vector<Player *> &players) {
     }
     if (type == "collision_object") {
       id_t eid = Renderer::get()->newEntityID();
+      glm::vec2 pos = toVec2(entity_def["pos"]);
+      glm::vec2 size = toVec2(entity_def["size"]);
       ModelEntity *obj = new ModelEntity(eid);
-      obj->setPosition(glm::vec3(toVec2(entity_def["pos"]), 0.1f));
-      obj->setSize(toVec2(entity_def["size"]));
+      obj->setPosition(glm::vec3(pos, 0.1f));
+      obj->setSize(size);
       obj->setAngle(entity_def["angle"].asFloat());
+
+      unpathable.push_back(std::make_tuple(pos, size));
 
       obj->setScale(glm::vec3(2.f*obj->getSize(), 1.f));
       GLuint texture = ResourceManager::get()->getTexture("collision-tex");
@@ -75,38 +80,31 @@ void Map::init(const std::vector<Player *> &players) {
     }
     Game::get()->spawnEntity(type, params);
   }
-  std::vector<glm::vec3> navVerts;
-  for (int i = 0; i < 6; i++) {
-    for (int j = 0; j < 6; j++) {
-      float x = -20.f + 40.f / 5 * j;
-      float y = -20.f + 40.f / 5 * i;
-      navVerts.emplace_back(x, y, 0.f);
-      LOG(DEBUG) << "vert " << i << ", " << j << ": " << navVerts.back() << '\n';
+
+  std::vector<std::vector<glm::vec3>> navFaces;
+  const float cell_size = 2.f;
+  auto extent = getSize() / 2.f;
+  for (float x = -extent.x; x <= extent.x; x += cell_size) {
+    for (float y = -extent.y; y <= extent.y; y += cell_size) {
+      glm::vec2 center = glm::vec2(x, y) + glm::vec2(cell_size / 2.f);
+      bool hit = false;
+      for (auto obj : unpathable) {
+        if (pointInBox(center, std::get<0>(obj), std::get<1>(obj), 0.f)) {
+          hit = true;
+          break;
+        }
+      }
+      if (!hit) {
+        std::vector<glm::vec3> face;
+        face.push_back(glm::vec3(x, y, 0.f));
+        face.push_back(glm::vec3(x + cell_size, y, 0.f));
+        face.push_back(glm::vec3(x + cell_size, y + cell_size, 0.f));
+        face.push_back(glm::vec3(x, y + cell_size, 0.f));
+        navFaces.push_back(face);
+      }
     }
   }
-  std::vector<std::vector<glm::vec3> > navFaces;
-  for (int i = 0; i < 36 - 6; i++) {
-    if (i % 6 == 5) continue;
 
-    if (i == 7) continue;
-    if (i == 9) continue;
-    if (i == 19) continue;
-    if (i == 21) continue;
-    std::vector<glm::vec3> face;
-    face.push_back(navVerts[i]);
-    face.push_back(navVerts[i+1]);
-    face.push_back(navVerts[i+7]);
-    face.push_back(navVerts[i+6]);
-
-    //navFaces.push_back(face);
-  }
-  auto extent = getSize() / 2.f;
-  std::vector<glm::vec3> face;
-  face.push_back(glm::vec3(-extent.x, -extent.y, 0.f));
-  face.push_back(glm::vec3(extent.x, -extent.y, 0.f));
-  face.push_back(glm::vec3(extent.x, extent.y, 0.f));
-  face.push_back(glm::vec3(-extent.x, extent.y, 0.f));
-  navFaces.push_back(face);
   navmesh_ = new NavMesh(navFaces);
 }
 
