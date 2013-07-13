@@ -860,7 +860,7 @@ void renderHealthBar(
   float current_health = 0.f;
   float total_health = 0.f;
   for (auto h : healths) {
-    current_health += h[0];
+    current_health += glm::max(0.f, h[0]);
     total_health += h[1];
   }
 
