@@ -105,7 +105,7 @@ std::vector<Player *> Matchmaker::doDebugSetup() {
   pid_ = STARTING_PID;
   tid_ = STARTING_TID;
 
-  mapName_ = "debugMap";
+  mapName_ = "gg_map";
 
   makeLocalPlayer();
 

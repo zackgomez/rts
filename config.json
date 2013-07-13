@@ -344,11 +344,5 @@
       "inputColor"      : [0.8, 0.8, 0.8, 0.25],
       "backgroundWidth" : 400
     }
-  },
-
-  "camera" :
-  {
-    "panspeed"     : 19.0,
-    "panspeed_key" : 0.1
   }
 }

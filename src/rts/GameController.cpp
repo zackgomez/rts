@@ -425,7 +425,7 @@ void GameController::frameUpdate(float dt) {
 
   // Don't allow screen translations during rotation
   if (!alt_) {
-    const float CAMERA_PAN_SPEED = fltParam("camera.panspeed");
+    const float CAMERA_PAN_SPEED = fltParam("local.camera.panspeed");
     glm::vec3 delta = CAMERA_PAN_SPEED * dt * glm::vec3(dir.x, dir.y, 0.f);
     Renderer::get()->updateCamera(delta);
   }

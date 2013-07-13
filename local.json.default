@@ -19,7 +19,10 @@
 
 
   // Camera preferences
-  "camera.panthresh" : 15,
+  "camera": {
+    "panthresh": 15,
+    "panspeed": 35.0
+  },
   "cameraRotSpeed" : 0.3,
   "keyZoomSpeed" : 0.1,
   "mouseZoomSpeed" : 1.0,
