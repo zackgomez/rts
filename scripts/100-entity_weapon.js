@@ -78,7 +78,6 @@ var Weapons = (function () {
 
     this.fire = function (entity, target_id) {
       for (var cd_name in this.params.cooldowns) {
-        Log('adding cd', cd_name);
         entity.addCooldown(cd_name, this.params.cooldowns[cd_name]);
       }
       if (this.params.damage_type == 'ranged') {

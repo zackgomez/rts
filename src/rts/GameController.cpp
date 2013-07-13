@@ -851,6 +851,78 @@ void GameController::highlightEntity(id_t eid) {
   entityHighlights_[eid] = fltParam("ui.highlight.duration");
 }
 
+void renderHealthBar(
+    const glm::vec2 &center,
+    const glm::vec2 &size,
+    const std::vector<glm::vec2> &healths,
+    const Actor *actor,
+    const Player *player) {
+  float current_health = 0.f;
+  float total_health = 0.f;
+  for (auto h : healths) {
+    current_health += h[0];
+    total_health += h[1];
+  }
+
+  glm::vec2 bottom_left = center - size / 2.f;
+
+  if (actor->getTeamID() != player->getTeamID()) {
+    auto bgcolor = vec4Param("hud.actor_health.bg_color");
+    auto color = vec4Param("hud.actor_health.enemy_color");
+    float factor = glm::clamp(current_health / total_health, 0.f, 1.f);
+
+    drawRect(bottom_left, size, bgcolor);
+    drawRect(bottom_left, glm::vec2(size.x * factor, size.y), color);
+    return;
+  }
+
+  float s = 0.f;
+  bool first = true;
+  int i = 0;
+  for (auto h : healths) {
+    float health = h[0];
+    float max_health = h[1];
+    float bar_size = glm::clamp(max_health / total_health, 0.f, 1.f);
+    glm::vec2 p = bottom_left + glm::vec2(size.x * s / total_health, 0.f);
+
+    glm::vec2 total_size = glm::vec2(bar_size * size.x, size.y);
+    glm::vec2 total_center = p + total_size / 2.f;
+
+    glm::vec2 cur_size = glm::vec2(
+        total_size.x * health / max_health,
+        size.y);
+    glm::vec2 cur_center = p + cur_size / 2.f;
+
+    s += max_health;
+
+    glm::vec4 bgcolor = health > 0
+      ? vec4Param("hud.actor_health.bg_color")
+      : vec4Param("hud.actor_health.disabled_bg_color");
+    glm::vec4 healthBarColor;
+    if (actor->getPlayerID() == player->getPlayerID()) {
+      healthBarColor = vec4Param("hud.actor_health.local_color");
+    } else {
+      healthBarColor = vec4Param("hud.actor_health.team_color");
+    }
+    float timeSinceDamage = Clock::secondsSince(actor->getLastTookDamage(i++));
+    // TODO flash the specific bar, not the entire thingy
+    if (timeSinceDamage < fltParam("hud.actor_health.flash_duration")) {
+      healthBarColor = vec4Param("hud.actor_health.flash_color");
+    }
+    drawRectCenter(total_center, total_size, bgcolor);
+    // Green on top for current health
+    drawRectCenter(cur_center, cur_size, healthBarColor);
+    if (!first) {
+      // Draw separator
+      drawLine(
+          glm::vec2(p.x, p.y),
+          glm::vec2(p.x, p.y + size.y),
+          vec4Param("hud.actor_health.separator_color"));
+    }
+    first = false;
+  }
+}
+
 void renderEntity(
     const LocalPlayer *localPlayer,
     const std::map<id_t, float>& entityHighlights,
@@ -919,63 +991,9 @@ void renderEntity(
   }
 
   if (!ui_info.healths.empty()) {
-    // Display the health bar
-    // Health bar flashes white on red (instead of green on red) when it has
-    // recently taken damage.
-    float total_health = 0.f;
-    for (auto h : ui_info.healths) {
-      total_health += h[1];
-    }
-
+    glm::vec2 center = coord - vec2Param("hud.actor_health.pos");
     glm::vec2 size = vec2Param("hud.actor_health.dim");
-    glm::vec2 bottom_left = coord - vec2Param("hud.actor_health.pos") - size / 2.f;
-    float s = 0.f;
-    bool first = true;
-    int i = 0;
-    for (auto h : ui_info.healths) {
-      float health = h[0];
-      float max_health = h[1];
-      float bar_size = max_health / total_health;
-      glm::vec2 p = bottom_left + glm::vec2(size.x * s / total_health, 0.f);
-
-      glm::vec2 total_size = glm::vec2(bar_size * size.x, size.y);
-      glm::vec2 total_center = p + total_size / 2.f;
-
-      glm::vec2 cur_size = glm::vec2(
-        total_size.x * health / max_health,
-        size.y);
-      glm::vec2 cur_center = p + cur_size / 2.f;
-
-      s += max_health;
-
-      glm::vec4 bgcolor = health > 0
-        ? vec4Param("hud.actor_health.bg_color")
-        : vec4Param("hud.actor_health.disabled_bg_color");
-      glm::vec4 healthBarColor;
-      if (actor->getPlayerID() == localPlayer->getPlayerID()) {
-        healthBarColor = vec4Param("hud.actor_health.local_color");
-      } else if (actor->getTeamID() == localPlayer->getTeamID()) {
-        healthBarColor = vec4Param("hud.actor_health.team_color");
-      } else {
-        healthBarColor = vec4Param("hud.actor_health.enemy_color");
-      }
-      float timeSinceDamage = Clock::secondsSince(actor->getLastTookDamage(i++));
-      // TODO flash the specific bar, not the entire thingy
-      if (timeSinceDamage < fltParam("hud.actor_health.flash_duration")) {
-        healthBarColor = vec4Param("hud.actor_health.flash_color");
-      }
-      drawRectCenter(total_center, total_size, bgcolor);
-      // Green on top for current health
-      drawRectCenter(cur_center, cur_size, healthBarColor);
-      if (!first) {
-        // Draw separator
-        drawLine(
-          glm::vec2(p.x, p.y),
-          glm::vec2(p.x, p.y + size.y),
-          vec4Param("hud.actor_health.separator_color"));
-      }
-      first = false;
-    }
+    renderHealthBar(center, size, ui_info.healths, actor, localPlayer);
   }
 
   if (ui_info.mana[1]) {
