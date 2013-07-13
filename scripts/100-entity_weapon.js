@@ -10,6 +10,7 @@ var Weapons = (function () {
       health_target: HEALTH_TARGET_RANDOM,
       cooldown_name: 'rifle_cd',
       cooldown: 1.0,
+      on_hit_cooldowns: {},
     },
     advanced_melee: {
       range: 1.0,
@@ -18,6 +19,9 @@ var Weapons = (function () {
       health_target: HEALTH_TARGET_RANDOM,
       cooldown_name: 'advanced_melee_cd',
       cooldown: 0.5,
+      on_hit_cooldowns: {
+        melee_leash: 1.1,
+      },
     },
     tanky_melee: {
       range: 1.0,
@@ -25,7 +29,10 @@ var Weapons = (function () {
       damage_type: 'melee',
       health_target: HEALTH_TARGET_AOE,
       cooldown_name: 'tanky_melee_cd',
-      cooldown: 1.5,
+      cooldown: 1.0,
+      on_hit_cooldowns: {
+        melee_leash: 1.1,
+      },
     }
   };
 
@@ -54,6 +61,7 @@ var Weapons = (function () {
           damage: this.params.damage,
           damage_type: this.params.damage_type,
           health_target: this.params.health_target,
+          on_hit_cooldowns: this.params.on_hit_cooldowns,
         };
         SpawnEntity('projectile', params);
       } else {
@@ -64,6 +72,7 @@ var Weapons = (function () {
           damage: this.params.damage,
           damage_type: this.params.damage_type,
           health_target: this.params.health_target,
+          on_hit_cooldowns: this.params.on_hit_cooldowns,
         });
       }
     };

@@ -291,6 +291,10 @@ function entityResolve(entity, dt) {
         continue;
       }
 
+      for (var cd_name in damage_obj.on_hit_cooldowns) {
+        entity.addCooldown(cd_name,damage_obj.on_hit_cooldowns[cd_name]); 
+      }
+
       var modified_parts = entity.updatePartHealth(
         damage_obj.health_target,
         -damage_obj.damage
@@ -375,6 +379,7 @@ function entityHandleMessage(entity, msg) {
       damage: msg.damage,
       health_target: msg.health_target,
       damage_type: msg.damage_type,
+      on_hit_cooldowns: msg.on_hit_cooldowns,
     });
   } else if (msg.type == MessageTypes.HEAL) {
     invariant(

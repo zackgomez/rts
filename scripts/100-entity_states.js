@@ -190,6 +190,7 @@ function ProjectileState(params) {
   this.damage = params.damage;
   this.damage_type = params.damage_type;
   this.health_target = params.health_target;
+  this.on_hit_cooldowns = params.on_hit_cooldowns;
 
   this.update = function (entity) {
     var target = GetEntity(this.targetID);
@@ -207,6 +208,7 @@ function ProjectileState(params) {
         damage: this.damage,
         damage_type: this.damage_type,
         health_target: this.health_target,
+        on_hit_cooldowns: this.on_hit_cooldowns,
       });
       entity.destroy();
     }
