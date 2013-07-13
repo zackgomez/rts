@@ -1,5 +1,6 @@
 #include "rts/MinimapWidget.h"
 #include "common/ParamReader.h"
+#include "rts/Actor.h"
 #include "rts/Game.h"
 #include "rts/Graphics.h"
 #include "rts/Player.h"
@@ -128,8 +129,18 @@ void MinimapWidget::render(float dt) {
         pcolor = vec3Param("colors.minimap.enemy");
       }
     }
-    float actorSize = fltParam(name_ + ".actorSize");
-    drawRect(pos, glm::vec2(actorSize), glm::vec4(pcolor, 1.f));
+    std::string icon_name = ((Actor *)e)->getUIInfo().minimap_icon;
+    glm::vec2 actorSize = glm::vec2(fltParam(name_ + ".actorSize"));
+    if (!icon_name.empty()) {
+      drawTextureCenter(
+          pos,
+          actorSize,
+          ResourceManager::get()->getTexture(icon_name),
+          glm::vec4(0, 0, 1, 1),
+          glm::vec4(pcolor, 1.f));
+    } else {
+      drawRectCenter(pos, actorSize, glm::vec4(pcolor, 1.f));
+    }
   }
 }
 

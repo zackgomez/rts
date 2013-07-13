@@ -103,12 +103,14 @@ void drawTextureCenter(
     const glm::vec2 &pos,  // center
     const glm::vec2 &size,  // width/height
     const GLuint texture,
-    const glm::vec4 &texcoord = glm::vec4(0, 0, 1, 1));  // u0,v0, u1,v1
+    const glm::vec4 &texcoord = glm::vec4(0, 0, 1, 1),  // u0,v0, u1,v1
+    const glm::vec4 &color = glm::vec4(1.f));
 void drawTexture(
     const glm::vec2 &pos,  // top left corner
     const glm::vec2 &size,  // width/height
     const GLuint texture,
-    const glm::vec4 &texcoord = glm::vec4(0, 0, 1, 1));  // u0,v0, u1,v1
+    const glm::vec4 &texcoord = glm::vec4(0, 0, 1, 1),
+    const glm::vec4 &color = glm::vec4(1.f));
 void drawLine(
     const glm::vec2 &p1,
     const glm::vec2 &p2,

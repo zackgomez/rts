@@ -428,14 +428,17 @@ void drawTextureCenter(
     const glm::vec2 &pos,  // center
     const glm::vec2 &size,  // width/height
     const GLuint texture,
-    const glm::vec4 &texcoord) {
+    const glm::vec4 &texcoord,
+    const glm::vec4 &color) {
   record_section("drawTexture");
 
   glUseProgram(resources.texProgram);
   GLuint textureUniform = glGetUniformLocation(resources.texProgram, "texture");
   GLuint tcUniform = glGetUniformLocation(resources.texProgram, "texcoord");
+  GLuint colorUniform = glGetUniformLocation(resources.texProgram, "color");
   glUniform1i(textureUniform, 0);
   glUniform4fv(tcUniform, 1, glm::value_ptr(texcoord));
+  glUniform4fv(colorUniform, 1, glm::value_ptr(color));
 
   glActiveTexture(GL_TEXTURE0);
   glEnable(GL_TEXTURE_2D);
@@ -448,9 +451,10 @@ void drawTexture(
     const glm::vec2 &pos,  // top left corner
     const glm::vec2 &size,  // width/height
     const GLuint texture,
-    const glm::vec4 &texcoord) {
+    const glm::vec4 &texcoord,
+    const glm::vec4 &color) {
   glm::vec2 center = pos + size / 2.f;
-  drawTextureCenter(center, size, texture, texcoord);
+  drawTextureCenter(center, size, texture, texcoord, color);
 }
 
 void drawDepthField(

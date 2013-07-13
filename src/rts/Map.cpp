@@ -98,8 +98,15 @@ void Map::init(const std::vector<Player *> &players) {
     face.push_back(navVerts[i+7]);
     face.push_back(navVerts[i+6]);
 
-    navFaces.push_back(face);
+    //navFaces.push_back(face);
   }
+  auto extent = getSize() / 2.f;
+  std::vector<glm::vec3> face;
+  face.push_back(glm::vec3(-extent.x, -extent.y, 0.f));
+  face.push_back(glm::vec3(extent.x, -extent.y, 0.f));
+  face.push_back(glm::vec3(extent.x, extent.y, 0.f));
+  face.push_back(glm::vec3(-extent.x, extent.y, 0.f));
+  navFaces.push_back(face);
   navmesh_ = new NavMesh(navFaces);
 }
 
@@ -111,7 +118,11 @@ void Map::spawnStartingLocation(const Json::Value &definition,
       "missing position for starting base defintion");
   invariant(definition.isMember("angle"),
       "missing angle for starting base defintion");
-  auto player = players[definition["player"].asInt() - 1];
+  auto idx = definition["player"].asInt() - 1;
+  if (idx >= players.size()) {
+    return;
+  }
+  auto player = players[idx];
   id_t pid = player->getPlayerID();
 
 

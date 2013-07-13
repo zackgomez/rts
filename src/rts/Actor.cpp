@@ -191,6 +191,7 @@ void Actor::update(float dt) {
 void Actor::resetUIInfo() {
   memset(&uiInfo_, 0, sizeof(uiInfo_));
   uiInfo_.healths = std::vector<glm::vec2>();
+  uiInfo_.minimap_icon = std::string();
 }
 
 void Actor::updateUIInfo() {
@@ -247,6 +248,10 @@ void Actor::updateUIInfo() {
       uiInfo_.hotkey = hotkey_str[0];
       invariant(isControlGroupHotkey(uiInfo_.hotkey), "bad hotkey in uiinfo");
     }
+  }
+  auto minimap_icon = String::New("minimap_icon");
+  if (jsinfo->Has(minimap_icon)) {
+    uiInfo_.minimap_icon = *String::AsciiValue(jsinfo->Get(minimap_icon));
   }
 }
 

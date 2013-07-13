@@ -1,0 +1,105 @@
+{
+  "name" : "gg_map",
+  "players" : 4,
+
+  // geometry
+  "size" : [80, 80],
+  "height" : 0.0,
+  "color" : [0.066, 0.3, 0.066, 1.0],
+
+  "entities" : [
+    {
+      "type" : "starting_location",
+      "pos" : [36, 36],
+      "angle" : 270,
+      "player" : 1
+    },
+    {
+      "type": "starting_location",
+      "pos" : [-36, -36],
+      "angle" : 90,
+      "player" : 2
+    },
+    {
+      "type": "starting_location",
+      "pos" : [10, 36],
+      "angle" : 90,
+      "player" : 3
+    },
+    {
+      "type": "starting_location",
+      "pos" : [-10, -36],
+      "angle" : 90,
+      "player" : 4
+    },
+    {
+      "type" : "victory_point",
+      "pos" : [-33, 15],
+      "angle": 270
+    },
+    {
+      "type" : "victory_point",
+      "pos" : [0, 0],
+      "angle": 270
+    },
+    {
+      "type" : "victory_point",
+      "pos" : [33, -15],
+      "angle": 270
+    },
+    {
+      "type" : "req_point",
+      "pos" : [15, 28],
+      "angle": 0
+    },
+    {
+      "type" : "req_point",
+      "pos" : [-15, -28],
+      "angle": 0
+    },
+    {
+      "type" : "req_point",
+      "pos" : [-32, -12],
+      "angle": 0
+    },
+    {
+      "type" : "req_point",
+      "pos" : [32, 12],
+      "angle": 0
+    },
+    {
+      "type" : "req_point",
+      "pos" : [9, -9],
+      "angle": 0
+    },
+    {
+      "type" : "req_point",
+      "pos" : [-9, 9],
+      "angle": 0
+    },
+    {
+      "type"  : "collision_object",
+      "pos"   : [0, 15],
+      "size"  : [20, 4],
+      "angle" : 0.0
+    },
+    {
+      "type"  : "collision_object",
+      "pos"   : [0, -15],
+      "size"  : [20, 4],
+      "angle" : 0.0
+    },
+    {
+      "type"  : "collision_object",
+      "pos"   : [18, -5],
+      "size"  : [4, 20],
+      "angle" : 0.0
+    },
+    {
+      "type"  : "collision_object",
+      "pos"   : [-18, 5],
+      "size"  : [4, 20],
+      "angle" : 0.0
+    }
+  ]
+}

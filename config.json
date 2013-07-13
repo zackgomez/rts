@@ -56,7 +56,9 @@
       "cursor_normal": "images/cursor-normal.png",
       "cursor_action": "images/cursor-action.png",
       "lightning1": "images/lightning1.png",
-      "retreat_emblem": "images/retreat_emblem.png"
+      "retreat_emblem": "images/retreat_emblem.png",
+      "vp_minimap_icon": "images/vp-minimap.png",
+      "req_minimap_icon": "images/req-minimap.png"
     },
     "depthFields" : {
       "steamLogo"  : {
@@ -238,7 +240,7 @@
         "pos"     : [0.0, -33.0],
         "dim"     : [33.0, 33.0],
         "viewportLineColor" : [1, 1, 1, 1],
-        "actorSize" : 4
+        "actorSize" : 12
       },
       "action" : {
         "type"    : "CustomWidget",

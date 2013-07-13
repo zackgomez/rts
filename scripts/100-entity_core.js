@@ -66,6 +66,9 @@ function entityInit(entity, params) {
     registerEntityHotkey(entity.getID(), def.hotkey);
     entity.hotkey_ = def.hotkey;
   }
+  if (def.minimap_icon) {
+    entity.minimap_icon_ = def.minimap_icon;
+  }
 
   entity.state_ = new entity.defaultState_(params);
 
@@ -531,7 +534,6 @@ function entityGetUIInfo(entity) {
       ui_info.capture = [entity.capAmount_, 5.0];
       ui_info.cappingPlayerID = entity.cappingPlayerID_;
     }
-    return ui_info;
   }
   
   ui_info.healths = [];
@@ -546,6 +548,9 @@ function entityGetUIInfo(entity) {
 
   if (entity.hotkey_) {
     ui_info.hotkey = entity.hotkey_;
+  }
+  if (entity.minimap_icon_) {
+    ui_info.minimap_icon = entity.minimap_icon_;
   }
 
   ui_info.retreat = entity.retreat_;
