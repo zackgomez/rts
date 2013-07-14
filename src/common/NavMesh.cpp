@@ -25,7 +25,7 @@ struct NavMesh::Face {
 NavMesh::NavMesh() {
 }
 
-NavMesh::NavMesh(const std::vector<std::vector<glm::vec3> > &faces) {
+NavMesh::NavMesh(const std::vector<std::vector<glm::vec3>> &faces) {
   // from this list, generate a list of verts, edges, and faces
   for (auto &faceVerts : faces) {
     int n = faceVerts.size();

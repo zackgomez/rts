@@ -9,7 +9,7 @@
 class NavMesh {
  public:
   NavMesh();
-  explicit NavMesh(const std::vector<std::vector<glm::vec3> > &faces);
+  explicit NavMesh(const std::vector<std::vector<glm::vec3>> &faces);
   ~NavMesh();
 
   int numVerts() const { return verts_.size(); }
