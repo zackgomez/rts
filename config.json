@@ -240,7 +240,7 @@
         "pos"     : [0.0, -33.0],
         "dim"     : [33.0, 33.0],
         "viewportLineColor" : [1, 1, 1, 1],
-        "actorSize" : 12
+        "actorSize" : 16
       },
       "action" : {
         "type"    : "CustomWidget",
@@ -287,6 +287,12 @@
         "center"     : [50.0, 20],
         "dim"        : [30.0, 20],
         "bgcolor"    : [0.4, 0.4, 0.4, 1.0]
+      },
+      "actor_panel": {
+        "type": "CustomWidget",
+        "center": [82.5, 85.0],
+        "dim": [50.0, 30.0],
+        "bgcolor": [0.2, 0.2, 0.2, 1.0]
       }
     },
     "chat" : {

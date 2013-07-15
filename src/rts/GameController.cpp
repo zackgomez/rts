@@ -6,6 +6,7 @@
 #include "common/util.h"
 #include "common/ParamReader.h"
 #include "rts/ActionWidget.h"
+#include "rts/ActorPanelWidget.h"
 #include "rts/Actor.h"
 #include "rts/CommandWidget.h"
 #include "rts/Game.h"
@@ -138,6 +139,15 @@ void GameController::onCreate() {
 
   auto actionWidget = new ActionWidget("ui.widgets.action", actionFunc, actionExecutor);
   getUI()->addWidget("ui.widgets.action", actionWidget);
+
+  auto panelWidget = new ActorPanelWidget("ui.widgets.actor_panel", [=]() -> const Actor * {
+      const auto &sel = player_->getSelection();
+      if (sel.empty()) {
+        return nullptr;
+      }
+      return (Actor *)Game::get()->getEntity(*sel.begin());
+  });
+  getUI()->addWidget("ui.widgets.actor_panel", panelWidget);
 
   auto chatWidget = new CommandWidget("ui.chat");
   chatWidget->setCloseOnSubmit(true);
