@@ -30,8 +30,12 @@ class Actor : public GameEntity {
     resetTexture();
   }
 
+  struct UIPart {
+    glm::vec2 health;
+  };
+
   struct UIInfo {
-    std::vector<glm::vec2> healths;
+    std::vector<UIPart> parts;
     glm::vec2 mana;
     bool retreat;
     glm::vec2 capture;

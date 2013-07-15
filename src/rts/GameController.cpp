@@ -864,14 +864,14 @@ void GameController::highlightEntity(id_t eid) {
 void renderHealthBar(
     const glm::vec2 &center,
     const glm::vec2 &size,
-    const std::vector<glm::vec2> &healths,
+    const std::vector<Actor::UIPart> &parts,
     const Actor *actor,
     const Player *player) {
   float current_health = 0.f;
   float total_health = 0.f;
-  for (auto h : healths) {
-    current_health += glm::max(0.f, h[0]);
-    total_health += h[1];
+  for (auto part : parts) {
+    current_health += glm::max(0.f, part.health[0]);
+    total_health += part.health[1];
   }
 
   glm::vec2 bottom_left = center - size / 2.f;
@@ -889,9 +889,9 @@ void renderHealthBar(
   float s = 0.f;
   bool first = true;
   int i = 0;
-  for (auto h : healths) {
-    float health = h[0];
-    float max_health = h[1];
+  for (auto part : parts) {
+    float health = part.health[0];
+    float max_health = part.health[1];
     float bar_size = glm::clamp(max_health / total_health, 0.f, 1.f);
     glm::vec2 p = bottom_left + glm::vec2(size.x * s / total_health, 0.f);
 
@@ -1000,10 +1000,10 @@ void renderEntity(
     drawRectCenter(pos, size, cap_color);
   }
 
-  if (!ui_info.healths.empty()) {
+  if (!ui_info.parts.empty()) {
     glm::vec2 center = coord - vec2Param("hud.actor_health.pos");
     glm::vec2 size = vec2Param("hud.actor_health.dim");
-    renderHealthBar(center, size, ui_info.healths, actor, localPlayer);
+    renderHealthBar(center, size, ui_info.parts, actor, localPlayer);
   }
 
   if (ui_info.mana[1]) {

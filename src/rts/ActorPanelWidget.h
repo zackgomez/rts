@@ -1,11 +1,10 @@
 #pragma once
 #include "rts/Widgets.h"
 #include "common/Types.h"
+#include "rts/Actor.h"
 #include "rts/UIAction.h"
 
 namespace rts {
-
-class Actor;
 
 class ActorPanelWidget : public UIWidget {
  public:
@@ -31,6 +30,11 @@ class ActorPanelWidget : public UIWidget {
   bool press_;
   glm::vec2 hoverPos_;
   float hoverTimer_;
+
+  void renderPart(
+      const glm::vec2 &center,
+      const glm::vec2 &size,
+      const Actor::UIPart &part);
 };
 
 };  // rts

@@ -192,7 +192,7 @@ void Actor::update(float dt) {
 
 void Actor::resetUIInfo() {
   memset(&uiInfo_, 0, sizeof(uiInfo_));
-  uiInfo_.healths = std::vector<glm::vec2>();
+  uiInfo_.parts = std::vector<UIPart>();
   uiInfo_.minimap_icon = std::string();
 }
 
@@ -219,7 +219,7 @@ void Actor::updateUIInfo() {
     for (int i = 0; i < bars->Length(); i++) {
       glm::vec2 health = script->jsToVec2(
         Handle<Array>::Cast(bars->Get(i)));
-      uiInfo_.healths.push_back(health);
+      uiInfo_.parts.push_back(UIPart {health});
     }
   }
   auto mana = String::New("mana");
