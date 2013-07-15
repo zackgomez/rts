@@ -41,7 +41,7 @@ var EntityDefs = {
         }),
       ];
     },
-    hotkey: '1',
+    hotkey: '2',
     getEffects: function (entity) {
       return {
         mana_regen: makeManaRegenEffect(2.5),
@@ -90,7 +90,7 @@ var EntityDefs = {
     sight: 9.0,
     capture_range: 1.0,
     mana: 100,
-    hotkey: '2',
+    hotkey: '1',
     weapons: ['advanced_melee'],
     getParts: function (entity) {
       return [
@@ -211,18 +211,18 @@ var EntityDefs = {
       };
     },
     actions: {
-      prod_ranged: new ProductionAction({
-        prod_name: 'unit',
-        req_cost: 100,
-        time_cost: 5.0,
-        icon: 'ranged_icon',
-        hotkey: 'q',
-      }),
       prod_melee: new ProductionAction({
         prod_name: 'melee_unit',
         req_cost: 70,
         time_cost: 2.5,
         icon: 'melee_icon',
+        hotkey: 'q',
+      }),
+      prod_ranged: new ProductionAction({
+        prod_name: 'unit',
+        req_cost: 100,
+        time_cost: 5.0,
+        icon: 'ranged_icon',
         hotkey: 'w',
       }),
       prod_tanky_melee: new ProductionAction({

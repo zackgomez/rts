@@ -91,10 +91,6 @@ class GameEntity : public ModelEntity {
     return pathQueue_;
   }
 
-  void setPathQueue(const std::vector<glm::vec3>& queue) {
-    pathQueue_ = queue;
-  }
-
  protected:
   Json::Value getParam(const std::string &p) const;
   float fltParam(const std::string &p) const;
@@ -107,13 +103,15 @@ class GameEntity : public ModelEntity {
   bool warp_;
   glm::vec2 warpTarget_;
 
+  glm::vec2 lastTargetPos_;
+  std::vector<glm::vec3> pathQueue_;
+
  private:
   std::string name_;
   float maxSpeed_;
   float sight_;
 
   std::set<uint32_t> properties_;
-  std::vector<glm::vec3> pathQueue_;
 };
 };  // namespace rts
 

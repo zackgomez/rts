@@ -69,9 +69,12 @@ void GameEntity::turnTowards(const glm::vec2 &targetPos) {
 
 void GameEntity::moveTowards(const glm::vec2 &targetPos) {
   if (hasProperty(P_COLLIDABLE)) {
-    pathQueue_ = Game::get()->getMap()->getNavMesh()->getPath(
-      getPosition(),
-      glm::vec3(targetPos, 0));
+    if (targetPos != lastTargetPos_) {
+      pathQueue_ = Game::get()->getMap()->getNavMesh()->getPath(
+          getPosition(),
+          glm::vec3(targetPos, 0));
+      lastTargetPos_ = targetPos;
+    }
   } else {
     pathQueue_.clear();
     pathQueue_.push_back(glm::vec3(targetPos, 0.f));

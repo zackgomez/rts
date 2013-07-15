@@ -36,7 +36,7 @@ var Players = (function() {
     );
 
     var unit_id = SpawnEntity(
-      'unit',
+      'melee_unit',
       {
         pid: pid,
         pos: retreat_location,
@@ -46,7 +46,7 @@ var Players = (function() {
         retreat_location: retreat_location,
         units: {
           base: base_id,
-          unit: unit_id,
+          melee_unit: unit_id,
         },
         getRetreatLocation: function () {
           return retreat_location;
