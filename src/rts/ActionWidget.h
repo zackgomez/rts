@@ -20,14 +20,12 @@ class ActionWidget : public UIWidget {
   virtual void render(float dt) override;
   virtual void update(const glm::vec2 &pos, int buttons) override;
 
-  virtual glm::vec2 getCenter() const override final;
-  virtual glm::vec2 getSize() const override final;
-
  private:
   ActionFunc actionsFunc_;
   ActionExecutor actionExecutor_;
-  glm::vec2 center_;
-  glm::vec2 size_;
+
+  glm::vec2 actionSize_;
+
   glm::vec4 bgcolor_;
 
   bool hover_;

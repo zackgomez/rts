@@ -16,6 +16,7 @@ glm::vec2 uiVec2Param(const std::string &name);
 
 class UIWidget {
  public:
+  UIWidget() : center_(), size_() { }
   virtual ~UIWidget() { }
 
   // Return true if the click has been handled
@@ -23,8 +24,18 @@ class UIWidget {
   virtual void update(const glm::vec2 &pos, int buttons) = 0;
   virtual void render(float dt) = 0;
 
-  virtual glm::vec2 getCenter() const = 0;
-  virtual glm::vec2 getSize() const = 0;
+  glm::vec2 getCenter() const {
+    return center_;
+  }
+  glm::vec2 getSize() const {
+    return size_;
+  }
+  void setCenter(const glm::vec2 &center) {
+    center_ = center;
+  }
+  void setSize(const glm::vec2 &size) {
+    size_ = size;
+  }
 
 
   UI *getUI() {
@@ -34,6 +45,10 @@ class UIWidget {
     ui_ = ui;
   }
 
+ protected:
+  glm::vec2 center_;
+  glm::vec2 size_;
+
  private:
   UI *ui_;
 };
@@ -41,13 +56,6 @@ class UIWidget {
 class StaticWidget : public UIWidget {
  public:
   StaticWidget(const std::string &name);
-
-  virtual glm::vec2 getCenter() const override final {
-    return center_;
-  }
-  virtual glm::vec2 getSize() const override final {
-    return size_;
-  }
 
   virtual void update(const glm::vec2 &pos, int buttons) override { }
   virtual bool handleClick(const glm::vec2 &pos, int button) override;
@@ -61,8 +69,6 @@ class StaticWidget : public UIWidget {
   bool isClick(const glm::vec2 &pos) const;
 
  private:
-  glm::vec2 center_;
-  glm::vec2 size_;
   OnPressListener onPressListener_;
 };
 

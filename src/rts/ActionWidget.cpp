@@ -16,9 +16,10 @@ ActionWidget::ActionWidget(
     ActionExecutor executor) 
   : actionsFunc_(actions),
     actionExecutor_(executor),
-    size_(uiSizeParam(name + ".size")),
-    center_(uiPosParam(name + ".center")),
     bgcolor_(vec4Param(name + ".bgcolor")) {
+  center_ = uiPosParam(name + ".center");
+  actionSize_ = uiSizeParam(name + ".size");
+  size_ = glm::vec2(0.f);
 }
  
 ActionWidget::~ActionWidget() {
@@ -30,7 +31,7 @@ void ActionWidget::render(float dt) {
 
   size_t num_actions = actions.size();
   // Center of the first box
-  glm::vec2 center = center_ - glm::vec2(size_.x * 0.5f * (num_actions - 1), 0.f);
+  glm::vec2 center = center_ - glm::vec2(actionSize_.x * 0.5f * (num_actions - 1), 0.f);
 
   hoverTimer_ = hover_ ? hoverTimer_ + dt : 0.f;
 
@@ -38,15 +39,15 @@ void ActionWidget::render(float dt) {
   std::string tooltip;
   for (auto action : actions) {
     glm::vec4 color = bgcolor_;
-    bool action_hover = hover_ && pointInBox(hoverPos_, center, size_, 0);
+    bool action_hover = hover_ && pointInBox(hoverPos_, center, actionSize_, 0);
     if (action_hover && action.state != UIAction::DISABLED) {
       float fact = press_ ? 0.8f : 1.2f;
       color *= glm::vec4(fact, fact, fact, 1.f);
     }
-    drawRectCenter(center, size_, color);
+    drawRectCenter(center, actionSize_, color);
     drawTextureCenter(
         center,
-        size_ - glm::vec2(5.f),
+        actionSize_ - glm::vec2(5.f),
         ResourceManager::get()->getTexture(action.icon),
         glm::vec4(0, 0, 1, 1));
 
@@ -56,9 +57,9 @@ void ActionWidget::render(float dt) {
       shader->uniform4f("texcoord", glm::vec4(0, 0, 1, 1));
       shader->uniform1f("cooldown_percent", action.cooldown);
       shader->uniform4f("color", glm::vec4(0, 0, 0, 0.5f));
-      drawShaderCenter(center, size_);
+      drawShaderCenter(center, actionSize_);
     } else if (action.state == UIAction::DISABLED) {
-      drawRectCenter(center, size_, glm::vec4(0, 0, 0, 0.5f));
+      drawRectCenter(center, actionSize_, glm::vec4(0, 0, 0, 0.5f));
     }
 
     if (action_hover && action.radius > 0) {
@@ -81,11 +82,11 @@ void ActionWidget::render(float dt) {
       draw_tooltip = true;
     }
 
-    center.x += size_.x;
+    center.x += actionSize_.x;
   }
   if (draw_tooltip) {
     float tooltip_font_height = fltParam("local.tooltipFontHeight");
-    float tooltip_width = size_.x * 2.f;
+    float tooltip_width = actionSize_.x * 2.f;
 
     std::vector<std::string> tooltipLines;
     boost::split(tooltipLines, tooltip, boost::is_any_of("\n"));
@@ -111,27 +112,21 @@ void ActionWidget::render(float dt) {
 }
 
 void ActionWidget::update(const glm::vec2 &pos, int buttons) {
+  auto actions = actionsFunc_();
+  size_ = glm::vec2(actions.size() * actionSize_.x, actionSize_.y);
+
   hover_ = pointInBox(pos, getCenter(), getSize(), 0.f);
   hoverPos_ = pos;
 
   if (!(buttons & SDL_BUTTON(1))) {
     if (press_ & hover_) {
-      auto actions = actionsFunc_();
-      int idx = 1 / size_.x * (pos.x - center_.x + actions.size() * size_.x / 2);
+      int idx = 1 / size_.x * (pos.x - center_.x + size_.x / 2);
       actionExecutor_(actions[idx]);
     }
     press_ = false;
   } else if (hover_) {
     press_ = true;
   }
-}
-
-glm::vec2 ActionWidget::getCenter() const {
-  return center_;
-}
-
-glm::vec2 ActionWidget::getSize() const {
-  return glm::vec2(size_.x * actionsFunc_().size(), size_.y);
 }
 
 };  // rts
