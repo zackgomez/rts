@@ -219,7 +219,9 @@ void Actor::updateUIInfo() {
     for (int i = 0; i < bars->Length(); i++) {
       glm::vec2 health = script->jsToVec2(
         Handle<Array>::Cast(bars->Get(i)));
-      uiInfo_.parts.push_back(UIPart {health});
+      UIPart part;
+      part.health = health;
+      uiInfo_.parts.push_back(part);
     }
   }
   auto mana = String::New("mana");

@@ -31,6 +31,7 @@
     <ClCompile Include="..\..\src\exec\rts-main.cpp" />
     <ClCompile Include="..\..\src\rts\ActionWidget.cpp" />
     <ClCompile Include="..\..\src\rts\Actor.cpp" />
+    <ClCompile Include="..\..\src\rts\ActorPanelWidget.cpp" />
     <ClCompile Include="..\..\src\rts\Camera.cpp" />
     <ClCompile Include="..\..\src\rts\CommandWidget.cpp" />
     <ClCompile Include="..\..\src\rts\Controller.cpp" />
@@ -71,6 +72,7 @@
     <ClInclude Include="..\..\src\common\util.h" />
     <ClInclude Include="..\..\src\rts\ActionWidget.h" />
     <ClInclude Include="..\..\src\rts\Actor.h" />
+    <ClInclude Include="..\..\src\rts\ActorPanelWidget.h" />
     <ClInclude Include="..\..\src\rts\Camera.h" />
     <ClInclude Include="..\..\src\rts\CommandWidget.h" />
     <ClInclude Include="..\..\src\rts\Controller.h" />

@@ -1,0 +1,16 @@
+DISTDIR=dist
+FOLDERNAME=rts
+ARCHIVENAME=rts.zip
+TARGETDIR=$(DISTDIR)/$(FOLDERNAME)
+EXECPATH=msvc/rts/Release/rts.exe
+DLLDIRPATH=msvc/DLLs
+
+.PHONY: dist
+dist: $(EXECPATH)
+	rm -rf $(DISTDIR)
+	mkdir -p $(TARGETDIR)
+	cp -r fonts images maps models sfx shaders $(TARGETDIR)
+	cp -r scripts local.json.default local.json config.json $(TARGETDIR)
+	cp $(EXECPATH) $(TARGETDIR)
+	cp $(DLLDIRPATH)/*.dll $(TARGETDIR)
+	cd $(DISTDIR) && zip -r $(ARCHIVENAME) $(FOLDERNAME)
