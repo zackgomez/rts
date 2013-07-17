@@ -890,7 +890,7 @@ void renderHealthBar(
   bool first = true;
   int i = 0;
   for (auto part : parts) {
-    float health = part.health[0];
+    float health = glm::max(0.f, part.health[0]);
     float max_health = part.health[1];
     float bar_size = glm::clamp(max_health / total_health, 0.f, 1.f);
     glm::vec2 p = bottom_left + glm::vec2(size.x * s / total_health, 0.f);

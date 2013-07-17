@@ -50,7 +50,9 @@ void ActorPanelWidget::renderPart(
   glm::vec2 inside_size = size - 2.f;
   drawRectCenter(center, inside_size, glm::vec4(1,1,1,1), 0.f);
 
-  float fact = part.health[0] / part.health[1];
+  float health = std::max(0.f, part.health[0]);
+
+  float fact = health / part.health[1];
   float health_height = inside_size.y / 5.f;
   float y = center.y + inside_size.y / 2.f - health_height / 2.f;
   drawRectCenter(
@@ -64,7 +66,7 @@ void ActorPanelWidget::renderPart(
       glm::vec4(0.2, 0.9, 0.2, 1.0),
       0.f);
   std::stringstream ss;
-  ss << glm::floor(part.health[0]) << " / " << glm::floor(part.health[1]);
+  ss << glm::floor(health) << " / " << glm::floor(part.health[1]);
   FontManager::get()->drawString(
       ss.str(),
       glm::vec2(center.x - inside_size.x / 2.f, y - health_height / 2.f),
