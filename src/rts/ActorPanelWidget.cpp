@@ -23,8 +23,8 @@ ActorPanelWidget::ActorPanelWidget(
   for (int i = 0; i < 6; i++) {
     partWidgets_.push_back(new BorderWidget(
           glm::vec4(0, 0, 0, 1),
-          new PartWidget()));
-  }
+          new TooltipWidget(new PartWidget())));
+  };
 }
  
 ActorPanelWidget::~ActorPanelWidget() {
@@ -65,14 +65,22 @@ void ActorPanelWidget::update(const glm::vec2 &pos, int buttons) {
     float y = center_.y - size_.y / 2.f + part_size.y * (0.5f + i / 2);
 
     auto *widget = partWidgets_[i];
+    widget->setUI(getUI());
     widget->setCenter(glm::vec2(x, y));
     widget->setSize(part_size);
 
+    auto *tooltipWidget = (TooltipWidget *)widget->getChild();
+    auto *partWidget = ((PartWidget *)tooltipWidget->getChild());
     if (i < ui_info.parts.size()) {
-      ((PartWidget *)widget->getChild())->setPart(ui_info.parts[i]);
+      tooltipWidget->setTooltipFunc([=]() -> std::string {
+        // TODO(zack): use part tooltip here
+        return "Hello\nWorld";
+      });
+      partWidget->setPart(ui_info.parts[i]);
 
       widget->update(pos, buttons);
     } else {
+      tooltipWidget->setTooltipFunc(TooltipFunc());
       widget->setSize(glm::vec2(0.f));
     }
   }

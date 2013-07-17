@@ -52,6 +52,11 @@ void FontManager::drawString(const std::string &s, const glm::vec2 &pos,
   }
 }
 
+float FontManager::getStringWidth(const std::string &s,
+    const glm::vec2 &pos, float height) {
+  TODO
+}
+
 const char * FontManager::makeColorCode(const glm::vec3 &color) {
   static char buf[5];
   buf[0] = COLOR_CNTRL_CH;

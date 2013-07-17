@@ -23,7 +23,10 @@ class FontManager {
   // Pos is top left, height top of capital letters to bottom of letters that
   // drop below
   void drawString(const std::string &s,
-                  const glm::vec2 &pos, float height);
+      const glm::vec2 &pos, float height);
+  // Returns the width of rendering the passed in string in pixels
+  float getStringWidth(const std::string &s,
+      const glm::vec2 &pos, float height);
 
   // Debug function, draws the glyph texture in the center of the screen
   void drawTex() const;

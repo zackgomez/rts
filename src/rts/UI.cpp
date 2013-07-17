@@ -86,6 +86,11 @@ void UI::render(float dt) {
     pair.second->render(dt);
   }
 
+  for (const auto& f : deferedRenderers_) {
+    f();
+  }
+  deferedRenderers_.clear();
+
   glEnable(GL_DEPTH_TEST);
 }
 

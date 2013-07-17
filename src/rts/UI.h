@@ -64,8 +64,14 @@ class UI {
     SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
   }
 
+  typedef std::function<void()> DeferedRenderFunc;
+  void addDeferedRenderFunc(DeferedRenderFunc f) {
+    deferedRenderers_.push_back(f);
+  }
+
  private:
   std::map<std::string, UIWidget *> widgets_;
+  std::vector<DeferedRenderFunc> deferedRenderers_;
   KeyCapturer capturer_;
 };
 };  // rts
