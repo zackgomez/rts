@@ -7,6 +7,7 @@ function Part (params) {
   }
   this.maxHealth_ = params.health;
   this.health_ = this.maxHealth_;
+  this.description_ = params.description;
 
   this.deadUpdate_ = params.dead_update ?
     param.dead_update :
@@ -24,6 +25,9 @@ function Part (params) {
   this.getMaxHealth = function () {
     return this.maxHealth_;
   };
+  this.getTooltip = function () {
+    return this.description_;
+  }
   this.setHealth = function (delta) {
     this.health_ = this.maxHealth_;
   };

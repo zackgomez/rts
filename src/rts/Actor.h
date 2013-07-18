@@ -32,6 +32,7 @@ class Actor : public GameEntity {
 
   struct UIPart {
     glm::vec2 health;
+    std::string tooltip;
   };
 
   struct UIInfo {

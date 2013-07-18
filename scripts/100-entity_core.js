@@ -536,13 +536,16 @@ function entityGetUIInfo(entity) {
     }
   }
   
-  ui_info.healths = [];
+  ui_info.parts = [];
   if (entity.parts_) {
     for (var i = 0; i < entity.parts_.length; i++) {
-      ui_info.healths.push([
-          entity.parts_[i].getHealth(),
-          entity.parts_[i].getMaxHealth(),
-        ]);
+      ui_info.parts.push({
+				health: [
+					entity.parts_[i].getHealth(),
+					entity.parts_[i].getMaxHealth(),
+				],
+        tooltip: entity.parts_[i].getTooltip(),
+			});
     }
   }
 

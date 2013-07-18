@@ -213,14 +213,18 @@ void Actor::updateUIInfo() {
   checkJSResult(ret, try_catch.Exception(), "entityGetUIInfo:");
 
   auto jsinfo = ret->ToObject();
-  auto healths = String::New("healths");
-  if (jsinfo->Has(healths)) {
-    auto bars = Handle<Array>::Cast(jsinfo->Get(healths));
-    for (int i = 0; i < bars->Length(); i++) {
+  auto parts_str = String::New("parts");
+  if (jsinfo->Has(parts_str)) {
+    auto parts = Handle<Array>::Cast(jsinfo->Get(parts_str));
+    for (int i = 0; i < parts->Length(); i++) {
+      auto jspart = Handle<Object>::Cast(parts->Get(i));
       glm::vec2 health = script->jsToVec2(
-        Handle<Array>::Cast(bars->Get(i)));
+          Handle<Array>::Cast(jspart->Get(String::New("health"))));
+      std::string tooltip = *String::AsciiValue(
+          jspart->Get(String::New("tooltip")));
       UIPart part;
       part.health = health;
+      part.tooltip = tooltip;
       uiInfo_.parts.push_back(part);
     }
   }

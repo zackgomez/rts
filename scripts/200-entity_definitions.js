@@ -26,18 +26,23 @@ var EntityDefs = {
       return [
         makePart({
           health: 100,
+          description: 'Just Health',
         }),
         makePart({
           health: 100,
+          description: 'Just Health',
         }),
         makePart({
           health: 100,
+          description: 'Just Health',
         }),
         makePart({
           health: 100,
+          description: 'Just Health',
         }),
         makePart({
           health: 100,
+          description: 'Just Health',
         }),
       ];
     },
@@ -96,15 +101,19 @@ var EntityDefs = {
       return [
         makePart({
           health: 50,
+          description: 'Just Health',
         }),
         makePart({
           health: 50,
+          description: 'Just Health',
         }),
         makePart({
           health: 50,
+          description: 'Just Health',
         }),
         makePart({
           health: 50,
+          description: 'Just Health',
         }),
       ];
     },
@@ -151,15 +160,19 @@ var EntityDefs = {
       return [
         makePart({
           health: 150,
+          description: 'Just Health',
         }),
         makePart({
           health: 150,
+          description: 'Just Health',
         }),
         makePart({
           health: 150,
+          description: 'Just Health',
         }),
         makePart({
           health: 150,
+          description: 'Just Health',
         }),
       ];
     },
@@ -200,6 +213,7 @@ var EntityDefs = {
       return [
         makePart({
           health: 700,
+          description: 'Base model',
         }),
       ];
     },
