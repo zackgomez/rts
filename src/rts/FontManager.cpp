@@ -52,9 +52,23 @@ void FontManager::drawString(const std::string &s, const glm::vec2 &pos,
   }
 }
 
-float FontManager::getStringWidth(const std::string &s,
-    const glm::vec2 &pos, float height) {
-  TODO
+float FontManager::computeStringWidth(
+    const std::string &s,
+    const glm::vec2 &pos,
+    float height) {
+  float width = 0.f;
+  const float fact = height / glyphSize_;
+  for (size_t i = 0; i < s.length(); i++) {
+    char c = s[i];
+    invariant(c >= 32 && c < 32 + 96, "invalid character to render");
+    if (c == COLOR_CNTRL_CH) {
+      // advance past next 3 characters
+      i += 3;
+      continue;
+    }
+    width += fact * cdata_[c - 32].xadvance;
+  }
+  return width;
 }
 
 const char * FontManager::makeColorCode(const glm::vec3 &color) {

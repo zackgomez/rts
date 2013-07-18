@@ -25,8 +25,10 @@ class FontManager {
   void drawString(const std::string &s,
       const glm::vec2 &pos, float height);
   // Returns the width of rendering the passed in string in pixels
-  float getStringWidth(const std::string &s,
-      const glm::vec2 &pos, float height);
+  float computeStringWidth(
+      const std::string &s,
+      const glm::vec2 &pos,
+      float height);
 
   // Debug function, draws the glyph texture in the center of the screen
   void drawTex() const;

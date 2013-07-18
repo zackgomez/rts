@@ -1,7 +1,6 @@
 PROGRAM=rts
 PROGVER=0.3
 
-
 CXX=c++
 MAKEDEPEND=$(CXX) -MM
 GLM=lib/glm-0.9.2.7

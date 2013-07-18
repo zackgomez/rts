@@ -74,13 +74,13 @@ void ActorPanelWidget::update(const glm::vec2 &pos, int buttons) {
     if (i < ui_info.parts.size()) {
       tooltipWidget->setTooltipFunc([=]() -> std::string {
         // TODO(zack): use part tooltip here
-        return "Hello\nWorld";
+        return "TODO\nAdd Part Tooltip\nDerpp";
       });
       partWidget->setPart(ui_info.parts[i]);
 
       widget->update(pos, buttons);
     } else {
-      tooltipWidget->setTooltipFunc(TooltipFunc());
+      tooltipWidget->setTooltipFunc(TooltipWidget::TooltipFunc());
       widget->setSize(glm::vec2(0.f));
     }
   }

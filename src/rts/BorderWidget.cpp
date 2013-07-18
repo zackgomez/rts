@@ -79,19 +79,34 @@ void TooltipWidget::update(const glm::vec2 &pos, int buttons) {
   std::vector<std::string> tooltipLines;
   boost::split(tooltipLines, tooltip, boost::is_any_of("\n"));
   float tooltip_font_height = fltParam("local.tooltipFontHeight");
+  // TODO(zack): smartly adjust position for tooltip size and screen dimensions
+  glm::vec2 tooltip_pos = pos -
+    glm::vec2(0.f, (tooltipLines.size() + 1) * tooltip_font_height);
+
+  float tooltip_width = 0.f;
+  for (const auto &line : tooltipLines) {
+    tooltip_width = std::max(
+        tooltip_width,
+        FontManager::get()->computeStringWidth(
+          line,
+          tooltip_pos,
+          tooltip_font_height));
+  }
+  // padding
+  tooltip_width += tooltip_font_height;
+
+  glm::vec2 tooltip_rect_size = glm::vec2(
+    tooltip_width,
+    tooltip_font_height * (tooltipLines.size() + 0.5f));
   getUI()->addDeferedRenderFunc([=]() -> void {
-    glm::vec2 tooltip_pos = pos -
-      glm::vec2(0.f, (tooltipLines.size() + 1) * tooltip_font_height);
-
-    float tooltip_font_height = fltParam("local.tooltipFontHeight");
-    // TODO(zack): calculate this from the tooltip string
-    float tooltip_width = 50.f;
-
-    glm::vec2 tooltip_rect_size = glm::vec2(
-      tooltip_width,
-      tooltip_font_height * (tooltipLines.size() + 0.5f));
-
     drawRect(tooltip_pos, tooltip_rect_size, glm::vec4(0.6f));
+    glm::vec2 pos = tooltip_pos;
+    // padding
+    pos.x += tooltip_font_height / 4.f;
+    for (const auto &line : tooltipLines) {
+      FontManager::get()->drawString(line, pos, tooltip_font_height);
+      pos.y += tooltip_font_height;
+    }
   });
 }
 
