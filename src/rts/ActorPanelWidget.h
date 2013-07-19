@@ -24,6 +24,7 @@ class ActorPanelWidget : public UIWidget {
 
   ActorFunc actorFunc_;
 
+  uint32_t numParts_;
   std::vector<BorderWidget *> partWidgets_;
   bool hidden_;
 };

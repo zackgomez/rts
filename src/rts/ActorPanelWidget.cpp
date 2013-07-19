@@ -16,6 +16,7 @@ ActorPanelWidget::ActorPanelWidget(
   : name_(name),
     bgcolor_(vec4Param(name + ".bgcolor")),
     actorFunc_(f),
+    numParts_(0),
     hidden_(false) {
   center_ = uiPosParam(name + ".center");
   size_ = uiSizeParam(name + ".dim");
@@ -42,7 +43,7 @@ void ActorPanelWidget::render(float dt) {
     return;
   }
   drawRectCenter(center_, size_, bgcolor_);
-  for (int i = 0; i < partWidgets_.size(); i++) {
+  for (int i = 0; i < numParts_; i++) {
     partWidgets_[i]->render(dt);
   }
 }
@@ -54,7 +55,8 @@ void ActorPanelWidget::update(const glm::vec2 &pos, int buttons) {
     return;
   }
   auto ui_info = actor->getUIInfo();
-  invariant(ui_info.parts.size() <= 6, "too many parts to render");
+  numParts_ = ui_info.parts.size();
+  invariant(numParts_ <= 6, "too many parts to render");
   const glm::vec2 part_size(
       size_.x * 0.25f,
       size_.y / 3.f);
@@ -71,17 +73,16 @@ void ActorPanelWidget::update(const glm::vec2 &pos, int buttons) {
 
     auto *tooltipWidget = (TooltipWidget *)widget->getChild();
     auto *partWidget = ((PartWidget *)tooltipWidget->getChild());
-    if (i < ui_info.parts.size()) {
+    if (i < numParts_) {
       tooltipWidget->setTooltipFunc([=]() -> std::string {
         return ui_info.parts[i].tooltip;
       });
       partWidget->setPart(ui_info.parts[i]);
-
-      widget->update(pos, buttons);
     } else {
       tooltipWidget->setTooltipFunc(TooltipWidget::TooltipFunc());
       widget->setSize(glm::vec2(0.f));
     }
+    widget->update(pos, buttons);
   }
 }
 

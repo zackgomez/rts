@@ -47,6 +47,8 @@ class TooltipWidget : public UIWidget {
 
   TooltipFunc tooltipFunc_;
   UIWidget *child_;
+  bool drawTooltip_;
+  glm::vec2 mousePos_;
 };
 
 };  // rts

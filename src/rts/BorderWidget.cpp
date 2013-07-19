@@ -42,7 +42,8 @@ glm::vec2 BorderWidget::getInnerSize() const {
 }
 
 TooltipWidget::TooltipWidget(UIWidget *child)
-  : child_(child) {
+  : child_(child),
+    drawTooltip_(false) {
 }
 
 TooltipWidget::~TooltipWidget() {
@@ -58,29 +59,20 @@ bool TooltipWidget::handleClick(const glm::vec2 &pos, int button) {
 
 void TooltipWidget::render(float dt) {
   child_->render(dt);
-}
-
-void TooltipWidget::update(const glm::vec2 &pos, int buttons) {
-  child_->setUI(getUI());
-  child_->setCenter(center_);
-  child_->setSize(size_);
-
-  child_->update(pos, buttons);
-
-  if (!pointInBox(pos, center_, size_, 0.f)) {
+  if (!drawTooltip_) {
     return;
   }
-
   auto tooltip = tooltipFunc_();
   if (tooltip.empty()) {
     return;
   }
+  drawTooltip_ = true;
 
   std::vector<std::string> tooltipLines;
   boost::split(tooltipLines, tooltip, boost::is_any_of("\n"));
   float tooltip_font_height = fltParam("local.tooltipFontHeight");
   // TODO(zack): smartly adjust position for tooltip size and screen dimensions
-  glm::vec2 tooltip_pos = pos -
+  glm::vec2 tooltip_pos = mousePos_ -
     glm::vec2(0.f, (tooltipLines.size() + 1) * tooltip_font_height);
 
   float tooltip_width = 0.f;
@@ -108,6 +100,17 @@ void TooltipWidget::update(const glm::vec2 &pos, int buttons) {
       pos.y += tooltip_font_height;
     }
   });
+}
+
+void TooltipWidget::update(const glm::vec2 &pos, int buttons) {
+  child_->setUI(getUI());
+  child_->setCenter(center_);
+  child_->setSize(size_);
+
+  child_->update(pos, buttons);
+
+  mousePos_ = pos;
+  drawTooltip_ = pointInBox(pos, center_, size_, 0.f);
 }
 
 };  // rts
