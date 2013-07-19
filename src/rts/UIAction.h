@@ -17,6 +17,7 @@ struct UIAction {
     DISABLED = 0,
     ENABLED = 1,
     COOLDOWN = 2,
+    UNAVAILABLE = 3,
   };
 
   id_t owner;

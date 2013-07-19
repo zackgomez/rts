@@ -218,13 +218,21 @@ void Actor::updateUIInfo() {
     auto parts = Handle<Array>::Cast(jsinfo->Get(parts_str));
     for (int i = 0; i < parts->Length(); i++) {
       auto jspart = Handle<Object>::Cast(parts->Get(i));
-      glm::vec2 health = script->jsToVec2(
-          Handle<Array>::Cast(jspart->Get(String::New("health"))));
-      std::string tooltip = *String::AsciiValue(
-          jspart->Get(String::New("tooltip")));
       UIPart part;
-      part.health = health;
-      part.tooltip = tooltip;
+      part.health = script->jsToVec2(
+          Handle<Array>::Cast(jspart->Get(String::New("health"))));
+      part.tooltip = *String::AsciiValue(
+          jspart->Get(String::New("tooltip")));
+      part.name = *String::AsciiValue(
+          jspart->Get(String::New("name")));
+      auto jsupgrades = Handle<Array>::Cast(
+          jspart->Get(String::New("upgrades")));
+      for (int j = 0; j < jsupgrades->Length(); j++) {
+        auto jsupgrade = Handle<Object>::Cast(jsupgrades->Get(j));
+        UIPartUpgrade upgrade;
+        upgrade.name = *String::AsciiValue(jsupgrade->Get(String::New("name")));
+        part.upgrades.push_back(upgrade);
+      }
       uiInfo_.parts.push_back(part);
     }
   }

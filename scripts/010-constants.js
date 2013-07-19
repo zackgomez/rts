@@ -41,6 +41,7 @@ ActionStates = {
   DISABLED: 0,
   ENABLED: 1,
   COOLDOWN: 2,
+  UNAVAILABLE: 3,
 };
 
 // --

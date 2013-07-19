@@ -30,9 +30,15 @@ class Actor : public GameEntity {
     resetTexture();
   }
 
+  struct UIPartUpgrade {
+    std::string name;
+    // TODO resources and tooltip
+  };
   struct UIPart {
+    std::string name;
     glm::vec2 health;
     std::string tooltip;
+    std::vector<UIPartUpgrade> upgrades;
   };
 
   struct UIInfo {

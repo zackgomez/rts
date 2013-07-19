@@ -25,22 +25,27 @@ var EntityDefs = {
     getParts: function (entity) {
       return [
         makePart({
+          name: 'head',
           health: 100,
           description: 'Just Health',
         }),
         makePart({
+          name: 'left',
           health: 100,
           description: 'Just Health',
         }),
         makePart({
+          name: 'right',
           health: 100,
           description: 'Just Health',
         }),
         makePart({
+          name: 'body',
           health: 100,
           description: 'Just Health',
         }),
         makePart({
+          name: 'legs',
           health: 100,
           description: 'Just Health',
         }),
@@ -100,18 +105,31 @@ var EntityDefs = {
     getParts: function (entity) {
       return [
         makePart({
+          name: 'head',
           health: 50,
           description: 'Just Health',
         }),
         makePart({
+          name: 'left',
           health: 50,
           description: 'Just Health',
         }),
         makePart({
+          name: 'right',
           health: 50,
           description: 'Just Health',
         }),
         makePart({
+          name: 'body',
+          health: 50,
+          description: 'Just Health',
+          upgrades: {
+            'teleport': {
+            },
+          },
+        }),
+        makePart({
+          name: 'legs',
           health: 50,
           description: 'Just Health',
         }),
@@ -130,6 +148,10 @@ var EntityDefs = {
         mana_cost: 55,
         icon: 'teleport_icon',
         hotkey: 'q',
+        is_active: function (entity) {
+          var part = entity.getPart('body');
+          return part.isAlive() && part.hasUpgrade('teleport');
+        },
       }),
       reinforce: new ReinforceAction({
         req_cost: 5,
@@ -159,18 +181,22 @@ var EntityDefs = {
     getParts: function (entity) {
       return [
         makePart({
+          name: 'right',
           health: 150,
           description: 'Just Health',
         }),
         makePart({
+          name: 'left',
           health: 150,
           description: 'Just Health',
         }),
         makePart({
+          name: 'body',
           health: 150,
           description: 'Just Health',
         }),
         makePart({
+          name: 'legs',
           health: 150,
           description: 'Just Health',
         }),

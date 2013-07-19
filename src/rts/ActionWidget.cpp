@@ -40,7 +40,7 @@ void ActionWidget::render(float dt) {
   for (auto action : actions) {
     glm::vec4 color = bgcolor_;
     bool action_hover = hover_ && pointInBox(hoverPos_, center, actionSize_, 0);
-    if (action_hover && action.state != UIAction::DISABLED) {
+    if (action_hover && action.state == UIAction::ENABLED) {
       float fact = press_ ? 0.8f : 1.2f;
       color *= glm::vec4(fact, fact, fact, 1.f);
     }
@@ -60,6 +60,8 @@ void ActionWidget::render(float dt) {
       drawShaderCenter(center, actionSize_);
     } else if (action.state == UIAction::DISABLED) {
       drawRectCenter(center, actionSize_, glm::vec4(0, 0, 0, 0.5f));
+    } else if (action.state == UIAction::UNAVAILABLE) {
+      drawRectCenter(center, actionSize_, glm::vec4(0, 0, 0, 0.8f));
     }
 
     if (action_hover && action.radius > 0) {

@@ -177,7 +177,7 @@ void ActorPanelWidget::update(const glm::vec2 &pos, int buttons) {
     auto *partWidget = ((PartWidget *)tooltipWidget->getChild());
     if (i < nparts) {
       tooltipWidget->setTooltipFunc([=]() -> std::string {
-        return ui_info.parts[i].tooltip;
+        return ui_info.parts[i].name + ":\n" + ui_info.parts[i].tooltip;
       });
       partWidget->setPart(ui_info.parts[i]);
     } else {
@@ -205,6 +205,16 @@ void PartWidget::render(float dt) {
     glm::vec4(0.f, 0.f, 0.f, 1.f),
     glm::vec4(0.9f, 0.9f, 0.1f, 1.f),
     part_.health);
+
+  float upgrade_size = 0.2f * glm::max(size_.x, size_.y);
+  if (part_.upgrades.size()) {
+    drawRectCenter(
+        glm::vec2(
+          center_.x + size_.x / 2.f - upgrade_size / 2.f,
+          center_.y - size_.y / 2.f + upgrade_size / 2.f),
+        glm::vec2(upgrade_size),
+        glm::vec4(0.8, 0.2, 0.2, 1.0));
+  }
 }
 
 };  // rts

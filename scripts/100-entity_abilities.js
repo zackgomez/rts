@@ -21,7 +21,9 @@
 // range/cooldown parameters
 var ActionPrototype = {
   getState: function (entity) {
-    if (this.params.cooldown_name &&
+    if (this.params.is_active && !this.params.is_active(entity)) {
+      return ActionStates.UNAVAILABLE;
+  } else if (this.params.cooldown_name &&
         entity.hasCooldown(this.params.cooldown_name)) {
       return ActionStates.COOLDOWN;
     } else if (entity.retreat_) {

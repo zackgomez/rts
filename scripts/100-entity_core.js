@@ -97,6 +97,16 @@ function entityInit(entity, params) {
     return cd.t / cd.maxt;
   };
 
+  entity.getPart = function (name) {
+    for (var i = 0; i < this.parts_.length; i++) {
+      if (this.parts_[i].getName() === name) {
+        return this.parts_[i];
+      }
+    }
+    Log(JSON.stringify(this.parts_));
+    throw new Error('couldn\'t find part '+ name);
+  };
+
   // Find entities near the current one.
   // Calls the passed callback for each entity in range.
   // If the callback returns true, it will continue passing entities until
@@ -309,7 +319,7 @@ function entityResolve(entity, dt) {
 
     var alive = false;
     entity.parts_.forEach(function (part) {
-      if (part.getHealth() > 0) {
+      if (part.isAlive() > 0) {
         alive = true;
       }
     });
@@ -539,12 +549,19 @@ function entityGetUIInfo(entity) {
   ui_info.parts = [];
   if (entity.parts_) {
     for (var i = 0; i < entity.parts_.length; i++) {
+      var upgrades = entity.parts_[i].getAvailableUpgrades();
+      upgrades = _.toArray(_.map(upgrades, function (upgrade, name) {
+        upgrade.name = name;
+        return upgrade;
+      }));
       ui_info.parts.push({
+        name: entity.parts_[i].getName(),
 				health: [
 					entity.parts_[i].getHealth(),
 					entity.parts_[i].getMaxHealth(),
 				],
         tooltip: entity.parts_[i].getTooltip(),
+        upgrades: upgrades,
 			});
     }
   }
