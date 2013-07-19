@@ -194,27 +194,17 @@ bool PartWidget::handleClick(const glm::vec2 &pos, int button) {
 void PartWidget::render(float dt) {
   drawRectCenter(center_, size_, bgcolor_, 0.f);
 
-  float health = std::max(0.f, part_.health[0]);
-
-  float fact = health / part_.health[1];
+  if (part_.health[1] == 0.f) {
+    return;
+  }
   float health_height = size_.y / 5.f;
   float y = center_.y + size_.y / 2.f - health_height / 2.f;
-  drawRectCenter(
-      glm::vec2(center_.x, y),
-      glm::vec2(size_.x, health_height),
-      glm::vec4(0.8, 0.2, 0.2, 1.0),
-      0.f);
-  drawRectCenter(
-      glm::vec2(center_.x - size_.x / 2.f + size_.x * fact / 2.f, y),
-      glm::vec2(size_.x * fact, health_height),
-      glm::vec4(0.2, 0.9, 0.2, 1.0),
-      0.f);
-  std::stringstream ss;
-  ss << glm::floor(health) << " / " << glm::floor(part_.health[1]);
-  FontManager::get()->drawString(
-      ss.str(),
-      glm::vec2(center_.x - size_.x / 2.f, y - health_height / 2.f),
-      health_height);
+  renderBarWithText(
+    glm::vec2(center_.x, y),
+    glm::vec2(size_.x, health_height),
+    glm::vec4(0.f, 0.f, 0.f, 1.f),
+    glm::vec4(0.f, 1.f, 0.f, 1.f),
+    part_.health);
 }
 
 };  // rts
