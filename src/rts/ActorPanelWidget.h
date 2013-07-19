@@ -24,13 +24,12 @@ class ActorPanelWidget : public UIWidget {
 
   ActorFunc actorFunc_;
 
-  uint32_t numParts_;
   std::vector<BorderWidget *> partWidgets_;
-  bool hidden_;
 };
 
 class PartWidget : public UIWidget {
  public:
+   PartWidget(glm::vec4 bgcolor) : bgcolor_(bgcolor) { }
   virtual ~PartWidget() { }
 
   void setPart(const Actor::UIPart &part) {
@@ -41,6 +40,7 @@ class PartWidget : public UIWidget {
   virtual void update(const glm::vec2 &pos, int buttons) override { }
 
  private:
+  glm::vec4 bgcolor_;
   Actor::UIPart part_;
 };
 
