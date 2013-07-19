@@ -203,7 +203,7 @@ void PartWidget::render(float dt) {
     glm::vec2(center_.x, y),
     glm::vec2(size_.x, health_height),
     glm::vec4(0.f, 0.f, 0.f, 1.f),
-    glm::vec4(0.f, 1.f, 0.f, 1.f),
+    glm::vec4(0.9f, 0.9f, 0.1f, 1.f),
     part_.health);
 }
 

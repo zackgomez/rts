@@ -290,15 +290,15 @@
       },
       "actor_panel": {
         "type": "CustomWidget",
-        "center": [82.5, 85.0],
-        "dim": [50.0, 30.0],
+        "center": [92.5, 85.0],
+        "dim": [30.0, 30.0],
         "bgcolor": [0.2, 0.2, 0.2, 1.0],
         "parts": {
           "bordercolor": [1.0, 1.0, 1.0, 0.8],
           // lol opacity must be 1.0 right now (BorderWidget bug)
           "bgcolor": [0.1, 0.1, 0.1, 1.0],
-          "width_factor": 0.25,
-          "height_factor": 0.25
+          "width_factor": 0.45,
+          "height_factor": 0.30
         },
         "health": {
           "bgcolor": [0, 0, 0, 1],
