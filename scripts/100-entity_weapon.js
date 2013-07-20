@@ -17,14 +17,14 @@ var Weapons = (function () {
     },
     advanced_rifle: {
       part: 'left',
-      part_upgrade: 'advanced rifle',
+      part_upgrade: 'advanced_rifle',
       range: 9.0,
       damage: 15.0,
       damage_type: 'ranged',
       health_target: HEALTH_TARGET_RANDOM,
       cooldown_name: 'rifle_weapon',
       cooldowns: {
-        rifle_weapon: 0.2,
+        rifle_weapon: 0.6,
       },
       on_hit_cooldowns: {},
     },
