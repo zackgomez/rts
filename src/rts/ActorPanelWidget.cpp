@@ -14,11 +14,14 @@ BorderWidget *makePartWidget(
   const glm::vec2 &pos,
   const glm::vec2 &size,
   const glm::vec4 &bgcolor,
-  const glm::vec4 &bordercolor) {
+  const glm::vec4 &bordercolor,
+  ActorPanelWidget::PartUpgradeHandler upgradeHandler) {
 
+  auto *part_widget = new PartWidget(bgcolor);
+  part_widget->setUpgradeHandler(upgradeHandler);
   auto *widget = new BorderWidget(
     bordercolor,
-    new TooltipWidget(new PartWidget(bgcolor)));
+    new TooltipWidget(part_widget));
   widget->setCenter(pos);
   widget->setSize(size);
   return widget;
@@ -26,7 +29,8 @@ BorderWidget *makePartWidget(
 
 ActorPanelWidget::ActorPanelWidget(
     const std::string &name,
-    ActorFunc f)
+    ActorFunc f,
+    PartUpgradeHandler upgrade_handler)
   : name_(name),
     bgcolor_(vec4Param(name + ".bgcolor")),
     actorFunc_(f) {
@@ -57,7 +61,8 @@ ActorPanelWidget::ActorPanelWidget(
         glm::vec2(x, y),
         part_size,
         part_bgcolor,
-        part_bordercolor));
+        part_bordercolor,
+        upgrade_handler));
     }
   }
 
@@ -71,7 +76,8 @@ ActorPanelWidget::ActorPanelWidget(
       glm::vec2(x, y),
       part_size,
       part_bgcolor,
-      part_bordercolor));
+      part_bordercolor,
+      upgrade_handler));
   }
 }
  
@@ -82,7 +88,23 @@ ActorPanelWidget::~ActorPanelWidget() {
 }
 
 bool ActorPanelWidget::handleClick(const glm::vec2 &pos, int button) {
-  return actorFunc_ && actorFunc_();
+  auto *actor = actorFunc_
+    ? actorFunc_()
+    : nullptr;
+  if (!actor) {
+    return false;
+  }
+
+  auto ui_info = actor->getUIInfo();
+  for (int i = 0; i < partWidgets_.size() && i < ui_info.parts.size(); i++) {
+    auto *widget = partWidgets_[i];
+    if (pointInBox(pos, widget->getCenter(), widget->getSize(), 0.f)) {
+      if (widget->handleClick(pos, button)) {
+        break;
+      }
+    }
+  }
+  return true;
 }
 
 void renderBarWithText(
@@ -188,6 +210,10 @@ void ActorPanelWidget::update(const glm::vec2 &pos, int buttons) {
 }
 
 bool PartWidget::handleClick(const glm::vec2 &pos, int button) {
+  if (part_.upgrades.size()) {
+    // TODO(zack): this should be updated
+    upgradeHandler_(part_.upgrades.front());
+  }
   return true;
 }
 

@@ -140,13 +140,27 @@ void GameController::onCreate() {
   auto actionWidget = new ActionWidget("ui.widgets.action", actionFunc, actionExecutor);
   getUI()->addWidget("ui.widgets.action", actionWidget);
 
-  auto panelWidget = new ActorPanelWidget("ui.widgets.actor_panel", [=]() -> const Actor * {
-      const auto &sel = player_->getSelection();
-      if (sel.empty()) {
-        return nullptr;
-      }
-      return (Actor *)Game::get()->getEntity(*sel.begin());
-  });
+  auto panelWidget = new ActorPanelWidget(
+      "ui.widgets.actor_panel",
+      [=]() -> const Actor * {
+        const auto &sel = player_->getSelection();
+        if (sel.empty()) {
+          return nullptr;
+        }
+        return (Actor *)Game::get()->getEntity(*sel.begin());
+      },
+      [=](const Actor::UIPartUpgrade &upgrade) {
+        if (player_->getSelection().empty()) {
+          return;
+        }
+        Json::Value order;
+        order["type"] = OrderTypes::UPGRADE;
+        order["entity"] = toJson(player_->getSelection());
+        order["part"] = upgrade.part;
+        order["upgrade"] = upgrade.name;
+
+        attemptIssueOrder(order);
+      });
   getUI()->addWidget("ui.widgets.actor_panel", panelWidget);
 
   auto chatWidget = new CommandWidget("ui.chat");

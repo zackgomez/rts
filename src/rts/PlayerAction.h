@@ -21,6 +21,7 @@ const std::string HOLD_POSITION = "HOLD";
 const std::string STOP = "STOP";
 const std::string ACTION = "ACTION";
 const std::string RETREAT = "RETREAT";
+const std::string UPGRADE = "UPGRADE";
 }
 
 #endif  // SRC_RTS_PLAYERACTION_H_

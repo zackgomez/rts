@@ -31,6 +31,7 @@ class Actor : public GameEntity {
   }
 
   struct UIPartUpgrade {
+    std::string part;
     std::string name;
     // TODO resources and tooltip
   };

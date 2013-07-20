@@ -66,6 +66,10 @@ function Part (params) {
     }
   };
   this.purchaseUpgrade = function (name) {
+    if (!(name in this.availableUpgrades_)) {
+      return;
+    }
+
     this.completeUpgrades_[name] = true;
     delete this.availableUpgrades_[name];
   };

@@ -11,7 +11,11 @@ class BorderWidget;
 class ActorPanelWidget : public UIWidget {
  public:
   typedef std::function<const Actor*()> ActorFunc;
-  ActorPanelWidget(const std::string &name, ActorFunc f);
+  typedef std::function<void(const Actor::UIPartUpgrade &)> PartUpgradeHandler;
+  ActorPanelWidget(
+      const std::string &name,
+      ActorFunc f,
+      PartUpgradeHandler upgrade_handler);
   virtual ~ActorPanelWidget();
 
   virtual bool handleClick(const glm::vec2 &pos, int button) override;
@@ -35,12 +39,16 @@ class PartWidget : public UIWidget {
   void setPart(const Actor::UIPart &part) {
     part_ = part;
   }
+  void setUpgradeHandler(ActorPanelWidget::PartUpgradeHandler handler) {
+    upgradeHandler_ = handler;
+  }
   virtual bool handleClick(const glm::vec2 &pos, int button) override;
   virtual void render(float dt) override;
   virtual void update(const glm::vec2 &pos, int buttons) override { }
 
  private:
   glm::vec4 bgcolor_;
+  ActorPanelWidget::PartUpgradeHandler upgradeHandler_;
   Actor::UIPart part_;
 };
 

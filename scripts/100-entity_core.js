@@ -106,6 +106,10 @@ function entityInit(entity, params) {
     Log(JSON.stringify(this.parts_));
     throw new Error('couldn\'t find part '+ name);
   };
+  entity.startUpgrade = function (part_name, upgrade_name) {
+    var part = entity.getPart(part_name);
+    part.purchaseUpgrade(upgrade_name);
+  };
 
   // Find entities near the current one.
   // Calls the passed callback for each entity in range.
@@ -457,6 +461,8 @@ function entityHandleOrder(entity, order) {
         target: order.target,
       });
     }
+  } else if (type == 'UPGRADE') {
+    entity.startUpgrade(order.part, order.upgrade);
   } else {
     Log('Unknown order of type', type);
   }

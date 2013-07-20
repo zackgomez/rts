@@ -230,6 +230,7 @@ void Actor::updateUIInfo() {
       for (int j = 0; j < jsupgrades->Length(); j++) {
         auto jsupgrade = Handle<Object>::Cast(jsupgrades->Get(j));
         UIPartUpgrade upgrade;
+        upgrade.part = part.name;
         upgrade.name = *String::AsciiValue(jsupgrade->Get(String::New("name")));
         part.upgrades.push_back(upgrade);
       }
