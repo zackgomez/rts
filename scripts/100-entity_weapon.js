@@ -14,6 +14,23 @@ var Weapons = (function () {
       },
       on_hit_cooldowns: {},
     },
+    advanced_rifle: {
+      dependencies: [
+        {
+          part: 'left',
+          upgrade: 'advanced rifle',
+        },
+      ],
+      range: 9.0,
+      damage: 15.0,
+      damage_type: 'ranged',
+      health_target: HEALTH_TARGET_RANDOM,
+      cooldown_name: 'rifle_weapon',
+      cooldowns: {
+        rifle_weapon: 0.7,
+      },
+      on_hit_cooldowns: {},
+    },
     basic_melee: {
       range: 1.0,
       damage: 5.0,
@@ -66,6 +83,19 @@ var Weapons = (function () {
     };
 
     this.isEnabled = function (entity) {
+      if (this.params.dependencies.length) {
+        for (var i = 0; i <  this.params.dependencies.length; i++) {
+          var dep = this.params.dependencies[i];
+          var part = entity.getPart(dep.part);
+          if (!part.isAlive()) {
+            return false;
+          }
+          if (dep.upgrade && !part.hasUpgrade(dep.upgrade)) {
+            return false;
+          }
+        }
+        return false;
+      }
       if (this.params.damage_type === 'ranged') {
         return !entity.hasCooldown('melee_leash');
       }

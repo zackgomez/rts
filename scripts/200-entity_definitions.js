@@ -32,7 +32,14 @@ var EntityDefs = {
         makePart({
           name: 'left',
           health: 100,
-          description: 'Just Health',
+          description: 'provides rifle weapon',
+          upgrades: {
+            'advanced_rifle': {
+              health: 20,
+              req_cost: 50,
+              tooltip: 'improves health, range, dps and adds snipe ability',
+            },
+          },
         }),
         makePart({
           name: 'right',
@@ -125,8 +132,9 @@ var EntityDefs = {
           description: 'Just Health',
           upgrades: {
             'teleport': {
+              health: 50,
               req_cost: 30,
-              tooltip: 'Adds teleport ability',
+              tooltip: 'Adds health and teleport ability',
             },
           },
         }),

@@ -49,6 +49,9 @@ function Part (params) {
       tooltip += '\nUPGRADES:'
       _.each(this.completeUpgrades_, function (upgrade, name) {
         tooltip += '\n' + name;
+        if (upgrade.health) {
+          tooltip += '\nHealth: ' + upgrade.health;
+        }
         tooltip += '\n' + upgrade.tooltip;
       });
     }
@@ -57,6 +60,9 @@ function Part (params) {
       _.each(this.availableUpgrades_, function (upgrade, name) {
         tooltip += '\n' + name;
         tooltip += '\nReq: ' + upgrade.req_cost;
+        if (upgrade.health) {
+          tooltip += '\nHealth: ' + upgrade.health;
+        }
         tooltip += '\n' + upgrade.tooltip;
       });
     }
@@ -87,7 +93,13 @@ function Part (params) {
       return;
     }
 
-    this.completeUpgrades_[name] = this.availableUpgrades_[name];
+    var upgrade = this.availableUpgrades_[name];
+    if (upgrade.health) {
+      invariant(upgrade.health > 0, 'expected positive health');
+      this.maxHealth_ += upgrade.health;
+      this.health_ += upgrade.health;
+    }
+    this.completeUpgrades_[name] = upgrade;
     delete this.availableUpgrades_[name];
   };
 }
