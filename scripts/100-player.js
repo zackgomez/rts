@@ -10,16 +10,19 @@ var Players = (function() {
   var players = {};
 
   PlayersAPI.getPlayer = function(pid) {
+    invariant(pid in players, 'missing player');
     return players[pid];
   };
 
   // Create a new player.
   // @param pid the player ID
   // @param start_def dictionary with keys for `pos` and `angle`
-  PlayersAPI.playerInit = function (pid, starting_def) {
+  PlayersAPI.playerInit = function (pid, tid, starting_def) {
     if (players[pid]) {
       throw new Error('player '+pid+' already exists!');
     }
+
+    Teams.addPlayer(tid, pid);
 
     var base_id = SpawnEntity(
       'base',

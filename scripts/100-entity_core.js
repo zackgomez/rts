@@ -109,10 +109,10 @@ function entityInit(entity, params) {
   entity.startUpgrade = function (part_name, upgrade_name) {
     var part = this.getPart(part_name);
     var upgrade = part.getAvailableUpgrades()[upgrade_name];
-    part.purchaseUpgrade(upgrade_name);
     var req = GetRequisition(this.getPlayerID());
     if (upgrade.req_cost < req) {
       AddRequisition(this.getPlayerID(), -upgrade.req_cost, this.getID());
+      part.purchaseUpgrade(upgrade_name);
     } else {
       Log('not enough req to build', upgrade, 'on part', part);
     }
@@ -286,7 +286,7 @@ function entityResolve(entity, dt) {
   // Resources
   if (entity.deltas.req_rate) {
     var req = dt * entity.deltas.req_rate;
-    AddRequisition(entity.getPlayerID(), req, entity.getID());
+    Teams.addRequisition(entity.getTeamID(), req, entity.getID());
   }
   if (entity.deltas.vp_rate) {
     var vps = dt * entity.deltas.vp_rate;

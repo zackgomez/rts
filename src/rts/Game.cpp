@@ -127,10 +127,25 @@ void Game::start() {
   script_.init();
   v8::Locker locker(script_.getIsolate());
   v8::Context::Scope context_scope(script_.getContext());
+  
+  HandleScope scope(script_.getIsolate());
+  auto global = script_.getGlobal();
+
+  // Setup teams in JS.
+  for (auto it : teams_) {
+    TryCatch try_catch;
+    const int argc = 1;
+    Handle<Value> argv[argc] = {Integer::New(it)};
+    Handle<Object> teamsAPI = Handle<Object>::Cast(
+         global->Get(String::New("Teams")));
+    Handle<Function> addTeam = Handle<Function>::Cast(
+          teamsAPI->Get(String::New("addTeam")));
+    auto ret = addTeam->Call(global, argc, argv);
+    checkJSResult(ret, try_catch.Exception(), "Game::start()");
+  }
 
   // Starting resources
-  // TODO(zack): move to map init (spawn logical entities with correct
-  // values)
+  // TODO(zack): move to js
   float startingReq = fltParam("global.startingRequisition");
   for (auto &player : players_) {
     resources_[player->getPlayerID()].requisition += startingReq;
@@ -147,22 +162,6 @@ void Game::start() {
     for (auto player : players_) {
       player->startTick(tick_);
     }
-  }
-  
-  HandleScope scope(script_.getIsolate());
-  auto global = script_.getGlobal();
-
-  // Setup teams in JS.
-  for (auto it : teams_) {
-    TryCatch try_catch;
-    const int argc = 1;
-    Handle<Value> argv[argc] = {Integer::New(it)};
-    Handle<Object> teamsAPI = Handle<Object>::Cast(
-         global->Get(String::New("Teams")));
-    Handle<Function> addTeam = Handle<Function>::Cast(
-          teamsAPI->Get(String::New("addTeam")));
-    auto ret = addTeam->Call(global, argc, argv);
-    checkJSResult(ret, try_catch.Exception(), "Game::start()");
   }
 
   // Game is ready to go!

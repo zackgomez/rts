@@ -121,16 +121,17 @@ void Map::spawnStartingLocation(const Json::Value &definition,
     return;
   }
   auto player = players[idx];
-  id_t pid = player->getPlayerID();
-
 
   using namespace v8;
   auto script = Game::get()->getScript();
   HandleScope scope(script->getIsolate());
   TryCatch try_catch;
   auto global = script->getGlobal();
-  const int argc = 2;
-  Handle<Value> argv[argc] = {Integer::New(pid), script->jsonToJS(definition)};
+  const int argc = 3;
+  Handle<Value> argv[argc] = {
+    Integer::New(player->getPlayerID()),
+    Integer::New(player->getTeamID()),
+    script->jsonToJS(definition)};
 
   Handle<Object> playersModule = Handle<Object>::Cast(
      global->Get(String::New("Players")));
