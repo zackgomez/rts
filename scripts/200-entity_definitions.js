@@ -125,6 +125,8 @@ var EntityDefs = {
           description: 'Just Health',
           upgrades: {
             'teleport': {
+              req_cost: 30,
+              tooltip: 'Adds teleport ability',
             },
           },
         }),

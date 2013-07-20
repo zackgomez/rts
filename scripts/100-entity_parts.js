@@ -43,7 +43,24 @@ function Part (params) {
     return this.name_;
   };
   this.getTooltip = function () {
-    return this.description_;
+    var tooltip = this.name_;
+    tooltip += '\n' + this.description_;
+    if (!_.isEmpty(this.completeUpgrades_)) {
+      tooltip += '\nUPGRADES:'
+      _.each(this.completeUpgrades_, function (upgrade, name) {
+        tooltip += '\n' + name;
+        tooltip += "\n" + upgrade.tooltip;
+      });
+    }
+    if (!_.isEmpty(this.availableUpgrades_)) {
+      tooltip += '\nNEW UPGRADES:'
+      _.each(this.availableUpgrades_, function (upgrade, name) {
+        tooltip += '\n' + name;
+        tooltip += '\nReq: ' + upgrade.req_cost;
+        tooltip += "\n" + upgrade.tooltip;
+      });
+    }
+    return tooltip;
   };
 
   // setters
@@ -70,7 +87,7 @@ function Part (params) {
       return;
     }
 
-    this.completeUpgrades_[name] = true;
+    this.completeUpgrades_[name] = this.availableUpgrades_[name];
     delete this.availableUpgrades_[name];
   };
 }

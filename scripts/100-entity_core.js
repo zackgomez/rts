@@ -107,8 +107,15 @@ function entityInit(entity, params) {
     throw new Error('couldn\'t find part '+ name);
   };
   entity.startUpgrade = function (part_name, upgrade_name) {
-    var part = entity.getPart(part_name);
+    var part = this.getPart(part_name);
+    var upgrade = part.getAvailableUpgrades()[upgrade_name];
     part.purchaseUpgrade(upgrade_name);
+    var req = GetRequisition(this.getPlayerID());
+    if (upgrade.req_cost < req) {
+      AddRequisition(this.getPlayerID(), -upgrade.req_cost, this.getID());
+    } else {
+      Log('not enough req to build', upgrade, 'on part', part);
+    }
   };
 
   // Find entities near the current one.

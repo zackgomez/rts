@@ -199,7 +199,7 @@ void ActorPanelWidget::update(const glm::vec2 &pos, int buttons) {
     auto *partWidget = ((PartWidget *)tooltipWidget->getChild());
     if (i < nparts) {
       tooltipWidget->setTooltipFunc([=]() -> std::string {
-        return ui_info.parts[i].name + ":\n" + ui_info.parts[i].tooltip;
+        return ui_info.parts[i].tooltip;
       });
       partWidget->setPart(ui_info.parts[i]);
     } else {
