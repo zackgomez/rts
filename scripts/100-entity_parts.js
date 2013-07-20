@@ -49,7 +49,7 @@ function Part (params) {
       tooltip += '\nUPGRADES:'
       _.each(this.completeUpgrades_, function (upgrade, name) {
         tooltip += '\n' + name;
-        tooltip += "\n" + upgrade.tooltip;
+        tooltip += '\n' + upgrade.tooltip;
       });
     }
     if (!_.isEmpty(this.availableUpgrades_)) {
@@ -57,7 +57,7 @@ function Part (params) {
       _.each(this.availableUpgrades_, function (upgrade, name) {
         tooltip += '\n' + name;
         tooltip += '\nReq: ' + upgrade.req_cost;
-        tooltip += "\n" + upgrade.tooltip;
+        tooltip += '\n' + upgrade.tooltip;
       });
     }
     return tooltip;
