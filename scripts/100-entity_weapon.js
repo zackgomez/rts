@@ -83,7 +83,7 @@ var Weapons = (function () {
     };
 
     this.isEnabled = function (entity) {
-      if (this.params.dependencies.length) {
+      if (this.params.dependencies) {
         for (var i = 0; i <  this.params.dependencies.length; i++) {
           var dep = this.params.dependencies[i];
           var part = entity.getPart(dep.part);

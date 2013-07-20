@@ -21,7 +21,7 @@ var EntityDefs = {
     sight: 6.0,
     capture_range: 1.0,
     mana: 100,
-    weapons: ['rifle', 'basic_melee'],
+    weapons: ['advanced_rifle', 'rifle', 'basic_melee'],
     getParts: function (entity) {
       return [
         makePart({
@@ -73,6 +73,10 @@ var EntityDefs = {
         mana_cost: 50,
         icon: 'snipe_icon',
         hotkey: 'q',
+        is_active: function (entity) {
+          var part = entity.getPart('left');
+          return part.isAlive() && part.hasUpgrade('advanced_rifle');
+        },
       }),
       heal: new HealAction({
         range: 5.0,
