@@ -72,8 +72,8 @@ var Weapons = (function () {
     }
   };
 
-  function Weapon(params) {
-    this.params = params;
+  function Weapon(def) {
+    this.params = def;
 
     this.getRange = function (entity) {
       return this.params.range;

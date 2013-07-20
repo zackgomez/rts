@@ -73,10 +73,8 @@ var EntityDefs = {
         mana_cost: 50,
         icon: 'snipe_icon',
         hotkey: 'q',
-        is_active: function (entity) {
-          var part = entity.getPart('left');
-          return part.isAlive() && part.hasUpgrade('advanced_rifle');
-        },
+        part: 'left',
+        part_upgrade: 'advanced_rifle',
       }),
       heal: new HealAction({
         range: 5.0,
@@ -162,11 +160,10 @@ var EntityDefs = {
         mana_cost: 55,
         icon: 'teleport_icon',
         hotkey: 'q',
-        is_active: function (entity) {
-          var part = entity.getPart('body');
-          return part.isAlive() && part.hasUpgrade('teleport');
-        },
+        part: 'body',
+        part_upgrade: 'teleport',
       }),
+
       reinforce: new ReinforceAction({
         req_cost: 5,
         cooldown_name: 'reinforce',

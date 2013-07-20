@@ -21,9 +21,9 @@
 // range/cooldown parameters
 var ActionPrototype = {
   getState: function (entity) {
-    if (this.params.is_active && !this.params.is_active(entity)) {
+    if (!this.isAvailable(entity)) {
       return ActionStates.UNAVAILABLE;
-  } else if (this.params.cooldown_name &&
+    } else if (this.params.cooldown_name &&
         entity.hasCooldown(this.params.cooldown_name)) {
       return ActionStates.COOLDOWN;
     } else if (entity.retreat_) {
@@ -32,6 +32,21 @@ var ActionPrototype = {
       return ActionStates.DISABLED;
     }
     return ActionStates.ENABLED;
+  },
+
+  isAvailable: function (entity) {
+    if (this.params.part) {
+      var part = entity.getPart(this.params.part);
+      if (!part.isAlive()) {
+        return false;
+      }
+      if (this.params.part_upgrade) {
+        if (!part.hasUpgrade(this.params.part_upgrade)) {
+          return false;
+        }
+      }
+    }
+    return true;
   },
 
   // Override this if your ability has a resource cost that can disable the
