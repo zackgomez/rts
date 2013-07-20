@@ -4,6 +4,7 @@ var Weapons = (function () {
   // Weapon Definitions
   var definitions = {
     rifle: {
+      part: 'left',
       range: 8.0,
       damage: 15.0,
       damage_type: 'ranged',
@@ -15,19 +16,15 @@ var Weapons = (function () {
       on_hit_cooldowns: {},
     },
     advanced_rifle: {
-      dependencies: [
-        {
-          part: 'left',
-          upgrade: 'advanced rifle',
-        },
-      ],
+      part: 'left',
+      part_upgrade: 'advanced rifle',
       range: 9.0,
       damage: 15.0,
       damage_type: 'ranged',
       health_target: HEALTH_TARGET_RANDOM,
       cooldown_name: 'rifle_weapon',
       cooldowns: {
-        rifle_weapon: 0.7,
+        rifle_weapon: 0.2,
       },
       on_hit_cooldowns: {},
     },
@@ -83,18 +80,15 @@ var Weapons = (function () {
     };
 
     this.isEnabled = function (entity) {
-      if (this.params.dependencies) {
-        for (var i = 0; i <  this.params.dependencies.length; i++) {
-          var dep = this.params.dependencies[i];
-          var part = entity.getPart(dep.part);
-          if (!part.isAlive()) {
-            return false;
-          }
-          if (dep.upgrade && !part.hasUpgrade(dep.upgrade)) {
-            return false;
-          }
+      if (this.params.part) {
+        var part = entity.getPart(this.params.part);
+        if (!part.isAlive()) {
+          return false;
         }
-        return false;
+        if (this.params.part_upgrade &&
+            !part.hasUpgrade(this.params.part_upgrade)) {
+          return false;
+        }
       }
       if (this.params.damage_type === 'ranged') {
         return !entity.hasCooldown('melee_leash');
