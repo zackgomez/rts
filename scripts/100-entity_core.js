@@ -324,6 +324,7 @@ function entityResolve(entity, dt) {
         -damage_obj.damage
       );
       entity.addEffect('on_damage', {
+	amount: damage_obj.damage,
         parts: modified_parts
       });
     }

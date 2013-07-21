@@ -220,7 +220,8 @@
       "pos": [0, 30],
       "texture": "retreat_emblem"
     },
-    "minDragDistance" : 10
+    "minDragDistance" : 10,
+    "damageTextFontHeight": 10
   },
 
   "fonts" :

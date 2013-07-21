@@ -1,6 +1,9 @@
 #include "rts/EffectFactory.h"
+#include <sstream>
+#include "common/ParamReader.h"
 #include "rts/Actor.h"
 #include "rts/Renderer.h"
+#include "rts/FontManager.h"
 #include "rts/Graphics.h"
 #include "rts/ResourceManager.h"
 
@@ -36,22 +39,38 @@ RenderFunction makeTextureBelowEffect(
 RenderFunction makeOnDamageEffect(
     const ModelEntity *e,
     const std::string &name,
+    float amount,
     const std::vector<int> &parts) {
-  glm::vec3 pos = e->getPosition() + glm::vec3(0.f, 0.f, e->getHeight());
+  glm::vec3 pos = e->getPosition(Renderer::get()->getSimDT())
+    + glm::vec3(0.f, 0.f, e->getHeight());
   glm::vec3 dir = glm::normalize(glm::vec3(
         frand() * 2.f - 1.f,
         frand() * 2.f - 1.f,
-        frand()));
-  float t = 2.0f;
+        1.f));
+  float t = 0.f;
+  float duration = 2.f;
+  // TODO(zack): adjust color for AOE damage
+  glm::vec3 color = glm::vec3(1.f, 1.f, 1.f);
   return [=](float dt) mutable -> bool {
-    t -= dt;
-    if (t < 0.f) {
+    t += dt;
+    if (t > duration) {
       return false;
     }
 
-    auto transform = getProjectionStack().current() * getViewStack().current() *
-      glm::translate(glm::mat4(1.f), pos + dir * t);
-    pos = applyMatrix(transform, pos);
+    auto resolution = Renderer::get()->getResolution();
+    auto screen_pos = applyMatrix(
+        getProjectionStack().current() * getViewStack().current(),
+        pos + t * dir);
+    // ndc to resolution
+    auto text_pos = (glm::vec2(screen_pos.x, -screen_pos.y) + 1.f) / 2.f * resolution;
+
+    float font_height = fltParam("hud.damageTextFontHeight");
+    std::stringstream ss;
+    ss << FontManager::get()->makeColorCode(color)
+      << glm::floor(amount);
+    glDisable(GL_DEPTH_TEST);
+    FontManager::get()->drawString(ss.str(), glm::vec2(text_pos), font_height);
+    glEnable(GL_DEPTH_TEST);
 
     return true;
   };
@@ -76,7 +95,8 @@ RenderFunction makeEntityEffect(
       ((Actor *)entity)->setTookDamage(idx);
       parts_vec.push_back(idx);
     }
-    return makeOnDamageEffect(entity, name, parts_vec);
+    float amount = params->Get(String::New("amount"))->NumberValue();
+    return makeOnDamageEffect(entity, name, amount, parts_vec);
 	} else {
 		invariant_violation("unknown effect " + name);
 	}
