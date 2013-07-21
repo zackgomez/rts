@@ -2,6 +2,7 @@
 #include <boost/algorithm/string.hpp>
 #include "common/Collision.h"
 #include "common/ParamReader.h"
+#include "rts/Renderer.h"
 #include "rts/UI.h"
 
 namespace rts {
@@ -71,7 +72,6 @@ void TooltipWidget::render(float dt) {
   std::vector<std::string> tooltipLines;
   boost::split(tooltipLines, tooltip, boost::is_any_of("\n"));
   float tooltip_font_height = fltParam("local.tooltipFontHeight");
-  // TODO(zack): smartly adjust position for tooltip size and screen dimensions
   glm::vec2 tooltip_pos = mousePos_ -
     glm::vec2(0.f, (tooltipLines.size() + 1) * tooltip_font_height);
 
@@ -90,6 +90,17 @@ void TooltipWidget::render(float dt) {
   glm::vec2 tooltip_rect_size = glm::vec2(
     tooltip_width,
     tooltip_font_height * (tooltipLines.size() + 0.5f));
+
+  // Adjust position
+  auto far_corner = tooltip_pos + tooltip_rect_size;
+  auto resolution = Renderer::get()->getResolution();
+  if (far_corner.x > resolution.x) {
+    tooltip_pos.x = resolution.x - tooltip_rect_size.x;
+  }
+  if (far_corner.y > resolution.y) {
+    tooltip_pos.y = resolution.y - tooltip_rect_size.y;
+  }
+
   getUI()->addDeferedRenderFunc([=]() -> void {
     drawRect(tooltip_pos, tooltip_rect_size, glm::vec4(0.6f));
     glm::vec2 pos = tooltip_pos;

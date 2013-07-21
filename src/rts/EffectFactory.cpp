@@ -37,8 +37,23 @@ RenderFunction makeOnDamageEffect(
     const ModelEntity *e,
     const std::string &name,
     const std::vector<int> &parts) {
-  return [=](float dt) -> bool {
-    return false;
+  glm::vec3 pos = e->getPosition() + glm::vec3(0.f, 0.f, e->getHeight());
+  glm::vec3 dir = glm::normalize(glm::vec3(
+        frand() * 2.f - 1.f,
+        frand() * 2.f - 1.f,
+        frand()));
+  float t = 2.0f;
+  return [=](float dt) mutable -> bool {
+    t -= dt;
+    if (t < 0.f) {
+      return false;
+    }
+
+    auto transform = getProjectionStack().current() * getViewStack().current() *
+      glm::translate(glm::mat4(1.f), pos + dir * t);
+    pos = applyMatrix(transform, pos);
+
+    return true;
   };
 }
 
