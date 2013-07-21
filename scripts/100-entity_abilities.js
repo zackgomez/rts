@@ -160,7 +160,7 @@ function ProductionAction(params) {
 ProductionAction.prototype = ActionPrototype;
 
 function TeleportAction(params) {
-  this.targeting = TargetingTypes.LOCATION;
+  this.targeting = TargetingTypes.PATHABLE;
   this.params = params;
 
   this.getTooltip = function (entity) {

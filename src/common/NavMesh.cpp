@@ -417,3 +417,7 @@ void NavMesh::iterate(
     } while (face_he != face->he);
   }
 }
+
+bool NavMesh::isPathable(const glm::vec2 &p) const {
+  return !(getContainingPolygon(glm::vec3(p, 0)) == nullptr);
+}

@@ -510,6 +510,11 @@ function entityHandleAction(entity, action_name, args) {
       target_id: args.target_id,
       action: action,
     });
+  } else if (action.targeting == TargetingTypes.PATHABLE) {
+    entity.state_ = new LocationAbilityState({
+      target: args.target,
+      action: action,
+    });
   } else {
     Log(entity.getID(), 'unknown action type', action.type);
   }

@@ -31,6 +31,8 @@ class NavMesh {
   const std::vector<glm::vec3>
     getPath(const glm::vec3& start, const glm::vec3& end) const;
 
+  bool isPathable(const glm::vec2 &p) const;
+
  private:
   struct Vertex;
   struct HalfEdge;

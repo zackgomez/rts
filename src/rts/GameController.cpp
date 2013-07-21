@@ -543,6 +543,13 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
         order["action"] = action_.name;
         order["target_id"] = toJson(entity->getID());
         highlightEntity(entity->getID());
+      } else if (action_.targeting == UIAction::TargetingType::PATHABLE) {
+        if (Game::get()->getMap()->getNavMesh()->isPathable(glm::vec2(loc))) {
+          order["type"] = OrderTypes::ACTION;
+          order["entity"] = toJson(ids);
+          order["action"] = action_.name;
+          order["target"] = toJson(glm::vec2(loc));
+        }
       } else {
         invariant_violation("Unsupported targeting type");
       }

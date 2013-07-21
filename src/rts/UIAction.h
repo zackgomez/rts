@@ -12,6 +12,7 @@ struct UIAction {
     LOCATION = 1,
     ENEMY = 2,
     ALLY = 3,
+    PATHABLE = 4,
   };
   enum ActionState {
     DISABLED = 0,

@@ -35,6 +35,7 @@ TargetingTypes = {
   LOCATION: 1,
   ENEMY: 2,
   ALLY: 3,
+  PATHABLE: 4,
 };
 
 ActionStates = {
