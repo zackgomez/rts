@@ -122,7 +122,7 @@ void ActionWidget::update(const glm::vec2 &pos, int buttons) {
 
   if (!(buttons & SDL_BUTTON(1))) {
     if (press_ & hover_) {
-      int idx = 1 / size_.x * (pos.x - center_.x + size_.x / 2);
+      int idx = 1 / actionSize_.x * (pos.x - center_.x + size_.x / 2);
       actionExecutor_(actions[idx]);
     }
     press_ = false;
