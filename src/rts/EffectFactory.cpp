@@ -46,11 +46,13 @@ RenderFunction makeOnDamageEffect(
   glm::vec3 dir = glm::normalize(glm::vec3(
         frand() * 2.f - 1.f,
         frand() * 2.f - 1.f,
-        1.f));
+        frand() + 1.f));
   float t = 0.f;
+  float a = fltParam("hud.damageTextGravity");
   float duration = 2.f;
   // TODO(zack): adjust color for AOE damage
-  glm::vec3 color = glm::vec3(1.f, 1.f, 1.f);
+  glm::vec3 color = glm::vec3(0.9f, 0.5f, 0.1f);
+  //glm::vec3 color = glm::vec3(1.f, 1.f, 1.f);
   return [=](float dt) mutable -> bool {
     t += dt;
     if (t > duration) {
@@ -60,7 +62,7 @@ RenderFunction makeOnDamageEffect(
     auto resolution = Renderer::get()->getResolution();
     auto screen_pos = applyMatrix(
         getProjectionStack().current() * getViewStack().current(),
-        pos + t * dir);
+        pos + dir * (a * t * t + t));
     // ndc to resolution
     auto text_pos = (glm::vec2(screen_pos.x, -screen_pos.y) + 1.f) / 2.f * resolution;
 

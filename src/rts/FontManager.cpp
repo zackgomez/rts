@@ -77,6 +77,11 @@ const char * FontManager::makeColorCode(const glm::vec3 &color) {
   for (int i = 0; i < 3; i++) {
     buf[i+1] = static_cast<char>(color[i] * 255);
   }
+  // TODO(zack): these lines are an embarassing hack to make the string always
+  // be of length 4 to strlen
+  buf[1] = buf[1] ? buf[1] : '\x1';
+  buf[2] = buf[2] ? buf[2] : '\x1';
+  buf[3] = buf[3] ? buf[3] : '\x1';
   buf[4] = '\0';
 
   return buf;

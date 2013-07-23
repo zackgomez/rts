@@ -329,8 +329,8 @@ void Matchmaker::connectP2P(
   }
 
   auto listen_sock = kissnet::tcp_socket::create();
-  listen_sock->listen(listenPort, 11);
-  sockset.add_read_socket(listen_sock);
+  //listen_sock->listen(listenPort, 11);
+  //sockset.add_read_socket(listen_sock);
 
   kissnet::tcp_socket_ptr ret;
   while (!ret && timeout > 0) {
