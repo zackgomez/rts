@@ -16,6 +16,7 @@
 namespace rts {
 
 class Controller;
+class EffectManager;
 class Map;
 class ModelEntity;
 class UI;
@@ -27,6 +28,10 @@ class Renderer {
   static Renderer* get() {
     static Renderer instance;
     return &instance;
+  }
+
+  EffectManager* getEffectManager() {
+    return effectManager_;
   }
 
   float getSimDT() const {
@@ -149,6 +154,8 @@ class Renderer {
 
   std::map<id_t, ModelEntity *> entities_;
   std::atomic<id_t> nextEntityID_;
+
+  EffectManager *effectManager_;
 
   std::mutex funcMutex_;
   std::vector<PostableFunction> funcQueue_;

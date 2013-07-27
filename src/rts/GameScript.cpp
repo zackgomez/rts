@@ -88,6 +88,18 @@ static Handle<Value> jsAddRequisition(const Arguments &args) {
   return Undefined();
 }
 
+static Handle<Value> jsAddEffect(const Arguments &args) {
+  invariant(args.Length() == 2, "jsAddRequistion(name, params)");
+  HandleScope scope(args.GetIsolate());
+
+  std::string name = *String::AsciiValue(args[0]);
+  auto params = Handle<Object>::Cast(args[1]);
+
+  add_jseffect(name, params);
+
+  return Undefined();
+}
+
 static Handle<Value> jsGetNearbyEntities(const Arguments &args) {
   invariant(args.Length() == 3, "expected 3 args: pos2, radius, callback");
   HandleScope scope(args.GetIsolate());
@@ -480,6 +492,9 @@ void GameScript::init() {
   global->Set(
       String::New("registerEntityHotkey"),
       FunctionTemplate::New(jsRegisterEntityHotkey));
+  global->Set(
+      String::New("AddEffect"),
+      FunctionTemplate::New(jsAddEffect));
 
   context_.Reset(isolate_, Context::New(isolate_, nullptr, global));
   Context::Scope context_scope(isolate_, context_);
@@ -702,7 +717,7 @@ glm::vec3 GameScript::jsToVec3(const Handle<Array> arr) const {
 
   if (arr->Length() != 3) {
     LOG(WARNING) << "Trying to convert array of size "
-      << arr->Length() << " to vec2\n";
+      << arr->Length() << " to vec3\n";
     return ret;
   }
 

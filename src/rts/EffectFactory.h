@@ -3,8 +3,11 @@
 #include <functional>
 #include <string>
 #include <v8.h>
+#include "rts/EffectManager.h"
 
 namespace rts {
+
+void add_jseffect(const std::string &name, v8::Handle<v8::Object> params);
 
 class ModelEntity;
 

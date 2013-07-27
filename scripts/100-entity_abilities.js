@@ -176,6 +176,10 @@ function TeleportAction(params) {
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
     entity.mana_ -= this.params.mana_cost;
     entity.warpPosition(target);
+    AddEffect('teleport', {
+      start: entity.getPosition2(),
+      end: target,
+    });
   };
 }
 TeleportAction.prototype = ActionPrototype;

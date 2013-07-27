@@ -13,9 +13,10 @@
 #include "common/ParamReader.h"
 #include "common/util.h"
 #include "rts/Controller.h"
+#include "rts/EffectManager.h"
+#include "rts/FontManager.h"
 #include "rts/Game.h"
 #include "rts/Graphics.h"
-#include "rts/FontManager.h"
 #include "rts/Map.h"
 #include "rts/ModelEntity.h"
 #include "rts/ResourceManager.h"
@@ -57,11 +58,14 @@ Renderer::Renderer()
 #endif  // USE_FMOD
   // Initialize font manager, if necessary
   FontManager::get();
+
+  effectManager_ = new EffectManager();
 }
 
 Renderer::~Renderer() {
   clearController();
   clearEntities();
+  delete effectManager_;
 }
 
 void Renderer::postToMainThread(const PostableFunction &func) {
@@ -75,6 +79,7 @@ void Renderer::clearEntities() {
   }
   entities_.clear();
   nextEntityID_ = STARTING_EID;
+  effectManager_->clear();
 }
 
 void Renderer::setController(Controller *controller) {
@@ -146,6 +151,7 @@ void Renderer::render() {
       renderEntityOverlay(it.second);
     }
   }
+  effectManager_->render(getRenderTime());
 
   endRender();
 }

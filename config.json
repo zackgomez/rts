@@ -58,7 +58,8 @@
       "lightning1": "images/lightning1.png",
       "retreat_emblem": "images/retreat_emblem.png",
       "vp_minimap_icon": "images/vp-minimap.png",
-      "req_minimap_icon": "images/req-minimap.png"
+      "req_minimap_icon": "images/req-minimap.png",
+      "teleport_particle": "images/teleport_effect-512.png"
     },
     "depthFields" : {
       "steamLogo"  : {
@@ -232,6 +233,29 @@
       "file" : "fonts/FreeSans.ttf",
       "size" : 64.0,
       "texsize" : 1024
+    }
+  },
+
+  "effects": {
+    "teleport_dest": {
+      "texture": "teleport_particle",
+      "coords": [
+        [0.0, 0.0, 0.5, 0.5],
+        [0.5, 0.0, 1.0, 0.5],
+        [0.0, 0.5, 0.5, 1.0],
+        [0.5, 0.5, 1.0, 1.0]
+      ],
+      "duration": 0.6
+    },
+    "teleport_src": {
+      "texture": "teleport_particle",
+      "coords": [
+        [0.5, 0.5, 1.0, 1.0],
+        [0.0, 0.5, 0.5, 1.0],
+        [0.5, 0.0, 1.0, 0.5],
+        [0.0, 0.0, 0.5, 0.5]
+      ],
+      "duration": 0.6
     }
   },
 

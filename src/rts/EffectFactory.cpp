@@ -3,11 +3,62 @@
 #include "common/ParamReader.h"
 #include "rts/Actor.h"
 #include "rts/Renderer.h"
+#include "rts/EffectManager.h"
 #include "rts/FontManager.h"
+#include "rts/Game.h"
+#include "rts/GameScript.h"
 #include "rts/Graphics.h"
 #include "rts/ResourceManager.h"
 
 namespace rts {
+
+Effect *makeCannedParticleEffect(
+    const std::string &name,
+    glm::vec3 pos) {
+  auto duration = fltParam(name + ".duration");
+  auto texture = ResourceManager::get()->getTexture(
+      strParam(name + ".texture"));
+  std::vector<glm::vec4> coords;
+  Json::Value json_coord_array = getParam(name + ".coords");
+  for (auto i = 0; i < json_coord_array.size(); i++) {
+    coords.push_back(toVec4(json_coord_array[i]));
+  }
+
+  auto part_info_func = [=](float t) -> ParticleInfo {
+    size_t coord_idx = glm::floor(t / duration * coords.size());
+    ParticleInfo ret;
+    ret.pos = pos;
+    ret.size = glm::vec2(1.f);
+    ret.texture = texture;
+    ret.texcoord = coords[coord_idx];
+    ret.color = glm::vec4(1.f);
+    return ret;
+  };
+
+  return makeParticleEffect(
+      duration,
+      part_info_func);
+}
+
+void add_jseffect(const std::string &name, v8::Handle<v8::Object> params) {
+  auto *script = Game::get()->getScript();
+  if (name == "teleport") {
+    glm::vec3 start(
+        script->jsToVec2(v8::Handle<v8::Array>::Cast(
+            params->Get(v8::String::New("start")))),
+        0.1f);
+    glm::vec3 end(
+        script->jsToVec2(v8::Handle<v8::Array>::Cast(
+            params->Get(v8::String::New("end")))),
+        0.1f);
+    Renderer::get()->getEffectManager()->addEffect(
+        makeCannedParticleEffect("effects.teleport_src", start));
+    Renderer::get()->getEffectManager()->addEffect(
+        makeCannedParticleEffect("effects.teleport_dest", end));
+  } else {
+    invariant_violation("Unknown effect " + name);
+  }
+}
 
 RenderFunction makeTextureBelowEffect(
 		const ModelEntity *entity,
