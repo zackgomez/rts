@@ -18,6 +18,7 @@ Effect *makeCannedParticleEffect(
   auto duration = fltParam(name + ".duration");
   auto texture = ResourceManager::get()->getTexture(
       strParam(name + ".texture"));
+  glm::vec2 size(fltParam(name + ".scale"));
   std::vector<glm::vec4> coords;
   Json::Value json_coord_array = getParam(name + ".coords");
   for (auto i = 0; i < json_coord_array.size(); i++) {
@@ -28,7 +29,7 @@ Effect *makeCannedParticleEffect(
     size_t coord_idx = glm::floor(t / duration * coords.size());
     ParticleInfo ret;
     ret.pos = pos;
-    ret.size = glm::vec2(1.f);
+    ret.size = size;
     ret.texture = texture;
     ret.texcoord = coords[coord_idx];
     ret.color = glm::vec4(1.f);
@@ -46,15 +47,18 @@ void add_jseffect(const std::string &name, v8::Handle<v8::Object> params) {
     glm::vec3 start(
         script->jsToVec2(v8::Handle<v8::Array>::Cast(
             params->Get(v8::String::New("start")))),
-        0.1f);
+        0.5f);
     glm::vec3 end(
         script->jsToVec2(v8::Handle<v8::Array>::Cast(
             params->Get(v8::String::New("end")))),
-        0.1f);
-    Renderer::get()->getEffectManager()->addEffect(
-        makeCannedParticleEffect("effects.teleport_src", start));
-    Renderer::get()->getEffectManager()->addEffect(
-        makeCannedParticleEffect("effects.teleport_dest", end));
+        0.5f);
+    for (int i = 0; i < 3; i++) {
+      glm::vec3 offset = 0.6f * (glm::vec3(frand(), frand(), frand()) - 0.5f);
+      Renderer::get()->getEffectManager()->addEffect(
+          makeCannedParticleEffect("effects.teleport_src", start + offset));
+      Renderer::get()->getEffectManager()->addEffect(
+          makeCannedParticleEffect("effects.teleport_dest", end + offset));
+    }
   } else {
     invariant_violation("Unknown effect " + name);
   }
