@@ -59,7 +59,8 @@
       "retreat_emblem": "images/retreat_emblem.png",
       "vp_minimap_icon": "images/vp-minimap.png",
       "req_minimap_icon": "images/req-minimap.png",
-      "teleport_particle": "images/teleport_effect-512.png"
+      "teleport_particle": "images/teleport_effect-512.png",
+      "muzzle_flash_particle": "images/muzzle_flash-512.png"
     },
     "depthFields" : {
       "steamLogo"  : {
@@ -258,6 +259,17 @@
       ],
       "scale": 0.7,
       "duration": 0.6
+    },
+    "muzzle_flash": {
+      "texture": "muzzle_flash_particle",
+      "coords": [
+        [0.0, 0.0, 0.5, 0.5],
+        [0.5, 0.0, 1.0, 0.5],
+        [0.0, 0.5, 0.5, 1.0],
+        [0.5, 0.5, 1.0, 1.0]
+      ],
+      "scale": 0.4,
+      "duration": 0.5
     }
   },
 

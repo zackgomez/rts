@@ -59,6 +59,18 @@ void add_jseffect(const std::string &name, v8::Handle<v8::Object> params) {
       Renderer::get()->getEffectManager()->addEffect(
           makeCannedParticleEffect("effects.teleport_dest", end + offset));
     }
+  } else if (name == "snipe") {
+    id_t eid = params->Get(v8::String::New("source_eid"))->IntegerValue();
+    auto *entity = Game::get()->getEntity(eid);
+    if (!entity) {
+      return;
+    }
+    // TODO(zack): get this position from the model (weapon tip)
+    auto pos = glm::vec3(
+        entity->getPosition2() + 0.2f * entity->getDirection(),
+        1.0f);
+    Renderer::get()->getEffectManager()->addEffect(
+        makeCannedParticleEffect("effects.muzzle_flash", pos));
   } else {
     invariant_violation("Unknown effect " + name);
   }

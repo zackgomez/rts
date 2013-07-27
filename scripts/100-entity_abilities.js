@@ -217,6 +217,9 @@ function SnipeAction(params) {
       damage_type: 'ranged',
       health_target: HEALTH_TARGET_RANDOM,
     });
+    AddEffect('snipe', {
+      source_eid: entity.getID(),
+    });
   };
 }
 SnipeAction.prototype = ActionPrototype;
