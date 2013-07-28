@@ -60,7 +60,8 @@
       "vp_minimap_icon": "images/vp-minimap.png",
       "req_minimap_icon": "images/req-minimap.png",
       "teleport_particle": "images/teleport_effect-512.png",
-      "muzzle_flash_particle": "images/muzzle_flash-512.png"
+      "muzzle_flash_particle": "images/muzzle_flash-512.png",
+      "snipe_shot_particle": "images/snipe_shot.png"
     },
     "depthFields" : {
       "steamLogo"  : {
@@ -238,7 +239,8 @@
   },
 
   "effects": {
-    "teleport_dest": {
+    "teleport": {
+      "billboard_type": "spherical",
       "texture": "teleport_particle",
       "coords": [
         [0.0, 0.0, 0.5, 0.5],
@@ -247,29 +249,28 @@
         [0.5, 0.5, 1.0, 1.0]
       ],
       "scale": 0.7,
-      "duration": 0.6
+      "duration": 0.5
     },
-    "teleport_src": {
-      "texture": "teleport_particle",
+    "muzzle_flash": {
+      "billboard_type": "spherical",
+      "texture": "muzzle_flash_particle",
       "coords": [
         [0.5, 0.5, 1.0, 1.0],
         [0.0, 0.5, 0.5, 1.0],
         [0.5, 0.0, 1.0, 0.5],
         [0.0, 0.0, 0.5, 0.5]
       ],
-      "scale": 0.7,
-      "duration": 0.6
-    },
-    "muzzle_flash": {
-      "texture": "muzzle_flash_particle",
-      "coords": [
-        [0.0, 0.0, 0.5, 0.5],
-        [0.5, 0.0, 1.0, 0.5],
-        [0.0, 0.5, 0.5, 1.0],
-        [0.5, 0.5, 1.0, 1.0]
-      ],
       "scale": 0.4,
       "duration": 0.5
+    },
+    "snipe_shot": {
+      "billboard_type": "cylindrical",
+      "texture": "snipe_shot_particle",
+      "coords": [
+        [0.0, 0.0, 1.0, 1.0]
+      ],
+      "scale": 0.6,
+      "duration": 0.15
     }
   },
 

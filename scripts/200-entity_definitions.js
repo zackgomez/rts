@@ -157,7 +157,7 @@ var EntityDefs = {
         range: 8.0,
         cooldown_name: 'teleport',
         cooldown: 2.0,
-        mana_cost: 55,
+        mana_cost: 5,
         icon: 'teleport_icon',
         hotkey: 'q',
         part: 'body',

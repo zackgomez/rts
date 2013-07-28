@@ -14,7 +14,9 @@ namespace rts {
 
 Effect *makeCannedParticleEffect(
     const std::string &name,
-    glm::vec3 pos) {
+    const glm::vec3 &start,
+    const glm::vec3 &end,
+    const glm::vec3 &orientation) {
   auto duration = fltParam(name + ".duration");
   auto texture = ResourceManager::get()->getTexture(
       strParam(name + ".texture"));
@@ -26,13 +28,18 @@ Effect *makeCannedParticleEffect(
   }
 
   auto part_info_func = [=](float t) -> ParticleInfo {
-    size_t coord_idx = glm::floor(t / duration * coords.size());
+    float u = t / duration;
+    size_t coord_idx = glm::floor(u * coords.size());
     ParticleInfo ret;
-    ret.pos = pos;
+    ret.pos = (1.f - u) * start + u * end;
     ret.size = size;
     ret.texture = texture;
     ret.texcoord = coords[coord_idx];
     ret.color = glm::vec4(1.f);
+    ret.billboard_type = orientation == glm::vec3(0.f) ?
+      ParticleInfo::SPHERICAL :
+      ParticleInfo::CYLINDRICAL;
+    ret.billboard_vec = orientation;
     return ret;
   };
 
@@ -43,22 +50,12 @@ Effect *makeCannedParticleEffect(
 
 void add_jseffect(const std::string &name, v8::Handle<v8::Object> params) {
   auto *script = Game::get()->getScript();
+  auto json_params = script->jsToJSON(params);
   if (name == "teleport") {
-    glm::vec3 start(
-        script->jsToVec2(v8::Handle<v8::Array>::Cast(
-            params->Get(v8::String::New("start")))),
-        0.5f);
-    glm::vec3 end(
-        script->jsToVec2(v8::Handle<v8::Array>::Cast(
-            params->Get(v8::String::New("end")))),
-        0.5f);
-    for (int i = 0; i < 3; i++) {
-      glm::vec3 offset = 0.6f * (glm::vec3(frand(), frand(), frand()) - 0.5f);
-      Renderer::get()->getEffectManager()->addEffect(
-          makeCannedParticleEffect("effects.teleport_src", start + offset));
-      Renderer::get()->getEffectManager()->addEffect(
-          makeCannedParticleEffect("effects.teleport_dest", end + offset));
-    }
+    glm::vec3 start = glm::vec3(toVec2(json_params["start"]), 0.5f);
+    glm::vec3 end = glm::vec3(toVec2(json_params["end"]), 0.5f);
+    Renderer::get()->getEffectManager()->addEffect(
+        makeCannedParticleEffect("effects.teleport", start, end, glm::vec3(0.f)));
   } else if (name == "snipe") {
     id_t eid = params->Get(v8::String::New("source_eid"))->IntegerValue();
     auto *entity = Game::get()->getEntity(eid);
@@ -67,10 +64,18 @@ void add_jseffect(const std::string &name, v8::Handle<v8::Object> params) {
     }
     // TODO(zack): get this position from the model (weapon tip)
     auto pos = glm::vec3(
-        entity->getPosition2() + 0.2f * entity->getDirection(),
+        entity->getPosition2() + 1.0f * entity->getDirection(),
         1.0f);
+    auto shot_pos = pos + 1.5f * glm::vec3(entity->getDirection(), 0.f);
     Renderer::get()->getEffectManager()->addEffect(
-        makeCannedParticleEffect("effects.muzzle_flash", pos));
+        makeCannedParticleEffect("effects.muzzle_flash", pos, pos, glm::vec3(0.f)));
+    // TODO(zack): make this be cylindrically billboarded
+    Renderer::get()->getEffectManager()->addEffect(
+        makeCannedParticleEffect(
+          "effects.snipe_shot",
+          pos,
+          shot_pos,
+          glm::normalize(shot_pos - pos)));
   } else {
     invariant_violation("Unknown effect " + name);
   }

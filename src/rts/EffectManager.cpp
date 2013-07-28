@@ -20,6 +20,37 @@ bool CustomizableEffect::render(float t) const {
   return true;
 }
 
+glm::mat4 makeSphericalBillboardTransform(const glm::vec3 &pos) {
+  glm::mat4 view_transform = getViewStack().current();
+  glm::mat4 ret(1.f);
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+      ret[i][j] = view_transform[j][i];
+    }
+  }
+  ret[3] = glm::vec4(pos, 1.f);
+  return ret;
+}
+
+glm::mat4 makeCylindricalBillboardTransform(
+    const glm::vec3 &pos,
+    const glm::vec3 &rot_axis) {
+  glm::mat4 view_transform = getViewStack().current();
+  glm::vec3 up = glm::normalize(rot_axis);
+
+  glm::vec3 cpos = applyMatrix(glm::inverse(view_transform), glm::vec3(0.f));
+  glm::vec3 look = pos - cpos;
+  glm::vec3 right = glm::normalize(glm::cross(look, up));
+  look = glm::normalize(glm::cross(up, right));
+
+  glm::mat4 transform = glm::mat4(1.f);
+  transform[0] = glm::vec4(up, 0.f);
+  transform[1] = glm::vec4(right, 0.f);
+  transform[2] = glm::vec4(look, 0.f);
+  transform[3] = glm::vec4(pos, 1.f);
+
+  return transform;
+}
 
 Effect *makeParticleEffect(
     float duration,
@@ -29,17 +60,20 @@ Effect *makeParticleEffect(
     [=](float t) -> void {
       auto particle = particle_func(t);
 
-      // TODO(zack): add billboarding options
-      glm::mat4 view_transform = getViewStack().current();
-      glm::mat4 transform = 
-        glm::scale(
-          glm::translate(glm::mat4(1.f), particle.pos),
-          glm::vec3(particle.size, 1.f));
-      for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-          transform[i][j] = view_transform[j][i];
-        }
+      glm::mat4 transform(1.f);
+      if (particle.billboard_type == ParticleInfo::SPHERICAL) {
+        transform = makeSphericalBillboardTransform(particle.pos);
+      } else if (particle.billboard_type == ParticleInfo::CYLINDRICAL) {
+        transform = makeCylindricalBillboardTransform(
+          particle.pos,
+          particle.billboard_vec);
+      } else if (particle.billboard_type == ParticleInfo::NONE) {
+        // TODO(zack): maybe use orientation here?
+       transform = glm::mat4(1.f);
+      } else {
+        invariant_violation("Unknown billboarding type");
       }
+
       if (!particle.texture) {
         renderRectangleColor(
           transform,
