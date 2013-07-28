@@ -3,6 +3,7 @@ PROGVER=0.3
 
 CXX=c++
 MAKEDEPEND=$(CXX) -MM
+GLFWDIR=lib/glfw-3.0.1
 GLM=lib/glm-0.9.2.7
 JSON=lib/jsoncpp
 STBI=lib/stbi
@@ -10,9 +11,9 @@ STBTT=lib/stb_truetype
 FMOD=macosx/fmod
 BOOSTDIR=lib/boost_1_50_0
 V8DIR=lib/v8
-LDFLAGS=-lGLEW -framework SDL -framework Cocoa -framework OpenGL \
+LDFLAGS=-lGLEW -framework Cocoa -framework OpenGL -framework IOKit \
 				-Llib/boost_1_50_macosx -lboost_system -lboost_filesystem \
-				$(V8DIR)/lib-macosx/*.a
+				-L$(GLFWDIR)/lib-macosx -lglfw3 $(V8DIR)/lib-macosx/*.a
 OBJDIR=obj
 SRCDIR=src
 EXECDIR=$(SRCDIR)/exec
@@ -23,7 +24,8 @@ GTESTDIR=lib/gtest-1.6.0
 GTESTLIB=lib/gtest-1.6.0/libgtest.a
 CXXFLAGS=-g -O0 -Wall -I$(GLM) -std=c++11 -stdlib=libc++ -I$(JSON) -I$(STBI) \
 				 -I$(STBTT) -I$(SRCDIR) -I$(GTESTDIR)/include -U__STRICT_ANSI__\
-				 -I$(BOOSTDIR) -I$(FMOD)/inc -I$(V8DIR)/include -Wno-reorder
+				 -I$(BOOSTDIR) -I$(FMOD)/inc -I$(V8DIR)/include -Wno-reorder \
+				 -I$(GLFWDIR)/include
 #CXXFLAGS+=-DSECTION_RECORDING
 
 COMMONSRC=$(wildcard $(COMMONDIR)/*.cpp)
@@ -41,11 +43,8 @@ RESOURCES = config.json local.json models scripts shaders images fonts
 
 all: obj $(PROGRAM) depthfieldgen
 
-$(OBJDIR)/SDLMain.o: macosx/SDLMain.m
-	$(CXX) -g -O0 -Wall $^ -c -o $@
-
-$(PROGRAM): $(RTSOBJ) $(COMMONOBJ) local.json $(OBJDIR)/SDLMain.o $(BOOSTDYLIBS)
-	$(CXX) $(CXXFLAGS) -o $@ $(RTSOBJ) $(COMMONOBJ) $(LDFLAGS) $(OBJDIR)/SDLMain.o
+$(PROGRAM): $(RTSOBJ) $(COMMONOBJ) local.json $(BOOSTDYLIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $(RTSOBJ) $(COMMONOBJ) $(LDFLAGS) 
 
 depthfieldgen: $(DEPTHGENOBJ) $(COMMONOBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $(DEPTHGENOBJ) $(COMMONOBJ)

@@ -30,12 +30,12 @@ class Controller {
   //
   virtual void quitEvent() { }
   // @param button the SDL_BUTTON description of the pressed button
-  virtual void mouseDown(const glm::vec2 &screenCoord, int button) { }
+  virtual void mouseDown(const glm::vec2 &screenCoord, int button, int mods) { }
   // @param button the SDL_BUTTON description of the released button
-  virtual void mouseUp(const glm::vec2 &screenCoord, int button) { }
+  virtual void mouseUp(const glm::vec2 &screenCoord, int button, int mods) { }
   virtual void mouseMotion(const glm::vec2 &screenCoord) { }
-  virtual void keyPress(SDL_keysym key) { }
-  virtual void keyRelease(SDL_keysym key) { }
+  virtual void keyPress(int key, int mods) { }
+  virtual void keyRelease(int key, int mods) { }
 
  protected:
   virtual void frameUpdate(float dt) { }

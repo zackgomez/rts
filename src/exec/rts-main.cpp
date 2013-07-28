@@ -4,7 +4,6 @@
 #include <string>
 #include <queue>
 #include <vector>
-#include <SDL/SDL.h>
 #include <GL/glew.h>
 #include "common/Clock.h"
 #include "common/FPSCalculator.h"

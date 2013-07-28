@@ -1,7 +1,7 @@
 #include "rts/Graphics.h"
 #include <fstream>
 #include <sstream>
-#include <SDL/SDL.h>
+#include <GLFW/glfw3.h>
 #include <GL/glew.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -15,6 +15,7 @@
 #include "stb_image.c"
 
 static bool initialized = false;
+static GLFWwindow *glfw_window;
 
 static MatrixStack viewStack;
 static MatrixStack projStack;
@@ -51,6 +52,10 @@ static void loadResources();
 static int loadVerts(const std::string &filename,
                      vert_p4n4t2 **verts, size_t *nverts);
 
+static void glfw_error_callback(int error, const char *description) {
+  LOG(ERROR) << "GLFW Error (" << error << "): " << description << '\n';
+}
+
 void initEngine(const glm::vec2 &resolution) {
   // TODO(zack) check to see if we're changing resolution
   if (initialized) {
@@ -59,21 +64,27 @@ void initEngine(const glm::vec2 &resolution) {
 
   screenRes = resolution;
 
-  if (SDL_Init(SDL_INIT_VIDEO)) {
-    std::stringstream ss; ss << "Couldn't initialize SDL: "
-      << SDL_GetError() << '\n';
-    throw engine_exception(ss.str());
+  glfwSetErrorCallback(glfw_error_callback);
+
+  if (!glfwInit()) {
+    throw engine_exception("Unable to initialize GLFW");
   }
 
-  int flags = SDL_OPENGL;
+  const char *buildstr = "  BUILT  " __DATE__ " " __TIME__;
+  std::string caption = strParam("game.name") + buildstr;
 
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  SDL_Surface *screen = SDL_SetVideoMode(resolution.x, resolution.y, 32, flags);
-  if (screen == nullptr) {
-    std::stringstream ss; ss << "Couldn't set video mode: " << SDL_GetError()
-      << '\n';
-    throw engine_exception(ss.str());
+  glfw_window = glfwCreateWindow(
+      resolution.x,
+      resolution.y,
+      caption.c_str(),
+      NULL,
+      NULL);
+  if (!glfw_window) {
+    glfwTerminate();
+    throw new engine_exception("Unable to open GLFW window");
   }
+  glfwMakeContextCurrent(glfw_window);
+
   GLenum err = glewInit();
   if (err != GLEW_OK) {
     std::stringstream ss;
@@ -83,11 +94,6 @@ void initEngine(const glm::vec2 &resolution) {
 
   LOG(INFO) << "GLSL Version: " <<
       glGetString(GL_SHADING_LANGUAGE_VERSION) << '\n';
-
-  const char *buildstr = "  BUILT  " __DATE__ " " __TIME__;
-  std::string caption = strParam("game.name") + buildstr;
-  SDL_WM_SetCaption(caption.c_str(), "rts");
-  // SDL_WM_GrabInput(SDL_GRAB_ON);
 
   initialized = true;
 
@@ -102,8 +108,13 @@ void teardownEngine() {
 
   ResourceManager::get()->unloadResources();
 
-  SDL_Quit();
+  glfwDestroyWindow(glfw_window);
+  glfwTerminate();
   initialized = false;
+}
+
+void swapBuffers() {
+  glfwSwapBuffers();
 }
 
 void renderCircleColor(

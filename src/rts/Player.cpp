@@ -1,5 +1,4 @@
 #include "rts/Player.h"
-#include <SDL/SDL.h>
 #include "common/Checksum.h"
 #include "common/ParamReader.h"
 #include "rts/GameEntity.h"

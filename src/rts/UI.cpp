@@ -93,39 +93,4 @@ void UI::render(float dt) {
 
   glEnable(GL_DEPTH_TEST);
 }
-
-void interpretSDLEvent(
-    const SDL_Event &event,
-    std::function<void(const glm::vec2 &, int)> mouseDownHandler,
-    std::function<void(const glm::vec2 &, int)> mouseUpHandler,
-    std::function<void(const glm::vec2 &, int)> mouseMotionHandler,
-    std::function<void(SDL_keysym)> keyPressHandler,
-    std::function<void(SDL_keysym)> keyReleaseHandler,
-    std::function<void()> quitEventHandler) {
-  glm::vec2 screenCoord;
-
-  switch (event.type) {
-  case SDL_KEYDOWN:
-    keyPressHandler(event.key.keysym);
-    break;
-  case SDL_KEYUP:
-    keyReleaseHandler(event.key.keysym);
-    break;
-  case SDL_MOUSEBUTTONDOWN:
-    screenCoord = glm::vec2(event.button.x, event.button.y);
-    mouseDownHandler(screenCoord, event.button.button);
-    break;
-  case SDL_MOUSEBUTTONUP:
-    screenCoord = glm::vec2(event.button.x, event.button.y);
-    mouseUpHandler(screenCoord, event.button.button);
-    break;
-  case SDL_MOUSEMOTION:
-    screenCoord = glm::vec2(event.motion.x, event.motion.y);
-    mouseMotionHandler(screenCoord, event.motion.state);
-    break;
-  case SDL_QUIT:
-    quitEventHandler();
-    break;
-  }
-}
 };  // rts
