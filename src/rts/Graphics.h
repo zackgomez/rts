@@ -20,6 +20,7 @@ class NavMesh;
 
 void initEngine(const glm::vec2 &resolution);
 void teardownEngine();
+void swapBuffers();
 
 MatrixStack& getViewStack();
 MatrixStack& getProjectionStack();

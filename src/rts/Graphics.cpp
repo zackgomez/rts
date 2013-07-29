@@ -106,6 +106,10 @@ void teardownEngine() {
   initialized = false;
 }
 
+void swapBuffers() {
+  SDL_GL_SwapBuffers();
+}
+
 void renderCircleColor(
     const glm::mat4 &modelMatrix,
     const glm::vec4 &color,
