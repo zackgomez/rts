@@ -37,6 +37,7 @@
     <ClCompile Include="..\..\src\rts\CommandWidget.cpp" />
     <ClCompile Include="..\..\src\rts\Controller.cpp" />
     <ClCompile Include="..\..\src\rts\EffectFactory.cpp" />
+    <ClCompile Include="..\..\src\rts\EffectManager.cpp" />
     <ClCompile Include="..\..\src\rts\FontManager.cpp" />
     <ClCompile Include="..\..\src\rts\Game.cpp" />
     <ClCompile Include="..\..\src\rts\GameController.cpp" />
@@ -79,6 +80,7 @@
     <ClInclude Include="..\..\src\rts\CommandWidget.h" />
     <ClInclude Include="..\..\src\rts\Controller.h" />
     <ClInclude Include="..\..\src\rts\EffectFactory.h" />
+    <ClInclude Include="..\..\src\rts\EffectManager.h" />
     <ClInclude Include="..\..\src\rts\Entity.h" />
     <ClInclude Include="..\..\src\rts\FontManager.h" />
     <ClInclude Include="..\..\src\rts\Game.h" />
