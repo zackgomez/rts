@@ -97,8 +97,8 @@ void ModelEntity::render(float dt) {
   auto meshShader = ResourceManager::get()->getShader("unit");
   meshShader->makeActive();
   // TODO(zack): make this part of a model object
-  Mesh * mesh = ResourceManager::get()->getMesh(meshName_);
-  ::renderMeshMaterial(transform, mesh, material_);
+  Model * mesh = ResourceManager::get()->getModel(meshName_);
+  ::renderModelMaterial(transform, mesh, material_);
 
   if (fltParam("local.debug.renderBoundingBox")) {
     auto shader = ResourceManager::get()->getShader("color");
@@ -106,11 +106,11 @@ void ModelEntity::render(float dt) {
     shader->uniform4f("color", glm::vec4(0.8f, 0.3f, 0.3f, 0.6f));
 
     auto pos = getPosition(dt) + glm::vec3(0.f, 0.f, getHeight()/2.f);
-    ::renderMesh(
+    ::renderModel(
         glm::scale(
           glm::translate(glm::mat4(1.f), pos),
           0.5f * glm::vec3(getSize(), getHeight())),
-        ResourceManager::get()->getMesh("cube"));
+        ResourceManager::get()->getModel("cube"));
   }
 
   // Now render additional effects

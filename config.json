@@ -29,16 +29,16 @@
   {
     "meshes"   :
     {
-      "square"        : "models/square.obj",
-      "unit"          : "models/soldier.obj",
-      "melee_unit"    : "models/melee_unit.obj",
-      "building"      : "models/building.obj",
-      "basic_bullet"  : "models/projectile.obj",
-      "victory_point" : "models/vic_point.obj",
-      "req_point"     : "models/req.obj",
-      "cube"          : "models/cube.obj",
-      "hero"          : "models/Master Chief.obj",
-      "larry"         : "models/larry.obj"
+      "square": "models/square.obj",
+      "unit": "models/soldier.obj",
+      "melee_unit": "models/SkaarjUT2004.dae",
+      "building": "models/building.obj",
+      "basic_bullet": "models/projectile.obj",
+      "victory_point": "models/vic_point.obj",
+      "req_point": "models/req.obj",
+      "cube": "models/cube.obj",
+      "hero": "models/MasterChief.DAE",
+      "larry": "models/larry.obj"
     },
     "textures" :
     {
@@ -61,7 +61,11 @@
       "req_minimap_icon": "images/req-minimap.png",
       "teleport_particle": "images/teleport_effect-512.png",
       "muzzle_flash_particle": "images/muzzle_flash-512.png",
-      "snipe_shot_particle": "images/snipe_shot.png"
+      "snipe_shot_particle": "images/snipe_shot.png",
+
+      "meshgenned#./cyborg.png": "images/cyborg.png",
+      "meshgenned#skaarj_body_default.png": "images/skaarj_body_default.png",
+      "meshgenned#skaarj_head_default.png": "images/skaarj_head_default.png"
     },
     "depthFields" : {
       "steamLogo"  : {
@@ -143,8 +147,8 @@
 
   "melee_unit" :
   {
-    "model"       : "melee_unit",
-    "modelSize"   : 1.0
+    "model": "melee_unit",
+    "modelSize": 0.0075
   },
 
   "base" :

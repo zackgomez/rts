@@ -17,7 +17,7 @@ class ResourceManager {
 
   void loadResources();
 
-  Mesh* getMesh(const std::string &name);
+  Model* getModel(const std::string &name);
   GLuint getTexture(const std::string &name);
   Shader* getShader(const std::string &name);
   DepthField *getDepthField(const std::string &name);
@@ -31,7 +31,7 @@ class ResourceManager {
   ResourceManager();
   static ResourceManager *instance_;
 
-  std::map<std::string, Mesh*> meshes_;
+  std::map<std::string, Model*> models_;
   std::map<std::string, GLuint> textures_;
   std::map<std::string, Shader*> shaders_;
   std::map<std::string, DepthField*> depthFields_;

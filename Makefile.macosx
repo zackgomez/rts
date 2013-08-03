@@ -9,10 +9,11 @@ STBI=lib/stbi
 STBTT=lib/stb_truetype
 FMOD=macosx/fmod
 BOOSTDIR=lib/boost_1_50_0
+ASSIMPDIR=lib/assimp
 V8DIR=lib/v8
 LDFLAGS=-lGLEW -framework SDL -framework Cocoa -framework OpenGL \
 				-Llib/boost_1_50_macosx -lboost_system -lboost_filesystem \
-				$(V8DIR)/lib-macosx/*.a
+				$(V8DIR)/lib-macosx/*.a -L$(ASSIMPDIR)/lib-macosx -lassimp
 OBJDIR=obj
 SRCDIR=src
 EXECDIR=$(SRCDIR)/exec
@@ -23,7 +24,8 @@ GTESTDIR=lib/gtest-1.6.0
 GTESTLIB=lib/gtest-1.6.0/libgtest.a
 CXXFLAGS=-g -O0 -Wall -I$(GLM) -std=c++11 -stdlib=libc++ -I$(JSON) -I$(STBI) \
 				 -I$(STBTT) -I$(SRCDIR) -I$(GTESTDIR)/include -U__STRICT_ANSI__\
-				 -I$(BOOSTDIR) -I$(FMOD)/inc -I$(V8DIR)/include -Wno-reorder
+				 -I$(BOOSTDIR) -I$(FMOD)/inc -I$(V8DIR)/include -Wno-reorder \
+				 -I$(ASSIMPDIR)/include
 #CXXFLAGS+=-DSECTION_RECORDING
 
 COMMONSRC=$(wildcard $(COMMONDIR)/*.cpp)

@@ -9,7 +9,7 @@
 #include <glm/glm.hpp>
 #include "rts/MatrixStack.h"
 
-struct Mesh;
+struct Model;
 struct Material;
 struct DepthField {
   GLuint texture;
@@ -36,14 +36,14 @@ GLuint makeBuffer(GLenum type, const void *data, GLsizei size);
 GLuint makeTexture(const std::string &filename);
 void   freeTexture(GLuint tex);
 
-Mesh * loadMesh(const std::string &objFile);
+Model * loadModel(const std::string &objFile);
 Material * createMaterial(
     const glm::vec3 &baseColor,
     float shininess,
     GLuint texture = 0);
-void freeMesh(Mesh *mesh);
+void freeModel(Model *mesh);
 void freeMaterial(Material *material);
-void setMeshTransform(Mesh *mesh, const glm::mat4 &transform);
+void setModelTransform(Model *mesh, const glm::mat4 &transform);
 
 void renderLineColor(
     const glm::vec3 &start,
@@ -65,12 +65,14 @@ void renderCircleColor(
 void renderRectangleProgram(
     const glm::mat4 &modelMatrix);
 // Uses the currently bound program
-void renderMesh(
+void renderModel(
     const glm::mat4 &modelMatrix,
-    const Mesh *mesh);
-void renderMeshMaterial(
+    const Model *mesh,
+    size_t start = 0,
+    size_t end = -1);
+void renderModelMaterial(
     const glm::mat4 &modelMatrix,
-    const Mesh *mesh,
+    const Model *mesh,
     const Material *m);
 
 void renderNavMesh(
