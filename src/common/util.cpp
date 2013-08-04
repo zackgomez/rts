@@ -100,6 +100,19 @@ rts::tick_t toTick(const Json::Value &v) {
   return v.asInt64();
 }
 
+Json::Value &must_have_idx(
+    Json::Value &v,
+    const std::string &idx) {
+  invariant(v.isMember(idx), "must_have_idx missing index");
+  return v[idx];
+}
+const Json::Value &must_have_idx(
+    const Json::Value &v,
+    const std::string &idx) {
+  invariant(v.isMember(idx), "must_have_idx missing index");
+  return v[idx];
+}
+
 glm::vec3 applyMatrix(const glm::mat4 &mat, const glm::vec3 &pt, bool homo) {
   glm::vec4 p = mat * glm::vec4(pt, homo ? 1.f : 0.f);
   if (homo) {

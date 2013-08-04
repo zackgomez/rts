@@ -785,7 +785,7 @@ void freeModel(Model *mesh) {
   delete mesh;
 }
 
-void setModelransform(Model *mesh, const glm::mat4 &transform) {
+void setModelTransform(Model *mesh, const glm::mat4 &transform) {
   mesh->transform = transform;
 }
 

@@ -25,20 +25,46 @@
     "circle_segments" : 16
   },
 
-  "resources" :
+  "resources":
   {
-    "meshes"   :
+    "models":
     {
-      "square": "models/square.obj",
-      "unit": "models/soldier.obj",
-      "melee_unit": "models/SkaarjUT2004.dae",
-      "building": "models/building.obj",
-      "basic_bullet": "models/projectile.obj",
-      "victory_point": "models/vic_point.obj",
-      "req_point": "models/req.obj",
-      "cube": "models/cube.obj",
-      "hero": "models/MasterChief.DAE",
-      "larry": "models/larry.obj"
+      "square": {
+        "file": "models/square.obj"
+      },
+      "unit": {
+        "file": "models/soldier.obj"
+      },
+      "melee_unit": {
+        "file": "models/SkaarjUT2004.dae",
+        "transform": {
+          "origin": [0, 0, 0],
+          "up": [0, 0, 1],
+          "forward": [0, 1, 0],
+          "scale": 0.0075
+        }
+      },
+      "building": {
+        "file": "models/building.obj"
+      },
+      "basic_bullet": {
+        "file": "models/projectile.obj"
+      },
+      "victory_point": {
+        "file": "models/vic_point.obj"
+      },
+      "req_point": {
+        "file": "models/req.obj"
+      },
+      "cube": {
+        "file": "models/cube.obj"
+      },
+      "hero": {
+        "file": "models/MasterChief.DAE"
+      },
+      "larry": {
+        "file": "models/larry.obj"
+      }
     },
     "textures" :
     {
@@ -148,7 +174,7 @@
   "melee_unit" :
   {
     "model": "melee_unit",
-    "modelSize": 0.0075
+    "modelSize": 1.0
   },
 
   "base" :
