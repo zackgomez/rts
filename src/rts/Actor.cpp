@@ -37,10 +37,7 @@ const std::vector<UIAction> &Actor::getActions() const {
 void Actor::resetTexture() {
   const Player *player = Game::get()->getPlayer(getPlayerID());
   auto color = player ? player->getColor() : ::vec3Param("global.defaultColor");
-  GLuint texture = hasParam("texture")
-    ? ResourceManager::get()->getTexture(strParam("texture"))
-    : 0;
-  setMaterial(createMaterial(color, 10.f, texture));
+  setColor(color);
 }
 
 void Actor::collide(const GameEntity *collider, float dt) {

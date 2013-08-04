@@ -257,7 +257,7 @@ void renderRectangleProgram(const glm::mat4 &modelMatrix) {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void renderModel(
+void renderMesh(
     const glm::mat4 &modelMatrix,
     const Model *m,
     size_t start,
@@ -329,10 +329,9 @@ void renderModel(
   glDisableVertexAttribArray(texcoordAttrib);
 }
 
-void renderModelMaterial(
+void renderModel(
     const glm::mat4 &modelMatrix,
-    const Model *m,
-    const Material *mt) {
+    const Model *m) {
   GLuint program;
   glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*) &program);
   if (!program) {
@@ -340,31 +339,26 @@ void renderModelMaterial(
       << "\n";
     return;
   }
-  GLuint baseColorUniform = glGetUniformLocation(program, "baseColor");
-  GLuint shininessUniform = glGetUniformLocation(program, "shininess");
   GLuint useTextureUniform = glGetUniformLocation(program, "useTexture");
   GLuint textureUniform = glGetUniformLocation(program, "texture");
 
   for (int i = 0; i < m->meshes.size(); i++) {
     const auto &mesh = m->meshes[i];
+    // TODO(zack): improve material support
     const Material *material = m->materials.empty()
-      ? mt
+      ? nullptr
       : m->materials[mesh.material_index];
     // Default to no texture
     glUniform1i(useTextureUniform, 0);
-    if (material) {
-      glUniform3fv(baseColorUniform, 1, glm::value_ptr(material->baseColor));
-      glUniform1f(shininessUniform, material->shininess);
-      if (material->texture) {
-        glUniform1i(useTextureUniform, 1);
-        glActiveTexture(GL_TEXTURE0);
-        glEnable(GL_TEXTURE);
-        glBindTexture(GL_TEXTURE_2D, material->texture);
-        glUniform1i(textureUniform, 0);
-      }
+    if (material && material->texture) {
+      glUniform1i(useTextureUniform, 1);
+      glActiveTexture(GL_TEXTURE0);
+      glEnable(GL_TEXTURE);
+      glBindTexture(GL_TEXTURE_2D, material->texture);
+      glUniform1i(textureUniform, 0);
     }
 
-    renderModel(modelMatrix, m, mesh.start, mesh.end);
+    renderMesh(modelMatrix, m, mesh.start, mesh.end);
   }
 }
 

@@ -61,8 +61,8 @@ void Map::init(const std::vector<Player *> &players) {
 
       obj->setScale(glm::vec3(2.f*obj->getSize(), 1.f));
       GLuint texture = ResourceManager::get()->getTexture("collision-tex");
+      // TODO(zack): could be prettier than just a square
       obj->setModelName("square");
-      obj->setMaterial(createMaterial(glm::vec3(0.f), 0.f, texture));
       Renderer::get()->spawnEntity(obj);
       continue;
     }

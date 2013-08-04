@@ -67,13 +67,7 @@ void renderRectangleProgram(
 // Uses the currently bound program
 void renderModel(
     const glm::mat4 &modelMatrix,
-    const Model *mesh,
-    size_t start = 0,
-    size_t end = -1);
-void renderModelMaterial(
-    const glm::mat4 &modelMatrix,
-    const Model *mesh,
-    const Material *m);
+    const Model *mesh);
 
 void renderNavMesh(
     const NavMesh &navmesh,

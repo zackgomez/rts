@@ -14,13 +14,12 @@ ModelEntity::ModelEntity(id_t id)
     size_(0.f),
     speed_(0.f),
     bumpVel_(0.f),
-    material_(nullptr),
     scale_(1.f),
+    color_(0.f),
     visible_(true) {
 }
 
 ModelEntity::~ModelEntity() {
-  freeMaterial(material_);
 }
 
 Rect ModelEntity::getRect() const {
@@ -63,11 +62,9 @@ void ModelEntity::setVisible(bool visible) {
   visible_ = visible;
 }
 
-void ModelEntity::setMaterial(Material *material) {
-  freeMaterial(material_);
-  material_ = material;
+void ModelEntity::setColor(const glm::vec3 &color) {
+  color_ = color;
 }
-
 void ModelEntity::setModelName(const std::string &meshName) {
   meshName_ = meshName;
 }
@@ -96,9 +93,10 @@ void ModelEntity::render(float dt) {
   // TODO(zack): make this part of a model object
   auto meshShader = ResourceManager::get()->getShader("unit");
   meshShader->makeActive();
-  // TODO(zack): make this part of a model object
+  meshShader->uniform3f("baseColor", color_);
+  // TODO(zack): add 'extra shader setup' hook here
   Model * mesh = ResourceManager::get()->getModel(meshName_);
-  ::renderModelMaterial(transform, mesh, material_);
+  ::renderModel(transform, mesh);
 
   if (fltParam("local.debug.renderBoundingBox")) {
     auto shader = ResourceManager::get()->getShader("color");

@@ -75,11 +75,12 @@ public:
 
   // Graphics setters
   void setVisible(bool visible);
-  void setMaterial(Material *material);
   void setModelName(const std::string &meshName);
   void setModelName(std::string &&meshName);
   void setScale(const glm::vec3 &scale);
   void addExtraEffect(const RenderFunction &func);
+  // Effect of color depends on material/model
+  void setColor(const glm::vec3 &color);
 
   // graphics getters
   bool isVisible() const {
@@ -110,7 +111,7 @@ private:
   bool visible_;
 
   std::string meshName_;
-  Material *material_;
+  glm::vec3 color_;
   glm::vec3 scale_;
   std::vector<RenderFunction> renderFuncs_;
 };
