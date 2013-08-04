@@ -29,9 +29,9 @@ class Controller {
   // Input handler functions
   //
   virtual void quitEvent() { }
-  // @param button the SDL_BUTTON description of the pressed button
+  // @param button the pressed MouseButton
   virtual void mouseDown(const glm::vec2 &screenCoord, int button) { }
-  // @param button the SDL_BUTTON description of the released button
+  // @param button the released MouseButton
   virtual void mouseUp(const glm::vec2 &screenCoord, int button) { }
   virtual void mouseMotion(const glm::vec2 &screenCoord) { }
   virtual void keyPress(SDL_keysym key) { }

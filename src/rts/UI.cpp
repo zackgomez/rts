@@ -10,6 +10,7 @@
 #include "rts/Graphics.h"
 #include "rts/FontManager.h"
 #include "rts/Game.h"
+#include "rts/Input.h"
 #include "rts/Map.h"
 #include "rts/Player.h"
 #include "rts/Renderer.h"
@@ -94,6 +95,31 @@ void UI::render(float dt) {
   glEnable(GL_DEPTH_TEST);
 }
 
+int convertSDLMouseButton(int button) {
+  int ret = 0;
+  if (button & SDL_BUTTON(1)) {
+    ret |= MouseButton::LEFT;
+  }
+  if (button & SDL_BUTTON(2)) {
+    ret |= MouseButton::RIGHT;
+  }
+
+  if (button == SDL_BUTTON_LEFT) {
+    ret = MouseButton::LEFT;
+  }
+  if (button == SDL_BUTTON_RIGHT) {
+    ret = MouseButton::RIGHT;
+  }
+  if (button == SDL_BUTTON_WHEELUP) {
+    ret = MouseButton::WHEEL_UP;
+  }
+  if (button == SDL_BUTTON_WHEELDOWN) {
+    ret = MouseButton::WHEEL_DOWN;
+  }
+
+  return ret;
+}
+
 void interpretSDLEvent(
     const SDL_Event &event,
     std::function<void(const glm::vec2 &, int)> mouseDownHandler,
@@ -113,15 +139,15 @@ void interpretSDLEvent(
     break;
   case SDL_MOUSEBUTTONDOWN:
     screenCoord = glm::vec2(event.button.x, event.button.y);
-    mouseDownHandler(screenCoord, event.button.button);
+    mouseDownHandler(screenCoord, convertSDLMouseButton(event.button.button));
     break;
   case SDL_MOUSEBUTTONUP:
     screenCoord = glm::vec2(event.button.x, event.button.y);
-    mouseUpHandler(screenCoord, event.button.button);
+    mouseUpHandler(screenCoord, convertSDLMouseButton(event.button.button));
     break;
   case SDL_MOUSEMOTION:
     screenCoord = glm::vec2(event.motion.x, event.motion.y);
-    mouseMotionHandler(screenCoord, event.motion.state);
+    mouseMotionHandler(screenCoord, convertSDLMouseButton(event.motion.state));
     break;
   case SDL_QUIT:
     quitEventHandler();

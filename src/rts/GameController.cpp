@@ -10,6 +10,7 @@
 #include "rts/Actor.h"
 #include "rts/CommandWidget.h"
 #include "rts/Game.h"
+#include "rts/Input.h"
 #include "rts/Map.h"
 #include "rts/Matchmaker.h"
 #include "rts/MinimapWidget.h"
@@ -110,10 +111,10 @@ void GameController::onCreate() {
   getUI()->addWidget("ui.widgets.minimap", minimapWidget);
   minimapWidget->setMinimapListener(
     [&](const glm::vec2 &pos, int button) {
-      if (button == SDL_BUTTON_LEFT) {
+      if (button == MouseButton::LEFT) {
         leftDragMinimap_ = true;
       }
-      if (button == SDL_BUTTON_RIGHT) {
+      if (button == MouseButton::RIGHT) {
         glm::vec3 v3;
         v3.x = pos.x * Renderer::get()->getMapSize().x;
         v3.y = -1 * pos.y * Renderer::get()->getMapSize().y;
@@ -496,7 +497,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
   id_t eid = selectEntity(screenCoord);
   const GameEntity *entity = Game::get()->getEntity(eid);
 
-  if (button == SDL_BUTTON_LEFT) {
+  if (button == MouseButton::LEFT) {
     if (!order_.empty()) {
       order["type"] = order_;
       order["entity"] = toJson(player_->getSelection());
@@ -567,11 +568,11 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
         newSelect.insert(eid);
       }
     }
-  } else if (button == SDL_BUTTON_RIGHT) {
+  } else if (button == MouseButton::RIGHT) {
     order = handleRightClick(eid, entity, loc);
-  } else if (button == SDL_BUTTON_WHEELUP) {
+  } else if (button == MouseButton::WHEEL_UP) {
     Renderer::get()->zoomCamera(-fltParam("local.mouseZoomSpeed"));
-  } else if (button == SDL_BUTTON_WHEELDOWN) {
+  } else if (button == MouseButton::WHEEL_DOWN) {
     Renderer::get()->zoomCamera(fltParam("local.mouseZoomSpeed"));
   }
 
@@ -640,7 +641,7 @@ Json::Value GameController::handleRightClick(const id_t eid,
 }
 
 void GameController::mouseUp(const glm::vec2 &screenCoord, int button) {
-  if (button == SDL_BUTTON_LEFT) {
+  if (button == MouseButton::LEFT) {
     std::set<id_t> newSelect;
     if (leftDrag_ &&
         glm::distance(leftStart_, screenCoord) > fltParam("hud.minDragDistance")) {

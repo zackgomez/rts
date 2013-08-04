@@ -4,6 +4,7 @@
 #include "common/util.h"
 #include "rts/CommandWidget.h"
 #include "rts/FontManager.h"
+#include "rts/Input.h"
 #include "rts/Renderer.h"
 #include "rts/ResourceManager.h"
 #include "rts/UI.h"
@@ -94,7 +95,7 @@ StaticWidget::StaticWidget(const std::string &name) {
 }
 
 bool StaticWidget::handleClick(const glm::vec2 &pos, int button) {
-  if (!isClick(pos) || !onPressListener_ || button != SDL_BUTTON_LEFT) {
+  if (!isClick(pos) || !onPressListener_ || button != MouseButton::LEFT) {
     return false;
   }
   return onPressListener_();
