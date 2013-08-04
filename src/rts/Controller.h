@@ -1,6 +1,5 @@
 #ifndef SRC_RTS_CONTROLLER_H_
 #define SRC_RTS_CONTROLLER_H_
-#include <SDL/SDL.h>
 #include "common/util.h"
 #include "rts/Input.h"
 

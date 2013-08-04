@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 #include <glm/glm.hpp>
-#include <SDL/SDL.h>
 #include "common/Types.h"
 #include "common/util.h"
 #include "common/Types.h"
@@ -19,18 +18,6 @@ namespace rts {
 class ModelEntity;
 class UIWidget;
 struct MapHighlight;
-
-// Dispatches the event to the specified handler
-// Vec2 params are [0, resolution] with 0,0 being the top left corner
-void interpretSDLEvent(
-    const SDL_Event &event,
-    std::function<void(const glm::vec2 &, int)> mouseDownHandler,
-    std::function<void(const glm::vec2 &, int)> mouseUpHandler,
-    // parameter is bitmask of buttons
-    std::function<void(const glm::vec2 &, int)> mouseMotionHandler,
-    std::function<void(const KeyEvent &ev)> keyPressHandler,
-    std::function<void(const KeyEvent &ev)> keyReleaseHandler,
-    std::function<void()> quitEventHandler);
 
 class UI {
  public:

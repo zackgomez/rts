@@ -2,6 +2,7 @@
 #include "rts/GameController.h"
 #include <iomanip>
 #include <sstream>
+#include <SDL/SDL.h>
 #include <glm/gtx/norm.hpp>
 #include "common/util.h"
 #include "common/ParamReader.h"
@@ -425,9 +426,9 @@ void GameController::frameUpdate(float dt) {
     }
   }
 
-  int x, y;
-  SDL_GetMouseState(&x, &y);
-  glm::vec2 screenCoord(x, y);
+  auto mouse_state = getMouseState();
+  int x = mouse_state.screenpos.x;
+  int y = mouse_state.screenpos.y;
   const glm::vec2 &res = Renderer::get()->getResolution();
   const int CAMERA_PAN_THRESHOLD = std::max(
     intParam("local.camera.panthresh"),
@@ -470,7 +471,7 @@ void GameController::frameUpdate(float dt) {
   player_->setSelection(newsel);
 
   if (leftDragMinimap_) {
-    minimapUpdateCamera(screenCoord);
+    minimapUpdateCamera(mouse_state.screenpos);
   }
 }
 
@@ -774,7 +775,7 @@ void GameController::keyPress(const KeyEvent &ev) {
         auto actor = (const Actor *)Game::get()->getEntity(*sel);
         auto actions = actor->getActions();
         for (auto &action : actions) {
-          if (action.hotkey && action.hotkey == key) {
+          if (action.hotkey && action.hotkey == tolower(key)) {
             handleUIAction(action);
             break;
           }

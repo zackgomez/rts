@@ -1,5 +1,7 @@
 #ifndef SRC_RTS_INPUT_H_
 #define SRC_RTS_INPUT_H_
+#include <functional>
+#include <glm/glm.hpp>
 
 /**
  * This file contains a platform/library independent representation of input
@@ -80,6 +82,22 @@ enum KeyCodes {
 
   INPUT_KEY_F10,
 };
+
+struct MouseState {
+  glm::vec2 screenpos;
+  int buttons;
+  int mods;
+};
+
+MouseState getMouseState();
+
+void handleEvents(
+    std::function<void(const glm::vec2 &, int)> mouseDownHandler,
+    std::function<void(const glm::vec2 &, int)> mouseUpHandler,
+    std::function<void(const glm::vec2 &, int)> mouseMotionHandler,
+    std::function<void(const KeyEvent &)> keyPressHandler,
+    std::function<void(const KeyEvent &)> keyReleaseHandler,
+    std::function<void()> quitEventHandler);
 
 };  // rts
 #endif  // SRC_RTS_INPUT_H_
