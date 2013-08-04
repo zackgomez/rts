@@ -76,8 +76,8 @@ public:
   // Graphics setters
   void setVisible(bool visible);
   void setMaterial(Material *material);
-  void setMeshName(const std::string &meshName);
-  void setMeshName(std::string &&meshName);
+  void setModelName(const std::string &meshName);
+  void setModelName(std::string &&meshName);
   void setScale(const glm::vec3 &scale);
   void addExtraEffect(const RenderFunction &func);
 

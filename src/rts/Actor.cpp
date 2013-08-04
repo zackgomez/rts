@@ -12,8 +12,6 @@ namespace rts {
 Actor::Actor(id_t id, const std::string &name, const Json::Value &params)
   : GameEntity(id, name, params) {
   resetUIInfo();
-  setMeshName(strParam("model"));
-  setScale(glm::vec3(fltParam("modelSize")));
   resetTexture();
 }
 

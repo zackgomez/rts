@@ -32,9 +32,6 @@
       "square": {
         "file": "models/square.obj"
       },
-      "unit": {
-        "file": "models/soldier.obj"
-      },
       "melee_unit": {
         "file": "models/SkaarjUT2004.dae",
         "transform": {
@@ -45,25 +42,40 @@
         }
       },
       "building": {
-        "file": "models/building.obj"
+        "file": "models/building.obj",
+        "transform": {
+          "scale": 4.0
+        }
       },
       "basic_bullet": {
         "file": "models/projectile.obj"
       },
       "victory_point": {
-        "file": "models/vic_point.obj"
+        "file": "models/vic_point.obj",
+        "transform": {
+          "scale": 0.6
+        }
       },
       "req_point": {
-        "file": "models/req.obj"
+        "file": "models/req.obj",
+        "transform": {
+          "scale": 2.0
+        }
       },
       "cube": {
         "file": "models/cube.obj"
       },
-      "hero": {
-        "file": "models/MasterChief.DAE"
+      "ranged_unit": {
+        "file": "models/MasterChief.DAE",
+        "transform": {
+          "scale": 0.025
+        }
       },
-      "larry": {
-        "file": "models/larry.obj"
+      "tanky_melee_unit": {
+        "file": "models/larry.obj",
+        "transform": {
+          "scale": 0.20
+        }
       }
     },
     "textures" :
@@ -151,49 +163,6 @@
     "startingRequisition" : 100,
 
     "bumpSpeed" : 1.0
-  },
-
-  "unit" :
-  {
-    "model": "hero",
-    "modelSize": 0.025
-  },
-
-  "tanky_melee_unit":
-  {
-    "model" : "larry",
-    "modelSize" : 0.20
-  },
-
-  "projectile" :
-  {
-    "model"  : "basic_bullet",
-    "modelSize"    : 1.0
-  },
-
-  "melee_unit" :
-  {
-    "model": "melee_unit",
-    "modelSize": 1.0
-  },
-
-  "base" :
-  {
-    "model"  : "building",
-    "modelSize"    : 4.0
-  },
-
-  "victory_point" :
-  {
-    "model"       : "victory_point",
-    "modelSize"   : 0.6,
-    "texture"     : "vp"
-  },
-
-  "req_point" :
-  {
-    "model"       : "req_point",
-    "modelSize"   : 2.0
   },
 
   "colors" :

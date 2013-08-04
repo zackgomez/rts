@@ -375,6 +375,18 @@ static Handle<Value> entityGetAngle(const Arguments &args) {
   return scope.Close(ret);
 }
 
+static Handle<Value> entitySetModel(const Arguments &args) {
+  invariant(args.Length() == 1, "setModel(string model)");
+
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
+
+  e->setModelName(*String::AsciiValue(args[0]));
+  return Undefined();
+}
+
 static Handle<Value> entitySetMaxSpeed(const Arguments &args) {
   invariant(args.Length() == 1, "setMaxSpeed takes 1 arg");
 
@@ -527,6 +539,9 @@ void GameScript::init() {
       String::New("getAngle"),
       FunctionTemplate::New(entityGetAngle));
 
+  entityTemplate_->Set(
+      String::New("setModel"),
+      FunctionTemplate::New(entitySetModel));
   entityTemplate_->Set(
       String::New("setMaxSpeed"),
       FunctionTemplate::New(entitySetMaxSpeed));

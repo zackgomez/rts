@@ -68,11 +68,11 @@ void ModelEntity::setMaterial(Material *material) {
   material_ = material;
 }
 
-void ModelEntity::setMeshName(const std::string &meshName) {
+void ModelEntity::setModelName(const std::string &meshName) {
   meshName_ = meshName;
 }
 
-void ModelEntity::setMeshName(std::string &&meshName) {
+void ModelEntity::setModelName(std::string &&meshName) {
   meshName_ = std::move(meshName);
 }
 
