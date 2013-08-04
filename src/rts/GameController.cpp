@@ -673,16 +673,16 @@ void GameController::mouseMotion(const glm::vec2 &screenCoord) {
   lastMousePos_ = screenCoord;
 }
 
-void GameController::keyPress(SDL_keysym keysym) {
-  SDLKey key = keysym.sym;
+void GameController::keyPress(const KeyEvent &ev) {
+  int key = ev.key;
   // TODO(zack) watch out for pausing here
   // Actions available in all player states:
-  if (key == SDLK_F10) {
+  if (key == INPUT_KEY_F10) {
     PlayerAction action;
     action["type"] = ActionTypes::LEAVE_GAME;
     Game::get()->addAction(player_->getPlayerID(), action);
   // Camera panning
-  } else if (key == SDLK_UP) {
+  } else if (key == INPUT_KEY_UP) {
     if (alt_) {
       zoom_ = -fltParam("local.keyZoomSpeed");
     } else {
@@ -705,22 +705,22 @@ void GameController::keyPress(SDL_keysym keysym) {
       }
       player_->setSelection(saved_selection);
     }
-  } else if (key == SDLK_DOWN) {
+  } else if (key == INPUT_KEY_DOWN) {
     if (alt_) {
       zoom_ = fltParam("local.keyZoomSpeed");
     } else {
       cameraPanDir_.y = -1.f;
     }
-  } else if (key == SDLK_RIGHT) {
+  } else if (key == INPUT_KEY_RIGHT) {
     cameraPanDir_.x = 1.f;
-  } else if (key == SDLK_LEFT) {
+  } else if (key == INPUT_KEY_LEFT) {
     cameraPanDir_.x = -1.f;
   } else if (state_ == PlayerState::DEFAULT) {
-    if (key == SDLK_RETURN) {
+    if (key == INPUT_KEY_RETURN) {
       std::string prefix = (shift_) ? "/all " : "";
       ((CommandWidget *)getUI()->getWidget("ui.widgets.chat"))
         ->captureText(prefix);
-    } else if (key == SDLK_ESCAPE) {
+    } else if (key == INPUT_KEY_ESC) {
       // ESC clears out current states
       if (!order_.empty() || !action_.name.empty()) {
         order_.clear();
@@ -728,24 +728,24 @@ void GameController::keyPress(SDL_keysym keysym) {
       } else {
         player_->setSelection(std::set<id_t>());
       }
-    } else if (key == SDLK_LSHIFT || key == SDLK_RSHIFT) {
+    } else if (key == INPUT_KEY_LEFT_SHIFT || key == INPUT_KEY_RIGHT_SHIFT) {
       shift_ = true;
-    } else if (key == SDLK_LCTRL || key == SDLK_RCTRL) {
+    } else if (key == INPUT_KEY_LEFT_CTRL || key == INPUT_KEY_RIGHT_CTRL) {
       ctrl_ = true;
-    } else if (key == SDLK_LALT || key == SDLK_RALT) {
+    } else if (key == INPUT_KEY_LEFT_ALT || key == INPUT_KEY_RIGHT_ALT) {
       alt_ = true;
-    } else if (key == SDLK_n) {
+    } else if (key == INPUT_KEY_N) {
       renderNavMesh_ = !renderNavMesh_;
-    } else if (key == SDLK_BACKSPACE) {
+    } else if (key == INPUT_KEY_BACKSPACE) {
       Renderer::get()->resetCameraRotation();
     } else if (!player_->getSelection().empty()) {
       // Handle unit commands
       // Order types
-      if (key == SDLK_a) {
+      if (key == INPUT_KEY_A) {
         order_ = OrderTypes::ATTACK;
-      } else if (key == SDLK_m) {
+      } else if (key == INPUT_KEY_M) {
         order_ = OrderTypes::MOVE;
-      } else if (key == SDLK_x) {
+      } else if (key == INPUT_KEY_X) {
         Json::Value order;
         order["type"] = OrderTypes::RETREAT;
         order["entity"] = toJson(player_->getSelection());
@@ -753,7 +753,7 @@ void GameController::keyPress(SDL_keysym keysym) {
         action["type"] = ActionTypes::ORDER;
         action["order"] = order;
         Game::get()->addAction(player_->getPlayerID(), action);
-      } else if (key == SDLK_h) {
+      } else if (key == INPUT_KEY_H) {
         Json::Value order;
         order["type"] = OrderTypes::HOLD_POSITION;
         order["entity"] = toJson(player_->getSelection());
@@ -761,7 +761,7 @@ void GameController::keyPress(SDL_keysym keysym) {
         action["type"] = ActionTypes::ORDER;
         action["order"] = order;
         Game::get()->addAction(player_->getPlayerID(), action);
-      } else if (key == SDLK_s) {
+      } else if (key == INPUT_KEY_S) {
         Json::Value order;
         order["type"] = OrderTypes::STOP;
         order["entity"] = toJson(player_->getSelection());
@@ -784,18 +784,18 @@ void GameController::keyPress(SDL_keysym keysym) {
   }
 }
 
-void GameController::keyRelease(SDL_keysym keysym) {
-  SDLKey key = keysym.sym;
-  if (key == SDLK_RIGHT || key == SDLK_LEFT) {
+void GameController::keyRelease(const KeyEvent &ev) {
+  int key = ev.key;
+  if (key == INPUT_KEY_RIGHT || key == INPUT_KEY_LEFT) {
     cameraPanDir_.x = 0.f;
-  } else if (key == SDLK_UP || key == SDLK_DOWN) {
+  } else if (key == INPUT_KEY_UP || key == INPUT_KEY_DOWN) {
     cameraPanDir_.y = 0.f;
     zoom_ = 0.f;
-  } else if (key == SDLK_LSHIFT || key == SDLK_RSHIFT) {
+  } else if (key == INPUT_KEY_LEFT_SHIFT || key == INPUT_KEY_RIGHT_SHIFT) {
     shift_ = false;
-  } else if (key == SDLK_LCTRL || key == SDLK_RCTRL) {
+  } else if (key == INPUT_KEY_LEFT_CTRL || key == INPUT_KEY_RIGHT_CTRL) {
     ctrl_ = false;
-  } else if (key == SDLK_LALT || key == SDLK_RALT) {
+  } else if (key == INPUT_KEY_LEFT_ALT || key == INPUT_KEY_RIGHT_ALT) {
     alt_ = false;
   }
 }

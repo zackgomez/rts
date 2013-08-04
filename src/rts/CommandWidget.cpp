@@ -1,5 +1,4 @@
 #include "rts/CommandWidget.h"
-#include <SDL/SDL.h>
 #include "common/ParamReader.h"
 #include "rts/FontManager.h"
 #include "rts/Graphics.h"
@@ -41,11 +40,11 @@ void CommandWidget::stopCapturing() {
 CommandWidget* CommandWidget::captureText(const std::string &prefix) {
   capturing_ = true;
   buffer_ = prefix;
-  getUI()->setKeyCapturer([&](SDL_keysym keysym) -> bool {
-    if (keysym.sym == SDLK_ESCAPE) {
+  getUI()->setKeyCapturer([&](const KeyEvent &ev) -> bool {
+    if (ev.key == INPUT_KEY_ESC) {
       stopCapturing();
       return true;
-    } else if (keysym.sym == SDLK_RETURN) {
+    } else if (ev.key == INPUT_KEY_RETURN) {
       if (!buffer_.empty() && textSubmittedHandler_) {
         textSubmittedHandler_(buffer_);
       }
@@ -53,10 +52,10 @@ CommandWidget* CommandWidget::captureText(const std::string &prefix) {
       if (closeOnSubmit_) {
         stopCapturing();
       }
-    } else if (keysym.sym == SDLK_BACKSPACE) {
+    } else if (ev.key == INPUT_KEY_BACKSPACE) {
       buffer_.pop_back();
-    } else if (isprint(keysym.unicode)) {
-      buffer_.push_back((char)keysym.unicode);
+    } else if (isprint(ev.key)) {
+      buffer_.push_back((char)ev.key);
     } else {
       return false;
     }

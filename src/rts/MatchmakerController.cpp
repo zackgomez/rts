@@ -67,8 +67,8 @@ void MatchmakerController::quitEvent() {
   Renderer::get()->signalShutdown();
 }
 
-void MatchmakerController::keyPress(SDL_keysym keysym) {
-  if (keysym.sym == SDLK_ESCAPE) {
+void MatchmakerController::keyPress(const KeyEvent &ev) {
+  if (ev.key == KeyCodes::INPUT_KEY_ESC) {
     Renderer::get()->signalShutdown();
   }
 }

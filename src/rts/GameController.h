@@ -28,8 +28,8 @@ class GameController : public Controller {
   virtual void mouseDown(const glm::vec2 &screenCoord, int button) override;
   virtual void mouseUp(const glm::vec2 &screenCoord, int button) override;
   virtual void mouseMotion(const glm::vec2 &screenCoord) override;
-  virtual void keyPress(SDL_keysym key) override;
-  virtual void keyRelease(SDL_keysym key) override;
+  virtual void keyPress(const KeyEvent &ev) override;
+  virtual void keyRelease(const KeyEvent &ev) override;
 
   virtual void updateMapShader(Shader *shader) const;
 

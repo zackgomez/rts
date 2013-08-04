@@ -34,11 +34,11 @@ void Controller::processInput(float dt) {
       [=] (const glm::vec2 &pos, int buttons) {
         mouseMotion(pos);
       },
-      [=] (SDL_keysym keysym) {
-        if (ui_->handleKeyPress(keysym)) {
+      [=] (const KeyEvent &ev) {
+        if (ui_->handleKeyPress(ev)) {
           return;
         }
-        keyPress(keysym);
+        keyPress(ev);
       },
       std::bind(&Controller::keyRelease, this, _1),
       std::bind(&Controller::quitEvent, this));

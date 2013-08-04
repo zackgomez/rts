@@ -4,9 +4,6 @@
 /**
  * This file contains a platform/library independent representation of input
  * events.
- *
- * Notes:
- * window_coord is in the range [0, 1]^2 with the origin in the top left.
  */
 namespace rts {
 
@@ -37,11 +34,51 @@ struct KeyEvent {
   int mods;
 };
 
-struct MouseEvent {
-  InputAction action;
-  MouseButton button;
-  int mods;
-  glm::vec2 window_coord;
+enum KeyCodes {
+  INPUT_KEY_A = 65,
+  INPUT_KEY_B = 66,
+  INPUT_KEY_C = 67,
+  INPUT_KEY_D = 68,
+  INPUT_KEY_E = 69,
+  INPUT_KEY_F = 70,
+  INPUT_KEY_G = 71,
+  INPUT_KEY_H = 72,
+  INPUT_KEY_I = 73,
+  INPUT_KEY_J = 74,
+  INPUT_KEY_K = 75,
+  INPUT_KEY_L = 76,
+  INPUT_KEY_M = 77,
+  INPUT_KEY_N = 78,
+  INPUT_KEY_O = 79,
+  INPUT_KEY_P = 80,
+  INPUT_KEY_Q = 81,
+  INPUT_KEY_R = 82,
+  INPUT_KEY_S = 83,
+  INPUT_KEY_T = 84,
+  INPUT_KEY_U = 85,
+  INPUT_KEY_V = 86,
+  INPUT_KEY_W = 87,
+  INPUT_KEY_X = 88,
+  INPUT_KEY_Y = 89,
+  INPUT_KEY_Z = 90,
+
+  INPUT_KEY_ESC = 256,
+  INPUT_KEY_RETURN,
+  INPUT_KEY_BACKSPACE,
+
+  INPUT_KEY_LEFT_SHIFT,
+  INPUT_KEY_RIGHT_SHIFT,
+  INPUT_KEY_LEFT_CTRL,
+  INPUT_KEY_RIGHT_CTRL,
+  INPUT_KEY_LEFT_ALT,
+  INPUT_KEY_RIGHT_ALT,
+
+  INPUT_KEY_UP,
+  INPUT_KEY_DOWN,
+  INPUT_KEY_LEFT,
+  INPUT_KEY_RIGHT,
+
+  INPUT_KEY_F10,
 };
 
 };  // rts

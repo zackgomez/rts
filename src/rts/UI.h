@@ -12,6 +12,7 @@
 #include "common/Types.h"
 #include "rts/FontManager.h"
 #include "rts/Graphics.h"
+#include "rts/Input.h"
 
 namespace rts {
 
@@ -27,8 +28,8 @@ void interpretSDLEvent(
     std::function<void(const glm::vec2 &, int)> mouseUpHandler,
     // parameter is bitmask of buttons
     std::function<void(const glm::vec2 &, int)> mouseMotionHandler,
-    std::function<void(SDL_keysym)> keyPressHandler,
-    std::function<void(SDL_keysym)> keyReleaseHandler,
+    std::function<void(const KeyEvent &ev)> keyPressHandler,
+    std::function<void(const KeyEvent &ev)> keyReleaseHandler,
     std::function<void()> quitEventHandler);
 
 class UI {
@@ -48,20 +49,15 @@ class UI {
   // Input handling
   void update(const glm::vec2 &loc, int buttons);
   bool handleMousePress(const glm::vec2 &loc, int button);
-  bool handleKeyPress(SDL_keysym keysym);
+  bool handleKeyPress(const KeyEvent &ev);
 
   // Key capturing
-  typedef std::function<bool(SDL_keysym keysym)> KeyCapturer;
+  typedef std::function<bool(const KeyEvent &ev)> KeyCapturer;
   void setKeyCapturer(KeyCapturer kc) {
     capturer_ = kc;
-    SDL_EnableUNICODE(SDL_ENABLE);
-    SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,
-        SDL_DEFAULT_REPEAT_INTERVAL);
   }
   void clearKeyCapturer() {
     capturer_ = KeyCapturer();
-    SDL_EnableUNICODE(SDL_DISABLE);
-    SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
   }
 
   typedef std::function<void()> DeferedRenderFunc;
