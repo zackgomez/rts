@@ -1,6 +1,7 @@
 #define GLM_SWIZZLE_XYZW
 #include "rts/Renderer.h"
 #include <sstream>
+#include <SDL/SDL.h>
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -246,7 +247,7 @@ void Renderer::startRender() {
 void Renderer::endRender() {
   renderUI();
 
-	swapBuffers();
+  SDL_GL_SwapBuffers();
 }
 
 const ModelEntity *Renderer::castRay(
