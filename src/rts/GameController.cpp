@@ -2,7 +2,6 @@
 #include "rts/GameController.h"
 #include <iomanip>
 #include <sstream>
-#include <SDL/SDL.h>
 #include <glm/gtx/norm.hpp>
 #include "common/util.h"
 #include "common/ParamReader.h"
@@ -95,8 +94,8 @@ GameController::~GameController() {
 }
 
 void GameController::onCreate() {
-  SDL_ShowCursor(0);
-  SDL_WM_GrabInput(SDL_GRAB_ON);
+  hide_mouse_cursor();
+  grab_mouse();
   // TODO(zack): delete texture
   glGenTextures(1, &visTex_);
   glBindTexture(GL_TEXTURE_2D, visTex_);
@@ -233,8 +232,8 @@ void GameController::onCreate() {
 }
 
 void GameController::onDestroy() {
-  SDL_ShowCursor(1);
-  SDL_WM_GrabInput(SDL_GRAB_OFF);
+  show_mouse_cursor();
+  release_mouse();
   Renderer::get()->setEntityOverlayRenderer(Renderer::EntityOverlayRenderer());
   getUI()->clearWidgets();
   glDeleteTextures(1, &visTex_);

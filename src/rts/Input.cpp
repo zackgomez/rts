@@ -139,4 +139,20 @@ MouseState getMouseState() {
 
   return ret;
 }
+
+void hide_mouse_cursor() {
+  SDL_ShowCursor(0);
+}
+
+void show_mouse_cursor() {
+  SDL_ShowCursor(1);
+}
+
+void grab_mouse() {
+  SDL_WM_GrabInput(SDL_GRAB_ON);
+}
+
+void release_mouse() {
+  SDL_WM_GrabInput(SDL_GRAB_OFF);
+}
 };  // rts

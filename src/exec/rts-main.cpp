@@ -5,6 +5,7 @@
 #include <queue>
 #include <vector>
 #include <GL/glew.h>
+#include <SDL/SDL.h>
 #include "common/Clock.h"
 #include "common/FPSCalculator.h"
 #include "common/kissnet.h"

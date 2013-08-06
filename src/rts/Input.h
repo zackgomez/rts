@@ -99,5 +99,11 @@ void handleEvents(
     std::function<void(const KeyEvent &)> keyReleaseHandler,
     std::function<void()> quitEventHandler);
 
+void hide_mouse_cursor();
+void show_mouse_cursor();
+
+void grab_mouse();
+void release_mouse();
+
 };  // rts
 #endif  // SRC_RTS_INPUT_H_
