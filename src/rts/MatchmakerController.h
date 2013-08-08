@@ -17,7 +17,7 @@ class MatchmakerController : public Controller {
   virtual void onDestroy() override;
 
   virtual void quitEvent() override;
-  virtual void keyPress(SDL_keysym key) override;
+  virtual void keyPress(const KeyEvent &ev) override;
 
  protected:
   virtual void renderExtra(float dt) override;

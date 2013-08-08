@@ -10,6 +10,7 @@
 #include "rts/Graphics.h"
 #include "rts/FontManager.h"
 #include "rts/Game.h"
+#include "rts/Input.h"
 #include "rts/Map.h"
 #include "rts/Player.h"
 #include "rts/Renderer.h"
@@ -45,18 +46,18 @@ void UI::addWidget(const std::string &name, UIWidget *widget) {
   widget->setUI(this);
 }
 
-void UI::update(const glm::vec2 &screenCoord, int buttons) {
+void UI::update(const glm::vec2 &screen_coord, int buttons) {
   for (auto pair : widgets_) {
-    pair.second->update(screenCoord, buttons);
+    pair.second->update(screen_coord, buttons);
   }
 }
 
-bool UI::handleMousePress(const glm::vec2 &screenCoord, int button) {
+bool UI::handleMousePress(const glm::vec2 &screen_coord, int button) {
   for (auto&& pair : widgets_) {
     auto widget = pair.second;
 
-    if (pointInBox(screenCoord, widget->getCenter(), widget->getSize(), 0.f)) {
-      if (widget->handleClick(screenCoord, button)) {
+    if (pointInBox(screen_coord, widget->getCenter(), widget->getSize(), 0.f)) {
+      if (widget->handleClick(screen_coord, button)) {
         return true;
       }
     }
@@ -65,9 +66,9 @@ bool UI::handleMousePress(const glm::vec2 &screenCoord, int button) {
   return false;
 }
 
-bool UI::handleKeyPress(SDL_keysym keysym) {
+bool UI::handleKeyPress(const KeyEvent &ev) {
   if (capturer_) {
-    return capturer_(keysym);
+    return capturer_(ev);
   }
   return false;
 }
@@ -92,40 +93,5 @@ void UI::render(float dt) {
   deferedRenderers_.clear();
 
   glEnable(GL_DEPTH_TEST);
-}
-
-void interpretSDLEvent(
-    const SDL_Event &event,
-    std::function<void(const glm::vec2 &, int)> mouseDownHandler,
-    std::function<void(const glm::vec2 &, int)> mouseUpHandler,
-    std::function<void(const glm::vec2 &, int)> mouseMotionHandler,
-    std::function<void(SDL_keysym)> keyPressHandler,
-    std::function<void(SDL_keysym)> keyReleaseHandler,
-    std::function<void()> quitEventHandler) {
-  glm::vec2 screenCoord;
-
-  switch (event.type) {
-  case SDL_KEYDOWN:
-    keyPressHandler(event.key.keysym);
-    break;
-  case SDL_KEYUP:
-    keyReleaseHandler(event.key.keysym);
-    break;
-  case SDL_MOUSEBUTTONDOWN:
-    screenCoord = glm::vec2(event.button.x, event.button.y);
-    mouseDownHandler(screenCoord, event.button.button);
-    break;
-  case SDL_MOUSEBUTTONUP:
-    screenCoord = glm::vec2(event.button.x, event.button.y);
-    mouseUpHandler(screenCoord, event.button.button);
-    break;
-  case SDL_MOUSEMOTION:
-    screenCoord = glm::vec2(event.motion.x, event.motion.y);
-    mouseMotionHandler(screenCoord, event.motion.state);
-    break;
-  case SDL_QUIT:
-    quitEventHandler();
-    break;
-  }
 }
 };  // rts

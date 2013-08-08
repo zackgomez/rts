@@ -14,13 +14,12 @@ ModelEntity::ModelEntity(id_t id)
     size_(0.f),
     speed_(0.f),
     bumpVel_(0.f),
-    material_(nullptr),
     scale_(1.f),
+    color_(0.f),
     visible_(true) {
 }
 
 ModelEntity::~ModelEntity() {
-  freeMaterial(material_);
 }
 
 Rect ModelEntity::getRect() const {
@@ -63,16 +62,14 @@ void ModelEntity::setVisible(bool visible) {
   visible_ = visible;
 }
 
-void ModelEntity::setMaterial(Material *material) {
-  freeMaterial(material_);
-  material_ = material;
+void ModelEntity::setColor(const glm::vec3 &color) {
+  color_ = color;
 }
-
-void ModelEntity::setMeshName(const std::string &meshName) {
+void ModelEntity::setModelName(const std::string &meshName) {
   meshName_ = meshName;
 }
 
-void ModelEntity::setMeshName(std::string &&meshName) {
+void ModelEntity::setModelName(std::string &&meshName) {
   meshName_ = std::move(meshName);
 }
 
@@ -96,9 +93,10 @@ void ModelEntity::render(float dt) {
   // TODO(zack): make this part of a model object
   auto meshShader = ResourceManager::get()->getShader("unit");
   meshShader->makeActive();
-  // TODO(zack): make this part of a model object
-  Mesh * mesh = ResourceManager::get()->getMesh(meshName_);
-  ::renderMeshMaterial(transform, mesh, material_);
+  meshShader->uniform3f("baseColor", color_);
+  // TODO(zack): add 'extra shader setup' hook here
+  Model * mesh = ResourceManager::get()->getModel(meshName_);
+  ::renderModel(transform, mesh);
 
   if (fltParam("local.debug.renderBoundingBox")) {
     auto shader = ResourceManager::get()->getShader("color");
@@ -106,11 +104,11 @@ void ModelEntity::render(float dt) {
     shader->uniform4f("color", glm::vec4(0.8f, 0.3f, 0.3f, 0.6f));
 
     auto pos = getPosition(dt) + glm::vec3(0.f, 0.f, getHeight()/2.f);
-    ::renderMesh(
+    ::renderModel(
         glm::scale(
           glm::translate(glm::mat4(1.f), pos),
           0.5f * glm::vec3(getSize(), getHeight())),
-        ResourceManager::get()->getMesh("cube"));
+        ResourceManager::get()->getModel("cube"));
   }
 
   // Now render additional effects

@@ -37,6 +37,7 @@
     <ClCompile Include="..\..\src\rts\CommandWidget.cpp" />
     <ClCompile Include="..\..\src\rts\Controller.cpp" />
     <ClCompile Include="..\..\src\rts\EffectFactory.cpp" />
+    <ClCompile Include="..\..\src\rts\EffectManager.cpp" />
     <ClCompile Include="..\..\src\rts\FontManager.cpp" />
     <ClCompile Include="..\..\src\rts\Game.cpp" />
     <ClCompile Include="..\..\src\rts\GameController.cpp" />
@@ -79,6 +80,7 @@
     <ClInclude Include="..\..\src\rts\CommandWidget.h" />
     <ClInclude Include="..\..\src\rts\Controller.h" />
     <ClInclude Include="..\..\src\rts\EffectFactory.h" />
+    <ClInclude Include="..\..\src\rts\EffectManager.h" />
     <ClInclude Include="..\..\src\rts\Entity.h" />
     <ClInclude Include="..\..\src\rts\FontManager.h" />
     <ClInclude Include="..\..\src\rts\Game.h" />
@@ -150,18 +152,18 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\src;..\..\lib\stb_truetype;..\..\lib\boost_1_50_0;..\..\lib\kissnet;..\..\lib\glew-1.7.0\include;..\..\lib\SDL-1.2.15\include;..\..\lib\glm-0.9.2.7;..\..\lib\jsoncpp;..\..\lib\glew-1.7.0\include\GL;..\fmod\inc;..\..\lib\v8\include;..\..\lib\stbi;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\lib\jsoncpp;..\..\lib\SDL-1.2.15\lib\x86;..\..\lib\glew-1.7.0\lib;..\..\lib\v8\lib-msvs\;..\..\lib\boost_1_50_msvc_32\;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\src;..\..\lib\stb_truetype;..\..\lib\boost_1_50_0;..\..\lib\kissnet;..\..\lib\glew-1.7.0\include;..\..\lib\SDL-1.2.15\include;..\..\lib\glm-0.9.2.7;..\..\lib\jsoncpp;..\..\lib\glew-1.7.0\include\GL;..\fmod\inc;..\..\lib\v8\include;..\..\lib\stbi;..\..\lib\assimp\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\lib\jsoncpp;..\..\lib\SDL-1.2.15\lib\x86;..\..\lib\glew-1.7.0\lib;..\..\lib\v8\lib-msvs\;..\..\lib\boost_1_50_msvc_32\;$(LibraryPath);..\..\lib\assimp\lib-msvc</LibraryPath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Matchmaking|Win32'">
-    <IncludePath>..\..\src;..\..\lib\stb_truetype;..\..\lib\boost_1_50_0;..\..\lib\kissnet;..\..\lib\glew-1.7.0\include;..\..\lib\SDL-1.2.15\include;..\..\lib\glm-0.9.2.7;..\..\lib\jsoncpp;..\..\lib\glew-1.7.0\include\GL;..\fmod\inc;..\..\lib\v8\include;..\..\lib\stbi;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\lib\jsoncpp;..\..\lib\SDL-1.2.15\lib\x86;..\..\lib\glew-1.7.0\lib;..\..\lib\v8\lib-msvs\;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\src;..\..\lib\stb_truetype;..\..\lib\boost_1_50_0;..\..\lib\kissnet;..\..\lib\glew-1.7.0\include;..\..\lib\SDL-1.2.15\include;..\..\lib\glm-0.9.2.7;..\..\lib\jsoncpp;..\..\lib\glew-1.7.0\include\GL;..\fmod\inc;..\..\lib\v8\include;..\..\lib\stbi;..\..\lib\assimp\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\lib\jsoncpp;..\..\lib\SDL-1.2.15\lib\x86;..\..\lib\glew-1.7.0\lib;..\..\lib\v8\lib-msvs\;$(LibraryPath);..\..\lib\assimp\lib-msvc</LibraryPath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\src;..\..\lib\stb_truetype;..\..\lib\boost_1_50_0;..\..\lib\kissnet;..\..\lib\glew-1.7.0\include;..\..\lib\SDL-1.2.15\include;..\..\lib\glm-0.9.2.7;..\..\lib\jsoncpp;..\..\lib\glew-1.7.0\include\GL;..\fmod\inc;..\..\lib\v8\include;..\..\lib\stbi;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\lib\jsoncpp;..\..\lib\SDL-1.2.15\lib\x86;..\..\lib\glew-1.7.0\lib;..\..\lib\v8\lib-msvs\;..\..\lib\boost_1_50_msvc_32\;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\src;..\..\lib\stb_truetype;..\..\lib\boost_1_50_0;..\..\lib\kissnet;..\..\lib\glew-1.7.0\include;..\..\lib\SDL-1.2.15\include;..\..\lib\glm-0.9.2.7;..\..\lib\jsoncpp;..\..\lib\glew-1.7.0\include\GL;..\fmod\inc;..\..\lib\v8\include;..\..\lib\stbi;..\..\lib\assimp\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\lib\jsoncpp;..\..\lib\SDL-1.2.15\lib\x86;..\..\lib\glew-1.7.0\lib;..\..\lib\v8\lib-msvs\;..\..\lib\boost_1_50_msvc_32\;$(LibraryPath);..\..\lib\assimp\lib-msvc</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -171,7 +173,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32.lib;SDL.lib;SDLmain.lib;v8.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;SDL.lib;SDLmain.lib;v8.lib;opengl32.lib;assimp.lib</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -183,7 +185,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32.lib;SDL.lib;SDLmain.lib;v8.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;SDL.lib;SDLmain.lib;v8.lib;opengl32.lib;assimp.lib</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -200,7 +202,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>glew32.lib;SDL.lib;SDLmain.lib;v8.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;SDL.lib;SDLmain.lib;v8.lib;opengl32.lib;assimp.lib</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>

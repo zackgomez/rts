@@ -25,20 +25,58 @@
     "circle_segments" : 16
   },
 
-  "resources" :
+  "resources":
   {
-    "meshes"   :
+    "models":
     {
-      "square"        : "models/square.obj",
-      "unit"          : "models/soldier.obj",
-      "melee_unit"    : "models/melee_unit.obj",
-      "building"      : "models/building.obj",
-      "basic_bullet"  : "models/projectile.obj",
-      "victory_point" : "models/vic_point.obj",
-      "req_point"     : "models/req.obj",
-      "cube"          : "models/cube.obj",
-      "hero"          : "models/Master Chief.obj",
-      "larry"         : "models/larry.obj"
+      "square": {
+        "file": "models/square.obj"
+      },
+      "melee_unit": {
+        "file": "models/SkaarjUT2004.dae",
+        "transform": {
+          "origin": [0, 0, 0],
+          "up": [0, 0, 1],
+          "forward": [0, 1, 0],
+          "scale": 0.0075
+        }
+      },
+      "building": {
+        "file": "models/building.obj",
+        "transform": {
+          "scale": 4.0
+        }
+      },
+      "basic_bullet": {
+        "file": "models/projectile.obj"
+      },
+      "victory_point": {
+        "file": "models/vic_point.obj",
+        "transform": {
+          "scale": 0.6
+        }
+      },
+      "req_point": {
+        "file": "models/req.obj",
+        "transform": {
+          "scale": 2.0
+        }
+      },
+      "cube": {
+        "file": "models/cube.obj"
+      },
+      "ranged_unit": {
+        "file": "models/MasterChief.DAE",
+        "transform": {
+          "scale": 0.025
+        }
+      },
+      "tanky_melee_unit": {
+        "file": "models/larry.obj",
+        "transform": {
+          "scale": 0.20
+        }
+      }
     },
     "textures" :
     {
@@ -60,7 +98,12 @@
       "vp_minimap_icon": "images/vp-minimap.png",
       "req_minimap_icon": "images/req-minimap.png",
       "teleport_particle": "images/teleport_effect-512.png",
-      "muzzle_flash_particle": "images/muzzle_flash-512.png"
+      "muzzle_flash_particle": "images/muzzle_flash-512.png",
+      "snipe_shot_particle": "images/snipe_shot.png",
+
+      "meshgenned#./cyborg.png": "images/cyborg.png",
+      "meshgenned#skaarj_body_default.png": "images/skaarj_body_default.png",
+      "meshgenned#skaarj_head_default.png": "images/skaarj_head_default.png"
     },
     "depthFields" : {
       "steamLogo"  : {
@@ -120,49 +163,6 @@
     "startingRequisition" : 100,
 
     "bumpSpeed" : 1.0
-  },
-
-  "unit" :
-  {
-    "model": "hero",
-    "modelSize": 0.025
-  },
-
-  "tanky_melee_unit":
-  {
-    "model" : "larry",
-    "modelSize" : 0.20
-  },
-
-  "projectile" :
-  {
-    "model"  : "basic_bullet",
-    "modelSize"    : 1.0
-  },
-
-  "melee_unit" :
-  {
-    "model"       : "melee_unit",
-    "modelSize"   : 1.0
-  },
-
-  "base" :
-  {
-    "model"  : "building",
-    "modelSize"    : 4.0
-  },
-
-  "victory_point" :
-  {
-    "model"       : "victory_point",
-    "modelSize"   : 0.6,
-    "texture"     : "vp"
-  },
-
-  "req_point" :
-  {
-    "model"       : "req_point",
-    "modelSize"   : 2.0
   },
 
   "colors" :
@@ -238,7 +238,8 @@
   },
 
   "effects": {
-    "teleport_dest": {
+    "teleport": {
+      "billboard_type": "spherical",
       "texture": "teleport_particle",
       "coords": [
         [0.0, 0.0, 0.5, 0.5],
@@ -247,29 +248,28 @@
         [0.5, 0.5, 1.0, 1.0]
       ],
       "scale": 0.7,
-      "duration": 0.6
+      "duration": 0.3
     },
-    "teleport_src": {
-      "texture": "teleport_particle",
+    "muzzle_flash": {
+      "billboard_type": "spherical",
+      "texture": "muzzle_flash_particle",
       "coords": [
         [0.5, 0.5, 1.0, 1.0],
         [0.0, 0.5, 0.5, 1.0],
         [0.5, 0.0, 1.0, 0.5],
         [0.0, 0.0, 0.5, 0.5]
       ],
-      "scale": 0.7,
-      "duration": 0.6
-    },
-    "muzzle_flash": {
-      "texture": "muzzle_flash_particle",
-      "coords": [
-        [0.0, 0.0, 0.5, 0.5],
-        [0.5, 0.0, 1.0, 0.5],
-        [0.0, 0.5, 0.5, 1.0],
-        [0.5, 0.5, 1.0, 1.0]
-      ],
       "scale": 0.4,
       "duration": 0.5
+    },
+    "snipe_shot": {
+      "billboard_type": "cylindrical",
+      "texture": "snipe_shot_particle",
+      "coords": [
+        [0.0, 0.0, 1.0, 1.0]
+      ],
+      "scale": 0.6,
+      "duration": 0.15
     }
   },
 

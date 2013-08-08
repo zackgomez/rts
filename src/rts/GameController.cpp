@@ -10,6 +10,7 @@
 #include "rts/Actor.h"
 #include "rts/CommandWidget.h"
 #include "rts/Game.h"
+#include "rts/Input.h"
 #include "rts/Map.h"
 #include "rts/Matchmaker.h"
 #include "rts/MinimapWidget.h"
@@ -93,8 +94,8 @@ GameController::~GameController() {
 }
 
 void GameController::onCreate() {
-  SDL_ShowCursor(0);
-  SDL_WM_GrabInput(SDL_GRAB_ON);
+  hide_mouse_cursor();
+  grab_mouse();
   // TODO(zack): delete texture
   glGenTextures(1, &visTex_);
   glBindTexture(GL_TEXTURE_2D, visTex_);
@@ -110,10 +111,10 @@ void GameController::onCreate() {
   getUI()->addWidget("ui.widgets.minimap", minimapWidget);
   minimapWidget->setMinimapListener(
     [&](const glm::vec2 &pos, int button) {
-      if (button == SDL_BUTTON_LEFT) {
+      if (button == MouseButton::LEFT) {
         leftDragMinimap_ = true;
       }
-      if (button == SDL_BUTTON_RIGHT) {
+      if (button == MouseButton::RIGHT) {
         glm::vec3 v3;
         v3.x = pos.x * Renderer::get()->getMapSize().x;
         v3.y = -1 * pos.y * Renderer::get()->getMapSize().y;
@@ -231,8 +232,8 @@ void GameController::onCreate() {
 }
 
 void GameController::onDestroy() {
-  SDL_ShowCursor(1);
-  SDL_WM_GrabInput(SDL_GRAB_OFF);
+  show_mouse_cursor();
+  release_mouse();
   Renderer::get()->setEntityOverlayRenderer(Renderer::EntityOverlayRenderer());
   getUI()->clearWidgets();
   glDeleteTextures(1, &visTex_);
@@ -424,9 +425,9 @@ void GameController::frameUpdate(float dt) {
     }
   }
 
-  int x, y;
-  SDL_GetMouseState(&x, &y);
-  glm::vec2 screenCoord(x, y);
+  auto mouse_state = getMouseState();
+  int x = mouse_state.screenpos.x;
+  int y = mouse_state.screenpos.y;
   const glm::vec2 &res = Renderer::get()->getResolution();
   const int CAMERA_PAN_THRESHOLD = std::max(
     intParam("local.camera.panthresh"),
@@ -469,7 +470,7 @@ void GameController::frameUpdate(float dt) {
   player_->setSelection(newsel);
 
   if (leftDragMinimap_) {
-    minimapUpdateCamera(screenCoord);
+    minimapUpdateCamera(mouse_state.screenpos);
   }
 }
 
@@ -496,7 +497,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
   id_t eid = selectEntity(screenCoord);
   const GameEntity *entity = Game::get()->getEntity(eid);
 
-  if (button == SDL_BUTTON_LEFT) {
+  if (button == MouseButton::LEFT) {
     if (!order_.empty()) {
       order["type"] = order_;
       order["entity"] = toJson(player_->getSelection());
@@ -567,11 +568,11 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
         newSelect.insert(eid);
       }
     }
-  } else if (button == SDL_BUTTON_RIGHT) {
+  } else if (button == MouseButton::RIGHT) {
     order = handleRightClick(eid, entity, loc);
-  } else if (button == SDL_BUTTON_WHEELUP) {
+  } else if (button == MouseButton::WHEEL_UP) {
     Renderer::get()->zoomCamera(-fltParam("local.mouseZoomSpeed"));
-  } else if (button == SDL_BUTTON_WHEELDOWN) {
+  } else if (button == MouseButton::WHEEL_DOWN) {
     Renderer::get()->zoomCamera(fltParam("local.mouseZoomSpeed"));
   }
 
@@ -640,7 +641,7 @@ Json::Value GameController::handleRightClick(const id_t eid,
 }
 
 void GameController::mouseUp(const glm::vec2 &screenCoord, int button) {
-  if (button == SDL_BUTTON_LEFT) {
+  if (button == MouseButton::LEFT) {
     std::set<id_t> newSelect;
     if (leftDrag_ &&
         glm::distance(leftStart_, screenCoord) > fltParam("hud.minDragDistance")) {
@@ -672,16 +673,16 @@ void GameController::mouseMotion(const glm::vec2 &screenCoord) {
   lastMousePos_ = screenCoord;
 }
 
-void GameController::keyPress(SDL_keysym keysym) {
-  SDLKey key = keysym.sym;
+void GameController::keyPress(const KeyEvent &ev) {
+  int key = ev.key;
   // TODO(zack) watch out for pausing here
   // Actions available in all player states:
-  if (key == SDLK_F10) {
+  if (key == INPUT_KEY_F10) {
     PlayerAction action;
     action["type"] = ActionTypes::LEAVE_GAME;
     Game::get()->addAction(player_->getPlayerID(), action);
   // Camera panning
-  } else if (key == SDLK_UP) {
+  } else if (key == INPUT_KEY_UP) {
     if (alt_) {
       zoom_ = -fltParam("local.keyZoomSpeed");
     } else {
@@ -704,22 +705,22 @@ void GameController::keyPress(SDL_keysym keysym) {
       }
       player_->setSelection(saved_selection);
     }
-  } else if (key == SDLK_DOWN) {
+  } else if (key == INPUT_KEY_DOWN) {
     if (alt_) {
       zoom_ = fltParam("local.keyZoomSpeed");
     } else {
       cameraPanDir_.y = -1.f;
     }
-  } else if (key == SDLK_RIGHT) {
+  } else if (key == INPUT_KEY_RIGHT) {
     cameraPanDir_.x = 1.f;
-  } else if (key == SDLK_LEFT) {
+  } else if (key == INPUT_KEY_LEFT) {
     cameraPanDir_.x = -1.f;
   } else if (state_ == PlayerState::DEFAULT) {
-    if (key == SDLK_RETURN) {
+    if (key == INPUT_KEY_RETURN) {
       std::string prefix = (shift_) ? "/all " : "";
       ((CommandWidget *)getUI()->getWidget("ui.widgets.chat"))
         ->captureText(prefix);
-    } else if (key == SDLK_ESCAPE) {
+    } else if (key == INPUT_KEY_ESC) {
       // ESC clears out current states
       if (!order_.empty() || !action_.name.empty()) {
         order_.clear();
@@ -727,24 +728,24 @@ void GameController::keyPress(SDL_keysym keysym) {
       } else {
         player_->setSelection(std::set<id_t>());
       }
-    } else if (key == SDLK_LSHIFT || key == SDLK_RSHIFT) {
+    } else if (key == INPUT_KEY_LEFT_SHIFT || key == INPUT_KEY_RIGHT_SHIFT) {
       shift_ = true;
-    } else if (key == SDLK_LCTRL || key == SDLK_RCTRL) {
+    } else if (key == INPUT_KEY_LEFT_CTRL || key == INPUT_KEY_RIGHT_CTRL) {
       ctrl_ = true;
-    } else if (key == SDLK_LALT || key == SDLK_RALT) {
+    } else if (key == INPUT_KEY_LEFT_ALT || key == INPUT_KEY_RIGHT_ALT) {
       alt_ = true;
-    } else if (key == SDLK_n) {
+    } else if (key == INPUT_KEY_N) {
       renderNavMesh_ = !renderNavMesh_;
-    } else if (key == SDLK_BACKSPACE) {
+    } else if (key == INPUT_KEY_BACKSPACE) {
       Renderer::get()->resetCameraRotation();
     } else if (!player_->getSelection().empty()) {
       // Handle unit commands
       // Order types
-      if (key == SDLK_a) {
+      if (key == INPUT_KEY_A) {
         order_ = OrderTypes::ATTACK;
-      } else if (key == SDLK_m) {
+      } else if (key == INPUT_KEY_M) {
         order_ = OrderTypes::MOVE;
-      } else if (key == SDLK_x) {
+      } else if (key == INPUT_KEY_X) {
         Json::Value order;
         order["type"] = OrderTypes::RETREAT;
         order["entity"] = toJson(player_->getSelection());
@@ -752,7 +753,7 @@ void GameController::keyPress(SDL_keysym keysym) {
         action["type"] = ActionTypes::ORDER;
         action["order"] = order;
         Game::get()->addAction(player_->getPlayerID(), action);
-      } else if (key == SDLK_h) {
+      } else if (key == INPUT_KEY_H) {
         Json::Value order;
         order["type"] = OrderTypes::HOLD_POSITION;
         order["entity"] = toJson(player_->getSelection());
@@ -760,7 +761,7 @@ void GameController::keyPress(SDL_keysym keysym) {
         action["type"] = ActionTypes::ORDER;
         action["order"] = order;
         Game::get()->addAction(player_->getPlayerID(), action);
-      } else if (key == SDLK_s) {
+      } else if (key == INPUT_KEY_S) {
         Json::Value order;
         order["type"] = OrderTypes::STOP;
         order["entity"] = toJson(player_->getSelection());
@@ -773,7 +774,7 @@ void GameController::keyPress(SDL_keysym keysym) {
         auto actor = (const Actor *)Game::get()->getEntity(*sel);
         auto actions = actor->getActions();
         for (auto &action : actions) {
-          if (action.hotkey && action.hotkey == key) {
+          if (action.hotkey && action.hotkey == tolower(key)) {
             handleUIAction(action);
             break;
           }
@@ -783,18 +784,18 @@ void GameController::keyPress(SDL_keysym keysym) {
   }
 }
 
-void GameController::keyRelease(SDL_keysym keysym) {
-  SDLKey key = keysym.sym;
-  if (key == SDLK_RIGHT || key == SDLK_LEFT) {
+void GameController::keyRelease(const KeyEvent &ev) {
+  int key = ev.key;
+  if (key == INPUT_KEY_RIGHT || key == INPUT_KEY_LEFT) {
     cameraPanDir_.x = 0.f;
-  } else if (key == SDLK_UP || key == SDLK_DOWN) {
+  } else if (key == INPUT_KEY_UP || key == INPUT_KEY_DOWN) {
     cameraPanDir_.y = 0.f;
     zoom_ = 0.f;
-  } else if (key == SDLK_LSHIFT || key == SDLK_RSHIFT) {
+  } else if (key == INPUT_KEY_LEFT_SHIFT || key == INPUT_KEY_RIGHT_SHIFT) {
     shift_ = false;
-  } else if (key == SDLK_LCTRL || key == SDLK_RCTRL) {
+  } else if (key == INPUT_KEY_LEFT_CTRL || key == INPUT_KEY_RIGHT_CTRL) {
     ctrl_ = false;
-  } else if (key == SDLK_LALT || key == SDLK_RALT) {
+  } else if (key == INPUT_KEY_LEFT_ALT || key == INPUT_KEY_RIGHT_ALT) {
     alt_ = false;
   }
 }

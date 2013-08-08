@@ -44,6 +44,14 @@ struct ParticleInfo {
   glm::vec4 color;
   GLuint texture;
   glm::vec4 texcoord;
+
+  enum BillboardType {
+    NONE,
+    SPHERICAL,
+    CYLINDRICAL,
+  };
+  BillboardType billboard_type;
+  glm::vec3 billboard_vec;
 };
 Effect *makeParticleEffect(
     float duration,

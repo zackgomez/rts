@@ -1,10 +1,10 @@
 #include "rts/ActionWidget.h"
 #include <boost/algorithm/string.hpp>
-#include <SDL/SDL.h>
 #include "common/Collision.h"
 #include "common/ParamReader.h"
 #include "rts/FontManager.h"
 #include "rts/Game.h"
+#include "rts/Input.h"
 #include "rts/Renderer.h"
 #include "rts/UIAction.h"
 
@@ -120,7 +120,7 @@ void ActionWidget::update(const glm::vec2 &pos, int buttons) {
   hover_ = pointInBox(pos, getCenter(), getSize(), 0.f);
   hoverPos_ = pos;
 
-  if (!(buttons & SDL_BUTTON(1))) {
+  if (!(buttons & MouseButton::LEFT)) {
     if (press_ & hover_) {
       int idx = 1 / actionSize_.x * (pos.x - center_.x + size_.x / 2);
       actionExecutor_(actions[idx]);

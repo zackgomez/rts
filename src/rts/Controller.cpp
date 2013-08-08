@@ -1,6 +1,7 @@
 #define GLM_SWIZZLE_XYZW
 #include <functional>
 #include "rts/Controller.h"
+#include "rts/Input.h"
 #include "rts/UI.h"
 
 namespace rts {
@@ -16,14 +17,10 @@ Controller::~Controller() {
 void Controller::processInput(float dt) {
   using namespace std::placeholders;
 
-  int x, y, buttons;
-  buttons = SDL_GetMouseState(&x, &y);
-  ui_->update(glm::vec2(x, y), buttons);
+  auto mouse_state = getMouseState();
+  ui_->update(mouse_state.screenpos, mouse_state.buttons);
 
-  SDL_Event event;
-  while (SDL_PollEvent(&event)) {
-    interpretSDLEvent(
-      event,
+  handleEvents(
       [=] (const glm::vec2 &p, int button) {
         if (ui_->handleMousePress(p, button)) {
           return;
@@ -34,15 +31,15 @@ void Controller::processInput(float dt) {
       [=] (const glm::vec2 &pos, int buttons) {
         mouseMotion(pos);
       },
-      [=] (SDL_keysym keysym) {
-        if (ui_->handleKeyPress(keysym)) {
+      [=] (const KeyEvent &ev) {
+        if (ui_->handleKeyPress(ev)) {
           return;
         }
-        keyPress(keysym);
+        keyPress(ev);
       },
       std::bind(&Controller::keyRelease, this, _1),
       std::bind(&Controller::quitEvent, this));
-  }
+
   frameUpdate(dt);
 }
 

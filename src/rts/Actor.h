@@ -58,6 +58,7 @@ class Actor : public GameEntity {
  protected:
   void handleAction(const std::string &action_name, const Json::Value &order);
 
+  glm::vec3 color_;
   void resetTexture();
 
   UIInfo uiInfo_;

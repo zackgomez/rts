@@ -9,7 +9,7 @@
 #include <glm/glm.hpp>
 #include "rts/MatrixStack.h"
 
-struct Mesh;
+struct Model;
 struct Material;
 struct DepthField {
   GLuint texture;
@@ -21,6 +21,8 @@ class NavMesh;
 void initEngine(const glm::vec2 &resolution);
 void teardownEngine();
 void swapBuffers();
+
+void *get_native_window_handle();
 
 MatrixStack& getViewStack();
 MatrixStack& getProjectionStack();
@@ -36,14 +38,14 @@ GLuint makeBuffer(GLenum type, const void *data, GLsizei size);
 GLuint makeTexture(const std::string &filename);
 void   freeTexture(GLuint tex);
 
-Mesh * loadMesh(const std::string &objFile);
+Model * loadModel(const std::string &objFile);
 Material * createMaterial(
     const glm::vec3 &baseColor,
     float shininess,
     GLuint texture = 0);
-void freeMesh(Mesh *mesh);
+void freeModel(Model *mesh);
 void freeMaterial(Material *material);
-void setMeshTransform(Mesh *mesh, const glm::mat4 &transform);
+void setModelTransform(Model *mesh, const glm::mat4 &transform);
 
 void renderLineColor(
     const glm::vec3 &start,
@@ -65,13 +67,9 @@ void renderCircleColor(
 void renderRectangleProgram(
     const glm::mat4 &modelMatrix);
 // Uses the currently bound program
-void renderMesh(
+void renderModel(
     const glm::mat4 &modelMatrix,
-    const Mesh *mesh);
-void renderMeshMaterial(
-    const glm::mat4 &modelMatrix,
-    const Mesh *mesh,
-    const Material *m);
+    const Model *mesh);
 
 void renderNavMesh(
     const NavMesh &navmesh,

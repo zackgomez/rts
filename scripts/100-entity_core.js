@@ -21,6 +21,9 @@ function entityInit(entity, params) {
       entity.setProperty(def.properties[i], true);
     }
   }
+  if (def.model) {
+    entity.setModel(def.model);
+  }
   if (def.size) {
     entity.setSize(def.size);
   }

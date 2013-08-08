@@ -30,7 +30,8 @@ var Players = (function() {
         pid: pid,
         pos: starting_def.pos,
         angle: starting_def.angle,
-      });
+      }
+    );
     var base_entity = GetEntity(base_id);
 
     var retreat_location = vecAdd(

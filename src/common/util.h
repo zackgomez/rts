@@ -45,6 +45,12 @@ Json::Value toJson(uint64_t n);
 Json::Value toJson(int64_t n);
 rts::id_t   toID(const Json::Value &v);
 rts::tick_t toTick(const Json::Value &v);
+Json::Value &must_have_idx(
+    Json::Value &v,
+    const std::string &idx);
+const Json::Value &must_have_idx(
+    const Json::Value &v,
+    const std::string &idx);
 
 template <class T>
 Json::Value toJson(const std::set<T> &entities) {
