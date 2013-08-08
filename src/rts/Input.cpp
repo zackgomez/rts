@@ -21,9 +21,6 @@ static int getMouseButtonState() {
 }
 
 static int convert_glfw_key(int key) {
-  if (isprint(key)) {
-    return key;
-  }
   switch (key) {
   case GLFW_KEY_ESCAPE:
     return INPUT_KEY_ESC;
@@ -55,10 +52,12 @@ static int convert_glfw_key(int key) {
 
   case GLFW_KEY_F10:
     return INPUT_KEY_F10;
-
-  default:
-    return INPUT_KEY_UNKNOWN;
   }
+  if (isprint(key)) {
+    return key;
+  }
+
+  return INPUT_KEY_UNKNOWN;
 }
 
 static std::function<void(const glm::vec2 &, int)> mouse_down_handler;
