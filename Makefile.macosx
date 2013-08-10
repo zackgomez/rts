@@ -15,7 +15,7 @@ V8DIR=lib/v8
 LDFLAGS=-lGLEW -framework Cocoa -framework OpenGL -framework IOKit \
 				-Llib/boost_1_50_macosx -lboost_system -lboost_filesystem \
 				-L$(GLFWDIR)/lib-macosx -lglfw3 $(V8DIR)/lib-macosx/*.a \
-				-L$(ASSIMPDIR)/lib-macosx -lassimp
+				-L$(ASSIMPDIR)/lib-macosx -lassimp.3
 OBJDIR=obj
 SRCDIR=src
 EXECDIR=$(SRCDIR)/exec
