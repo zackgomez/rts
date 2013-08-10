@@ -167,4 +167,11 @@ float ModelEntity::angleToTarget(const glm::vec2 &target) const {
 bool ModelEntity::pointInEntity(const glm::vec2 &p) {
   return pointInBox(p, glm::vec2(pos_), size_.xy, angle_);
 }
+
+float ModelEntity::distanceFromPoint(const glm::vec2 &pt) const {
+  return rayBox2Intersection(
+    pt,
+    glm::normalize(getPosition2() - pt),
+    getRect());
+}
 }  // rts

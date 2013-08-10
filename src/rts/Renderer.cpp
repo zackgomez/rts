@@ -277,13 +277,11 @@ void Renderer::getNearbyEntities(
     const glm::vec3 &pos,
     float radius,
     std::function<bool(const ModelEntity *)> callback) const {
-  float radius2 = radius * radius;
   for (auto pair : entities_) {
     auto entity = pair.second;
-    glm::vec3 diff = entity->getPosition() - pos;
+    float dist = entity->distanceFromPoint(glm::vec2(pos));
 
-    float dist2 = glm::dot(diff, diff);
-    if (dist2 < radius2) {
+    if (dist < radius) {
       if (!callback(entity)) {
         return;
       }

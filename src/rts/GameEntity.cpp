@@ -51,10 +51,7 @@ void GameEntity::update(float dt) {
 }
 
 float GameEntity::distanceToEntity(const GameEntity *e) const {
-  return rayBox2Intersection(
-    getPosition2(),
-    glm::normalize(e->getPosition2() - getPosition2()),
-    e->getRect());
+  return e->distanceFromPoint(getPosition2());
 }
 
 void GameEntity::remainStationary() {

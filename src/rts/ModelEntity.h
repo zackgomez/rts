@@ -55,6 +55,8 @@ public:
     return bumpVel_;
   }
 
+  float distanceFromPoint(const glm::vec2 &pt) const;
+
   // Interpolation functions
   glm::vec2 getPosition2(float dt) const;
   glm::vec3 getPosition(float dt) const;
