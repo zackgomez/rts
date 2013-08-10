@@ -2,6 +2,8 @@
 #include <functional>
 #include "rts/Controller.h"
 #include "rts/Input.h"
+#include "rts/Renderer.h"
+#include "rts/ResourceManager.h"
 #include "rts/UI.h"
 
 namespace rts {
@@ -47,5 +49,19 @@ void Controller::render(float dt) {
   ui_->render(dt);
 
   renderExtra(dt);
+}
+
+void Controller::renderCursor(const std::string &cursor_tex_name) {
+
+  auto mouse_state = getMouseState();
+  glDisable(GL_DEPTH_TEST);
+  const auto res = Renderer::get()->getResolution();
+  const float cursor_size = std::min(res.x, res.y) * 0.05f;
+  GLuint texture = ResourceManager::get()->getTexture(cursor_tex_name);
+  drawTextureCenter(
+      mouse_state.screenpos,
+      glm::vec2(cursor_size),
+      texture, glm::vec4(0, 0, 1, 1));
+  glEnable(GL_DEPTH_TEST);
 }
 };  // rts

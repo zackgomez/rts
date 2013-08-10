@@ -94,7 +94,6 @@ GameController::~GameController() {
 }
 
 void GameController::onCreate() {
-  hide_mouse_cursor();
   grab_mouse();
   // TODO(zack): delete texture
   glGenTextures(1, &visTex_);
@@ -367,24 +366,15 @@ void GameController::renderExtra(float dt) {
     drawShaderCenter(center, size);
   }
 
-  // render cursor
-  glDisable(GL_DEPTH_TEST);
-  const auto res = Renderer::get()->getResolution();
-  const float cursor_size = std::min(res.x, res.y) * 0.05f;
-  GLuint texture = getCursorTexture();
-  drawTextureCenter(
-      lastMousePos_,
-      glm::vec2(cursor_size),
-      texture, glm::vec4(0, 0, 1, 1));
-  glEnable(GL_DEPTH_TEST);
+  renderCursor(getCursorTexture());
 }
 
-GLuint GameController::getCursorTexture() const {
+std::string GameController::getCursorTexture() const {
   std::string texname = "cursor_normal";
   if (!action_.name.empty()) {
     texname = "cursor_action";
   }
-  return ResourceManager::get()->getTexture(texname);
+  return texname;
 }
 
 void GameController::frameUpdate(float dt) {

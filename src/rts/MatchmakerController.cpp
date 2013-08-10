@@ -58,6 +58,7 @@ void MatchmakerController::onCreate() {
 
 void MatchmakerController::renderExtra(float dt) {
   renderSteamLOL(dt);
+  renderCursor("cursor_normal");
 }
 
 void MatchmakerController::onDestroy() {

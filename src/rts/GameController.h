@@ -82,7 +82,7 @@ class GameController : public Controller {
   Json::Value handleRightClick(const id_t eid, const GameEntity *entity, 
     const glm::vec3 &loc);
 
-  GLuint getCursorTexture() const;
+  std::string getCursorTexture() const;
 
   void attemptIssueOrder(Json::Value order);
 

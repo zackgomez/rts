@@ -41,6 +41,9 @@ class Controller {
   virtual void frameUpdate(float dt) { }
   virtual void renderExtra(float dt) { }
 
+  void renderCursor(const std::string &cursor_tex_name);
+
+
   UI *getUI() {
     return ui_;
   }
