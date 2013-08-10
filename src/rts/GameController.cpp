@@ -227,6 +227,19 @@ void GameController::onCreate() {
         return std::string() + FontManager::makeColorCode(color)
         + "FPS: " + std::to_string(fps);
     });
+
+
+  ((TextWidget *)getUI()->getWidget("ui.widgets.clock"))
+    ->setTextFunc([]() -> std::string {
+      glm::vec3 color(0.1f, 1.f, 0.1f);
+      float t = Game::get()->getElapsedTime();
+      float minutes = glm::floor(t / 60.f);
+      float seconds = glm::floor(fmodf(t, 60.f));
+      std::stringstream ss;
+      ss << FontManager::makeColorCode(color)
+        << "Time " << minutes << ":" << (seconds < 10 ? "0" : "") << seconds;
+      return ss.str();
+  });
   Renderer::get()->resetCameraRotation();
 }
 

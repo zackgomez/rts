@@ -299,6 +299,13 @@
         "fontHeight" : 24.0,
         "bgcolor"    : [0.0, 0.0, 0.0, 0.0]
       },
+      "clock": {
+        "type"       : "TextWidget",
+        "pos"        : [50, 50],
+        "dim"        : [100, 50],
+        "fontHeight" : 24.0,
+        "bgcolor"    : [0.0, 0.0, 0.0, 0.0]
+      },
       "reqdisplay" : {
         "type"       : "TextWidget",
         "pos"        : [-150, 0],

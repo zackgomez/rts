@@ -46,6 +46,7 @@ Game::Game(Map *map, const std::vector<Player *> &players)
     players_(players),
     tick_(0),
     tickOffset_(2),
+    elapsedTime_(0.f),
     paused_(true),
     running_(true) {
   random_ = new GameRandom(45); // TODO(zack): pass in seed
@@ -189,6 +190,8 @@ void Game::update(float dt) {
   }
   paused_ = false;
   unpause();
+
+  elapsedTime_ += dt;
 
   // Don't allow new actions during this time
   std::unique_lock<std::mutex> actionLock(actionMutex_);

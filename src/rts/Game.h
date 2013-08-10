@@ -54,6 +54,9 @@ class Game {
   tick_t getTick() const {
     return tick_;
   }
+  float getElapsedTime() const {
+    return elapsedTime_;
+  }
   bool isPaused() const {
     return paused_;
   }
@@ -123,6 +126,7 @@ class Game {
   std::map<id_t, float> victoryPoints_;
   tick_t tick_;
   tick_t tickOffset_;
+  float elapsedTime_;
 
   GameScript script_;
 
