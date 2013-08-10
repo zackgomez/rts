@@ -71,13 +71,11 @@ static void glfw_error_callback(int error, const char *description) {
   LOG(ERROR) << "GLFW Error (" << error << "): " << description << '\n';
 }
 
-void initEngine(const glm::vec2 &resolution) {
+glm::vec2 initEngine() {
   // TODO(zack) check to see if we're changing resolution
   if (initialized) {
-    return;
+    return screenRes;
   }
-
-  screenRes = resolution;
 
   glfwSetErrorCallback(glfw_error_callback);
 
@@ -88,11 +86,14 @@ void initEngine(const glm::vec2 &resolution) {
   const char *buildstr = "  BUILT  " __DATE__ " " __TIME__;
   std::string caption = strParam("game.name") + buildstr;
 
+  auto glfw_monitor = glfwGetPrimaryMonitor();
+  auto *glfw_video_mode = glfwGetVideoMode(glfw_monitor);
+  screenRes = glm::vec2(glfw_video_mode->width, glfw_video_mode->height);
   glfw_window = glfwCreateWindow(
-      resolution.x,
-      resolution.y,
+      screenRes.x,
+      screenRes.y,
       caption.c_str(),
-      NULL,
+      glfw_monitor,
       NULL);
   if (!glfw_window) {
     glfwTerminate();
@@ -114,6 +115,8 @@ void initEngine(const glm::vec2 &resolution) {
 
   ResourceManager::get()->loadResources();
   loadResources();
+
+  return screenRes;
 }
 
 void teardownEngine() {

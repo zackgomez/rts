@@ -35,7 +35,7 @@ Renderer::Renderer()
     mapSize_(0.f),
     nextEntityID_(STARTING_EID) {
   // TODO(zack): move this to a separate initialize function
-  initEngine(resolution_);
+  resolution_ = initEngine();
 
 #ifdef USE_FMOD
   FMOD_RESULT result;
