@@ -377,11 +377,6 @@ std::string GameController::getCursorTexture() const {
 }
 
 void GameController::frameUpdate(float dt) {
-  // No input while game is paused, not even camera motion
-  if (Game::get()->isPaused()) {
-    return;
-  }
-
   // update visibility
   // TODO(zack): this should be done once per tick instead of once per render
   auto visibilityMap = Game::get()->getVisibilityMap(player_->getPlayerID());
