@@ -234,6 +234,23 @@ static Handle<Value> entityRemainStationary(const Arguments &args) {
   return Undefined();
 }
 
+static Handle<Value> entityTurnTowards(const Arguments &args) {
+  invariant(args.Length() == 1, "void turnTowards(vec3 point)");
+
+  HandleScope scope(args.GetIsolate());
+
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
+
+  auto script = Game::get()->getScript();
+  glm::vec2 pos = script->jsToVec2(Handle<Array>::Cast(args[0]));
+
+  entity->turnTowards(pos);
+
+  return Undefined();
+}
+
 static Handle<Value> entityMoveTowards(const Arguments &args) {
   invariant(args.Length() == 1, "Expected 1 arg to moveTowards");
 
@@ -561,6 +578,9 @@ void GameScript::init() {
   entityTemplate_->Set(
       String::New("remainStationary"),
       FunctionTemplate::New(entityRemainStationary));
+  entityTemplate_->Set(
+      String::New("turnTowards"),
+      FunctionTemplate::New(entityTurnTowards));
   entityTemplate_->Set(
       String::New("moveTowards"),
       FunctionTemplate::New(entityMoveTowards));

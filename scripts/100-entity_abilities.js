@@ -207,6 +207,7 @@ function SnipeAction(params) {
 
     entity.mana_ -= this.params.mana_cost;
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
+    entity.turnTowards(target_entity.getPosition2());
 
     Log('Sniping', target, 'for', this.params.damage);
     SendMessage({
