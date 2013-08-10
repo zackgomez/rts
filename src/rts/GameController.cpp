@@ -231,7 +231,6 @@ void GameController::onCreate() {
 }
 
 void GameController::onDestroy() {
-  show_mouse_cursor();
   release_mouse();
   Renderer::get()->setEntityOverlayRenderer(Renderer::EntityOverlayRenderer());
   getUI()->clearWidgets();

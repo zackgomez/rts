@@ -86,6 +86,9 @@ glm::vec2 initEngine() {
   const char *buildstr = "  BUILT  " __DATE__ " " __TIME__;
   std::string caption = strParam("game.name") + buildstr;
 
+  glfwWindowHint(GLFW_DECORATED, GL_FALSE);
+  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+
   auto glfw_monitor = glfwGetPrimaryMonitor();
   auto *glfw_video_mode = glfwGetVideoMode(glfw_monitor);
   screenRes = glm::vec2(glfw_video_mode->width, glfw_video_mode->height);
@@ -93,13 +96,15 @@ glm::vec2 initEngine() {
       screenRes.x,
       screenRes.y,
       caption.c_str(),
-      glfw_monitor,
+      NULL,
       NULL);
+  glfwSetWindowPos(glfw_window, 0, 0);
   if (!glfw_window) {
     glfwTerminate();
     throw new engine_exception("Unable to open GLFW window");
   }
   glfwMakeContextCurrent(glfw_window);
+  glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
   GLenum err = glewInit();
   if (err != GLEW_OK) {
@@ -110,6 +115,7 @@ glm::vec2 initEngine() {
 
   LOG(INFO) << "GLSL Version: " <<
       glGetString(GL_SHADING_LANGUAGE_VERSION) << '\n';
+  LOG(DEBUG) << "Resolution: " << screenRes << '\n';
 
   initialized = true;
 
