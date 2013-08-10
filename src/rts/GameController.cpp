@@ -984,6 +984,12 @@ void renderEntity(
         fltParam("ui.highlight.thickness"));
   }
 
+  bool visible = Game::get()->getVisibilityMap(
+    localPlayer->getPlayerID())->locationVisible(e->getPosition2());
+  if (!visible) {
+    return;
+  }
+
   glDisable(GL_DEPTH_TEST);
   glm::vec3 placardPos(0.f, 0.f, e->getHeight() + 0.50f);
   auto ndc = getProjectionStack().current() * getViewStack().current()
