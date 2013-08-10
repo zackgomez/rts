@@ -256,22 +256,23 @@ function entityResetDeltas(entity) {
     req_rate: 0,
     mana_regen_rate: 0,
     max_speed_percent: 1,
+    damage_factor: 1,
   };
 }
 
 // Called once per tick.  Should not do any direct updates, should only set
 // intents (like moveTowards, attack, etc) or send messages.
 function entityUpdate(entity, dt) {
-  var new_state = entity.state_.update(entity);
-  if (new_state) {
-    entity.state_ = new_state;
-  }
-
   for (var ename in entity.effects_) {
     var res = entity.effects_[ename](entity);
     if (!res) {
       delete entity.effects_[ename];
     }
+  }
+  
+  var new_state = entity.state_.update(entity);
+  if (new_state) {
+    entity.state_ = new_state;
   }
 }
 
@@ -279,6 +280,10 @@ function entityUpdate(entity, dt) {
 // actually change positions, update values etc.  Do not send messages or
 // interact with other entities.
 function entityResolve(entity, dt) {
+  if (entity.deltas.damage_factor != 1) {
+    Log('damage factor', entity.deltas.damage_factor);
+  }
+
   for (var cd in entity.cooldowns_) {
     entity.cooldowns_[cd].t -= dt;
     if (entity.cooldowns_[cd].t < 0.0) {
@@ -327,7 +332,7 @@ function entityResolve(entity, dt) {
         -damage_obj.damage
       );
       entity.addEffect('on_damage', {
-	amount: damage_obj.damage,
+        amount: damage_obj.damage,
         parts: modified_parts
       });
     }

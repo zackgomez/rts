@@ -52,6 +52,39 @@ function makeHealingAura(radius, amount) {
   };
 }
 
+function makeDamageFactorEffect(params) {
+  return function (entity) {
+    entity.deltas.damage_factor *= params.factor;
+    return entity.hasCooldown(params.cooldown_name);
+  };
+}
+
+function makeDamageBuffAura(params) {
+  return function(entity) {
+    if (params.alive_fun && !params.alive_func(entity)) {
+      return false;
+    }
+    if (params.active_func && !params.active_func(entity)) {
+      return true;
+    }
+    var cooldown_name = params.name + '_cd';
+    entity.getNearbyEntities(params.radius, function (nearby_entity) {
+      if (nearby_entity.getTeamID() == entity.getTeamID()) {
+        // TODO(zack): make this use an addEffect function
+        nearby_entity.effects_[params.name] = makeDamageFactorEffect({
+          factor: 1 + params.amount,
+          cooldown_name: cooldown_name,
+        });
+        nearby_entity.addCooldown(cooldown_name, 0.1);
+      }
+      // Next entity
+      return true;
+    });
+
+    return true;
+  };
+}
+
 function makeManaRegenEffect(amount) {
   return function (entity) {
     if (entity.maxMana_) {

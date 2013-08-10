@@ -104,12 +104,19 @@ var Weapons = (function () {
       for (var cd_name in this.params.cooldowns) {
         entity.addCooldown(cd_name, this.params.cooldowns[cd_name]);
       }
+      var damage_factor = entity.deltas.damage_factor;
+      invariant(
+        typeof damage_factor == 'number' && damage_factor > 0,
+        'missing damage_factor delta'
+      );
+      Log('damage factor', damage_factor);
+      var damage = damage_factor * this.params.damage;
       if (this.params.damage_type == 'ranged') {
         var params = {
           pid: entity.getPlayerID(),
           pos: entity.getPosition2(),
           target_id: target_id,
-          damage: this.params.damage,
+          damage: damage,
           damage_type: this.params.damage_type,
           health_target: this.params.health_target,
           on_hit_cooldowns: this.params.on_hit_cooldowns,
@@ -120,7 +127,7 @@ var Weapons = (function () {
           to: target_id,
           from: entity.getID(),
           type: MessageTypes.ATTACK,
-          damage: this.params.damage,
+          damage: damage,
           damage_type: this.params.damage_type,
           health_target: this.params.health_target,
           on_hit_cooldowns: this.params.on_hit_cooldowns,

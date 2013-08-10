@@ -217,6 +217,13 @@ var EntityDefs = {
           name: 'body',
           health: 150,
           description: 'Just Health',
+          upgrades: {
+            'damage_aura': {
+              health: 50,
+              req_cost: 70,
+              tooltip: 'improves health, and grants a damage buff aura',
+            },
+          },
         }),
         makePart({
           name: 'legs',
@@ -228,6 +235,14 @@ var EntityDefs = {
     getEffects: function (entity) {
       return {
         mana_regen: makeManaRegenEffect(2.5),
+        damage_buff_aura: makeDamageBuffAura({
+          radius: 10,
+          amount: 0.20,
+          active_func: function (entity) {
+            var part = entity.getPart('body');
+            return part.isAlive() && part.hasUpgrade('damage_aura');
+          },
+        }),
       };
     },
     actions: {
