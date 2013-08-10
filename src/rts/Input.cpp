@@ -119,7 +119,6 @@ static void glfw_key_fun(
     ? InputAction::PRESS
     : InputAction::RELEASE;
 
-  LOG(DEBUG) << "key event: " << (char)event.key << '\n';
   if (event.action == InputAction::PRESS) {
     key_press_handler(event);
   } else {
