@@ -27,8 +27,15 @@ var EntityDefs = {
       return [
         makePart({
           name: 'head',
-          health: 100,
+          health: 50,
           description: 'Just Health',
+          upgrades: {
+            'heal': {
+              health: 20,
+              req_cost: 50,
+              tooltip: 'improves health, and adds heal ability',
+            },
+          },
         }),
         makePart({
           name: 'left',
@@ -81,11 +88,13 @@ var EntityDefs = {
         range: 5.0,
         cooldown_name: 'heal',
         cooldown: 8.0,
-        healing: 50.0,
+        healing: 25.0,
         health_target: HEALTH_TARGET_AOE,
         mana_cost: 40,
         icon: 'heal_icon',
         hotkey: 'w',
+        part: 'head',
+        part_upgrade: 'heal',
       }),
       reinforce: new ReinforceAction({
         req_cost: 10,
@@ -107,7 +116,7 @@ var EntityDefs = {
     model: 'melee_unit',
     default_state: UnitIdleState,
     size: [0.6, 0.6, 1.0],
-    speed: 4.5,
+    speed: 4.0,
     sight: 9.0,
     capture_range: 1.0,
     mana: 100,
