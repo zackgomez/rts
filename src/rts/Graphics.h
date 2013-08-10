@@ -18,7 +18,7 @@ struct DepthField {
 };
 class NavMesh;
 
-void initEngine(const glm::vec2 &resolution);
+glm::vec2 initEngine();
 void teardownEngine();
 void swapBuffers();
 
