@@ -48,7 +48,11 @@
         }
       },
       "basic_bullet": {
-        "file": "models/projectile.obj"
+        "file": "models/cube.obj",
+        "transform": {
+          "scale": 0.2,
+          "origin": [0, 0, -1]
+        }
       },
       "victory_point": {
         "file": "models/vic_point.obj",

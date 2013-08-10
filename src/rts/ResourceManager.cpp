@@ -80,10 +80,12 @@ void ResourceManager::loadResources() {
     textures_[texture.key().asString()] = makeTexture((*texture).asString());
   }
 
+  LOG(DEBUG) << "Loading models\n";
   for (Json::ValueIterator it = models.begin(); it != models.end(); it++) {
     std::string model_name = it.key().asString();
     Json::Value model_desc = *it;
     std::string model_file = must_have_idx(model_desc, "file").asString();
+    LOG(DEBUG) << "loading " << model_file << '\n';
     auto *model = loadModel(model_file);
     setModelTransform(model, getModelTransform(model_desc));
     models_[model_name] = model;
