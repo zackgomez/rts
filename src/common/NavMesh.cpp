@@ -253,12 +253,13 @@ std::tuple<glm::vec3, glm::vec3, float> NavMesh::firstIntersectingEdge(
     if (!he->face || (he->face && he->flip->face)) {
       continue;
     }
+    const float OVERLAP_THRESHOLD = 0.001f;
     float t = segmentLineIntersection(
       glm::vec2(start),
       glm::vec2(end),
       glm::vec2(he->start->position),
       glm::vec2(he->next->start->position));
-    if (t != NO_INTERSECTION && t < best_t) {
+    if (t != NO_INTERSECTION && t < best_t && t > OVERLAP_THRESHOLD) {
       best_t = t;
       best_edge = he;
     }
