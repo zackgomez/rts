@@ -31,6 +31,7 @@ static struct {
   GLuint colorProgram;
   GLuint rectBuffer;
   GLuint circleBuffer;
+  GLuint hexBuffer;
   GLuint texProgram;
 } resources;
 
@@ -279,6 +280,48 @@ void renderRectangleProgram(const glm::mat4 &modelMatrix) {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void renderHexagonColor(const glm::mat4 &modelMatrix, const glm::vec4 &color) {
+  record_section("renderHexagonColor");
+  GLuint program = resources.colorProgram;
+  GLuint colorUniform = glGetUniformLocation(program, "color");
+
+  // Enable program and set up values
+  glUseProgram(program);
+  glUniform4fv(colorUniform, 1, glm::value_ptr(color));
+
+  renderHexagonProgram(modelMatrix);
+}
+
+void renderHexagonProgram(const glm::mat4 &modelMatrix) {
+  record_section("renderHexagonProgram");
+  GLuint program;
+  glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*) &program);
+  if (!program) {
+    LOG(WARNING) << "No active program on call to renderHexagonProgram\n";
+    return;
+  }
+  GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
+  GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
+
+  // Enable program and set up values
+  glUniformMatrix4fv(projectionUniform, 1, GL_FALSE,
+      glm::value_ptr(projStack.current()));
+  glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE,
+      glm::value_ptr(viewStack.current() * modelMatrix));
+
+  // Bind attributes
+  glBindBuffer(GL_ARRAY_BUFFER, resources.hexBuffer);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+  // RENDER
+  glDrawArrays(GL_TRIANGLE_FAN, 0, 8);
+
+  // Clean up
+  glDisableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 void renderMesh(
     const glm::mat4 &modelMatrix,
     const Model *m,
@@ -292,6 +335,8 @@ void renderMesh(
       << "\n";
     return;
   }
+
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINES);
   const glm::mat4 projMatrix = projStack.current();
   const glm::mat4 modelViewMatrix =
       viewStack.current() * modelMatrix * m->transform;
@@ -406,6 +451,30 @@ void renderNavMesh(
         center += v;
         size = glm::vec2(v);
       });
+}
+
+void drawHexCenter(
+    const glm::vec2 &pos,
+    const glm::vec2 &size,
+    const glm::vec4 &color) {
+  glm::mat4 transform =
+    glm::scale(
+        glm::translate(glm::mat4(1.f), glm::vec3(pos, 0.f)),
+        glm::vec3(size, 1.f));
+
+  viewStack.push();
+  viewStack.current() = glm::mat4(1.f);
+  projStack.push();
+  projStack.current() = glm::scale(
+      glm::translate(
+        glm::mat4(1.f),
+        glm::vec3(-1, 1, 0)),
+      glm::vec3(2.f / glm::vec2(screenRes.x, -screenRes.y), -1.f));
+
+  renderHexagonColor(transform, color);
+
+  viewStack.pop();
+  projStack.pop();
 }
 
 void drawRectCenter(
@@ -814,6 +883,17 @@ static void loadResources() {
     -0.5, 0.5, 0.0f, 1.0f,
     -0.5, -0.5, 0.0f, 1.0f,
   };
+  const float root3_over_4 = sqrtf(3) / 4.f;
+  const float hexPositions[] = {
+    -0.25, -root3_over_4, 0, 1,
+    -0.5, 0, 0, 1,
+    0, 0, 0, 1,
+    0.25, -root3_over_4, 0, 1,
+    0.5, 0, 0, 1,
+    0.25, root3_over_4, 0, 1,
+    -0.25, root3_over_4, 0, 1,
+    -0.5, 0, 0, 1,
+  };
 
   resources.rectBuffer = makeBuffer(
       GL_ARRAY_BUFFER,
@@ -822,6 +902,10 @@ static void loadResources() {
   resources.circleBuffer = makeCircleBuffer(
       0.5,
       intParam("engine.circle_segments"));
+  resources.hexBuffer = makeBuffer(
+      GL_ARRAY_BUFFER,
+      hexPositions,
+      sizeof(hexPositions));
 
   // Create solid color program for renderRectangleColor
   resources.colorProgram =

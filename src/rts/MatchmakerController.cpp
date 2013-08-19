@@ -1,5 +1,6 @@
 #include "rts/MatchmakerController.h"
 #include <sstream>
+#include "common/Geometry.h"
 #include "rts/CommandWidget.h"
 #include "rts/Matchmaker.h"
 #include "rts/Renderer.h"
@@ -9,12 +10,26 @@
 
 namespace rts {
 
-void renderSteamLOL(float dt) {
-  drawDepthField(
-      glm::vec2(25, 25),
-      glm::vec2(200),
-      glm::vec4(1.f),
-      ResourceManager::get()->getDepthField("steamLogo"));
+void renderLogo(float dt) {
+  glm::vec2 p = glm::vec2(100, 100);
+  glm::vec2 size = glm::vec2(50, 50);
+  drawHexCenter(
+      p,
+      size,
+      glm::vec4(0.5f, 0.5f, 0.5f, 0.5f));
+
+  const float margin = 2.f;
+  for (int i = 0; i < 6; i++) {
+    auto tile = getHexTilings()[i];
+    drawHexCenter(
+        computeTiledHexPosition(tile, p, size, margin),
+        size,
+        glm::vec4(
+          0.2f + ((i % 3 == 0) ? 0.7f : 0.f),
+          0.2f + ((i % 3 == 1) ? 0.7f : 0.f),
+          0.2f + ((i % 3 == 2) ? 0.7f : 0.f),
+          0.5f));
+  }
 }
 
 MatchmakerController::MatchmakerController(Matchmaker *mm)
@@ -57,7 +72,7 @@ void MatchmakerController::onCreate() {
 }
 
 void MatchmakerController::renderExtra(float dt) {
-  renderSteamLOL(dt);
+  renderLogo(dt);
   renderCursor("cursor_normal");
 }
 

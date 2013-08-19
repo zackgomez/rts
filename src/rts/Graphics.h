@@ -64,8 +64,9 @@ void renderCircleColor(
     const glm::vec4 &color,
     float width = 1.f);
 // Uses the currently bound program
-void renderRectangleProgram(
-    const glm::mat4 &modelMatrix);
+void renderRectangleProgram(const glm::mat4 &modelMatrix);
+void renderHexagonProgram(const glm::mat4 &model);
+void renderHexagonColor(const glm::mat4 &model, const glm::vec4 &color);
 // Uses the currently bound program
 void renderModel(
     const glm::mat4 &modelMatrix,
@@ -87,6 +88,10 @@ void drawRectCenter(
     const glm::vec2 &size,  // width/height
     const glm::vec4 &color,
     float angle = 0);
+void drawHexCenter(
+    const glm::vec2 &pos,
+    const glm::vec2 &size,
+    const glm::vec4 &color);
 void drawRect(
     const glm::vec2 &pos,  // top left corner
     const glm::vec2 &size,  // width/height
