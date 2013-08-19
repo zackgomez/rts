@@ -70,11 +70,13 @@ function makeDamageBuffAura(params) {
     var cooldown_name = params.name + '_cd';
     entity.getNearbyEntities(params.radius, function (nearby_entity) {
       if (nearby_entity.getTeamID() == entity.getTeamID()) {
-        // TODO(zack): make this use an addEffect function
-        nearby_entity.effects_[params.name] = makeDamageFactorEffect({
-          factor: 1 + params.amount,
-          cooldown_name: cooldown_name,
-        });
+        nearby_entity.addEffect(
+          params.name,
+          makeDamageFactorEffect({
+            factor: 1 + params.amount,
+            cooldown_name: cooldown_name,
+          })
+        );
         nearby_entity.addCooldown(cooldown_name, 0.1);
       }
       // Next entity

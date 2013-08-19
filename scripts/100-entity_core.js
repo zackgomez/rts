@@ -100,6 +100,10 @@ function entityInit(entity, params) {
     return cd.t / cd.maxt;
   };
 
+  entity.addEffect = function (name, effect) {
+    this.effects_[name] = effect;
+  };
+
   entity.getPart = function (name) {
     for (var i = 0; i < this.parts_.length; i++) {
       if (this.parts_[i].getName() === name) {

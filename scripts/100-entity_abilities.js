@@ -262,8 +262,8 @@ function CenteredAOEAction(params) {
             damage_type: damage_type,
             health_target: HEALTH_TARGET_AOE,
           });
-          return true;
         }
+        return true;
       });
   };
 }
