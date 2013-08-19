@@ -297,10 +297,14 @@ static Handle<Value> entityOnEvent(const Arguments &args) {
   HandleScope scope(args.GetIsolate());
   std::string name(*String::AsciiValue(args[0]));
 
-  entity->addExtraEffect(makeEntityEffect(
+  // TODO(zack); kill this entire function, use the global version
+  auto effect = makeEntityEffect(
         entity,
         name,
-        Handle<Object>::Cast(args[1])));
+        Handle<Object>::Cast(args[1]));
+  if (effect) {
+    entity->addExtraEffect(effect);
+  }
 
   return Undefined();
 }

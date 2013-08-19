@@ -108,46 +108,42 @@ RenderFunction makeTextureBelowEffect(
 	};
 }
 
-RenderFunction makeOnDamageEffect(
+Effect * makeOnDamageEffect(
     const ModelEntity *e,
-    const std::string &name,
-    float amount,
-    const std::vector<int> &parts) {
+    float amount) {
   glm::vec3 pos = e->getPosition(Renderer::get()->getSimDT())
     + glm::vec3(0.f, 0.f, e->getHeight());
   glm::vec3 dir = glm::normalize(glm::vec3(
         frand() * 2.f - 1.f,
         frand() * 2.f - 1.f,
         frand() + 1.f));
-  float t = 0.f;
   float a = fltParam("hud.damageTextGravity");
   float duration = 2.f;
   // TODO(zack): adjust color for AOE damage
   glm::vec3 color = glm::vec3(0.9f, 0.5f, 0.1f);
-  //glm::vec3 color = glm::vec3(1.f, 1.f, 1.f);
-  return [=](float dt) mutable -> bool {
-    t += dt;
-    if (t > duration) {
-      return false;
-    }
+  std::stringstream ss;
+  ss << FontManager::get()->makeColorCode(color)
+    << glm::floor(amount);
+  const std::string str = ss.str();
+  return new CustomizableEffect(
+      Renderer::get()->getRenderTime(),
+      [=] (float t) -> void {
+        auto resolution = Renderer::get()->getResolution();
+        auto screen_pos = applyMatrix(
+          getProjectionStack().current() * getViewStack().current(),
+          pos + dir * (a * t * t + t));
+        // ndc to resolution
+        auto text_pos = resolution
+          * (glm::vec2(screen_pos.x, -screen_pos.y) + 1.f) / 2.f;
 
-    auto resolution = Renderer::get()->getResolution();
-    auto screen_pos = applyMatrix(
-        getProjectionStack().current() * getViewStack().current(),
-        pos + dir * (a * t * t + t));
-    // ndc to resolution
-    auto text_pos = (glm::vec2(screen_pos.x, -screen_pos.y) + 1.f) / 2.f * resolution;
-
-    float font_height = fltParam("hud.damageTextFontHeight");
-    std::stringstream ss;
-    ss << FontManager::get()->makeColorCode(color)
-      << glm::floor(amount);
-    glDisable(GL_DEPTH_TEST);
-    FontManager::get()->drawString(ss.str(), glm::vec2(text_pos), font_height);
-    glEnable(GL_DEPTH_TEST);
-
-    return true;
-  };
+        float font_height = fltParam("hud.damageTextFontHeight");
+        glDisable(GL_DEPTH_TEST);
+        FontManager::get()->drawString(str, glm::vec2(text_pos), font_height);
+        glEnable(GL_DEPTH_TEST);
+      },
+      [=] (float t) -> bool {
+        return t < duration;
+      });
 }
 
 RenderFunction makeEntityEffect(
@@ -164,13 +160,16 @@ RenderFunction makeEntityEffect(
     auto parts = Handle<Array>::Cast(parts_handle);
     invariant(!parts.IsEmpty(), "expected 'parts' array for on_damage message");
     std::vector<int> parts_vec;
+    float amount = params->Get(String::New("amount"))->NumberValue();
     for (int i = 0; i < parts->Length(); i++) {
       int idx = parts->Get(i)->IntegerValue();
       ((Actor *)entity)->setTookDamage(idx);
       parts_vec.push_back(idx);
+      Renderer::get()->getEffectManager()->addEffect(makeOnDamageEffect(
+            entity,
+            amount));
     }
-    float amount = params->Get(String::New("amount"))->NumberValue();
-    return makeOnDamageEffect(entity, name, amount, parts_vec);
+    return nullptr;
 	} else {
 		invariant_violation("unknown effect " + name);
 	}
