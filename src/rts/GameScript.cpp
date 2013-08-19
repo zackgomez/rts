@@ -285,9 +285,9 @@ static Handle<Value> entityWarpPosition(const Arguments &args) {
   return Undefined();
 }
 
-static Handle<Value> entityAddEffect(const Arguments &args) {
+static Handle<Value> entityOnEvent(const Arguments &args) {
   if (args.Length() != 2) {
-    invariant_violation("AddEffect expects 2 arguments");
+    invariant_violation("entity.onEvent(name, params)");
   }
 
   Local<Object> self = args.Holder();
@@ -605,8 +605,8 @@ void GameScript::init() {
       FunctionTemplate::New(entityIsVisibleTo));
 
   entityTemplate_->Set(
-      String::New("addEffect"),
-      FunctionTemplate::New(entityAddEffect));
+      String::New("onEvent"),
+      FunctionTemplate::New(entityOnEvent));
 
   loadScripts();
 }

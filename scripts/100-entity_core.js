@@ -331,7 +331,7 @@ function entityResolve(entity, dt) {
         damage_obj.health_target,
         -damage_obj.damage
       );
-      entity.addEffect('on_damage', {
+      entity.onEvent('on_damage', {
         amount: damage_obj.damage,
         parts: modified_parts
       });

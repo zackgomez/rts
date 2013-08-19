@@ -302,7 +302,7 @@ function HealAction(params) {
       health_target: this.params.health_target,
     });
 
-    target_entity.addEffect('heal', {});
+    target_entity.onEvent('heal', {});
   };
 }
 HealAction.prototype = ActionPrototype;
