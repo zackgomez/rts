@@ -20,6 +20,7 @@
     <ClCompile Include="..\..\src\common\Clock.cpp" />
     <ClCompile Include="..\..\src\common\Collision.cpp" />
     <ClCompile Include="..\..\src\common\Exception.cpp" />
+    <ClCompile Include="..\..\src\common\Geometry.cpp" />
     <ClCompile Include="..\..\src\common\image.cpp" />
     <ClCompile Include="..\..\src\common\kissnet.cpp" />
     <ClCompile Include="..\..\src\common\Logger.cpp" />
@@ -65,6 +66,7 @@
     <ClInclude Include="..\..\src\common\Clock.h" />
     <ClInclude Include="..\..\src\common\Collision.h" />
     <ClInclude Include="..\..\src\common\Exception.h" />
+    <ClInclude Include="..\..\src\common\Geometry.h" />
     <ClInclude Include="..\..\src\common\image.h" />
     <ClInclude Include="..\..\src\common\kissnet.h" />
     <ClInclude Include="..\..\src\common\Logger.h" />
