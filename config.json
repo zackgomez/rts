@@ -27,8 +27,7 @@
 
   "resources":
   {
-    "models":
-    {
+    "models": {
       "square": {
         "file": "models/square.obj"
       },
@@ -79,6 +78,24 @@
         "file": "models/larry.obj",
         "transform": {
           "scale": 0.20
+        }
+      },
+      "t1-body-hex": {
+        "file": "models/body-hex.dae",
+        "transform": {
+          "origin": [0, 0, 0],
+          "up": [0, 1, 0],
+          "forward": [0, 0, 1],
+          "scale": 1.0
+        }
+      },
+      "t1-head-hex": {
+        "file": "models/head-hex.dae",
+        "transform": {
+          "origin": [0, 0, 0],
+          "up": [0, 1, 0],
+          "forward": [0, 0, 1],
+          "scale": 1.0
         }
       }
     },

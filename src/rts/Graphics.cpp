@@ -751,6 +751,7 @@ Model * loadModel(const std::string &objFile) {
       aiProcess_JoinIdenticalVertices |
       aiProcess_SortByPType);
   if (!scene) {
+    LOG(FATAL) << "Unable to import mesh " << importer.GetErrorString() << '\n';
     throw new engine_exception(
         std::string("Unable to import mesh ") + importer.GetErrorString());
   }
@@ -803,6 +804,12 @@ Model * loadModel(const std::string &objFile) {
       << " nverts: " << aiMesh->mNumVertices
       << " texcoords?: " << aiMesh->HasTextureCoords(0)
       << '\n';
+    for (size_t i = 0; i < aiMesh->mNumBones; i++) {
+      aiBone *bone = aiMesh->mBones[i];
+      LOG(DEBUG) << "Bone info: "
+        << "name: '" << bone->mName.C_Str() << "', "
+        << "num_weights: " << bone->mNumWeights << '\n';
+    }
     for (int fi = 0; fi < aiMesh->mNumFaces; fi++) {
       const auto &face = aiMesh->mFaces[fi];
       invariant(face.mNumIndices == 3, "expected triangle face");
