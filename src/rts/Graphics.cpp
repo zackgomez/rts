@@ -41,15 +41,20 @@ struct vert_p4n4t2 {
   glm::vec2 coord;
 };
 
+struct Bone {
+  glm::vec3 origin;
+};
+
 struct Mesh {
   size_t start, end;
   size_t material_index;
+  std::vector<Bone> bones;
 };
 struct Model {
-  glm::mat4    transform;
-  GLuint       buffer;
+  glm::mat4 transform;
+  GLuint buffer;
   vert_p4n4t2 *verts;
-  size_t       nverts;
+  size_t nverts;
 
   std::vector<Mesh> meshes;
   std::vector<Material *> materials;
@@ -429,6 +434,18 @@ void renderModel(
   }
 }
 
+void renderBones(
+    const glm::mat4 &modelMatrix,
+    const Model *m) {
+  for (auto mesh : m->meshes) {
+    for (auto bone : mesh.bones) {
+      renderRectangleColor(
+          modelMatrix * glm::translate(glm::mat4(1.f), bone.origin),
+          glm::vec4(1.f));
+    }
+  }
+}
+
 void renderNavMesh(
     const NavMesh &navmesh,
     const glm::mat4 &modelMatrix,
@@ -796,6 +813,7 @@ Model * loadModel(const std::string &objFile) {
   for (int j = 0; j < scene->mNumMeshes; j++) {
     Mesh mesh;
     mesh.start = n;
+    mesh.bones = std::vector<Bone>();
     const aiMesh *aiMesh = scene->mMeshes[j];
     invariant(aiMesh->HasFaces(), "mesh must have faces");
     invariant(aiMesh->HasNormals(), "mesh must have normals");
@@ -806,10 +824,17 @@ Model * loadModel(const std::string &objFile) {
       << '\n';
     for (size_t i = 0; i < aiMesh->mNumBones; i++) {
       aiBone *bone = aiMesh->mBones[i];
+      aiVector3D o(0, 0, 0);
+      o *= bone->mOffsetMatrix;
       LOG(DEBUG) << "Bone info: "
         << "name: '" << bone->mName.C_Str() << "', "
-        << "num_weights: " << bone->mNumWeights << '\n';
+        << "num_weights: " << bone->mNumWeights
+        << "origin: " << o.x << ' ' << o.y << ' ' << o.z
+        << '\n';
+      Bone mesh_bone = { .origin = glm::vec3(o.x, o.y, o.z) };
+      mesh.bones.push_back(mesh_bone);
     }
+    
     for (int fi = 0; fi < aiMesh->mNumFaces; fi++) {
       const auto &face = aiMesh->mFaces[fi];
       invariant(face.mNumIndices == 3, "expected triangle face");

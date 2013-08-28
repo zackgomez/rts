@@ -72,6 +72,7 @@ void renderModel(
     const glm::mat4 &modelMatrix,
     const Model *mesh);
 
+void renderBones(const glm::mat4 &modelMatrix, const Model *mesh);
 void renderNavMesh(
     const NavMesh &navmesh,
     const glm::mat4 &modelMatrix,

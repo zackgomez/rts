@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 2.65.0 r53177M</authoring_tool>
     </contributor>
-    <created>2013-08-22T03:34:07</created>
-    <modified>2013-08-22T03:34:07</modified>
+    <created>2013-08-27T22:27:39</created>
+    <modified>2013-08-27T22:27:39</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -184,7 +184,7 @@
           </technique_common>
         </source>
         <source id="body-hex_body-hex_001-skin-bind_poses">
-          <float_array id="body-hex_body-hex_001-skin-bind_poses-array" count="64">-1 0 1.27952e-6 0 -1.27952e-6 0 -1 0 0 -1 0 0 0 0 0 1 -1 -1.34309e-6 -1.28348e-6 0.1409603 -1.28348e-6 0 1 0.007198989 -1.34309e-6 1 0 -0.00490415 0 0 0 1 -0.9992089 -0.03949147 0.004695951 0 0.03915119 -0.9560433 0.2906005 0 -0.006986677 0.2905545 0.956833 0 0 0 0 1 -0.3979784 -0.278123 0.87422 0 -0.04140472 0.9574121 0.2857404 0 -0.9164599 0.07752174 -0.392545 0 0 0 0 1</float_array>
+          <float_array id="body-hex_body-hex_001-skin-bind_poses-array" count="64">-1 0 1.27952e-6 0 -1.27952e-6 0 -1 0 0 -1 0 0 0 0 0 1 -0.9990215 -1.27182e-6 0.04422485 -0.003584265 0.04422485 0 0.9990217 0.007364511 -1.27057e-6 1 0 -0.004904329 0 0 0 1 -0.9992089 -0.03949147 0.004695951 0 0.03915119 -0.9560433 0.2906005 0 -0.006986677 0.2905545 0.956833 0 0 0 0 1 -0.3979784 -0.278123 0.87422 0 -0.04140472 0.9574121 0.2857404 0 -0.9164599 0.07752174 -0.392545 0 0 0 0 1</float_array>
           <technique_common>
             <accessor source="#body-hex_body-hex_001-skin-bind_poses-array" count="4" stride="16">
               <param name="TRANSFORM" type="float4x4"/>
@@ -239,7 +239,7 @@
         <node id="legs" name="legs" sid="legs" type="JOINT">
           <matrix sid="transform">1 0 0 0 0 -4.37114e-8 -1 0 0 1 -4.37114e-8 0 0 0 0 1</matrix>
           <node id="head" name="head" sid="head" type="JOINT">
-            <matrix sid="transform">1 2.563e-6 1.34309e-6 -0.1409604 2.563e-6 -1 -8.75426e-8 0.007198632 1.34309e-6 8.7546e-8 -1 -0.004904346 0 0 0 1</matrix>
+            <matrix sid="transform">0.9990217 -0.04422361 1.27057e-6 0.003906503 -0.04422361 -0.9990216 -1.00016e-7 0.007198811 1.27375e-6 4.3729e-8 -1 -0.004904346 0 0 0 1</matrix>
           </node>
           <node id="right-arm" name="right-arm" sid="right-arm" type="JOINT">
             <matrix sid="transform">0.9992089 -0.03915086 0.006987933 0 -0.004694694 -0.2906006 -0.9568329 0 0.03949152 0.9560431 -0.2905545 4.37114e-8 0 0 0 1</matrix>

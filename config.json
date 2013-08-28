@@ -83,9 +83,9 @@
       "t1-body-hex": {
         "file": "models/body-hex.dae",
         "transform": {
-          "origin": [0, 0, 0],
-          "up": [0, 1, 0],
-          "forward": [0, 0, 1],
+          //"origin": [0, 0, 0],
+          //"up": [0, 1, 0],
+          //"forward": [0, 0, 1],
           "scale": 1.0
         }
       },
