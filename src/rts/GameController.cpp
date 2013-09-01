@@ -27,8 +27,6 @@
 
 namespace rts {
 
-static ModelEntity *bone_test = nullptr;
-
 namespace PlayerState {
 const std::string DEFAULT = "DEFAULT";
 const std::string CHATTING = "CHATTING";
@@ -243,12 +241,6 @@ void GameController::onCreate() {
       return ss.str();
   });
   Renderer::get()->resetCameraRotation();
-
-  bone_test = new ModelEntity(Renderer::get()->newEntityID());
-  bone_test->setPosition(glm::vec3(0, 0, 5));
-  bone_test->setVisible(true);
-  bone_test->setModelName("t1-body-hex");
-  Renderer::get()->spawnEntity(bone_test);
 }
 
 void GameController::onDestroy() {
@@ -297,10 +289,6 @@ void GameController::renderExtra(float dt) {
       renderCircleColor(transform, glm::vec4(0, 0, 1, 1.0));
     }
   }
-
-  renderBones(
-      bone_test->getTransform(dt),
-      ResourceManager::get()->getModel("t1-body-hex"));
 
   // TODO(zack): bit of hack here
   if (renderNavMesh_) {

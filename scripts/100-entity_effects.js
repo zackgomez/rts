@@ -35,7 +35,7 @@ function makeHealingAura(radius, amount) {
   return function(entity) {
     entity.getNearbyEntities(radius, function (nearby_entity) {
       if (nearby_entity.getPlayerID() == entity.getPlayerID()) {
-        SendMessage({
+        MessageHub.sendMessage({
           to: nearby_entity.getID(),
           from: entity.getID(),
           type: MessageTypes.ADD_DELTA,

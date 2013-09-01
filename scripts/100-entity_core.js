@@ -284,6 +284,12 @@ function entityUpdate(entity, dt) {
 // actually change positions, update values etc.  Do not send messages or
 // interact with other entities.
 function entityResolve(entity, dt) {
+  // First handle messages this entity has received
+  var messages = MessageHub.getMessagesForEntity(entity.getID());
+  for (var i = 0; i < messages.length; i++) {
+    entityHandleMessage(entity, messages[i]);
+  }
+
   if (entity.deltas.damage_factor != 1) {
     Log('damage factor', entity.deltas.damage_factor);
   }

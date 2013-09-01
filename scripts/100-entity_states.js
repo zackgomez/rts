@@ -57,7 +57,7 @@ function UnitCaptureState(params) {
     var dist = entity.distanceToEntity(target);
     if (dist < entity.captureRange_) {
       entity.remainStationary();
-      SendMessage({
+      MessageHub.sendMessage({
         to: target.getID(),
         from: entity.getID(),
         type: MessageTypes.CAPTURE,
@@ -201,7 +201,7 @@ function ProjectileState(params) {
 
     var threshold = 1.0;
     if (entity.distanceToEntity(target) < threshold) {
-      SendMessage({
+      MessageHub.sendMessage({
         to: this.targetID,
         from: entity.getID(),
         type: MessageTypes.ATTACK,

@@ -210,7 +210,7 @@ function SnipeAction(params) {
     entity.turnTowards(target_entity.getPosition2());
 
     Log('Sniping', target, 'for', this.params.damage);
-    SendMessage({
+    MessageHub.sendMessage({
       to: target,
       from: entity.getID(),
       type: MessageTypes.ATTACK,
@@ -254,7 +254,7 @@ function CenteredAOEAction(params) {
       function (candidate) {
         if (candidate.getTeamID() != entity.getTeamID() &&
             candidate.hasProperty(P_TARGETABLE)) {
-          SendMessage({
+          MessageHub.sendMessage({
             to: candidate.getID(),
             from: entity.getID(),
             type: MessageTypes.ATTACK,
@@ -294,7 +294,7 @@ function HealAction(params) {
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
 
     Log('Healing', target, 'for', this.params.healing);
-    SendMessage({
+    MessageHub.sendMessage({
       to: target,
       from: entity.getID(),
       type: MessageTypes.HEAL,

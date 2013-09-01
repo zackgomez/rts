@@ -109,7 +109,6 @@ var Weapons = (function () {
         typeof damage_factor == 'number' && damage_factor > 0,
         'missing damage_factor delta'
       );
-      Log('damage factor', damage_factor);
       var damage = damage_factor * this.params.damage;
       if (this.params.damage_type == 'ranged') {
         var params = {
@@ -123,7 +122,7 @@ var Weapons = (function () {
         };
         SpawnEntity('projectile', params);
       } else {
-        SendMessage({
+        MessageHub.sendMessage({
           to: target_id,
           from: entity.getID(),
           type: MessageTypes.ATTACK,

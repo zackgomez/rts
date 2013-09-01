@@ -1,15 +1,24 @@
-// This file holds message related files.  Currently this is just a simple
-// convenience function.  Maybe someday it will be more, or be gone.
+var MessageHub = function () {
+  var exports = {};
 
-function SendMessage(msg) {
-  var id = msg.to;
-  if (!id) {
-    Log('Invalid message with recipient id', id);
-  }
-  var entity = GetEntity(id);
-  if (!entity) {
-    Log('Unable to find entity', id, 'to send message.');
+  // id -> [messages]
+  var message_queue = {};
+
+  exports.sendMessage = function (msg) {
+    invariant('to' in msg, 'messages must have to param');
+    if (!(msg.to in message_queue)) {
+      message_queue[msg.to] = [];
+    }
+    message_queue[msg.to].push(msg);
+  };
+
+  exports.getMessagesForEntity = function (id) {
+    return message_queue[id] || [];
   }
 
-  entityHandleMessage(entity, msg);
-}
+  exports.clearMessages = function () {
+    message_queue = {};
+  }
+
+  return exports;
+}();

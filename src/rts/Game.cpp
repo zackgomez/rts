@@ -287,6 +287,10 @@ void Game::update(float dt) {
   }
   deadEntities_.clear();
 
+  // TODO: swap old/new entity states
+  // clear messages
+  clearJSMessages();
+
   // Update players
   updateJSPlayers();
 
@@ -508,6 +512,24 @@ void Game::handleOrder(id_t playerID, const PlayerAction &order) {
     invariant(entity->getPlayerID() == playerID, "order for unonwned entity");
     entity->handleOrder(order);
   }
+}
+
+void Game::clearJSMessages() {
+  using namespace v8;
+  auto script = getScript();
+  HandleScope scope(script->getIsolate());
+  TryCatch try_catch;
+  auto global = script->getGlobal();
+
+  const int argc = 0;
+  Handle<Value> *argv = nullptr;
+
+  Handle<Object> message_hub = Handle<Object>::Cast(
+    global->Get(String::New("MessageHub")));
+  Handle<Value> ret =
+    Handle<Function>::Cast(message_hub->Get(String::New("clearMessages")))
+    ->Call(global, argc, argv);
+  checkJSResult(ret, try_catch.Exception(), "clearMessages:");
 }
 
 void Game::updateJSPlayers() {
