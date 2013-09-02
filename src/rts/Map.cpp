@@ -1,11 +1,9 @@
 #include "rts/Map.h"
 #include <vector>
 #include "common/Collision.h"
-#include "common/ParamReader.h"
 #include "rts/Game.h"
 #include "rts/Player.h"
 #include "rts/Renderer.h"
-#include "rts/ResourceManager.h"
 
 namespace rts {
 
@@ -57,7 +55,6 @@ void Map::init() {
       unpathable.push_back(std::make_tuple(pos, size));
 
       obj->setScale(glm::vec3(2.f*obj->getSize(), 1.f));
-      GLuint texture = ResourceManager::get()->getTexture("collision-tex");
       // TODO(zack): could be prettier than just a square
       obj->setModelName("square");
       Renderer::get()->spawnEntity(obj);
