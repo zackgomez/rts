@@ -227,7 +227,7 @@ void GameController::onCreate() {
 
   ((TextWidget *)getUI()->getWidget("ui.widgets.reqdisplay"))
     ->setTextFunc([&]() -> std::string {
-      int req = Game::get()->getResources(player_->getPlayerID()).requisition;
+      int req = Game::get()->getRequisition(player_->getPlayerID());
       return "Req: " + std::to_string(req);
     });
 

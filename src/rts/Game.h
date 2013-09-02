@@ -18,9 +18,6 @@ namespace rts {
 class Map;
 class Player;
 class VisibilityMap;
-struct PlayerResources {
-  float requisition;
-};
 struct ChatMessage;
 struct TickChecksum {
   checksum_t entity_checksum;
@@ -73,12 +70,6 @@ class Game {
   // Can possibly block, but should never block long
   void addAction(id_t pid, const PlayerAction &act);
 
-  void addResources(
-      id_t pid,
-      ResourceType type,
-      float amount,
-      id_t from);
-
   const GameEntity * spawnEntity(
       const std::string &name,
       const Json::Value &params);
@@ -89,7 +80,7 @@ class Game {
   const Player * getPlayer(id_t pid) const;
   const std::vector<Player *>& getPlayers() const { return players_; }
 
-  const PlayerResources& getResources(id_t pid) const;
+  float getRequisition(id_t pid) const;
   float getVictoryPoints(id_t tid) const;
   const VisibilityMap* getVisibilityMap(id_t pid) const;
 
@@ -121,7 +112,7 @@ class Game {
   std::vector<Player *> players_;
   std::set<id_t> teams_;
   // pid => float
-  std::map<id_t, PlayerResources> resources_;
+  std::map<id_t, float> requisition_;
   // tid => float
   std::map<id_t, float> victoryPoints_;
   tick_t tick_;

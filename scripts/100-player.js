@@ -1,7 +1,3 @@
-//
-// Players API. 
-//
-
 var Players = (function() {
   // API to return
   var PlayersAPI = {};
@@ -49,15 +45,24 @@ var Players = (function() {
         pos: retreat_location,
         angle: base_entity.getAngle(),
       });
-      var player =  {
+      var player = {
         retreat_location: retreat_location,
         units: {
           base: base_id,
           melee_unit: unit_id,
         },
+        requisition: def.starting_requisition,
+
         getRetreatLocation: function () {
           return retreat_location;
-        }
+        },
+        getRequisition: function () {
+          Log('this', JSON.stringify(this));
+          return this.requisition;
+        },
+        addRequisition: function (amount) {
+          this.requisition += amount;
+        },
       };
       players[pid] = player;
   };
@@ -75,6 +80,16 @@ var Players = (function() {
     for (var pid in players) {
       PlayersAPI.playerUpdate(players[pid]);
     }
+  };
+
+  // Returns player -> requisition map
+  PlayersAPI.getRequisitionMap = function () {
+    var req = {};
+    for (var pid in players) {
+      req[pid] = players[pid].getRequisition();
+    }
+    Log('req', JSON.stringify(req));
+    return req;
   };
 
   return PlayersAPI;

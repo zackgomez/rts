@@ -53,16 +53,13 @@ Game::Game(Map *map, const std::vector<Player *> &players)
   for (auto player : players) {
     player->setGame(this);
     teams_.insert(player->getTeamID());
-    // Add resources
-    PlayerResources res;
-    res.requisition = 0.f;
-    resources_[player->getPlayerID()] = res;
     // Set up visibility map
     auto func = std::bind(&Player::visibleEntity, player, std::placeholders::_1);
     VisibilityMap *vismap = new VisibilityMap(
         map_->getSize(),
         func);
     visibilityMaps_[player->getPlayerID()] = vismap;
+    requisition_[player->getPlayerID()] = 0.f;
   }
   // sort players to ensure consistency
   std::sort(
@@ -147,19 +144,16 @@ void Game::start() {
     checkJSResult(ret, try_catch.Exception(), "Teams.addTeam");
   }
 
-  // Starting resources
-  // TODO(zack): move to js
-  float startingReq = fltParam("global.startingRequisition");
-  for (auto &player : players_) {
-    resources_[player->getPlayerID()].requisition += startingReq;
-  }
-
+  float starting_requisition = fltParam("global.startingRequisition");
   for (int i = 0; i < players_.size(); i++) {
     auto *player = players_[i];
     auto starting_location = map_->getStartingLocation(i);
     Handle<Object> js_player_def = Object::New();
     js_player_def->Set(String::New("pid"), Integer::New(player->getPlayerID()));
     js_player_def->Set(String::New("tid"), Integer::New(player->getTeamID()));
+    js_player_def->Set(
+        String::New("starting_requisition"),
+        Number::New(starting_requisition));
     js_player_def->Set(
         String::New("starting_location"),
         script_.jsonToJS(starting_location));
@@ -392,14 +386,6 @@ float Game::gameRandom() {
   return random_->randomFloat();
 }
 
-void Game::addResources(
-    id_t pid, ResourceType resource_type, float amount, id_t from) {
-  invariant(getPlayer(pid), "unknown player for ADD_RESOURCE message");
-  if (resource_type == ResourceType::REQUISITION) {
-    resources_[pid].requisition += amount;
-  }
-}
-
 void Game::addAction(id_t pid, const PlayerAction &act) {
   // CAREFUL: this function is called from different threads
   invariant(act.isMember("type"),
@@ -478,10 +464,10 @@ const Player * Game::getPlayer(id_t pid) const {
   return nullptr;
 }
 
-const PlayerResources& Game::getResources(id_t pid) const {
-  auto it = resources_.find(pid);
-  invariant(it != resources_.end(),
-      "Unknown playerID to get resources for");
+float Game::getRequisition(id_t pid) const {
+  auto it = requisition_.find(pid);
+  invariant(it != requisition_.end(),
+      "Unknown playerID to get requisition for");
   return it->second;
 }
 
@@ -505,6 +491,20 @@ void Game::readVPs() {
 
     checkJSResult(ret, try_catch.Exception(), "readVPs");
     victoryPoints_[tid] = ret->IntegerValue();
+  }
+
+  requisition_.clear();
+  auto players_api = Handle<Object>::Cast(global->Get(String::New("Players")));
+  Handle<Value> ret = Handle<Function>::Cast(
+    players_api->Get(String::New("getRequisitionMap"))
+  )->Call(global, 0, nullptr);
+  checkJSResult(ret, try_catch.Exception(), "getRequisitionMap");
+  Handle<Object> js_req_map = Handle<Object>::Cast(ret);
+  Handle<Array> js_pids = js_req_map->GetOwnPropertyNames();
+  for (int i = 0; i < js_pids->Length(); i++) {
+    auto js_pid = js_pids->Get(i);
+    id_t pid = atoi(*String::AsciiValue(js_pid));
+    requisition_[pid] = js_req_map->Get(js_pid)->NumberValue();
   }
 }
 

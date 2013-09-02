@@ -67,29 +67,8 @@ static Handle<Value> jsLog(const Arguments &args) {
   return Undefined();
 }
 
-static Handle<Value> jsGetRequisition(const Arguments &args) {
-  if (args.Length() < 1) return Undefined();
-  HandleScope scope(args.GetIsolate());
-
-  id_t pid = args[0]->IntegerValue();
-  return scope.Close(Number::New(
-        Game::get()->getResources(pid).requisition));
-}
-
-static Handle<Value> jsAddRequisition(const Arguments &args) {
-  if (args.Length() < 3) return Undefined();
-  HandleScope scope(args.GetIsolate());
-
-  id_t pid = args[0]->IntegerValue();
-  float amount = args[1]->NumberValue();
-  id_t from_eid = args[2]->IntegerValue();
-  Game::get()->addResources(pid, ResourceType::REQUISITION, amount, from_eid);
-
-  return Undefined();
-}
-
 static Handle<Value> jsAddEffect(const Arguments &args) {
-  invariant(args.Length() == 2, "jsAddRequistion(name, params)");
+  invariant(args.Length() == 2, "jsAddEffect(name, params)");
   HandleScope scope(args.GetIsolate());
 
   std::string name = *String::AsciiValue(args[0]);
@@ -501,12 +480,6 @@ void GameScript::init() {
   global->Set(
       String::New("GameRandom"),
       FunctionTemplate::New(jsGameRandom));
-  global->Set(
-      String::New("GetRequisition"),
-      FunctionTemplate::New(jsGetRequisition));
-  global->Set(
-      String::New("AddRequisition"),
-      FunctionTemplate::New(jsAddRequisition));
   global->Set(
       String::New("GetEntity"),
       FunctionTemplate::New(jsGetEntity));

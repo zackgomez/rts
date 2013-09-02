@@ -91,12 +91,12 @@ function ReinforceAction(params) {
     var disabled_part = false;
     for (var i = 0; i < entity.parts_.length; i++) {
       if (entity.parts_[i].getHealth() <= 0.0) {
-        disabled_part = i;
+        disabled_part = true;
+        break;
       }
     }
-    return GetRequisition(entity.getPlayerID()) >= this.params.req_cost &&
-      disabled_part !== false &&
-      near_base;
+    var req = Players.getPlayer(entity.getPlayerID()).getRequisition();
+    return req >= this.params.req_cost && disabled_part && near_base;
   };
 
   this.exec = function (entity, target) {
@@ -111,7 +111,8 @@ function ReinforceAction(params) {
         break;
       }
     }
-    AddRequisition(entity.getPlayerID(), -this.params.req_cost, entity.getID());
+    var player = Players.getPlayer(entity.getPlayerID());
+    player.addRequisition(-this.params.req_cost);
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
   };
 }
@@ -143,13 +144,16 @@ function ProductionAction(params) {
     if (entity.hasCooldown('production')) {
       return true;
     }
-    return GetRequisition(entity.getPlayerID()) > this.params.req_cost;
+    var req = Players.getPlayer(entity.getPlayerID()).getRequisition();
+    return req > this.params.req_cost;
   };
 
   this.exec = function (entity, target) {
     Log(entity.getID(), 'starting', this.params.prod_name);
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
-    AddRequisition(entity.getPlayerID(), -this.params.req_cost, entity.getID());
+    Players.getPlayer(entity.getPlayerID()).addRequisition(
+      -this.params.req_cost
+    );
 
     entity.effects_['production'] = makeProductionEffect({
       prod_name: this.params.prod_name,

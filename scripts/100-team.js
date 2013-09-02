@@ -22,7 +22,7 @@ var Teams = (function() {
     };
     this.addRequisition = function (req, source_id) {
       for (var i = 0; i < this.players_.length; i++) {
-        AddRequisition(this.players_[i], req, source_id);
+        Players.getPlayer(this.players_[i]).addRequisition(req);
       }
     };
     this.addPlayer = function (pid) {
