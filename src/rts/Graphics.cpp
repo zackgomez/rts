@@ -831,7 +831,7 @@ Model * loadModel(const std::string &objFile) {
         << "num_weights: " << bone->mNumWeights
         << "origin: " << o.x << ' ' << o.y << ' ' << o.z
         << '\n';
-      Bone mesh_bone = { .origin = glm::vec3(o.x, o.y, o.z) };
+      Bone mesh_bone = { glm::vec3(o.x, o.y, o.z) };
       mesh.bones.push_back(mesh_bone);
     }
     
