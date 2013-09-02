@@ -157,14 +157,16 @@ void Game::start() {
   for (int i = 0; i < players_.size(); i++) {
     auto *player = players_[i];
     auto starting_location = map_->getStartingLocation(i);
+    Handle<Object> js_player_def = Object::New();
+    js_player_def->Set(String::New("pid"), Integer::New(player->getPlayerID()));
+    js_player_def->Set(String::New("tid"), Integer::New(player->getTeamID()));
+    js_player_def->Set(
+        String::New("starting_location"),
+        script_.jsonToJS(starting_location));
 
     TryCatch try_catch;
-    const int argc = 3;
-    Handle<Value> argv[argc] = {
-      Integer::New(player->getPlayerID()),
-      Integer::New(player->getTeamID()),
-      script_.jsonToJS(starting_location),
-    };
+    const int argc = 1;
+    Handle<Value> argv[argc] = { js_player_def };
     Handle<Object> playersAPI = Handle<Object>::Cast(
          global->Get(String::New("Players")));
     Handle<Function> playerInit = Handle<Function>::Cast(
@@ -302,16 +304,16 @@ void Game::update(float dt) {
   for (auto entity : entities) {
     entity->resolve(dt);
   }
+  // TODO: swap old/new entity states
+  // clear messages
+  clearJSMessages();
+
   // Remove deadEnts
   for (auto eid : deadEntities_) {
     script_.destroyEntity(eid);
     Renderer::get()->removeEntity(eid);
   }
   deadEntities_.clear();
-
-  // TODO: swap old/new entity states
-  // clear messages
-  clearJSMessages();
 
   // Update players
   updateJSPlayers();

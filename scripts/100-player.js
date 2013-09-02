@@ -17,8 +17,11 @@ var Players = (function() {
   // Create a new player.
   // @param pid the player ID
   // @param start_def dictionary with keys for `pos` and `angle`
-  PlayersAPI.playerInit = function (pid, tid, starting_def) {
-    if (players[pid]) {
+  PlayersAPI.playerInit = function (def) {
+    var pid = def.pid;
+    var tid = def.tid;
+    var starting_def = def.starting_location;
+    if (pid in players) {
       throw new Error('player '+pid+' already exists!');
     }
 
