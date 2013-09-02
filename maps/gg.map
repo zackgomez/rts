@@ -7,31 +7,26 @@
   "height" : 0.0,
   "color" : [0.066, 0.3, 0.066, 1.0],
 
-  "entities" : [
+  "starting_locations": [
     {
-      "type" : "starting_location",
       "pos" : [36, 36],
-      "angle" : 270,
-      "player" : 1
+      "angle" : 270
     },
     {
-      "type": "starting_location",
       "pos" : [-36, -36],
-      "angle" : 90,
-      "player" : 2
+      "angle" : 90
     },
     {
-      "type": "starting_location",
       "pos" : [10, 36],
-      "angle" : 90,
-      "player" : 3
+      "angle" : 90
     },
     {
-      "type": "starting_location",
       "pos" : [-10, -36],
-      "angle" : 90,
-      "player" : 4
-    },
+      "angle" : 90
+    }
+  ],
+
+  "entities" : [
     {
       "type" : "victory_point",
       "pos" : [-33, 15],

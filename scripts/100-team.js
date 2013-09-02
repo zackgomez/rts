@@ -1,4 +1,4 @@
-Teams = (function() {
+var Teams = (function() {
 
   // External API
   var exports = {};

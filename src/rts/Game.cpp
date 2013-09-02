@@ -70,6 +70,9 @@ Game::Game(Map *map, const std::vector<Player *> &players)
       [](Player *p1, Player *p2) -> bool {
         return p1->getPlayerID() < p2->getPlayerID();
       });
+  invariant(
+      players_.size() <= map_->getMaxPlayers(),
+      "too many players for map");
 
   // Team init
   invariant(teams_.size() == 2, "game only supports exactly 2 teams");
@@ -132,16 +135,16 @@ void Game::start() {
   auto global = script_.getGlobal();
 
   // Setup teams in JS.
-  for (auto it : teams_) {
+  for (auto tid : teams_) {
     TryCatch try_catch;
     const int argc = 1;
-    Handle<Value> argv[argc] = {Integer::New(it)};
+    Handle<Value> argv[argc] = {Integer::New(tid)};
     Handle<Object> teamsAPI = Handle<Object>::Cast(
          global->Get(String::New("Teams")));
     Handle<Function> addTeam = Handle<Function>::Cast(
           teamsAPI->Get(String::New("addTeam")));
     auto ret = addTeam->Call(global, argc, argv);
-    checkJSResult(ret, try_catch.Exception(), "Game::start()");
+    checkJSResult(ret, try_catch.Exception(), "Teams.addTeam");
   }
 
   // Starting resources
@@ -151,8 +154,27 @@ void Game::start() {
     resources_[player->getPlayerID()].requisition += startingReq;
   }
 
+  for (int i = 0; i < players_.size(); i++) {
+    auto *player = players_[i];
+    auto starting_location = map_->getStartingLocation(i);
+
+    TryCatch try_catch;
+    const int argc = 3;
+    Handle<Value> argv[argc] = {
+      Integer::New(player->getPlayerID()),
+      Integer::New(player->getTeamID()),
+      script_.jsonToJS(starting_location),
+    };
+    Handle<Object> playersAPI = Handle<Object>::Cast(
+         global->Get(String::New("Players")));
+    Handle<Function> playerInit = Handle<Function>::Cast(
+          playersAPI->Get(String::New("playerInit")));
+    auto ret = playerInit->Call(global, argc, argv);
+    checkJSResult(ret, try_catch.Exception(), "Players.playerInit");
+  }
+
   // Initialize map
-  map_->init(players_);
+  map_->init();
 
   checksums_.push_back(checksum());
 

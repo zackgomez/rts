@@ -27,14 +27,15 @@ float Map::getMapHeight(const glm::vec2 &pos) const {
   return definition_["height"].asFloat();
 }
 
+size_t Map::getMaxPlayers() const {
+  return must_have_idx(definition_, "players").asUInt();
+}
+
 void Map::update(float dt) {
   // nop
 }
 
-void Map::init(const std::vector<Player *> &players) {
-  invariant(players.size() <= definition_["players"].asInt(),
-      "too many players for map");
-
+void Map::init() {
   Renderer::get()->setMapSize(getSize());
   Renderer::get()->setMapColor(getColor());
   std::vector<std::tuple<glm::vec2, glm::vec2>> unpathable;
@@ -44,10 +45,6 @@ void Map::init(const std::vector<Player *> &players) {
     Json::Value entity_def = entities[i];
     invariant(entity_def.isMember("type"), "missing type param");
     std::string type = entity_def["type"].asString();
-    if (type == "starting_location") {
-      spawnStartingLocation(entity_def, players);
-      continue;
-    }
     if (type == "collision_object") {
       id_t eid = Renderer::get()->newEntityID();
       glm::vec2 pos = toVec2(entity_def["pos"]);
@@ -108,36 +105,15 @@ void Map::init(const std::vector<Player *> &players) {
   navmesh_ = new NavMesh(navFaces);
 }
 
-void Map::spawnStartingLocation(const Json::Value &definition,
-    const std::vector<Player *> players) {
-  invariant(definition.isMember("player"),
-      "missing player for starting base defintion");
-  invariant(definition.isMember("pos"),
-      "missing position for starting base defintion");
-  invariant(definition.isMember("angle"),
-      "missing angle for starting base defintion");
-  auto idx = definition["player"].asInt() - 1;
-  if (idx >= players.size()) {
-    return;
-  }
-  auto player = players[idx];
+Json::Value Map::getStartingLocation(int location_idx) const {
+  auto starting_locations_def = must_have_idx(definition_, "starting_locations");
+  invariant(
+      starting_locations_def.isArray(),
+      "starting locations definition must be json array");
+  invariant(
+      location_idx < starting_locations_def.size(),
+      "starting location index out of bounds");
 
-  using namespace v8;
-  auto script = Game::get()->getScript();
-  HandleScope scope(script->getIsolate());
-  TryCatch try_catch;
-  auto global = script->getGlobal();
-  const int argc = 3;
-  Handle<Value> argv[argc] = {
-    Integer::New(player->getPlayerID()),
-    Integer::New(player->getTeamID()),
-    script->jsonToJS(definition)};
-
-  Handle<Object> playersModule = Handle<Object>::Cast(
-     global->Get(String::New("Players")));
-  Handle<Function> playerInit = Handle<Function>::Cast(
-        playersModule->Get(String::New("playerInit")));
-  Handle<Value> ret = playerInit->Call(global, argc, argv);
-  checkJSResult(ret, try_catch.Exception(), "playerInit:");
+  return starting_locations_def[location_idx];
 }
 };  // rts

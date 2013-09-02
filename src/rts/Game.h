@@ -88,7 +88,6 @@ class Game {
   const GameEntity * findEntity(std::function<bool(const GameEntity *)> f) const;
   const Player * getPlayer(id_t pid) const;
   const std::vector<Player *>& getPlayers() const { return players_; }
-  const std::set<id_t> getTeams() const { return teams_; }
 
   const PlayerResources& getResources(id_t pid) const;
   float getVictoryPoints(id_t tid) const;

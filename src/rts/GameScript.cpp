@@ -485,6 +485,8 @@ GameScript::~GameScript() {
 }
 
 void GameScript::init() {
+  const std::string v8_flags = "--use_strict";
+  v8::V8::SetFlagsFromString(v8_flags.c_str(), v8_flags.length());
   isolate_ = Isolate::New();
   Locker locker(isolate_);
   isolate_->Enter();
@@ -758,6 +760,14 @@ glm::vec3 GameScript::jsToVec3(const Handle<Array> arr) const {
   ret.x = arr->Get(0)->NumberValue();
   ret.y = arr->Get(1)->NumberValue();
   ret.z = arr->Get(2)->NumberValue();
+  return ret;
+}
+
+Handle<Array> GameScript::vec2ToJS(const glm::vec2 &v) const {
+  Handle<Array> ret = Array::New();
+  ret->Set(0, Number::New(v[0]));
+  ret->Set(1, Number::New(v[1]));
+
   return ret;
 }
 };  // rts

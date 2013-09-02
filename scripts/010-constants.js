@@ -3,34 +3,34 @@
 // --
 // -- Constants --
 // --
-P_CAPPABLE = 815586235;
-P_TARGETABLE = 463132888;
-P_ACTOR = 913794634;
-P_RENDERABLE = 565038773;
-P_COLLIDABLE = 983556954;
-P_MOBILE = 1122719651;
-P_UNIT = 118468328;
+var P_CAPPABLE = 815586235;
+var P_TARGETABLE = 463132888;
+var P_ACTOR = 913794634;
+var P_RENDERABLE = 565038773;
+var P_COLLIDABLE = 983556954;
+var P_MOBILE = 1122719651;
+var P_UNIT = 118468328;
 
-NO_PLAYER = 0;
-NO_ENTITY = 0;
-NO_TEAM = 0;
+var NO_PLAYER = 0;
+var NO_ENTITY = 0;
+var NO_TEAM = 0;
 
 // --
 // -- Damage Types --
 // --
-HEALTH_TARGET_AOE = -1;
-HEALTH_TARGET_RANDOM = -2;
-HEALTH_TARGET_LOWEST = -3;
-HEALTH_TARGET_HIGHEST = -4;
+var HEALTH_TARGET_AOE = -1;
+var HEALTH_TARGET_RANDOM = -2;
+var HEALTH_TARGET_LOWEST = -3;
+var HEALTH_TARGET_HIGHEST = -4;
 
-MessageTypes = {
+var MessageTypes = {
   ATTACK: 'ATTACK',
   HEAL: 'HEAL',
   CAPTURE: 'CAPTURE',
   ADD_DELTA: 'DELTA',
 };
 
-TargetingTypes = {
+var TargetingTypes = {
   NONE: 0,
   LOCATION: 1,
   ENEMY: 2,
@@ -38,7 +38,7 @@ TargetingTypes = {
   PATHABLE: 4,
 };
 
-ActionStates = {
+var ActionStates = {
   DISABLED: 0,
   ENABLED: 1,
   COOLDOWN: 2,

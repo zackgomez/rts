@@ -21,18 +21,21 @@ class Map {
   // Returns the height of the map at the passed position.  This is currently
   // only used for cosmetic purposes
   float getMapHeight(const glm::vec2 &pos) const;
+  size_t getMaxPlayers() const;
 
   // Initializes the map and any start entities/etc
-  void init(const std::vector<Player *> &players);
+  void init();
   void update(float dt);
   
   NavMesh* getNavMesh() const { return navmesh_; }
 
+  // @param location_idx int in [0, max_players)
+  // @return starting location defintion with keys pos -> vec2, angle -> float
+  Json::Value getStartingLocation(int location_idx) const;
+
  private:
   Json::Value definition_;
 
-  void spawnStartingLocation(const Json::Value &definition,
-    const std::vector<Player *> players);
   NavMesh *navmesh_;
 };
 };  // rts
