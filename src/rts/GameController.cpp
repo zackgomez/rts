@@ -32,6 +32,12 @@ const std::string DEFAULT = "DEFAULT";
 const std::string CHATTING = "CHATTING";
 }
 
+struct VPInfo {
+  id_t owner;
+  id_t capper;
+  float cap_fact;
+};
+
 static void renderEntity(
     const LocalPlayer *localPlayer,
     const std::map<id_t, float>& entityHighlights,
@@ -202,7 +208,12 @@ void GameController::onCreate() {
   });
 
   Renderer::get()->setEntityOverlayRenderer(
-      std::bind(renderEntity, player_, std::ref(entityHighlights_), _1, _2));
+      std::bind(
+        renderEntity,
+        player_,
+        std::ref(entityHighlights_),
+        _1,
+        _2));
 
   ((TextWidget *)getUI()->getWidget("ui.widgets.vicdisplay-1"))
     ->setTextFunc(std::bind(getVPString, STARTING_TID));
@@ -297,6 +308,28 @@ void GameController::renderExtra(float dt) {
         glm::vec4(0.6, 0.6, 0.2, 0.75f));
   }
 
+  // Get vp infomation
+  std::vector<VPInfo> vp_infos;
+  for (auto it : Renderer::get()->getEntities()) {
+    if (it.second->hasProperty(GameEntity::P_ACTOR)) {
+      auto ui_info = ((Actor *)it.second)->getUIInfo();
+      if (ui_info.extra.isMember("vp_status")) {
+        auto vp_status = ui_info.extra["vp_status"];
+        auto owner_json = must_have_idx(vp_status, "owner");
+        auto capper_json = must_have_idx(vp_status, "capper");
+        float cap_fact = ui_info.capture[1] ?
+          glm::clamp(ui_info.capture[0] / ui_info.capture[1], 0.f, 1.f) :
+          0.f;
+        VPInfo vp_info = {
+          owner_json.isNull() ? NO_PLAYER : toID(owner_json),
+          capper_json.isNull() ? NO_PLAYER : toID(capper_json),
+          cap_fact,
+        };
+        vp_infos.push_back(vp_info);
+      }
+    }
+  }
+
   //TODO(connor): maybe make these a function elsewhere
   // render scorebar
   int t1score = Game::get()->getVictoryPoints(STARTING_TID);
@@ -314,13 +347,13 @@ void GameController::renderExtra(float dt) {
   glm::vec4 t1color = getTeamColor(STARTING_TID);
   glm::vec4 t2color = getTeamColor(STARTING_TID + 1);
   glm::vec2 vp_count(0);
-  for (auto eid : Renderer::get()->getEntities()) {
-    if (!eid.second->hasProperty(GameEntity::P_GAMEENTITY)) continue;
-    GameEntity *e = (GameEntity*) eid.second;
-    if (e->getName() == "victory_point") {
-      if (e->getTeamID() == STARTING_TID) vp_count[0] += 1;
-      if (e->getTeamID() == STARTING_TID + 1) vp_count[1] += 1;
+  for (auto vp_info : vp_infos) {
+    if (!vp_info.owner) {
+      continue;
     }
+    auto *player = Game::get()->getPlayer(vp_info.owner);
+    if (player->getTeamID() == STARTING_TID) vp_count[0] += 1;
+    if (player->getTeamID() == STARTING_TID + 1) vp_count[1] += 1;
   }
   shader->uniform2f("vp_count", vp_count);
   shader->uniform4f("color1", t1color);
@@ -337,40 +370,36 @@ void GameController::renderExtra(float dt) {
   drawShaderCenter(center, size);
 
   // render VP controller indicators
-  std::vector<Actor*> vp;
-  for (auto eid : Renderer::get()->getEntities()) {
-    if (!eid.second->hasProperty(GameEntity::P_GAMEENTITY)) continue;
-    GameEntity *e = (GameEntity*) eid.second;
-    if (e->getName() == "victory_point") {
-      vp.push_back((Actor*) e);
-    }
-  }
-  for (int i = 0; i < vp.size(); i++) {
+  int vpi = 0;
+  for (auto vp_info : vp_infos) {
+    glm::vec2 widget_center = uiVec2Param("ui.widgets.vpindicators.center");
     glm::vec2 size = vec2Param("ui.widgets.vpindicators.dim");
-    glm::vec2 center = uiVec2Param("ui.widgets.vpindicators.center") + 
-      glm::vec2((i - (int)(vp.size() / 2)) * size.x * 1.5, 0);
-    id_t pid = vp[i]->getPlayerID();
     glm::vec4 ownerColor = vec4Param("ui.widgets.vpindicators.bgcolor");
-    if (pid != NO_PLAYER) 
-      ownerColor = glm::vec4(Game::get()->getPlayer(pid)->getColor(), 1.0);
     glm::vec4 capColor = vec4Param("ui.widgets.vpindicators.bgcolor");
-    id_t cap_pid = vp[i]->getUIInfo().capture_pid;
-    if (cap_pid != NO_PLAYER) 
+
+    glm::vec2 center = widget_center +
+      glm::vec2((vpi - (int)(vp_infos.size() / 2)) * size.x * 1.5, 0);
+    ++vpi;
+
+    id_t pid = vp_info.owner;
+    if (pid != NO_PLAYER) {
+      ownerColor = glm::vec4(Game::get()->getPlayer(pid)->getColor(), 1.0);
+    }
+
+    int danger = 0;
+    id_t cap_pid = vp_info.capper;
+    if (cap_pid != NO_PLAYER) {
       capColor = glm::vec4(Game::get()->getPlayer(cap_pid)->getColor(), 1.0);
-    glm::vec2 capture = vp[i]->getUIInfo().capture;
+      // Danger if being capped away from local player
+      danger = pid == player_->getPlayerID();
+    }
+
+    float capture = vp_info.cap_fact;
+
     Shader *shader = ResourceManager::get()->getShader("vp_indicator");
     shader->makeActive();
-    if (capture[1] > 0) {
-      shader->uniform1f("capture", capture[0] / capture[1]);
-      if (pid == player_->getPlayerID()) {
-        shader->uniform1i("danger", 1);
-      } else {
-        shader->uniform1i("danger", 0);
-      }
-    } else {
-      shader->uniform1f("capture", 0);
-      shader->uniform1i("danger", 0);
-    }
+    shader->uniform1f("capture", capture);
+    shader->uniform1i("danger", danger);
     shader->uniform4f("player_color", ownerColor);
     shader->uniform4f("cap_color", capColor);
     shader->uniform4f("texcoord", glm::vec4(0, 0, 1, 1));

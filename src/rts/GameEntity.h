@@ -47,9 +47,6 @@ class GameEntity : public ModelEntity {
   }
   id_t getTeamID() const;
 
-  const std::string& getName() const {
-    return name_;
-  }
   float getMaxSpeed() const {
     return maxSpeed_;
   }
@@ -92,12 +89,6 @@ class GameEntity : public ModelEntity {
   }
 
  protected:
-  Json::Value getParam(const std::string &p) const;
-  float fltParam(const std::string &p) const;
-  std::string strParam(const std::string &p) const;
-  glm::vec2 vec2Param(const std::string &p) const;
-  bool hasParam(const std::string &p) const;
-
   id_t playerID_;
 
   bool warp_;

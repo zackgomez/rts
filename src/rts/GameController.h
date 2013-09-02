@@ -70,7 +70,6 @@ class GameController : public Controller {
 
   GLuint visTex_;
 
-
   void minimapUpdateCamera(const glm::vec2 &screenCoord);
   void handleUIAction(const UIAction &action);
   // returns NO_ENTITY if no acceptable entity near click

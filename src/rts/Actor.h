@@ -50,6 +50,7 @@ class Actor : public GameEntity {
     id_t capture_pid;
     char hotkey;
     std::string minimap_icon;
+    Json::Value extra;
   };
   UIInfo getUIInfo() const {
     return uiInfo_;

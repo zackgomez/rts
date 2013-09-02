@@ -6,7 +6,6 @@
 
 // This function is called on an entity when it is created.
 function entityInit(entity, name, params) {
-  Log('entityInit', name, params);
   entity.name_ = name;
   entity.defaultState_ = NullState;
   entity.cooldowns_ = {};
@@ -294,10 +293,6 @@ function entityResolve(entity, dt) {
     entityHandleMessage(entity, messages[i]);
   }
 
-  if (entity.deltas.damage_factor != 1) {
-    Log('damage factor', entity.deltas.damage_factor);
-  }
-
   for (var cd in entity.cooldowns_) {
     entity.cooldowns_[cd].t -= dt;
     if (entity.cooldowns_[cd].t < 0.0) {
@@ -369,6 +364,8 @@ function entityResolve(entity, dt) {
   // Capture
   var capture_values = entity.deltas.capture;
   for (var pid in capture_values) {
+    // object keys are strings, this value is an id (int)
+    pid = Math.floor(pid);
     if (!entity.cappingPlayerID_) {
       entity.cappingPlayerID_ = pid;
     }
@@ -618,6 +615,15 @@ function entityGetUIInfo(entity) {
 
   if (entity.maxMana_) {
     ui_info.mana = [entity.mana_, entity.maxMana_];
+  }
+
+  // TODO(zack): figure out if there is a better way
+  ui_info.extra = {};
+  if (entity.getName() === "victory_point") {
+    ui_info.extra["vp_status"] = {
+      owner: entity.getPlayerID(),
+      capper: entity.cappingPlayerID_,
+    };
   }
 
   return ui_info;

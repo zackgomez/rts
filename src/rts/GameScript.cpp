@@ -328,14 +328,6 @@ static Handle<Value> entityHasProperty(const Arguments &args) {
   return scope.Close(Boolean::New(actor->hasProperty(args[0]->Uint32Value())));
 }
 
-static Handle<Value> entityGetName(const Arguments &args) {
-  HandleScope scope(args.GetIsolate());
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  Actor *actor = static_cast<Actor *>(wrap->Value());
-  return scope.Close(String::New(actor->getName().c_str()));
-}
-
 static Handle<Value> entityGetID(const Arguments &args) {
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
@@ -535,9 +527,6 @@ void GameScript::init() {
   entityTemplate_ =
       Persistent<ObjectTemplate>::New(isolate_, ObjectTemplate::New());
   entityTemplate_->SetInternalFieldCount(1);
-  entityTemplate_->Set(
-      String::New("getName"),
-      FunctionTemplate::New(entityGetName));
   entityTemplate_->Set(
       String::New("hasProperty"),
       FunctionTemplate::New(entityHasProperty));

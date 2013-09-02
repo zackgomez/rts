@@ -341,6 +341,7 @@ void Game::update(float dt) {
   // Synchronize with JS about # victory points.
   readVPs();
 
+  // TODO(zack): move this win condition into JS
   // Check to see if this player has won
   for (auto it : victoryPoints_) {
     if (it.second > intParam("global.pointsToWin")) {

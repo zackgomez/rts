@@ -99,24 +99,4 @@ void GameEntity::checksum(Checksum &chksum) const {
 std::vector<glm::vec3> GameEntity::getPathNodes() const {
   return pathQueue_;
 }
-
-Json::Value GameEntity::getParam(const std::string &p) const {
-  return ::getParam(name_ + "." + p);
-}
-
-float GameEntity::fltParam(const std::string &p) const {
-  return ::fltParam(name_ + "." + p);
-}
-
-std::string GameEntity::strParam(const std::string &p) const {
-  return ::strParam(name_ + "." + p);
-}
-
-glm::vec2 GameEntity::vec2Param(const std::string &p) const {
-  return ::vec2Param(name_ + "." + p);
-}
-
-bool GameEntity::hasParam(const std::string &p) const {
-  return ::hasParam(name_ + "." + p);
-}
 };  // rts

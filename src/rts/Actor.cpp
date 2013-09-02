@@ -186,9 +186,7 @@ void Actor::update(float dt) {
 }
 
 void Actor::resetUIInfo() {
-  memset(&uiInfo_, 0, sizeof(uiInfo_));
-  uiInfo_.parts = std::vector<UIPart>();
-  uiInfo_.minimap_icon = std::string();
+  uiInfo_ = Actor::UIInfo();
 }
 
 void Actor::updateUIInfo() {
@@ -265,6 +263,10 @@ void Actor::updateUIInfo() {
   if (jsinfo->Has(minimap_icon)) {
     uiInfo_.minimap_icon = *String::AsciiValue(jsinfo->Get(minimap_icon));
   }
+
+  auto extra = String::New("extra");
+  invariant(jsinfo->Has(extra), "UIInfo should have extra map");
+  uiInfo_.extra = script->jsToJSON(jsinfo->Get(extra));
 }
 
 void Actor::updateActions() {
