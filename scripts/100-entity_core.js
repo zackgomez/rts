@@ -5,12 +5,13 @@
 // --
 
 // This function is called on an entity when it is created.
-function entityInit(entity, params) {
+function entityInit(entity, name, params) {
+  Log('entityInit', name, params);
+  entity.name_ = name;
   entity.defaultState_ = NullState;
   entity.cooldowns_ = {};
   entity.retreat_ = false;
   entityResetDeltas(entity);
-  var name = entity.getName();
   var def = EntityDefs[name];
   if (!def) {
     throw new Error('No def for ' + name);
@@ -76,6 +77,9 @@ function entityInit(entity, params) {
   entity.state_ = new entity.defaultState_(params);
 
   // Set some functions on the entity
+  entity.getName = function () {
+    return this.name_;
+  }
   entity.hasCooldown = function (name) {
     return name in this.cooldowns_;
   };
@@ -334,7 +338,7 @@ function entityResolve(entity, dt) {
       }
 
       for (var cd_name in damage_obj.on_hit_cooldowns) {
-        entity.addCooldown(cd_name,damage_obj.on_hit_cooldowns[cd_name]); 
+        entity.addCooldown(cd_name, damage_obj.on_hit_cooldowns[cd_name]);
       }
 
       var modified_parts = entity.updatePartHealth(

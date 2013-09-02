@@ -394,7 +394,7 @@ const GameEntity * Game::spawnEntity(
   GameEntity *ent = new Actor(eid, name, params);
   if (ent) {
     Renderer::get()->spawnEntity(ent);
-    script_.wrapEntity(ent, params);
+    script_.wrapEntity(ent, name, params);
   }
   return ent;
 }

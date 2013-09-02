@@ -653,7 +653,10 @@ Handle<Object> GameScript::getGlobal() {
   return context_->Global();
 }
 
-void GameScript::wrapEntity(GameEntity *e, const Json::Value &params) {
+void GameScript::wrapEntity(
+    GameEntity *e,
+    const std::string &name,
+    const Json::Value &params) {
   HandleScope handle_scope(isolate_);
   Context::Scope context_scope(isolate_, context_);
 
@@ -661,8 +664,11 @@ void GameScript::wrapEntity(GameEntity *e, const Json::Value &params) {
       isolate_, entityTemplate_->NewInstance());
   wrapper->SetInternalField(0, External::New(e));
 
-  const int argc = 2;
-  Handle<Value> argv[argc] = {wrapper, jsonToJS(params)};
+  const int argc = 3;
+  Handle<Value> argv[argc] = {
+    wrapper,
+    String::New(name.c_str()),
+    jsonToJS(params)};
   Handle<Function>::Cast(context_->Global()->Get(String::New("entityInit")))
     ->Call(context_->Global(), argc, argv);
 

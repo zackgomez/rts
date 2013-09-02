@@ -27,7 +27,10 @@ public:
     return context_;
   }
 
-  void wrapEntity(GameEntity *e, const Json::Value &params);
+  void wrapEntity(
+      GameEntity *e,
+      const std::string &name,
+      const Json::Value &params);
   void destroyEntity(id_t eid);
   v8::Handle<v8::Object> getEntity(id_t eid);
   v8::Handle<v8::Object> getGlobal();
