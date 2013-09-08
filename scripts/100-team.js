@@ -38,9 +38,15 @@ var Teams = (function() {
     );
   };
 
-  exports.getVictoryPoints = function(tid) {
-    verifyTeam(tid);
-    return teams[tid].getVictoryPoints();
+  exports.getVictoryPoints = function() {
+    var ret = [];
+    for (var tid in teams) {
+      ret.push({
+        tid: tid,
+        vps: teams[tid].getVictoryPoints(),
+      });
+    }
+    return ret;
   };
 
 

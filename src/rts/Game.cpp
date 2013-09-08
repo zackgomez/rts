@@ -466,32 +466,29 @@ void Game::readVPs() {
   TryCatch try_catch;
   auto global = script->getGlobal();
 
-  Handle<Object> teamsAPI = Handle<Object>::Cast(
-     global->Get(String::New("Teams")));
+  Handle<Object> game_object = Handle<Object>::Cast(
+     global->Get(String::New("Game")));
+  Handle<Function> game_render_function = Handle<Function>::Cast(
+      game_object->Get(String::New("render")));
+  Handle<Value> js_render_result_ret =
+    game_render_function->Call(game_object, 0, nullptr);
+  checkJSResult(js_render_result_ret, try_catch, "render");
+  Handle<Object> js_render_result = Handle<Object>::Cast(js_render_result_ret);
 
-  for (auto tid : teams_) {
-    const int argc = 1;
-    Handle<Value> argv[argc] = {Integer::New(tid)};
-    Handle<Function> getPointsFunction = Handle<Function>::Cast(
-        teamsAPI->Get(String::New("getVictoryPoints")));
-    Handle<Value> ret = getPointsFunction->Call(global, argc, argv);
-
-    checkJSResult(ret, try_catch, "readVPs");
-    victoryPoints_[tid] = ret->IntegerValue();
+  Handle<Array> js_players = Handle<Array>::Cast(
+      js_render_result->Get(String::New("players")));
+  for (int i = 0; i < js_players->Length(); i++) {
+    Handle<Object> js_player = Handle<Object>::Cast(js_players->Get(i));
+    id_t pid = js_player->Get(String::New("pid"))->IntegerValue();
+    requisition_[pid] = js_player->Get(String::New("req"))->NumberValue();
   }
 
-  requisition_.clear();
-  auto players_api = Handle<Object>::Cast(global->Get(String::New("Players")));
-  Handle<Value> ret = Handle<Function>::Cast(
-    players_api->Get(String::New("getRequisitionMap"))
-  )->Call(global, 0, nullptr);
-  checkJSResult(ret, try_catch, "getRequisitionMap");
-  Handle<Object> js_req_map = Handle<Object>::Cast(ret);
-  Handle<Array> js_pids = js_req_map->GetOwnPropertyNames();
-  for (int i = 0; i < js_pids->Length(); i++) {
-    auto js_pid = js_pids->Get(i);
-    id_t pid = atoi(*String::AsciiValue(js_pid));
-    requisition_[pid] = js_req_map->Get(js_pid)->NumberValue();
+  Handle<Array> js_teams = Handle<Array>::Cast(
+      js_render_result->Get(String::New("teams")));
+  for (int i = 0; i < js_teams->Length(); i++) {
+    auto js_team = Handle<Object>::Cast(js_teams->Get(i));
+    id_t tid = js_team->Get(String::New("tid"))->IntegerValue();
+    victoryPoints_[tid] = js_team->Get(String::New("vps"))->NumberValue();
   }
 }
 

@@ -82,12 +82,15 @@ var Players = (function() {
   };
 
   // Returns player -> requisition map
-  PlayersAPI.getRequisitionMap = function () {
-    var req = {};
+  PlayersAPI.getRequisitionCounts = function () {
+    var ret = [];
     for (var pid in players) {
-      req[pid] = players[pid].getRequisition();
+      ret.push({
+        pid: pid,
+        req: players[pid].getRequisition(),
+      });
     }
-    return req;
+    return ret;
   };
 
   return PlayersAPI;
