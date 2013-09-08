@@ -46,10 +46,13 @@ var Teams = (function() {
 
   // Create a new team, with zero victory points.
   exports.addTeam = function(tid) {
-    invariant(!(tid in teams), 'team already exists!');
+    if (tid in teams) {
+      return;
+    }
     teams[tid] = new Team(tid);
   };
   exports.addPlayer = function(tid, pid) {
+    this.addTeam(tid);
     verifyTeam(tid);
     teams[tid].addPlayer(pid);
   };

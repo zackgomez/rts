@@ -131,19 +131,6 @@ void Game::start() {
   HandleScope scope(script_.getIsolate());
   auto global = script_.getGlobal();
 
-  // Setup teams in JS.
-  for (auto tid : teams_) {
-    TryCatch try_catch;
-    const int argc = 1;
-    Handle<Value> argv[argc] = {Integer::New(tid)};
-    Handle<Object> teamsAPI = Handle<Object>::Cast(
-         global->Get(String::New("Teams")));
-    Handle<Function> addTeam = Handle<Function>::Cast(
-          teamsAPI->Get(String::New("addTeam")));
-    auto ret = addTeam->Call(global, argc, argv);
-    checkJSResult(ret, try_catch, "Teams.addTeam");
-  }
-
   float starting_requisition = fltParam("global.startingRequisition");
   for (int i = 0; i < players_.size(); i++) {
     auto *player = players_[i];
