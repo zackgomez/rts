@@ -1,5 +1,6 @@
 #include "rts/GameScript.h"
 #include <v8.h>
+#include <sstream>
 #include "common/util.h"
 #include "rts/Actor.h"
 #include "rts/Game.h"
@@ -15,11 +16,12 @@ namespace rts {
 
 void checkJSResult(
   const Handle<Value> &result,
-  const Handle<Value> &exception,
+  const TryCatch &try_catch,
   const std::string &msg) {
   if (result.IsEmpty()) {
     LOG(ERROR) << msg << " "
-      << *String::AsciiValue(exception) << '\n';
+      << *String::AsciiValue(try_catch.Exception()) << '\n'
+      << *String::AsciiValue(try_catch.StackTrace()) << '\n';
     invariant_violation("Javascript exception");
   }
 }
@@ -99,7 +101,7 @@ static Handle<Value> jsGetNearbyEntities(const Arguments &args) {
       const int argc = 1;
       Handle<Value> argv[argc] = {jsEntity};
       auto ret = callback->Call(args.Holder(), argc, argv);
-      checkJSResult(ret, try_catch.Exception(), "getNearbyEntities callback:");
+      checkJSResult(ret, try_catch, "getNearbyEntities callback:");
       return ret->BooleanValue();
     });
 

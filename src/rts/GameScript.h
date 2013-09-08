@@ -11,7 +11,7 @@ class GameEntity;
 
 void checkJSResult(
   const v8::Handle<v8::Value> &result,
-  const v8::Handle<v8::Value> &exception,
+  const v8::TryCatch &try_catch,
   const std::string &msg);
 
 class GameScript {

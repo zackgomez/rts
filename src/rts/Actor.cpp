@@ -79,7 +79,7 @@ void Actor::resolve(float dt) {
   Handle<Value> result =
     Handle<Function>::Cast(global->Get(String::New("entityResolve")))
     ->Call(global, argc, argv);
-  checkJSResult(result, try_catch.Exception(), "entityResolve:");
+  checkJSResult(result, try_catch, "entityResolve:");
 
 	if (hasProperty(P_MOBILE) && warp_) {
 		setPosition(warpTarget_);
@@ -128,7 +128,7 @@ void Actor::handleOrder(const Message &order) {
     Handle<Value> result =
       Handle<Function>::Cast(global->Get(String::New("entityHandleOrder")))
       ->Call(global, argc, argv);
-    checkJSResult(result, try_catch.Exception(), "entityHandleOrder:");
+    checkJSResult(result, try_catch, "entityHandleOrder:");
   }
 }
 
@@ -161,7 +161,7 @@ void Actor::handleAction(const std::string &action_name, const Json::Value &orde
   Handle<Value> result =
     Handle<Function>::Cast(global->Get(String::New("entityHandleAction")))
     ->Call(global, argc, argv);
-  checkJSResult(result, try_catch.Exception(), "entityHandleAction:");
+  checkJSResult(result, try_catch, "entityHandleAction:");
 
   return;
 }
@@ -182,7 +182,7 @@ void Actor::update(float dt) {
   Handle<Value> result =
     Handle<Function>::Cast(global->Get(String::New("entityUpdate")))
     ->Call(global, argc, argv);
-  checkJSResult(result, try_catch.Exception(), "entityUpdate:");
+  checkJSResult(result, try_catch, "entityUpdate:");
 }
 
 void Actor::resetUIInfo() {
@@ -203,7 +203,7 @@ void Actor::updateUIInfo() {
   Handle<Value> ret =
     Handle<Function>::Cast(global->Get(String::New("entityGetUIInfo")))
     ->Call(global, argc, argv);
-  checkJSResult(ret, try_catch.Exception(), "entityGetUIInfo:");
+  checkJSResult(ret, try_catch, "entityGetUIInfo:");
 
   auto jsinfo = ret->ToObject();
   auto parts_str = String::New("parts");
@@ -283,7 +283,7 @@ void Actor::updateActions() {
   Handle<Value> ret =
     Handle<Function>::Cast(global->Get(String::New("entityGetActions")))
     ->Call(global, argc, argv);
-  checkJSResult(ret, try_catch.Exception(), "entityGetActions:");
+  checkJSResult(ret, try_catch, "entityGetActions:");
 
   auto name = String::New("name");
   auto icon = String::New("icon");

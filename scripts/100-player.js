@@ -57,7 +57,6 @@ var Players = (function() {
           return retreat_location;
         },
         getRequisition: function () {
-          Log('this', JSON.stringify(this));
           return this.requisition;
         },
         addRequisition: function (amount) {
@@ -88,7 +87,6 @@ var Players = (function() {
     for (var pid in players) {
       req[pid] = players[pid].getRequisition();
     }
-    Log('req', JSON.stringify(req));
     return req;
   };
 

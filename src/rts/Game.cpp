@@ -141,7 +141,7 @@ void Game::start() {
     Handle<Function> addTeam = Handle<Function>::Cast(
           teamsAPI->Get(String::New("addTeam")));
     auto ret = addTeam->Call(global, argc, argv);
-    checkJSResult(ret, try_catch.Exception(), "Teams.addTeam");
+    checkJSResult(ret, try_catch, "Teams.addTeam");
   }
 
   float starting_requisition = fltParam("global.startingRequisition");
@@ -166,7 +166,7 @@ void Game::start() {
     Handle<Function> playerInit = Handle<Function>::Cast(
           playersAPI->Get(String::New("playerInit")));
     auto ret = playerInit->Call(global, argc, argv);
-    checkJSResult(ret, try_catch.Exception(), "Players.playerInit");
+    checkJSResult(ret, try_catch, "Players.playerInit");
   }
 
   // Initialize map
@@ -489,7 +489,7 @@ void Game::readVPs() {
         teamsAPI->Get(String::New("getVictoryPoints")));
     Handle<Value> ret = getPointsFunction->Call(global, argc, argv);
 
-    checkJSResult(ret, try_catch.Exception(), "readVPs");
+    checkJSResult(ret, try_catch, "readVPs");
     victoryPoints_[tid] = ret->IntegerValue();
   }
 
@@ -498,7 +498,7 @@ void Game::readVPs() {
   Handle<Value> ret = Handle<Function>::Cast(
     players_api->Get(String::New("getRequisitionMap"))
   )->Call(global, 0, nullptr);
-  checkJSResult(ret, try_catch.Exception(), "getRequisitionMap");
+  checkJSResult(ret, try_catch, "getRequisitionMap");
   Handle<Object> js_req_map = Handle<Object>::Cast(ret);
   Handle<Array> js_pids = js_req_map->GetOwnPropertyNames();
   for (int i = 0; i < js_pids->Length(); i++) {
@@ -554,7 +554,7 @@ void Game::clearJSMessages() {
   Handle<Value> ret =
     Handle<Function>::Cast(message_hub->Get(String::New("clearMessages")))
     ->Call(global, argc, argv);
-  checkJSResult(ret, try_catch.Exception(), "clearMessages:");
+  checkJSResult(ret, try_catch, "clearMessages:");
 }
 
 void Game::updateJSPlayers() {
@@ -572,7 +572,7 @@ void Game::updateJSPlayers() {
   Handle<Value> ret =
     Handle<Function>::Cast(playersModule->Get(String::New("updateAllPlayers")))
     ->Call(global, argc, argv);
-  checkJSResult(ret, try_catch.Exception(), "updateAllPlayers:");
+  checkJSResult(ret, try_catch, "updateAllPlayers:");
 }
 
 void Game::pause() {

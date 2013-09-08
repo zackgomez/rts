@@ -1,7 +1,7 @@
 //
 // -- Core part class definition
 // --
-function Part (params) {
+function Part(params) {
   if (!params.health) {
     throw new Error("Missing part health");
   }
