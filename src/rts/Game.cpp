@@ -279,9 +279,8 @@ void Game::update(float dt) {
     }
   }
 
-  // player actions
+  // Update javascript, passing player input
   updateJS(js_player_inputs);
-
 
   // Integrate positions before updating entities, to ensure the render displays
   // extrapolated information.  This is safe and provides a better experience.
@@ -298,8 +297,6 @@ void Game::update(float dt) {
     entity->resolve(dt);
   }
   // TODO: swap old/new entity states
-  // clear messages
-  clearJSMessages();
 
   // Remove deadEnts
   for (auto eid : deadEntities_) {
@@ -534,24 +531,6 @@ void Game::updateJS(v8::Handle<v8::Array> player_inputs) {
     Handle<Function>::Cast(message_hub->Get(String::New("update")))
     ->Call(global, argc, argv);
   checkJSResult(ret, try_catch, "update:");
-}
-
-void Game::clearJSMessages() {
-  using namespace v8;
-  auto script = getScript();
-  HandleScope scope(script->getIsolate());
-  TryCatch try_catch;
-  auto global = script->getGlobal();
-
-  const int argc = 0;
-  Handle<Value> *argv = nullptr;
-
-  Handle<Object> message_hub = Handle<Object>::Cast(
-    global->Get(String::New("MessageHub")));
-  Handle<Value> ret =
-    Handle<Function>::Cast(message_hub->Get(String::New("clearMessages")))
-    ->Call(global, argc, argv);
-  checkJSResult(ret, try_catch, "clearMessages:");
 }
 
 void Game::updateJSPlayers() {

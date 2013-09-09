@@ -113,7 +113,6 @@ function entityInit(entity, name, params) {
         return this.parts_[i];
       }
     }
-    Log(JSON.stringify(this.parts_));
     throw new Error('couldn\'t find part '+ name);
   };
   entity.startUpgrade = function (part_name, upgrade_name) {
@@ -448,11 +447,6 @@ function entityHandleMessage(entity, msg) {
 // Handles an order from the player.  Called before update/resolve.
 // Intentions only.
 function entityHandleOrder(entity, order) {
-  // the unit property basically means you can order it around
-  if (!entity.hasProperty(P_UNIT)) {
-    return;
-  }
-
   var type = order.type;
   // Ignore orders when retreating
   if (entity.retreat_) {
@@ -470,16 +464,16 @@ function entityHandleOrder(entity, order) {
       action_args.target_id = order.target_id;
     }
     entityHandleAction(entity, action_name, action_args);
-  } else if (type == 'MOVE') {
+  } else if (type == 'MOVE' && entity.hasProperty(P_MOBILE)) {
     entity.state_ = new UnitMoveState({
       target: order.target,
     });
-  } else if (type == 'RETREAT') {
+  } else if (type == 'RETREAT' && entity.hasProperty(P_MOBILE)) {
     entity.retreat_ = true;
     entity.state_ = new RetreatState();
   } else if (type == 'STOP') {
     entity.state_ = new UnitIdleState();
-  } else if (type == 'CAPTURE') {
+  } else if (type == 'CAPTURE' && entity.hasProperty(P_UNIT)) {
     if (!entity.captureRange_) {
       Log('Entity without capturing ability told to cap!');
       return;
@@ -494,7 +488,7 @@ function entityHandleOrder(entity, order) {
       entity.state_ = new UnitAttackState({
         target_id: order.target_id,
       });
-    } else {
+    } else if (entity.hasProperty(P_MOBILE)) {
       entity.state_ = new UnitAttackMoveState({
         target: order.target,
       });

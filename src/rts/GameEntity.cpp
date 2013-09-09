@@ -56,11 +56,13 @@ float GameEntity::distanceToEntity(const GameEntity *e) const {
 
 void GameEntity::remainStationary() {
   pathQueue_ = std::vector<glm::vec3>();
+  lastTargetPos_ = glm::vec2(HUGE_VAL);
   setSpeed(0.f);
 }
 
 void GameEntity::turnTowards(const glm::vec2 &targetPos) {
   setAngle(angleToTarget(targetPos));
+  lastTargetPos_ = glm::vec2(HUGE_VAL);
   setSpeed(0.f);
 }
 
