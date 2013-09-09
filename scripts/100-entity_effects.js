@@ -17,7 +17,7 @@ function makeProductionEffect(params) {
     }
 
     // Spawn
-    var eid = SpawnEntity(
+    var eid = Game.spawnEntity(
       prod_name,
       {
         pid: entity.getPlayerID(),

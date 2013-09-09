@@ -23,7 +23,7 @@ var Players = (function() {
 
     Teams.addPlayer(tid, pid);
 
-    var base_id = SpawnEntity(
+    var base_id = Game.spawnEntity(
       'base',
       {
         pid: pid,
@@ -38,7 +38,7 @@ var Players = (function() {
       vecMul(base_entity.getDirection(), 3)
     );
 
-    var unit_id = SpawnEntity(
+    var unit_id = Game.spawnEntity(
       'melee_unit',
       {
         pid: pid,

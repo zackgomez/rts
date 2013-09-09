@@ -120,7 +120,7 @@ var Weapons = (function () {
           health_target: this.params.health_target,
           on_hit_cooldowns: this.params.on_hit_cooldowns,
         };
-        SpawnEntity('projectile', params);
+        Game.spawnEntity('projectile', params);
       } else {
         MessageHub.sendMessage({
           to: target_id,
