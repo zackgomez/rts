@@ -400,18 +400,6 @@ void Game::addAction(id_t pid, const PlayerAction &act) {
   }
 }
 
-const GameEntity * Game::spawnEntity(
-    const std::string &name,
-    const Json::Value &params) {
-  id_t eid = Renderer::get()->newEntityID();
-  GameEntity *ent = new Actor(eid, name, params);
-  if (ent) {
-    Renderer::get()->spawnEntity(ent);
-    script_.wrapEntity(ent, name, params);
-  }
-  return ent;
-}
-
 void Game::destroyEntity(id_t eid) {
   deadEntities_.insert(eid);
 }

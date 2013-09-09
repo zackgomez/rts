@@ -57,9 +57,12 @@ var Game = function () {
     };
   };
 
+  // TODO(zack): make this a private helper when entity spawning is by message
   // returns the ID of the spawned entity
   exports.spawnEntity = function (name, params) {
-    return SpawnEntity(name, params);
+    var entity = SpawnEntity(name, params);
+    entityInit(entity, name, params);
+    return entity.getID();
   };
 
   return exports;

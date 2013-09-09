@@ -70,9 +70,6 @@ class Game {
   // Can possibly block, but should never block long
   void addAction(id_t pid, const PlayerAction &act);
 
-  const GameEntity * spawnEntity(
-      const std::string &name,
-      const Json::Value &params);
   void destroyEntity(id_t eid);
   GameEntity * getEntity(id_t eid);
   const GameEntity * getEntity(id_t eid) const;

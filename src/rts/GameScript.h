@@ -27,13 +27,14 @@ public:
     return context_;
   }
 
-  void wrapEntity(
-      GameEntity *e,
-      const std::string &name,
-      const Json::Value &params);
+  void addWrapper(id_t eid, v8::Persistent<v8::Object> wrapper);
   void destroyEntity(id_t eid);
   v8::Handle<v8::Object> getEntity(id_t eid);
   v8::Handle<v8::Object> getGlobal();
+
+  v8::Handle<v8::ObjectTemplate> getEntityTemplate() const {
+    return entityTemplate_;
+  }
 
   v8::Handle<v8::Value> jsonToJS(const Json::Value &json) const;
   Json::Value jsToJSON(const v8::Handle<v8::Value> json) const;

@@ -51,11 +51,18 @@ static Handle<Value> jsSpawnEntity(const Arguments &args) {
   std::string name(*String::AsciiValue(args[0]));
   Json::Value params = script->jsToJSON(Handle<Object>::Cast(args[1]));
 
-  const GameEntity *e = Game::get()->spawnEntity(name, params);
-  if (!e) {
-    return Null();
-  }
-  return scope.Close(Integer::New(e->getID()));
+  id_t eid = Renderer::get()->newEntityID();
+  GameEntity *e = new Actor(eid, name, params);
+  invariant(e, "couldn't allocate new entity");
+  Renderer::get()->spawnEntity(e);
+
+  Persistent<Object> wrapper = Persistent<Object>::New(
+      args.GetIsolate(), script->getEntityTemplate()->NewInstance());
+  wrapper->SetInternalField(0, External::New(e));
+
+  script->addWrapper(eid, wrapper);
+
+  return scope.Close(wrapper);
 }
 
 static Handle<Value> jsLog(const Arguments &args) {
@@ -619,26 +626,10 @@ Handle<Object> GameScript::getGlobal() {
   return context_->Global();
 }
 
-void GameScript::wrapEntity(
-    GameEntity *e,
-    const std::string &name,
-    const Json::Value &params) {
-  HandleScope handle_scope(isolate_);
-  Context::Scope context_scope(isolate_, context_);
-
-  Persistent<Object> wrapper = Persistent<Object>::New(
-      isolate_, entityTemplate_->NewInstance());
-  wrapper->SetInternalField(0, External::New(e));
-
-  const int argc = 3;
-  Handle<Value> argv[argc] = {
-    wrapper,
-    String::New(name.c_str()),
-    jsonToJS(params)};
-  Handle<Function>::Cast(context_->Global()->Get(String::New("entityInit")))
-    ->Call(context_->Global(), argc, argv);
-
-  scriptObjects_[e->getID()] = wrapper;
+void GameScript::addWrapper(
+    id_t eid,
+    Persistent<Object> wrapper) {
+  scriptObjects_[eid] = wrapper;
 }
 
 void GameScript::destroyEntity(id_t id) {
