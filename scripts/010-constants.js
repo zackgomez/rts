@@ -75,3 +75,10 @@ function invariant(condition, message) {
 function invariant_violation(message) {
   throw new Error('invariant_violation: ' + message);
 }
+
+function must_have_idx(obj, index) {
+  if (!obj.hasOwnProperty(index)) {
+    throw new Error('Missing index \'' + index + '\'');
+  }
+  return obj[index];
+}

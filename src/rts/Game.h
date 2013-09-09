@@ -93,9 +93,9 @@ class Game {
   float gameRandom();
 
  private:
-  void handleOrder(id_t playerID, const PlayerAction &action);
   // Returns true if all the players have submitted input for the current tick_
   bool updatePlayers();
+  void updateJS(v8::Handle<v8::Array> player_inputs);
   // This just updates JS player info, game data related rather than action related
   void updateJSPlayers();
   void clearJSMessages();
@@ -104,7 +104,7 @@ class Game {
   void unpause();
 
   // Load the victory points from JS.
-  void readVPs();
+  void renderJS();
 
   std::mutex actionMutex_;
 

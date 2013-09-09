@@ -103,69 +103,6 @@ void Actor::resolve(float dt) {
   updateActions();
 }
 
-void Actor::handleOrder(const Message &order) {
-  if (order["type"] == "ACTION") {
-    invariant(order.isMember("action"), "missing action name");
-    std::string action_name = order["action"].asString();
-    handleAction(action_name, order);
-  } else {
-    using namespace v8;
-    auto *script = Game::get()->getScript();
-    HandleScope scope(script->getIsolate());
-    Handle<Object> global = script->getGlobal();
-    TryCatch try_catch;
-
-    // TODO(zack): HACK! either pass vec2 or expect vec3
-    Json::Value cleanorder = order;
-    if (order.isMember("target")) {
-      cleanorder["target"] = toJson(toVec2(order["target"]));
-    }
-
-    Handle<Object> jsorder = Handle<Object>::Cast(script->jsonToJS(cleanorder));
-
-    const int argc = 2;
-    Handle<Value> argv[argc] = {script->getEntity(getID()), jsorder};
-    Handle<Value> result =
-      Handle<Function>::Cast(global->Get(String::New("entityHandleOrder")))
-      ->Call(global, argc, argv);
-    checkJSResult(result, try_catch, "entityHandleOrder:");
-  }
-}
-
-void Actor::handleAction(const std::string &action_name, const Json::Value &order) {
-  using namespace v8;
-  auto *script = Game::get()->getScript();
-  HandleScope scope(script->getIsolate());
-
-  Handle<Object> global = script->getGlobal();
-  TryCatch try_catch;
-  // TODO(zack): convert this to a params array rather than a single 'target'
-  // variable.
-  Handle<Object> action_args = Object::New();
-  if (order.isMember("target")) {
-    action_args->Set(
-        String::New("target"),
-        script->jsonToJS(order["target"]));
-  } else if (order.isMember("target_id")) {
-    action_args->Set(
-        String::New("target_id"),
-        script->jsonToJS(order["target_id"]));
-  }
-
-  const int argc = 3;
-  Handle<Value> argv[argc] = {
-    script->getEntity(getID()),
-    String::New(action_name.c_str()),
-    action_args,
-  };
-  Handle<Value> result =
-    Handle<Function>::Cast(global->Get(String::New("entityHandleAction")))
-    ->Call(global, argc, argv);
-  checkJSResult(result, try_catch, "entityHandleAction:");
-
-  return;
-}
-
 void Actor::update(float dt) {
   GameEntity::update(dt);
 

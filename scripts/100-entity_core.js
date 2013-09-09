@@ -460,7 +460,17 @@ function entityHandleOrder(entity, order) {
     return;
   }
 
-  if (type == 'MOVE') {
+  if (type == 'ACTION') {
+    var action_name = must_have_idx(order, 'action');
+    var action_args = {}
+    if (order.target) {
+      action_args.target = order.target;
+    }
+    if (order.target_id) {
+      action_args.target_id = order.target_id;
+    }
+    entityHandleAction(entity, action_name, action_args);
+  } else if (type == 'MOVE') {
     entity.state_ = new UnitMoveState({
       target: order.target,
     });

@@ -177,6 +177,7 @@ void Game::update(float dt) {
   auto lock = Renderer::get()->lockEngine();
   v8::Locker locker(script_.getIsolate());
   v8::Context::Scope context_scope(script_.getContext());
+  v8::HandleScope scope(script_.getIsolate());
 
   // First update players
   // TODO(zack): less hacky dependence on paused_
@@ -206,9 +207,11 @@ void Game::update(float dt) {
   // none targetting this frame
   tick_t idx = std::max((tick_t) 0, tick_ - tickOffset_);
   TickChecksum recordedChecksum = checksums_[idx];
+  auto js_player_inputs = v8::Array::New();
   for (auto &player : players_) {
     id_t pid = player->getPlayerID();
     auto actions = player->getActions();
+    std::vector<Json::Value> orders;
 
     TickChecksum remoteChecksum;
     bool done = false;
@@ -233,12 +236,17 @@ void Game::update(float dt) {
       } else if (action["type"] == ActionTypes::ORDER) {
         invariant(action.isMember("order"), "malformed ORDER action");
         actionChecksummer_.process(action);
-        handleOrder(pid, action["order"]);
+        Json::Value order = action["order"];
+        order["from_pid"] = toJson(pid);
+        js_player_inputs->Set(
+            js_player_inputs->Length(),
+            script_.jsonToJS(order));
       } else {
         invariant_violation("unknown action type" + action["type"].asString());
       }
     }
     invariant(done, "Missing DONE message for player");
+
     // TODO(zack): make this dump out a log so we can debug the reason why
     if (TickChecksum(remoteChecksum) != recordedChecksum) {
       if (remoteChecksum.entity_checksum != recordedChecksum.entity_checksum) {
@@ -270,6 +278,10 @@ void Game::update(float dt) {
       entities.push_back((GameEntity *)it.second);
     }
   }
+
+  // player actions
+  updateJS(js_player_inputs);
+
 
   // Integrate positions before updating entities, to ensure the render displays
   // extrapolated information.  This is safe and provides a better experience.
@@ -343,8 +355,8 @@ void Game::update(float dt) {
     }
   }
 
-  // Synchronize with JS about # victory points.
-  readVPs();
+  // Synchronize with JS about resources/vps/etc
+  renderJS();
 
   // TODO(zack): move this win condition into JS
   // Check to see if this player has won
@@ -459,7 +471,7 @@ float Game::getRequisition(id_t pid) const {
 }
 
 // Populate victoryPoints_ map from JS values.
-void Game::readVPs() {
+void Game::renderJS() {
   using namespace v8;
   auto script = Game::get()->getScript();
   HandleScope scope(script->getIsolate());
@@ -506,21 +518,22 @@ const VisibilityMap* Game::getVisibilityMap(id_t pid) const {
   return it->second;
 }
 
-void Game::handleOrder(id_t playerID, const PlayerAction &order) {
-  invariant(
-      order.isMember("entity") && order["entity"].isArray(),
-      "expected order targets as array");
+void Game::updateJS(v8::Handle<v8::Array> player_inputs) {
+  using namespace v8;
+  auto script = getScript();
+  HandleScope scope(script->getIsolate());
+  TryCatch try_catch;
+  auto global = script->getGlobal();
 
-  Json::Value entities = order["entity"];
-  for (int i = 0; i < entities.size(); i++) {
-    GameEntity *entity = getEntity(toID(entities[i]));
-    if (!entity) {
-      LOG(WARNING) << "Couldn't find entity " << entities[i] << " for order\n";
-      continue;
-    }
-    invariant(entity->getPlayerID() == playerID, "order for unonwned entity");
-    entity->handleOrder(order);
-  }
+  const int argc = 1;
+  Handle<Value> argv[] = { player_inputs };
+
+  Handle<Object> message_hub = Handle<Object>::Cast(
+    global->Get(String::New("Game")));
+  Handle<Value> ret =
+    Handle<Function>::Cast(message_hub->Get(String::New("update")))
+    ->Call(global, argc, argv);
+  checkJSResult(ret, try_catch, "update:");
 }
 
 void Game::clearJSMessages() {

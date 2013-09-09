@@ -60,7 +60,6 @@ class GameEntity : public ModelEntity {
     sight_ = sight;
   }
 
-  virtual void handleOrder(const Message &order) { }
   // Sets 'intention' like velocity, etc
   virtual void update(float dt);
   virtual void collide(const GameEntity *other, float dt) { }
