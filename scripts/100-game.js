@@ -49,7 +49,7 @@ var Game = function () {
 
   // TODO(zack): make this private after entity spawning is moved into JS
   // completely
-  exports.spawnEntity(name, params) {
+  exports.spawnEntity = function (name, params) {
   };
 
   return exports;
