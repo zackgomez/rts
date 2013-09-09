@@ -32,6 +32,8 @@ class Map {
   // @param location_idx int in [0, max_players)
   // @return starting location defintion with keys pos -> vec2, angle -> float
   Json::Value getStartingLocation(int location_idx) const;
+  // @return map definition for javascript consumption
+  Json::Value getMapDefinition() const;
 
  private:
   Json::Value definition_;

@@ -1,7 +1,17 @@
 var Game = function () {
   var exports = {};
 
-  exports.init = function (player_defs) {
+  exports.init = function (map_def, player_defs) {
+    // Spawn map entities
+    for (var i = 0; i < map_def.entities.length; i++) {
+      var entity = map_def.entities[i];
+      exports.spawnEntity(
+        must_have_idx(entity, 'type'),
+        must_have_idx(entity, 'params')
+      );
+    }
+
+    // initialize players and teams
     for (var i = 0; i < player_defs.length; i++) {
       var player_def = player_defs[i];
       Players.playerInit(player_def);
@@ -47,9 +57,9 @@ var Game = function () {
     };
   };
 
-  // TODO(zack): make this private after entity spawning is moved into JS
-  // completely
-  exports.spawnEntity(name, params) {
+  // returns the ID of the spawned entity
+  exports.spawnEntity = function (name, params) {
+    return SpawnEntity(name, params);
   };
 
   return exports;

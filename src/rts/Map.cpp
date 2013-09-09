@@ -38,41 +38,25 @@ void Map::init() {
   Renderer::get()->setMapColor(getColor());
   std::vector<std::tuple<glm::vec2, glm::vec2>> unpathable;
 
-  Json::Value entities = definition_["entities"];
-  for (int i = 0; i < entities.size(); i++) {
-    Json::Value entity_def = entities[i];
-    invariant(entity_def.isMember("type"), "missing type param");
-    std::string type = entity_def["type"].asString();
-    if (type == "collision_object") {
-      id_t eid = Renderer::get()->newEntityID();
-      glm::vec2 pos = toVec2(entity_def["pos"]);
-      glm::vec2 size = toVec2(entity_def["size"]);
-      ModelEntity *obj = new ModelEntity(eid);
-      obj->setPosition(glm::vec3(pos, 0.1f));
-      obj->setSize(size);
-      obj->setAngle(entity_def["angle"].asFloat());
+  Json::Value collision_objects =
+    must_have_idx(definition_, "collision_objects");
+  for (int i = 0; i < collision_objects.size(); i++) {
+    Json::Value collision_object_def = collision_objects[i];
 
-      unpathable.push_back(std::make_tuple(pos, size));
+    id_t eid = Renderer::get()->newEntityID();
+    glm::vec2 pos = toVec2(collision_object_def["pos"]);
+    glm::vec2 size = toVec2(collision_object_def["size"]);
+    ModelEntity *obj = new ModelEntity(eid);
+    obj->setPosition(glm::vec3(pos, 0.1f));
+    obj->setSize(size);
+    obj->setAngle(collision_object_def["angle"].asFloat());
 
-      obj->setScale(glm::vec3(2.f*obj->getSize(), 1.f));
-      // TODO(zack): could be prettier than just a square
-      obj->setModelName("square");
-      Renderer::get()->spawnEntity(obj);
-      continue;
-    }
+    unpathable.push_back(std::make_tuple(pos, size));
 
-    Json::Value params;
-    params["pid"] = toJson(NO_PLAYER);
-    if (entity_def.isMember("pos")) {
-      params["pos"] = entity_def["pos"];
-    }
-    if (entity_def.isMember("size")) {
-      params["size"] = entity_def["size"];
-    }
-    if (entity_def.isMember("angle")) {
-      params["angle"] = entity_def["angle"];
-    }
-    Game::get()->spawnEntity(type, params);
+    obj->setScale(glm::vec3(2.f*obj->getSize(), 1.f));
+    // TODO(zack): could be prettier than just a square
+    obj->setModelName("square");
+    Renderer::get()->spawnEntity(obj);
   }
 
   std::vector<std::vector<glm::vec3>> navFaces;
@@ -100,6 +84,12 @@ void Map::init() {
   }
 
   navmesh_ = new NavMesh(navFaces);
+}
+
+Json::Value Map::getMapDefinition() const {
+  Json::Value ret;
+  ret["entities"] = must_have_idx(definition_, "entities");
+  return ret;
 }
 
 Json::Value Map::getStartingLocation(int location_idx) const {

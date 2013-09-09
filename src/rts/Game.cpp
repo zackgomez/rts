@@ -131,6 +131,7 @@ void Game::start() {
   HandleScope scope(script_.getIsolate());
   auto global = script_.getGlobal();
 
+  Handle<Array> js_player_defs = Array::New();
   float starting_requisition = fltParam("global.startingRequisition");
   for (int i = 0; i < players_.size(); i++) {
     auto *player = players_[i];
@@ -145,16 +146,21 @@ void Game::start() {
         String::New("starting_location"),
         script_.jsonToJS(starting_location));
 
-    TryCatch try_catch;
-    const int argc = 1;
-    Handle<Value> argv[argc] = { js_player_def };
-    Handle<Object> playersAPI = Handle<Object>::Cast(
-         global->Get(String::New("Players")));
-    Handle<Function> playerInit = Handle<Function>::Cast(
-          playersAPI->Get(String::New("playerInit")));
-    auto ret = playerInit->Call(global, argc, argv);
-    checkJSResult(ret, try_catch, "Players.playerInit");
+    js_player_defs->Set(js_player_defs->Length(), js_player_def);
   }
+
+  TryCatch try_catch;
+  const int argc = 2;
+  Handle<Value> argv[argc] = {
+    script_.jsonToJS(map_->getMapDefinition()),
+    js_player_defs,
+  };
+  Handle<Object> game_obj = Handle<Object>::Cast(
+      global->Get(String::New("Game")));
+  Handle<Function> game_init_method = Handle<Function>::Cast(
+      game_obj->Get(String::New("init")));
+  auto ret = game_init_method->Call(game_obj, argc, argv);
+  checkJSResult(ret, try_catch, "Game.init:");
 
   // Initialize map
   map_->init();

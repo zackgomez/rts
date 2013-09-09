@@ -21,69 +21,85 @@
   "entities" : [
     {
       "type" : "victory_point",
-      "pos" : [-15, -9],
-      "angle": 270
+      "params": {
+        "pos" : [-15, -9],
+        "angle": 270
+      }
     },
     {
       "type" : "victory_point",
-      "pos" : [0, 0],
-      "angle": 270
+      "params": {
+        "pos" : [0, 0],
+        "angle": 270
+      }
     },
     {
       "type" : "victory_point",
-      "pos" : [15, 9],
-      "angle": 90
+      "params": {
+        "pos" : [15, 9],
+        "angle": 90
+      }
     },
     {
       "type" : "req_point",
-      "pos" : [-8, 1],
-      "angle": 0
+      "params": {
+        "pos" : [-8, 1],
+        "angle": 0
+      }
     },
     {
       "type" : "req_point",
-      "pos" : [8, 1],
-      "angle": 0
+      "params": {
+        "pos" : [8, 1],
+        "angle": 0
+      }
     },
     {
       "type" : "req_point",
-      "pos" : [-15, 12],
-      "angle": -15
+      "params": {
+        "pos" : [-15, 12],
+        "angle": -15
+      }
     },
     {
       "type" : "req_point",
-      "pos" : [-15, 8],
-      "angle": 0
+      "params": {
+        "pos" : [-15, 8],
+        "angle": 0
+      }
     },
     {
       "type" : "req_point",
-      "pos" : [15, -12],
-      "angle": 0
+      "params": {
+        "pos" : [15, -12],
+        "angle": 0
+      }
     },
     {
       "type" : "req_point",
+      "params": {
       "pos" : [15, -8],
       "angle": 0
-    },
+      }
+    }
+  ],
+  "collision_objects": [
     {
-      "type"  : "collision_object",
       "pos"   : [8, 8],
       "size"  : [8, 8],
       "angle" : 0.0
     },
     {
-      "type"  : "collision_object",
       "pos"   : [8, -8],
       "size"  : [8, 8],
       "angle" : 0.0
     },
     {
-      "type"  : "collision_object",
       "pos"   : [-8, 8],
       "size"  : [8, 8],
       "angle" : 0.0
     },
     {
-      "type"  : "collision_object",
       "pos"   : [-8, -8],
       "size"  : [8, 8],
       "angle" : 0.0
