@@ -23,47 +23,54 @@ var Players = (function() {
 
     Teams.addPlayer(tid, pid);
 
-    var base_id = Game.spawnEntity(
-      'base',
-      {
+    MessageHub.sendMessage({
+      to: GAME_ID,
+      from: pid,
+      type: MessageTypes.SPAWN,
+      name: 'base',
+      params: {
         pid: pid,
         pos: starting_def.pos,
         angle: starting_def.angle,
-      }
-    );
-    var base_entity = GetEntity(base_id);
+      },
+    })
 
+    var base_dir = [
+      Math.sin(starting_def.angle),
+      Math.cos(starting_def.angle),
+    ];
     var retreat_location = vecAdd(
-      base_entity.getPosition2(),
-      vecMul(base_entity.getDirection(), 3)
+      starting_def.pos,
+      vecMul(base_dir, 3)
     );
 
-    var unit_id = Game.spawnEntity(
-      'melee_unit',
-      {
+    MessageHub.sendMessage({
+      to: GAME_ID,
+      from: pid,
+      type: MessageTypes.SPAWN,
+      name: 'melee_unit',
+      params: {
         pid: pid,
         pos: retreat_location,
-        angle: base_entity.getAngle(),
-      });
-      var player = {
-        retreat_location: retreat_location,
-        units: {
-          base: base_id,
-          melee_unit: unit_id,
-        },
-        requisition: def.starting_requisition,
+        angle: starting_def.angle,
+      },
+    });
+    var player = {
+      retreat_location: retreat_location,
+      units: {},
+      requisition: def.starting_requisition,
 
-        getRetreatLocation: function () {
-          return retreat_location;
-        },
-        getRequisition: function () {
-          return this.requisition;
-        },
-        addRequisition: function (amount) {
-          this.requisition += amount;
-        },
-      };
-      players[pid] = player;
+      getRetreatLocation: function () {
+        return retreat_location;
+      },
+      getRequisition: function () {
+        return this.requisition;
+      },
+      addRequisition: function (amount) {
+        this.requisition += amount;
+      },
+    };
+    players[pid] = player;
   };
 
   PlayersAPI.playerUpdate = function (player) {
@@ -76,6 +83,7 @@ var Players = (function() {
   };
 
   PlayersAPI.updateAllPlayers = function () {
+    // TODO(zack): update players.units here
     for (var pid in players) {
       PlayersAPI.playerUpdate(players[pid]);
     }

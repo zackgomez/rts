@@ -285,25 +285,21 @@ void Game::update(float dt) {
     }
   }
 
-  // Update javascript, passing player input
-  updateJS(js_player_inputs);
-
   // Integrate positions before updating entities, to ensure the render displays
   // extrapolated information.  This is safe and provides a better experience.
   for (auto entity : entities) {
     entity->integrate(dt);
   }
 
-  // Update entities
-  for (auto entity : entities) {
-    entity->update(dt);
-  }
-  // Resolve entities
+  // Update javascript, passing player input
+  updateJS(js_player_inputs, dt);
+
+  // Update positions for pathfinding, etc
   for (auto entity : entities) {
     entity->resolve(dt);
   }
-  // TODO: swap old/new entity states
 
+  // TODO(zack): move to javascript
   // Remove deadEnts
   for (auto eid : deadEntities_) {
     script_.destroyEntity(eid);
@@ -318,6 +314,8 @@ void Game::update(float dt) {
   for (auto it : Renderer::get()->getEntities()) {
     if (it.second->hasProperty(GameEntity::P_GAMEENTITY)) {
       entities.push_back((GameEntity *)it.second);
+      // clear collision velocity
+      it.second->setBumpVel(glm::vec3(0.f));
     }
   }
 
@@ -509,15 +507,18 @@ const VisibilityMap* Game::getVisibilityMap(id_t pid) const {
   return it->second;
 }
 
-void Game::updateJS(v8::Handle<v8::Array> player_inputs) {
+void Game::updateJS(v8::Handle<v8::Array> player_inputs, float dt) {
   using namespace v8;
   auto script = getScript();
   HandleScope scope(script->getIsolate());
   TryCatch try_catch;
   auto global = script->getGlobal();
 
-  const int argc = 1;
-  Handle<Value> argv[] = { player_inputs };
+  const int argc = 2;
+  Handle<Value> argv[] = {
+    player_inputs,
+    Integer::New(dt),
+  };
 
   Handle<Object> message_hub = Handle<Object>::Cast(
     global->Get(String::New("Game")));

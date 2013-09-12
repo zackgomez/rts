@@ -44,29 +44,26 @@ id_t GameEntity::getTeamID() const {
   return Game::get()->getPlayer(playerID_)->getTeamID();
 }
 
-void GameEntity::update(float dt) {
-  setBumpVel(glm::vec3(0.f));
-  setSpeed(0.f);
-  warp_ = false;
-}
-
 float GameEntity::distanceToEntity(const GameEntity *e) const {
   return e->distanceFromPoint(getPosition2());
 }
 
 void GameEntity::remainStationary() {
+  warp_ = false;
   pathQueue_ = std::vector<glm::vec3>();
   lastTargetPos_ = glm::vec2(HUGE_VAL);
   setSpeed(0.f);
 }
 
 void GameEntity::turnTowards(const glm::vec2 &targetPos) {
+  warp_ = false;
   setAngle(angleToTarget(targetPos));
   lastTargetPos_ = glm::vec2(HUGE_VAL);
   setSpeed(0.f);
 }
 
 void GameEntity::moveTowards(const glm::vec2 &targetPos) {
+  warp_ = false;
   if (hasProperty(P_COLLIDABLE)) {
     if (targetPos != lastTargetPos_) {
       pathQueue_ = Game::get()->getMap()->getNavMesh()->getPath(
@@ -83,6 +80,9 @@ void GameEntity::moveTowards(const glm::vec2 &targetPos) {
 void GameEntity::warpPosition(const glm::vec2 &pos) {
   warp_ = true;
   warpTarget_ = pos;
+  setSpeed(0.f);
+  lastTargetPos_ = glm::vec2(HUGE_VAL);
+  pathQueue_ = std::vector<glm::vec3>();
 }
 
 void GameEntity::checksum(Checksum &chksum) const {

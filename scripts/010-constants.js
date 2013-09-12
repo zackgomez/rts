@@ -15,6 +15,8 @@ var NO_PLAYER = 0;
 var NO_ENTITY = 0;
 var NO_TEAM = 0;
 
+var GAME_ID = 1;
+
 // --
 // -- Damage Types --
 // --
@@ -28,6 +30,7 @@ var MessageTypes = {
   HEAL: 'HEAL',
   CAPTURE: 'CAPTURE',
   ADD_DELTA: 'DELTA',
+  SPAWN: 'SPAWN',
 };
 
 var TargetingTypes = {
