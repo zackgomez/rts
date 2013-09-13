@@ -92,12 +92,11 @@ class Game {
  private:
   // Returns true if all the players have submitted input for the current tick_
   bool updatePlayers();
-  void updateJS(v8::Handle<v8::Array> player_inputs, float dt);
-  void clearJSMessages();
   TickChecksum checksum();
   void pause();
   void unpause();
 
+  void updateJS(v8::Handle<v8::Array> player_inputs, float dt);
   // Load the victory points from JS.
   void renderJS();
 

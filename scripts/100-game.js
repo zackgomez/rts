@@ -108,7 +108,6 @@ var Game = function () {
 
     var players = Players.getPlayers();
     for (var pid in players) {
-      Log('player units', eids_by_player[pid]);
       players[pid].units = must_have_idx(eids_by_player, pid);
     }
 
