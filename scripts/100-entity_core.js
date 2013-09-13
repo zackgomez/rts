@@ -451,7 +451,6 @@ function entityHandleMessage(entity, msg) {
 // Handles an order from the player.  Called before update/resolve.
 // Intentions only.
 function entityHandleOrder(entity, order) {
-  Log('got order', JSON.stringify(order));
   var type = order.type;
   // Ignore orders when retreating
   if (entity.retreat_) {
