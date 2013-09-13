@@ -309,7 +309,12 @@ function entityResolve(entity, dt) {
   }
   if (entity.deltas.vp_rate) {
     var vps = dt * entity.deltas.vp_rate;
-    Teams.addVPs(entity.getTeamID(), vps, entity.getID());
+    MessageHub.sendMessage({
+      to: entity.getTeamID(),
+      from: entity.getID(),
+      type: MessageTypes.ADD_VPS,
+      amount: vps,
+    });
   }
 
   // Healing

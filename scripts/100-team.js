@@ -29,6 +29,22 @@ var Teams = (function() {
       this.players_.push(pid);
       return this;
     };
+
+    this.update = function (messages) {
+      var vps = 0;
+      for (var i = 0; i < messages.length; i++) {
+        var message = messages[i];
+        if (message.type === MessageTypes.ADD_VPS) {
+          vps += must_have_idx(message, 'amount');
+        } else {
+          invariant_violation(
+            'Unknown message of type \'' + message.type + '\' sent to team'
+          );
+        }
+      }
+
+      this.addVictoryPoints(vps);
+    };
   };
 
   var verifyTeam = function (tid) {
@@ -74,6 +90,10 @@ var Teams = (function() {
   exports.addRequisition = function(tid, amount, from_eid) {
     verifyTeam(tid);
     teams[tid].addRequisition(amount, from_eid);
+  };
+
+  exports.getTeams = function () {
+    return teams;
   };
 
   return exports;

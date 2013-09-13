@@ -30,7 +30,12 @@ var MessageTypes = {
   HEAL: 'HEAL',
   CAPTURE: 'CAPTURE',
   ADD_DELTA: 'DELTA',
+
+  // For the game
   SPAWN: 'SPAWN',
+
+  // For teams
+  ADD_VPS: 'ADD_VPS',
 };
 
 var TargetingTypes = {

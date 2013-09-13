@@ -29,6 +29,12 @@ var Game = function () {
         invariant_violation('Unable to handle message with type ' + type);
       }
     }
+
+    var teams = Teams.getTeams();
+    for (var tid in teams) {
+      var messages = MessageHub.getMessagesForEntity(tid);
+      teams[tid].update(messages);
+    }
   };
 
   exports.getEntity = function (eid) {
