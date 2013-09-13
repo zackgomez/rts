@@ -103,7 +103,7 @@ void Actor::updateUIInfo() {
   TryCatch try_catch;
   auto global = script->getGlobal();
   const int argc = 1;
-  Handle<Value> argv[argc] = {script->getEntity(getID())};
+  Handle<Value> argv[argc] = {Integer::New(getID())};
 
   Handle<Value> ret =
     Handle<Function>::Cast(global->Get(String::New("entityGetUIInfo")))
@@ -183,7 +183,7 @@ void Actor::updateActions() {
   TryCatch try_catch;
   auto global = script->getGlobal();
   const int argc = 1;
-  Handle<Value> argv[argc] = {script->getEntity(getID())};
+  Handle<Value> argv[argc] = {Integer::New(getID())};
 
   Handle<Value> ret =
     Handle<Function>::Cast(global->Get(String::New("entityGetActions")))

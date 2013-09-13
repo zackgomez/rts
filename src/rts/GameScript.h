@@ -29,7 +29,6 @@ public:
 
   void addWrapper(id_t eid, v8::Persistent<v8::Object> wrapper);
   void destroyEntity(id_t eid);
-  v8::Handle<v8::Object> getEntity(id_t eid);
   v8::Handle<v8::Object> getGlobal();
 
   v8::Handle<v8::ObjectTemplate> getEntityTemplate() const {
@@ -47,8 +46,6 @@ private:
   v8::Isolate *isolate_;
 
   v8::Persistent<v8::ObjectTemplate> entityTemplate_;
-
-  std::unordered_map<id_t, v8::Persistent<v8::Object>> scriptObjects_;
 
   void loadScripts();
 };

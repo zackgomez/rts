@@ -48,6 +48,11 @@ var ActionStates = {
   UNAVAILABLE: 3,
 };
 
+var EntityStatus = {
+  NORMAL: 0,
+  DEAD: 1,
+};
+
 // --
 // -- Utility --
 // --

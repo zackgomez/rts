@@ -75,7 +75,7 @@ var Players = (function() {
 
   PlayersAPI.playerUpdate = function (player) {
     for (var entity_name in player.units) {
-      var entity = GetEntity(player.units[entity_name]);
+      var entity = Game.getEntity(player.units[entity_name]);
       if (!entity) {
         delete player.units[entity_name];
       }

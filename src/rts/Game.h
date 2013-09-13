@@ -93,8 +93,6 @@ class Game {
   // Returns true if all the players have submitted input for the current tick_
   bool updatePlayers();
   void updateJS(v8::Handle<v8::Array> player_inputs, float dt);
-  // This just updates JS player info, game data related rather than action related
-  void updateJSPlayers();
   void clearJSMessages();
   TickChecksum checksum();
   void pause();

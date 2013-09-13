@@ -31,6 +31,10 @@ var Game = function () {
     }
   };
 
+  exports.getEntity = function (eid) {
+    return entities[eid];
+  };
+
   exports.init = function (map_def, player_defs) {
     // Spawn map entities
     for (var i = 0; i < map_def.entities.length; i++) {
@@ -65,7 +69,7 @@ var Game = function () {
       // send to each ordered entity
       var eid_arr = must_have_idx(input, 'entity');
       for (var j = 0; j < eid_arr.length; j++) {
-        var entity = GetEntity(eid_arr[j]);
+        var entity = Game.getEntity(eid_arr[j]);
         invariant(
           must_have_idx(input, 'from_pid') === entity.getPlayerID(),
           'can only recieve input from controlling player'
@@ -86,13 +90,17 @@ var Game = function () {
     // when the time comes
     // 'resolve' entities
     for (var eid in entities) {
-      entityResolve(entities[eid], dt);
+      var status = entityResolve(entities[eid], dt);
+      if (status === EntityStatus.DEAD) {
+        DestroyEntity(eid);
+        delete entities[eid];
+      }
     }
 
-    // spawn/destroy entities, handle resources, etc
+    // spawn entities, handle resources, etc
     handleMessages();
 
-    // TODO update players
+    Players.updateAllPlayers();
   };
 
   exports.render = function () {
