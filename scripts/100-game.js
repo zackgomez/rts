@@ -89,18 +89,31 @@ var Game = function () {
     // TODO(zack): remove this, and replace with 'state creation'
     // when the time comes
     // 'resolve' entities
+    var eids_by_player = {};
     for (var eid in entities) {
-      var status = entityResolve(entities[eid], dt);
+      var entity = entities[eid];
+      var status = entityResolve(entity, dt);
       if (status === EntityStatus.DEAD) {
         DestroyEntity(eid);
         delete entities[eid];
+        continue;
       }
+
+      var pid = entity.getPlayerID();
+      if (!eids_by_player[pid]) {
+        eids_by_player[pid] = {};
+      }
+      eids_by_player[pid][entity.getName()] = eid;
+    }
+
+    var players = Players.getPlayers();
+    for (var pid in players) {
+      Log('player units', eids_by_player[pid]);
+      players[pid].units = must_have_idx(eids_by_player, pid);
     }
 
     // spawn entities, handle resources, etc
     handleMessages();
-
-    Players.updateAllPlayers();
   };
 
   exports.render = function () {

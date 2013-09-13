@@ -73,22 +73,6 @@ var Players = (function() {
     players[pid] = player;
   };
 
-  PlayersAPI.playerUpdate = function (player) {
-    for (var entity_name in player.units) {
-      var entity = Game.getEntity(player.units[entity_name]);
-      if (!entity) {
-        delete player.units[entity_name];
-      }
-    }
-  };
-
-  PlayersAPI.updateAllPlayers = function () {
-    // TODO(zack): update players.units here
-    for (var pid in players) {
-      PlayersAPI.playerUpdate(players[pid]);
-    }
-  };
-
   // Returns player -> requisition map
   PlayersAPI.getRequisitionCounts = function () {
     var ret = [];
@@ -99,6 +83,11 @@ var Players = (function() {
       });
     }
     return ret;
+  };
+
+  // LOL TODO(zack): turn this module into just the player class
+  PlayersAPI.getPlayers = function () {
+    return players;
   };
 
   return PlayersAPI;
