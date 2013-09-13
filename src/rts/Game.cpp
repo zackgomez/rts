@@ -517,7 +517,7 @@ void Game::updateJS(v8::Handle<v8::Array> player_inputs, float dt) {
   const int argc = 2;
   Handle<Value> argv[] = {
     player_inputs,
-    Integer::New(dt),
+    Number::New(dt),
   };
 
   Handle<Object> message_hub = Handle<Object>::Cast(
