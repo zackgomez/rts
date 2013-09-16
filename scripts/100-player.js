@@ -36,8 +36,8 @@ var Players = (function() {
     })
 
     var base_dir = [
-      Math.sin(starting_def.angle),
-      Math.cos(starting_def.angle),
+      Math.cos(starting_def.angle * Math.PI / 180),
+      Math.sin(starting_def.angle * Math.PI / 180),
     ];
     var retreat_location = vecAdd(
       starting_def.pos,
