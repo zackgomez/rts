@@ -16,17 +16,21 @@ function makeProductionEffect(params) {
       Log('WTF producing a unit that already exists?!');
     }
 
+    Log('spawning', prod_name);
+
     // Spawn
-    var eid = Game.spawnEntity(
-      prod_name,
-      {
+    MessageHub.sendMessage({
+      to: GAME_ID,
+      from: entity.getID(),
+      type: MessageTypes.SPAWN,
+      name: prod_name,
+      params: {
         pid: entity.getPlayerID(),
         pos: vecAdd(entity.getPosition2(), entity.getDirection()),
         angle: entity.getAngle(),
-      });
+      },
+    });
 
-    // Record
-    player.units[prod_name] = eid;
     return false;
   };
 }

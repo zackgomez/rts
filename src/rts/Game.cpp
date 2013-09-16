@@ -285,40 +285,27 @@ void Game::update(float dt) {
     }
   }
 
-  // Update javascript, passing player input
-  updateJS(js_player_inputs);
-
   // Integrate positions before updating entities, to ensure the render displays
   // extrapolated information.  This is safe and provides a better experience.
   for (auto entity : entities) {
     entity->integrate(dt);
   }
 
-  // Update entities
-  for (auto entity : entities) {
-    entity->update(dt);
-  }
-  // Resolve entities
-  for (auto entity : entities) {
-    entity->resolve(dt);
-  }
-  // TODO: swap old/new entity states
-
-  // Remove deadEnts
-  for (auto eid : deadEntities_) {
-    script_.destroyEntity(eid);
-    Renderer::get()->removeEntity(eid);
-  }
-  deadEntities_.clear();
-
-  // Update players
-  updateJSPlayers();
+  // Update javascript, passing player input
+  updateJS(js_player_inputs, dt);
 
   entities.clear();
   for (auto it : Renderer::get()->getEntities()) {
     if (it.second->hasProperty(GameEntity::P_GAMEENTITY)) {
       entities.push_back((GameEntity *)it.second);
+      // clear collision velocity
+      it.second->setBumpVel(glm::vec3(0.f));
     }
+  }
+
+  // Update positions for pathfinding, etc
+  for (auto entity : entities) {
+    entity->resolve(dt);
   }
 
   // Collision detection
@@ -401,7 +388,7 @@ void Game::addAction(id_t pid, const PlayerAction &act) {
 }
 
 void Game::destroyEntity(id_t eid) {
-  deadEntities_.insert(eid);
+  Renderer::get()->removeEntity(eid);
 }
 
 GameEntity * Game::getEntity(id_t eid) {
@@ -509,15 +496,18 @@ const VisibilityMap* Game::getVisibilityMap(id_t pid) const {
   return it->second;
 }
 
-void Game::updateJS(v8::Handle<v8::Array> player_inputs) {
+void Game::updateJS(v8::Handle<v8::Array> player_inputs, float dt) {
   using namespace v8;
   auto script = getScript();
   HandleScope scope(script->getIsolate());
   TryCatch try_catch;
   auto global = script->getGlobal();
 
-  const int argc = 1;
-  Handle<Value> argv[] = { player_inputs };
+  const int argc = 2;
+  Handle<Value> argv[] = {
+    player_inputs,
+    Number::New(dt),
+  };
 
   Handle<Object> message_hub = Handle<Object>::Cast(
     global->Get(String::New("Game")));
@@ -525,24 +515,6 @@ void Game::updateJS(v8::Handle<v8::Array> player_inputs) {
     Handle<Function>::Cast(message_hub->Get(String::New("update")))
     ->Call(global, argc, argv);
   checkJSResult(ret, try_catch, "update:");
-}
-
-void Game::updateJSPlayers() {
-  using namespace v8;
-  auto script = getScript();
-  HandleScope scope(script->getIsolate());
-  TryCatch try_catch;
-  auto global = script->getGlobal();
-
-  const int argc = 0;
-  Handle<Value> *argv = nullptr;
-
-  Handle<Object> playersModule = Handle<Object>::Cast(
-    global->Get(String::New("Players")));
-  Handle<Value> ret =
-    Handle<Function>::Cast(playersModule->Get(String::New("updateAllPlayers")))
-    ->Call(global, argc, argv);
-  checkJSResult(ret, try_catch, "updateAllPlayers:");
 }
 
 void Game::pause() {

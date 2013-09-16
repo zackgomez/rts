@@ -15,6 +15,8 @@ var NO_PLAYER = 0;
 var NO_ENTITY = 0;
 var NO_TEAM = 0;
 
+var GAME_ID = 1;
+
 // --
 // -- Damage Types --
 // --
@@ -28,6 +30,13 @@ var MessageTypes = {
   HEAL: 'HEAL',
   CAPTURE: 'CAPTURE',
   ADD_DELTA: 'DELTA',
+
+  // For the game
+  SPAWN: 'SPAWN',
+
+  // For teams
+  ADD_VPS: 'ADD_VPS',
+  ADD_REQUISITION: 'ADD_REQUISITION',
 };
 
 var TargetingTypes = {
@@ -43,6 +52,11 @@ var ActionStates = {
   ENABLED: 1,
   COOLDOWN: 2,
   UNAVAILABLE: 3,
+};
+
+var EntityStatus = {
+  NORMAL: 0,
+  DEAD: 1,
 };
 
 // --

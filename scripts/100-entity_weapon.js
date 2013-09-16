@@ -119,17 +119,23 @@ var Weapons = (function () {
           damage_type: this.params.damage_type,
           health_target: this.params.health_target,
           on_hit_cooldowns: this.params.on_hit_cooldowns,
-        };
-        Game.spawnEntity('projectile', params);
-      } else {
-        MessageHub.sendMessage({
-          to: target_id,
-          from: entity.getID(),
-          type: MessageTypes.ATTACK,
-          damage: damage,
-          damage_type: this.params.damage_type,
-          health_target: this.params.health_target,
-          on_hit_cooldowns: this.params.on_hit_cooldowns,
+				};
+				MessageHub.sendMessage({
+					to: GAME_ID,
+					from: this.getID(),
+					type: MessageTypes.SPAWN,
+					name: 'projectile',
+					params: params,
+				});
+			} else {
+				MessageHub.sendMessage({
+					to: target_id,
+					from: entity.getID(),
+					type: MessageTypes.ATTACK,
+					damage: damage,
+					damage_type: this.params.damage_type,
+					health_target: this.params.health_target,
+					on_hit_cooldowns: this.params.on_hit_cooldowns,
         });
       }
     };

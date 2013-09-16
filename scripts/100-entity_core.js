@@ -133,7 +133,9 @@ function entityInit(entity, name, params) {
   // If the callback returns true, it will continue passing entities until
   // there are no more
   entity.getNearbyEntities = function (range, callback) {
-    GetNearbyEntities(entity.getPosition2(), range, callback);
+    GetNearbyEntities(entity.getPosition2(), range, function (eid) {
+      return callback(Game.getEntity(eid));
+    });
   };
 
   // @return Entity object or null if no target
@@ -149,7 +151,7 @@ function entityInit(entity, name, params) {
 
     // Default to previous target
     if (previous_target_id) {
-      var previous_target = GetEntity(previous_target_id);
+      var previous_target = Game.getEntity(previous_target_id);
       if (previous_target && is_viable_target(previous_target)) {
         return previous_target;
       }
@@ -303,11 +305,21 @@ function entityResolve(entity, dt) {
   // Resources
   if (entity.deltas.req_rate) {
     var req = dt * entity.deltas.req_rate;
-    Teams.addRequisition(entity.getTeamID(), req, entity.getID());
+    MessageHub.sendMessage({
+      to: entity.getTeamID(),
+      from: entity.getID(),
+      type: MessageTypes.ADD_REQUISITION,
+      amount: req,
+    });
   }
   if (entity.deltas.vp_rate) {
     var vps = dt * entity.deltas.vp_rate;
-    Teams.addVPs(entity.getTeamID(), vps, entity.getID());
+    MessageHub.sendMessage({
+      to: entity.getTeamID(),
+      from: entity.getID(),
+      type: MessageTypes.ADD_VPS,
+      amount: vps,
+    });
   }
 
   // Healing
@@ -353,7 +365,7 @@ function entityResolve(entity, dt) {
       }
     });
     if (!alive) {
-      entity.destroy();
+      return EntityStatus.DEAD;
     }
   }
 
@@ -389,6 +401,8 @@ function entityResolve(entity, dt) {
 
   // Resolved!
   entityResetDeltas(entity);
+
+  return EntityStatus.NORMAL;
 }
 
 // Called each time an entity receives a mesage from another entity.  You should
@@ -399,7 +413,7 @@ function entityHandleMessage(entity, msg) {
       Log('Uncappable entity received capture message');
       return;
     }
-    var from_entity = GetEntity(msg.from);
+    var from_entity = Game.getEntity(msg.from);
     if (!from_entity) {
       Log('Received capture message from missing entity', msg.from);
       return;
@@ -551,7 +565,9 @@ function entityHandleAction(entity, action_name, args) {
 
 // Returns an array of actions and their associated state.  This is
 // used by the UI to display the bottom bar.
-function entityGetActions(entity) {
+function entityGetActions(eid) {
+  var entity = Game.getEntity(eid);
+  invariant(entity, 'could not find entity for entityGetActions');
   if (!entity.actions_) {
     return [];
   }
@@ -580,7 +596,10 @@ function entityGetActions(entity) {
 
 // Returns info about this entity, like health or mana.
 // It is used by the UI to display this information
-function entityGetUIInfo(entity) {
+function entityGetUIInfo(eid) {
+  var entity = Game.getEntity(eid);
+  invariant(entity, 'could not find entity for entityGetUIInfo');
+
   var ui_info = {};
   if (entity.hasProperty(P_CAPPABLE)) {
     if (entity.cappingPlayerID_) {

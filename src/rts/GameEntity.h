@@ -60,11 +60,8 @@ class GameEntity : public ModelEntity {
     sight_ = sight;
   }
 
-  // Sets 'intention' like velocity, etc
-  virtual void update(float dt);
   virtual void collide(const GameEntity *other, float dt) { }
-  // Basically, integrate/apply the results of update
-  // useful so that order entity updates doesn't matter
+  // TODO(zack): remove this function
   virtual void resolve(float dt) { }
 
   virtual void checksum(Checksum &chksum) const;

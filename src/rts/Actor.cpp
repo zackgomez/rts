@@ -68,19 +68,6 @@ void Actor::collide(const GameEntity *collider, float dt) {
 }
 
 void Actor::resolve(float dt) {
-  using namespace v8;
-  auto *script = Game::get()->getScript();
-  HandleScope scope(script->getIsolate());
-  Handle<Object> global = script->getGlobal();
-  TryCatch try_catch;
-
-  const int argc = 2;
-  Handle<Value> argv[argc] = {script->getEntity(getID()), Number::New(dt)};
-  Handle<Value> result =
-    Handle<Function>::Cast(global->Get(String::New("entityResolve")))
-    ->Call(global, argc, argv);
-  checkJSResult(result, try_catch, "entityResolve:");
-
 	if (hasProperty(P_MOBILE) && warp_) {
 		setPosition(warpTarget_);
 	} else if (hasProperty(P_MOBILE) && !pathQueue_.empty() && getMaxSpeed() > 0) {
@@ -103,25 +90,6 @@ void Actor::resolve(float dt) {
   updateActions();
 }
 
-void Actor::update(float dt) {
-  GameEntity::update(dt);
-
-  using namespace v8;
-  auto script = Game::get()->getScript();
-  HandleScope scope(script->getIsolate());
-  TryCatch try_catch;
-
-  auto global = script->getGlobal();
-  const int argc = 2;
-
-  Handle<Value> argv[] = {script->getEntity(getID()), Number::New(dt)};
-
-  Handle<Value> result =
-    Handle<Function>::Cast(global->Get(String::New("entityUpdate")))
-    ->Call(global, argc, argv);
-  checkJSResult(result, try_catch, "entityUpdate:");
-}
-
 void Actor::resetUIInfo() {
   uiInfo_ = Actor::UIInfo();
 }
@@ -135,7 +103,7 @@ void Actor::updateUIInfo() {
   TryCatch try_catch;
   auto global = script->getGlobal();
   const int argc = 1;
-  Handle<Value> argv[argc] = {script->getEntity(getID())};
+  Handle<Value> argv[argc] = {Integer::New(getID())};
 
   Handle<Value> ret =
     Handle<Function>::Cast(global->Get(String::New("entityGetUIInfo")))
@@ -215,7 +183,7 @@ void Actor::updateActions() {
   TryCatch try_catch;
   auto global = script->getGlobal();
   const int argc = 1;
-  Handle<Value> argv[argc] = {script->getEntity(getID())};
+  Handle<Value> argv[argc] = {Integer::New(getID())};
 
   Handle<Value> ret =
     Handle<Function>::Cast(global->Get(String::New("entityGetActions")))

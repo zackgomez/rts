@@ -30,19 +30,6 @@ static Handle<Value> jsGameRandom(const Arguments &args) {
   return Number::New(Game::get()->gameRandom());
 }
 
-static Handle<Value> jsGetEntity(const Arguments &args) {
-  if (args.Length() < 1) return Undefined();
-  HandleScope scope(args.GetIsolate());
-
-  auto script = Game::get()->getScript();
-
-  GameEntity *e = Game::get()->getEntity(args[0]->IntegerValue());
-  if (!e) {
-    return Null();
-  }
-  return scope.Close(script->getEntity(e->getID()));
-}
-
 static Handle<Value> jsSpawnEntity(const Arguments &args) {
   if (args.Length() < 2) return Undefined();
   HandleScope scope(args.GetIsolate());
@@ -56,13 +43,20 @@ static Handle<Value> jsSpawnEntity(const Arguments &args) {
   invariant(e, "couldn't allocate new entity");
   Renderer::get()->spawnEntity(e);
 
-  Persistent<Object> wrapper = Persistent<Object>::New(
-      args.GetIsolate(), script->getEntityTemplate()->NewInstance());
+  Handle<Object> wrapper = script->getEntityTemplate()->NewInstance();
   wrapper->SetInternalField(0, External::New(e));
 
-  script->addWrapper(eid, wrapper);
-
   return scope.Close(wrapper);
+}
+
+static Handle<Value> jsDestroyEntity(const Arguments &args) {
+  if (args.Length() < 2) return Undefined();
+  HandleScope scope(args.GetIsolate());
+
+  id_t eid = args[0]->IntegerValue();
+  Game::get()->destroyEntity(eid);
+
+  return Undefined();
 }
 
 static Handle<Value> jsLog(const Arguments &args) {
@@ -104,9 +98,8 @@ static Handle<Value> jsGetNearbyEntities(const Arguments &args) {
         return true;
       }
       TryCatch try_catch;
-      auto jsEntity = Game::get()->getScript()->getEntity(e->getID());
       const int argc = 1;
-      Handle<Value> argv[argc] = {jsEntity};
+      Handle<Value> argv[argc] = {Integer::New(e->getID())};
       auto ret = callback->Call(args.Holder(), argc, argv);
       checkJSResult(ret, try_catch, "getNearbyEntities callback:");
       return ret->BooleanValue();
@@ -297,15 +290,6 @@ static Handle<Value> entityOnEvent(const Arguments &args) {
   return Undefined();
 }
 
-static Handle<Value> entityDestroy(const Arguments &args) {
-  HandleScope scope(args.GetIsolate());
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  Actor *actor = static_cast<Actor *>(wrap->Value());
-  Game::get()->destroyEntity(actor->getID());
-  return Undefined();
-}
-
 static Handle<Value> entityHasProperty(const Arguments &args) {
   if (args.Length() < 1) return Undefined();
 
@@ -463,9 +447,6 @@ GameScript::~GameScript() {
     Context::Scope context_scope(isolate_, context_);
 
     entityTemplate_.Dispose();
-    for (auto pair : scriptObjects_) {
-      pair.second.Dispose();
-    }
     context_.Dispose(isolate_);
   }
   isolate_->Exit();
@@ -490,11 +471,11 @@ void GameScript::init() {
       String::New("GameRandom"),
       FunctionTemplate::New(jsGameRandom));
   global->Set(
-      String::New("GetEntity"),
-      FunctionTemplate::New(jsGetEntity));
-  global->Set(
       String::New("SpawnEntity"),
       FunctionTemplate::New(jsSpawnEntity));
+  global->Set(
+      String::New("DestroyEntity"),
+      FunctionTemplate::New(jsDestroyEntity));
   global->Set(
       String::New("GetNearbyEntities"),
       FunctionTemplate::New(jsGetNearbyEntities));
@@ -564,9 +545,6 @@ void GameScript::init() {
   entityTemplate_->Set(
       String::New("warpPosition"),
       FunctionTemplate::New(entityWarpPosition));
-  entityTemplate_->Set(
-      String::New("destroy"),
-      FunctionTemplate::New(entityDestroy));
 
   entityTemplate_->Set(
       String::New("containsPoint"),
@@ -615,31 +593,8 @@ void GameScript::loadScripts() {
   }
 }
 
-Handle<Object> GameScript::getEntity(id_t eid) {
-  auto it = scriptObjects_.find(eid);
-  invariant(it != scriptObjects_.end(), "no wrapper found for entity");
-
-  return it->second;
-}
-
 Handle<Object> GameScript::getGlobal() {
   return context_->Global();
-}
-
-void GameScript::addWrapper(
-    id_t eid,
-    Persistent<Object> wrapper) {
-  scriptObjects_[eid] = wrapper;
-}
-
-void GameScript::destroyEntity(id_t id) {
-  HandleScope handle_scope(isolate_);
-  Context::Scope context_scope(isolate_, context_);
-
-  auto it = scriptObjects_.find(id);
-  invariant(it != scriptObjects_.end(), "destroying entity without wrapper");
-  it->second.Dispose();
-  scriptObjects_.erase(it);
 }
 
 Handle<Value> GameScript::jsonToJS(const Json::Value &json) const {
