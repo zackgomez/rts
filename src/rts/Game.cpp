@@ -52,7 +52,6 @@ Game::Game(Map *map, const std::vector<Player *> &players)
   random_ = new GameRandom(45); // TODO(zack): pass in seed
   for (auto player : players) {
     player->setGame(this);
-    teams_.insert(player->getTeamID());
     // Set up visibility map
     auto func = std::bind(&Player::visibleEntity, player, std::placeholders::_1);
     VisibilityMap *vismap = new VisibilityMap(
@@ -70,13 +69,6 @@ Game::Game(Map *map, const std::vector<Player *> &players)
   invariant(
       players_.size() <= map_->getMaxPlayers(),
       "too many players for map");
-
-  // Team init
-  invariant(teams_.size() == 2, "game only supports exactly 2 teams");
-  for (id_t tid : teams_) {
-    assertTid(tid);
-    victoryPoints_[tid] = 0.f;
-  }
 
   assert(!instance_);
   instance_ = this;

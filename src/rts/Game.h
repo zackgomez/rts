@@ -104,7 +104,6 @@ class Game {
 
   Map *map_;
   std::vector<Player *> players_;
-  std::set<id_t> teams_;
   // pid => float
   std::map<id_t, float> requisition_;
   // tid => float
@@ -121,9 +120,6 @@ class Game {
   // checksums_[3] == checksum at the end of tick 2/beginning of tick 3
   std::vector<TickChecksum> checksums_;
   Checksum actionChecksummer_;
-
-  // Entities that need removal at the end of a tick
-  std::set<id_t> deadEntities_;
 
   bool paused_;
   bool running_;
