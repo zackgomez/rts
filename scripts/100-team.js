@@ -8,25 +8,15 @@ var Teams = (function() {
   var teams = {};
 
   var Team = function (tid) {
-    this.tid_ = tid;
-    this.players_ = [];
-    this.victoryPoints_ = 0;
+    var players = [];
+    var victoryPoints = 0;
 
     this.getVictoryPoints = function () {
-      return this.victoryPoints_;
+      return victoryPoints;
     }
 
-    this.addVictoryPoints = function (vps, from_eid) {
-      this.victoryPoints_ += vps;
-      return this;
-    };
-    this.addRequisition = function (req, source_id) {
-      for (var i = 0; i < this.players_.length; i++) {
-        Players.getPlayer(this.players_[i]).addRequisition(req);
-      }
-    };
     this.addPlayer = function (pid) {
-      this.players_.push(pid);
+      players.push(pid);
       return this;
     };
 
@@ -36,6 +26,11 @@ var Teams = (function() {
         var message = messages[i];
         if (message.type === MessageTypes.ADD_VPS) {
           vps += must_have_idx(message, 'amount');
+        } else if (message.type === MessageTypes.ADD_REQUISITION) {
+          var req = must_have_idx(message, 'amount');
+          for (var i = 0; i < players.length; i++) {
+            Players.getPlayer(players[i]).addRequisition(req);
+          }
         } else {
           invariant_violation(
             'Unknown message of type \'' + message.type + '\' sent to team'
@@ -43,7 +38,7 @@ var Teams = (function() {
         }
       }
 
-      this.addVictoryPoints(vps);
+      victoryPoints += vps;
     };
   };
 

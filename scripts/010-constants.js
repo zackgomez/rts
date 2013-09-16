@@ -36,6 +36,7 @@ var MessageTypes = {
 
   // For teams
   ADD_VPS: 'ADD_VPS',
+  ADD_REQUISITION: 'ADD_REQUISITION',
 };
 
 var TargetingTypes = {

@@ -305,7 +305,12 @@ function entityResolve(entity, dt) {
   // Resources
   if (entity.deltas.req_rate) {
     var req = dt * entity.deltas.req_rate;
-    Teams.addRequisition(entity.getTeamID(), req, entity.getID());
+    MessageHub.sendMessage({
+      to: entity.getTeamID(),
+      from: entity.getID(),
+      type: MessageTypes.ADD_REQUISITION,
+      amount: req,
+    });
   }
   if (entity.deltas.vp_rate) {
     var vps = dt * entity.deltas.vp_rate;
