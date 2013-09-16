@@ -81,7 +81,7 @@ class Game {
   float getVictoryPoints(id_t tid) const;
   const VisibilityMap* getVisibilityMap(id_t pid) const;
 
-  typedef std::function<void(id_t pid, const Message&)> ChatListener;
+  typedef std::function<void(id_t pid, const Json::Value&)> ChatListener;
   void setChatListener(ChatListener cl) {
     chatListener_ = cl;
   }

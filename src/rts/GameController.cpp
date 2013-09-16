@@ -191,7 +191,7 @@ void GameController::onCreate() {
   });
   getUI()->addWidget("ui.widgets.chat", chatWidget);
 
-  Game::get()->setChatListener([&](id_t pid, const Message &m) {
+  Game::get()->setChatListener([&](id_t pid, const Json::Value &m) {
     const Player* from = Game::get()->getPlayer(pid);
     invariant(from, "No playyayayaya");
     std::stringstream ss;

@@ -6,7 +6,6 @@
 #include <glm/glm.hpp>
 #include "common/Collision.h"
 #include "common/Types.h"
-#include "rts/Message.h"
 #include "rts/ModelEntity.h"
 
 class Checksum;
