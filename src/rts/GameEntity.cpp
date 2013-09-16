@@ -30,9 +30,25 @@ GameEntity::GameEntity(
   if (params.isMember("angle")) {
     setAngle(params["angle"].asFloat());
   }
+
+  resetTexture();
 }
 
 GameEntity::~GameEntity() {
+}
+
+void GameEntity::resetTexture() {
+  const Player *player = Game::get()->getPlayer(getPlayerID());
+  auto color = player ? player->getColor() : ::vec3Param("global.defaultColor");
+  setColor(color);
+}
+
+Clock::time_point GameEntity::getLastTookDamage(uint32_t part) const {
+  auto it = lastTookDamage_.find(part);
+  if (it != lastTookDamage_.end()) {
+    return it->second;
+  }
+  return Clock::time_point();
 }
 
 id_t GameEntity::getTeamID() const {
@@ -46,6 +62,17 @@ id_t GameEntity::getTeamID() const {
 
 float GameEntity::distanceToEntity(const GameEntity *e) const {
   return e->distanceFromPoint(getPosition2());
+}
+
+void GameEntity::setPlayerID(id_t pid) {
+  assertPid(pid);
+  playerID_ = pid;
+
+  resetTexture();
+}
+
+void GameEntity::setTookDamage(int part_idx) {
+  lastTookDamage_[part_idx] = Clock::now();
 }
 
 void GameEntity::remainStationary() {

@@ -4,6 +4,7 @@
 #include <string>
 #include <queue>
 #include <glm/glm.hpp>
+#include "common/Clock.h"
 #include "common/Collision.h"
 #include "common/Types.h"
 #include "rts/ModelEntity.h"
@@ -58,6 +59,10 @@ class GameEntity : public ModelEntity {
   void setSight(float sight) {
     sight_ = sight;
   }
+  void setPlayerID(id_t pid);
+
+  Clock::time_point getLastTookDamage(uint32_t part) const;
+  void setTookDamage(int part_idx);
 
   virtual void collide(const GameEntity *other, float dt) { }
   // TODO(zack): remove this function
@@ -97,7 +102,12 @@ class GameEntity : public ModelEntity {
   float maxSpeed_;
   float sight_;
 
+  // TODO(zack): kill this
+  std::map<uint32_t, Clock::time_point> lastTookDamage_;
+
   std::set<uint32_t> properties_;
+
+  void resetTexture();
 };
 };  // namespace rts
 

@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-#include "common/Clock.h"
 #include "rts/GameEntity.h"
 #include "rts/UIAction.h"
 
@@ -18,15 +17,6 @@ class Actor : public GameEntity {
   virtual void resolve(float dt) override final;
 
   const std::vector<UIAction> &getActions() const;
-
-  Clock::time_point getLastTookDamage(uint32_t part) const;
-  void setTookDamage(int part_idx);
-
-  // Used to change owners, e.g. for a capture
-  void setPlayerID(id_t pid) {
-    playerID_ = pid;
-    resetTexture();
-  }
 
   struct UIPartUpgrade {
     std::string part;
@@ -55,18 +45,12 @@ class Actor : public GameEntity {
   }
 
  protected:
-  glm::vec3 color_;
-  void resetTexture();
-
   UIInfo uiInfo_;
   void resetUIInfo();
   void updateUIInfo();
 
   std::vector<UIAction> actions_;
   void updateActions();
-
-  // Used by the render
-  std::map<uint32_t, Clock::time_point> lastTookDamage_;
 };
 };  // namespace rts
 
