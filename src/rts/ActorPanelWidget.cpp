@@ -1,7 +1,6 @@
 #include "rts/ActorPanelWidget.h"
 #include <sstream>
 #include "common/ParamReader.h"
-#include "rts/Actor.h"
 #include "rts/BorderWidget.h"
 #include "rts/FontManager.h"
 #include "rts/Game.h"

@@ -1,7 +1,6 @@
 #include "rts/EffectFactory.h"
 #include <sstream>
 #include "common/ParamReader.h"
-#include "rts/Actor.h"
 #include "rts/Renderer.h"
 #include "rts/EffectManager.h"
 #include "rts/FontManager.h"
@@ -163,7 +162,7 @@ RenderFunction makeEntityEffect(
     float amount = params->Get(String::New("amount"))->NumberValue();
     for (int i = 0; i < parts->Length(); i++) {
       int idx = parts->Get(i)->IntegerValue();
-      ((Actor *)entity)->setTookDamage(idx);
+      ((GameEntity *)entity)->setTookDamage(idx);
       parts_vec.push_back(idx);
       Renderer::get()->getEffectManager()->addEffect(makeOnDamageEffect(
             entity,

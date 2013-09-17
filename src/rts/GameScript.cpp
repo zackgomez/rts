@@ -2,7 +2,6 @@
 #include <v8.h>
 #include <sstream>
 #include "common/util.h"
-#include "rts/Actor.h"
 #include "rts/Game.h"
 #include "rts/GameController.h"
 #include "rts/Player.h"
@@ -39,7 +38,7 @@ static Handle<Value> jsSpawnEntity(const Arguments &args) {
   Json::Value params = script->jsToJSON(Handle<Object>::Cast(args[1]));
 
   id_t eid = Renderer::get()->newEntityID();
-  GameEntity *e = new Actor(eid, name, params);
+  GameEntity *e = new GameEntity(eid, name, params);
   invariant(e, "couldn't allocate new entity");
   Renderer::get()->spawnEntity(e);
 
@@ -296,8 +295,8 @@ static Handle<Value> entityHasProperty(const Arguments &args) {
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  Actor *actor = static_cast<Actor *>(wrap->Value());
-  return scope.Close(Boolean::New(actor->hasProperty(args[0]->Uint32Value())));
+  auto *game_entity = static_cast<GameEntity *>(wrap->Value());
+  return scope.Close(Boolean::New(game_entity->hasProperty(args[0]->Uint32Value())));
 }
 
 static Handle<Value> entityGetID(const Arguments &args) {
@@ -390,7 +389,7 @@ static Handle<Value> entitySetSight(const Arguments &args) {
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  Actor *e = static_cast<Actor *>(wrap->Value());
+  auto *e = static_cast<GameEntity *>(wrap->Value());
 
   e->setSight(args[0]->NumberValue());
   return Undefined();
@@ -428,7 +427,7 @@ static Handle<Value> entitySetPlayerID(const Arguments &args) {
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  Actor *e = static_cast<Actor *>(wrap->Value());
+  auto *e = static_cast<GameEntity *>(wrap->Value());
   auto player = Game::get()->getPlayer(args[0]->IntegerValue());
   if (player) {
     e->setPlayerID(player->getPlayerID());

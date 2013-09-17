@@ -7,7 +7,6 @@
 #include "common/ParamReader.h"
 #include "rts/ActionWidget.h"
 #include "rts/ActorPanelWidget.h"
-#include "rts/Actor.h"
 #include "rts/CommandWidget.h"
 #include "rts/Game.h"
 #include "rts/Input.h"
@@ -133,11 +132,11 @@ void GameController::onCreate() {
     if (selection.empty()) {
       return std::vector<UIAction>();
     }
-    auto *actor = (Actor *)Game::get()->getEntity(*selection.begin());
-    if (!actor) {
+    auto *entity = Game::get()->getEntity(*selection.begin());
+    if (!entity) {
       return std::vector<UIAction>();
     }
-    return actor->getActions();
+    return entity->getActions();
   };
   auto actionExecutor = [=](const UIAction &action) {
     handleUIAction(action);
@@ -148,14 +147,14 @@ void GameController::onCreate() {
 
   auto panelWidget = new ActorPanelWidget(
       "ui.widgets.actor_panel",
-      [=]() -> const Actor * {
+      [=]() -> const GameEntity * {
         const auto &sel = player_->getSelection();
         if (sel.empty()) {
           return nullptr;
         }
-        return (Actor *)Game::get()->getEntity(*sel.begin());
+        return Game::get()->getEntity(*sel.begin());
       },
-      [=](const Actor::UIPartUpgrade &upgrade) {
+      [=](const GameEntity::UIPartUpgrade &upgrade) {
         if (player_->getSelection().empty()) {
           return;
         }
@@ -312,7 +311,7 @@ void GameController::renderExtra(float dt) {
   std::vector<VPInfo> vp_infos;
   for (auto it : Renderer::get()->getEntities()) {
     if (it.second->hasProperty(GameEntity::P_ACTOR)) {
-      auto ui_info = ((Actor *)it.second)->getUIInfo();
+      auto ui_info = ((GameEntity *)it.second)->getUIInfo();
       if (ui_info.extra.isMember("vp_status")) {
         auto vp_status = ui_info.extra["vp_status"];
         auto owner_json = must_have_idx(vp_status, "owner");
@@ -797,7 +796,7 @@ void GameController::keyPress(const KeyEvent &ev) {
         Game::get()->addAction(player_->getPlayerID(), action);
       } else {
         auto sel = player_->getSelection().begin();
-        auto actor = (const Actor *)Game::get()->getEntity(*sel);
+        auto actor = Game::get()->getEntity(*sel);
         auto actions = actor->getActions();
         for (auto &action : actions) {
           if (action.hotkey && action.hotkey == tolower(key)) {
@@ -912,8 +911,8 @@ void GameController::highlightEntity(id_t eid) {
 void renderHealthBar(
     const glm::vec2 &center,
     const glm::vec2 &size,
-    const std::vector<Actor::UIPart> &parts,
-    const Actor *actor,
+    const std::vector<GameEntity::UIPart> &parts,
+    const GameEntity *actor,
     const Player *player) {
   float current_health = 0.f;
   float total_health = 0.f;
@@ -1026,7 +1025,7 @@ void renderEntity(
   ndc /= ndc.w;
   auto resolution = Renderer::get()->getResolution();
   auto coord = (glm::vec2(ndc.x, -ndc.y) / 2.f + 0.5f) * resolution;
-  auto actor = (const Actor *)e;
+  auto actor = (const GameEntity *)e;
   const auto ui_info = actor->getUIInfo();
 
   // Hotkey

@@ -8,6 +8,7 @@
 #include "common/Collision.h"
 #include "common/Types.h"
 #include "rts/ModelEntity.h"
+#include "rts/UIAction.h"
 
 class Checksum;
 
@@ -26,6 +27,29 @@ class GameEntity : public ModelEntity {
   static const uint32_t P_ACTOR = 913794634;
   static const uint32_t P_MOBILE = 1122719651;
   static const uint32_t P_UNIT = 118468328;
+
+  struct UIPartUpgrade {
+    std::string part;
+    std::string name;
+    // TODO resources and tooltip
+  };
+  struct UIPart {
+    std::string name;
+    glm::vec2 health;
+    std::string tooltip;
+    std::vector<UIPartUpgrade> upgrades;
+  };
+
+  struct UIInfo {
+    std::vector<UIPart> parts;
+    glm::vec2 mana;
+    bool retreat;
+    glm::vec2 capture;
+    id_t capture_pid;
+    char hotkey;
+    std::string minimap_icon;
+    Json::Value extra;
+  };
 
   virtual bool hasProperty(uint32_t property) const final override {
     if (property == P_GAMEENTITY) {
@@ -61,14 +85,20 @@ class GameEntity : public ModelEntity {
   }
   void setPlayerID(id_t pid);
 
-  Clock::time_point getLastTookDamage(uint32_t part) const;
   void setTookDamage(int part_idx);
+  Clock::time_point getLastTookDamage(uint32_t part) const;
+  const std::vector<UIAction> &getActions() const {
+    return actions_;
+  }
+  UIInfo getUIInfo() const {
+    return uiInfo_;
+  }
 
-  virtual void collide(const GameEntity *other, float dt) { }
+  void collide(const GameEntity *other, float dt);
   // TODO(zack): remove this function
-  virtual void resolve(float dt) { }
+  void resolve(float dt);
 
-  virtual void checksum(Checksum &chksum) const;
+  void checksum(Checksum &chksum) const;
 
   std::vector<glm::vec3> getPathNodes() const;
 
@@ -102,12 +132,16 @@ class GameEntity : public ModelEntity {
   float maxSpeed_;
   float sight_;
 
-  // TODO(zack): kill this
-  std::map<uint32_t, Clock::time_point> lastTookDamage_;
-
   std::set<uint32_t> properties_;
 
+  // TODO(zack): kill this
+  std::map<uint32_t, Clock::time_point> lastTookDamage_;
+  UIInfo uiInfo_;
+  std::vector<UIAction> actions_;
+
   void resetTexture();
+  void updateUIInfo();
+  void updateActions();
 };
 };  // namespace rts
 

@@ -7,7 +7,6 @@
 #include "common/Checksum.h"
 #include "common/ParamReader.h"
 #include "common/util.h"
-#include "rts/Actor.h"
 #include "rts/GameEntity.h"
 #include "rts/Map.h"
 #include "rts/Player.h"

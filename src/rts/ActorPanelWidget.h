@@ -1,7 +1,7 @@
 #pragma once
 #include "rts/Widgets.h"
 #include "common/Types.h"
-#include "rts/Actor.h"
+#include "rts/GameEntity.h"
 #include "rts/UIAction.h"
 
 namespace rts {
@@ -10,8 +10,8 @@ class BorderWidget;
 
 class ActorPanelWidget : public UIWidget {
  public:
-  typedef std::function<const Actor*()> ActorFunc;
-  typedef std::function<void(const Actor::UIPartUpgrade &)> PartUpgradeHandler;
+  typedef std::function<const GameEntity*()> ActorFunc;
+  typedef std::function<void(const GameEntity::UIPartUpgrade &)> PartUpgradeHandler;
   ActorPanelWidget(
       const std::string &name,
       ActorFunc f,
@@ -36,7 +36,7 @@ class PartWidget : public UIWidget {
    PartWidget(glm::vec4 bgcolor) : bgcolor_(bgcolor) { }
   virtual ~PartWidget() { }
 
-  void setPart(const Actor::UIPart &part) {
+  void setPart(const GameEntity::UIPart &part) {
     part_ = part;
   }
   void setUpgradeHandler(ActorPanelWidget::PartUpgradeHandler handler) {
@@ -49,7 +49,7 @@ class PartWidget : public UIWidget {
  private:
   glm::vec4 bgcolor_;
   ActorPanelWidget::PartUpgradeHandler upgradeHandler_;
-  Actor::UIPart part_;
+  GameEntity::UIPart part_;
 };
 
 };  // rts

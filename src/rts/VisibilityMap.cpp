@@ -1,6 +1,5 @@
 #include "rts/VisibilityMap.h"
 #include "common/ParamReader.h"
-#include "rts/Actor.h"
 #include "rts/GameEntity.h"
 #include "rts/Map.h"
 #include "rts/Player.h"
@@ -39,9 +38,8 @@ void VisibilityMap::processEntity(const GameEntity *entity) {
     return;
   }
   if (func_(entity)) {
-    auto actor = (const Actor *) entity;
-    auto pos = actor->getPosition2();
-    auto sight = actor->getSight();
+    auto pos = entity->getPosition2();
+    auto sight = entity->getSight();
     glm::ivec2 min = glm::max(worldToGrid(pos - sight), 0);
     glm::ivec2 max = glm::min(worldToGrid(pos + sight), gridDim_);
 
