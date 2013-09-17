@@ -107,36 +107,6 @@ static Handle<Value> jsGetNearbyEntities(const Arguments &args) {
   return Undefined();
 }
 
-static Handle<Value> jsRegisterEntityHotkey(const Arguments &args) {
-  invariant(args.Length() == 2, "expected 2 args: entity, hotkey");
-  HandleScope scope(args.GetIsolate());
-
-  id_t eid = args[0]->IntegerValue();
-  std::string hotkey_str = *String::AsciiValue(args[1]);
-  invariant(hotkey_str.size() == 1, "expected one char hotkey");
-  char hotkey = hotkey_str[0];
-  invariant(
-      isControlGroupHotkey(hotkey),
-      "unexpected hotkey for control group " + hotkey);
-
-  auto entity = Game::get()->getEntity(eid);
-  if (!entity) {
-    return Undefined();
-  }
-  auto player = Game::get()->getPlayer(entity->getPlayerID());
-  if (!player || !player->isLocal()) {
-    return Undefined();
-  }
-
-  std::set<id_t> sel;
-  sel.insert(eid);
-
-  auto lp = (LocalPlayer *)player;
-  lp->addSavedSelection(hotkey, sel);
-
-  return Undefined();
-}
-
 static Handle<Value> entityContainsPoint(const Arguments &args) {
   if (args.Length() < 1) return Undefined();
   HandleScope scope(args.GetIsolate());
@@ -308,15 +278,6 @@ static Handle<Value> entityGetID(const Arguments &args) {
   return scope.Close(ret);
 }
 
-static Handle<Value> entityGetPlayerID(const Arguments &args) {
-  HandleScope scope(args.GetIsolate());
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
-  Handle<Integer> ret = Integer::New(e->getPlayerID());
-  return scope.Close(ret);
-}
-
 static Handle<Value> entityGetTeamID(const Arguments &args) {
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
@@ -479,9 +440,6 @@ void GameScript::init() {
       String::New("GetNearbyEntities"),
       FunctionTemplate::New(jsGetNearbyEntities));
   global->Set(
-      String::New("registerEntityHotkey"),
-      FunctionTemplate::New(jsRegisterEntityHotkey));
-  global->Set(
       String::New("AddEffect"),
       FunctionTemplate::New(jsAddEffect));
 
@@ -497,9 +455,6 @@ void GameScript::init() {
   entityTemplate_->Set(
       String::New("getID"),
       FunctionTemplate::New(entityGetID));
-  entityTemplate_->Set(
-      String::New("getPlayerID"),
-      FunctionTemplate::New(entityGetPlayerID));
   entityTemplate_->Set(
       String::New("getTeamID"),
       FunctionTemplate::New(entityGetTeamID));

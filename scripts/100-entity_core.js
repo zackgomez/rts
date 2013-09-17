@@ -15,6 +15,7 @@ function entityInit(entity, name, params) {
   if (!def) {
     throw new Error('No def for ' + name);
   }
+  entity.pid_ = params.pid || NO_PLAYER;
   // TODO(zack): some kind of copy properties or something, this sucks
   if (def.properties) {
     for (var i = 0; i < def.properties.length; i++) {
@@ -65,12 +66,11 @@ function entityInit(entity, name, params) {
   if (def.actions) {
     entity.actions_ = def.actions;
   }
-  if (def.hotkey) {
-    registerEntityHotkey(entity.getID(), def.hotkey);
-    entity.hotkey_ = def.hotkey;
-  }
   if (def.minimap_icon) {
     entity.minimap_icon_ = def.minimap_icon;
+  }
+  if (def.hotkey) {
+    entity.hotkey_ = def.hotkey;
   }
 
   entity.state_ = new entity.defaultState_(params);
@@ -106,6 +106,14 @@ function entityInit(entity, name, params) {
   entity.addEffect = function (name, effect) {
     this.effects_[name] = effect;
   };
+
+  entity.getPlayerID = function () {
+    return this.pid_;
+  }
+  entity.setPlayerID = function (pid) {
+    this.pid_ = pid;
+    return this;
+  }
 
   entity.getPart = function (name) {
     for (var i = 0; i < this.parts_.length; i++) {
@@ -607,6 +615,7 @@ function entityGetUIInfo(eid) {
       ui_info.cappingPlayerID = entity.cappingPlayerID_;
     }
   }
+  ui_info.pid = entity.getPlayerID();
   
   ui_info.parts = [];
   if (entity.parts_) {
