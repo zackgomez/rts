@@ -120,7 +120,7 @@ void Game::start() {
   pause();
 
   using namespace v8;
-  script_.init();
+  script_.init("jscore/bootstrap.js");
   v8::Locker locker(script_.getIsolate());
   v8::Context::Scope context_scope(script_.getContext());
   

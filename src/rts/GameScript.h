@@ -9,16 +9,11 @@ namespace rts {
 
 class GameEntity;
 
-void checkJSResult(
-  const v8::Handle<v8::Value> &result,
-  const v8::TryCatch &try_catch,
-  const std::string &msg);
-
 class GameScript {
 public:
   GameScript();
   ~GameScript();
-  void init();
+  void init(const std::string &init_file_path);
 
   v8::Isolate * getIsolate() {
     return isolate_;
@@ -55,8 +50,19 @@ private:
   v8::Persistent<v8::Object> jsBindings_;
   v8::Persistent<v8::ObjectTemplate> entityTemplate_;
 
-  void loadScripts();
+  v8::Handle<v8::Object> getSourceMap() const;
 };
+
+void jsFail(const v8::TryCatch &try_catch, const std::string &msg);
+
+template<typename T> void checkJSResult(
+  const v8::Handle<T> &result,
+  const v8::TryCatch &try_catch,
+  const std::string &msg) {
+  if (result.IsEmpty()) {
+    jsFail(try_catch, msg);
+  }
+}
 
 };
 

@@ -144,7 +144,7 @@ void ResourceManager::loadResources() {
   }
 }
 
-std::vector<std::pair<std::string, std::string>> ResourceManager::getOrderedScriptNames() {
+std::map<std::string, std::string> ResourceManager::readScripts() {
   namespace fs = boost::filesystem;
   boost::system::error_code ec;
   fs::path scripts_path("scripts");
@@ -153,7 +153,7 @@ std::vector<std::pair<std::string, std::string>> ResourceManager::getOrderedScri
     fs::exists(status) && fs::is_directory(status),
     "missing scripts directory");
 
-  std::vector<std::pair<int, std::string>> paths;
+  std::map<std::string, std::string> path_files;
   auto it = fs::directory_iterator(scripts_path);
   for ( ; it != fs::directory_iterator(); it++) {
     auto dir_ent = *it;
@@ -165,42 +165,20 @@ std::vector<std::pair<std::string, std::string>> ResourceManager::getOrderedScri
     if (filepath.extension() != ".js" || filename.empty() || filename[0] == '.') {
       continue;
     }
-    uint32_t n;
-    if (sscanf(filename.c_str(), "%d-", &n) == EOF) {
-      // on error, wrap to end
-      n = -1;
-    }
 
-    // Insert into sorted array
-    bool inserted = false;
-    auto pit = paths.begin(); 
-    for (; pit != paths.end(); pit++) {
-      if (n < pit->first) {
-        paths.insert(pit, make_pair(n, dir_ent.path().string()));
-        inserted = true;
-        break;
-      }
-    }
-    // Put at end if haven't inserted already
-    if (!inserted) {
-      paths.insert(pit, make_pair(n, dir_ent.path().string()));
-    }
-  }
+    std::string module_name = filepath.stem().string();
 
-  std::vector<std::pair<std::string, std::string>> path_files;
-
-  for (const auto& pair : paths) {
-    auto script_name = pair.second;
-    std::ifstream f(script_name.c_str());
+    std::ifstream f(dir_ent.path().string());
     if (!f) {
       continue;
     }
 
     std::string contents;
     std::getline(f, contents, (char)EOF);
-    path_files.emplace_back(script_name, contents);
-
-    f.close();
+    invariant(
+        path_files.find(module_name) == path_files.end(),
+        "cannot have duplicate module names");
+    path_files[module_name] = std::move(contents);
   }
 
   return path_files;

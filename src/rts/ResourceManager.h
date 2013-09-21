@@ -23,9 +23,9 @@ class ResourceManager {
   DepthField *getDepthField(const std::string &name);
   Json::Value getMapDefinition(const std::string &name);
 
-  // kind of expensive
-  // @return ordered list of (scriptname, contents) tuples
-  std::vector<std::pair<std::string, std::string>> getOrderedScriptNames();
+  // reads all script files from disk
+  // @return map of (module_name, contents) tuples
+  std::map<std::string, std::string> readScripts();
 
  private:
   ResourceManager();

@@ -15,16 +15,26 @@ using namespace v8;
 
 namespace rts {
 
-void checkJSResult(
-  const Handle<Value> &result,
-  const TryCatch &try_catch,
-  const std::string &msg) {
-  if (result.IsEmpty()) {
-    LOG(ERROR) << msg << " "
-      << *String::AsciiValue(try_catch.Exception()) << '\n'
-      << *String::AsciiValue(try_catch.StackTrace()) << '\n';
-    invariant_violation("Javascript exception");
+void jsFail(const v8::TryCatch &try_catch, const std::string &msg) {
+  LOG(ERROR) << msg << " "
+    << *String::AsciiValue(try_catch.Exception()) << '\n'
+    << *String::AsciiValue(try_catch.StackTrace()) << '\n';
+  invariant_violation("Javascript exception");
+}
+
+static Handle<Value> runtimeEvalImpl(
+    Handle<String> source,
+    Handle<Object> kwargs);
+
+static Handle<Value> runtimeEval(const Arguments &args) {
+  if (args.Length() < 2) {
+    invariant_violation("value runtimeEval(source, kwargs)");
   }
+  HandleScope scope(args.GetIsolate());
+
+  auto js_source = args[0]->ToString();
+  auto js_kwargs = args[1]->ToObject();
+  return scope.Close(runtimeEvalImpl(js_source, js_kwargs));
 }
 
 static Handle<Value> jsPointInOBB2(const Arguments &args);
@@ -555,7 +565,7 @@ GameScript::~GameScript() {
   isolate_->Dispose();
 }
 
-void GameScript::init() {
+void GameScript::init(const std::string &init_function_path) {
   const std::string v8_flags = "--use_strict";
   v8::V8::SetFlagsFromString(v8_flags.c_str(), v8_flags.length());
   isolate_ = Isolate::New();
@@ -647,34 +657,62 @@ void GameScript::init() {
       String::New("setUIInfo"),
       FunctionTemplate::New(entitySetUIInfo));
 
-  loadScripts();
+  auto source_map = getSourceMap();
+  auto runtime_object = Object::New();
+  runtime_object->Set(
+      String::New("source_map"),
+      source_map);
+  runtime_object->Set(
+      String::New("eval"),
+      FunctionTemplate::New(runtimeEval)->GetFunction());
+
+  std::ifstream init_file(init_function_path);
+  std::string init_function_source;
+  std::getline(init_file, init_function_source, (char)EOF);
+
+  auto kwargs = Object::New();
+  kwargs->Set(
+      String::New("filename"),
+      String::New(init_function_path.c_str()));
+
+  auto init_function_val = runtimeEvalImpl(
+      String::New(init_function_source.c_str()), 
+      kwargs);
+  invariant(
+      init_function_val->IsFunction(),
+      "init file must evaluate to a function");
+  const int argc = 1;
+  Handle<Value> argv[] = { runtime_object };
+  Handle<Function>::Cast(init_function_val)->Call(getGlobal(), argc, argv);
 }
 
-void GameScript::loadScripts() {
-  auto scripts = ResourceManager::get()->getOrderedScriptNames();
-  for (const auto &pair : scripts) {
-    std::string filename = pair.first;
-    std::string contents = pair.second;
 
-    LOG(INFO) << "Loading script: " << filename << '\n';
+Handle<Value> runtimeEvalImpl(Handle<String> source, Handle<Object> kwargs) {
+  TryCatch try_catch;
 
-    TryCatch try_catch;
-    Handle<Script> script = Script::Compile(String::New(contents.c_str()));
-    if (script.IsEmpty()) {
-      String::AsciiValue e_str(try_catch.Exception());
-      LOG(ERROR) << "Unable to compile script '" << filename << "': " << 
-          *e_str << '\n';
-      invariant_violation("Error loading javascript");
-    }
+  auto filename = *String::AsciiValue(kwargs->Get(String::New("filename")));
+  LOG(DEBUG) << "Filename: " << filename << '\n';
 
-    Handle<Value> result = script->Run();
-    if (result.IsEmpty()) {
-      String::AsciiValue e_str(try_catch.Exception());
-      LOG(ERROR) << "Unable to run script '" << filename << "': " << 
-          *e_str << '\n';
-      invariant_violation("Error loading javascript");
-    }
+  Handle<Script> script = Script::Compile(source);
+  checkJSResult(script, try_catch, "compile:");
+
+  Handle<Value> result = script->Run();
+  checkJSResult(result, try_catch, "execute:");
+
+  return result;
+}
+
+Handle<Object> GameScript::getSourceMap() const {
+  Handle<Object> js_source_map = Object::New();
+
+  auto scripts = ResourceManager::get()->readScripts();
+  for (auto pair : scripts) {
+    js_source_map->Set(
+        String::New(pair.first.c_str()),
+        String::New(pair.second.c_str()));
   }
+
+  return js_source_map;
 }
 
 Handle<Object> GameScript::getGlobal() {
