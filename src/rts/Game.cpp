@@ -122,6 +122,10 @@ void Game::start() {
   HandleScope scope(script_.getIsolate());
   auto global = script_.getGlobal();
 
+  gameObject_ = v8::Persistent<v8::Object>::New(
+      script_.getIsolate(),
+      global->Get(String::New("Game"))->ToObject());
+
   Handle<Array> js_player_defs = Array::New();
   float starting_requisition = fltParam("global.startingRequisition");
   for (int i = 0; i < players_.size(); i++) {
@@ -146,11 +150,9 @@ void Game::start() {
     script_.jsonToJS(map_->getMapDefinition()),
     js_player_defs,
   };
-  Handle<Object> game_obj = Handle<Object>::Cast(
-      global->Get(String::New("Game")));
   Handle<Function> game_init_method = Handle<Function>::Cast(
-      game_obj->Get(String::New("init")));
-  auto ret = game_init_method->Call(game_obj, argc, argv);
+      gameObject_->Get(String::New("init")));
+  auto ret = game_init_method->Call(gameObject_, argc, argv);
   checkJSResult(ret, try_catch, "Game.init:");
 
   // Initialize map
@@ -447,12 +449,10 @@ void Game::renderJS() {
   TryCatch try_catch;
   auto global = script->getGlobal();
 
-  Handle<Object> game_object = Handle<Object>::Cast(
-     global->Get(String::New("Game")));
   Handle<Function> game_render_function = Handle<Function>::Cast(
-      game_object->Get(String::New("render")));
+      gameObject_->Get(String::New("render")));
   Handle<Value> js_render_result_ret =
-    game_render_function->Call(game_object, 0, nullptr);
+    game_render_function->Call(gameObject_, 0, nullptr);
   checkJSResult(js_render_result_ret, try_catch, "render");
   Handle<Object> js_render_result = Handle<Object>::Cast(js_render_result_ret);
 
@@ -500,10 +500,8 @@ void Game::updateJS(v8::Handle<v8::Array> player_inputs, float dt) {
     Number::New(dt),
   };
 
-  Handle<Object> message_hub = Handle<Object>::Cast(
-    global->Get(String::New("Game")));
   Handle<Value> ret =
-    Handle<Function>::Cast(message_hub->Get(String::New("update")))
+    Handle<Function>::Cast(gameObject_->Get(String::New("update")))
     ->Call(global, argc, argv);
   checkJSResult(ret, try_catch, "update:");
 }

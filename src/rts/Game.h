@@ -127,6 +127,8 @@ class Game {
   ChatListener chatListener_;
   GameRandom *random_;
 
+  v8::Persistent<v8::Object> gameObject_;
+
   static Game *instance_;
 };
 
