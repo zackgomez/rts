@@ -5,35 +5,22 @@
 // --
 
 // This function is called on an entity when it is created.
-function entityInit(entity, name, params) {
+function entityInit(entity, id, name, params) {
+  var def = must_have_idx(EntityDefs, name);
+
+  entity.id_ = id;
   entity.name_ = name;
+  entity.def_ = def;
   entity.defaultState_ = NullState;
   entity.cooldowns_ = {};
   entity.retreat_ = false;
-  entityResetDeltas(entity);
-  var def = EntityDefs[name];
-  if (!def) {
-    throw new Error('No def for ' + name);
-  }
   entity.pid_ = params.pid || NO_PLAYER;
+  entityResetDeltas(entity);
+  entity.properties_ = def.properties || [];
+  entity.maxSpeed_ = def.speed || 0;
+  entity.sight_ = def.sight || 0;
+
   // TODO(zack): some kind of copy properties or something, this sucks
-  if (def.properties) {
-    for (var i = 0; i < def.properties.length; i++) {
-      entity.setProperty(def.properties[i], true);
-    }
-  }
-  if (def.model) {
-    entity.setModel(def.model);
-  }
-  if (def.size) {
-    entity.setSize(def.size);
-  }
-  if (def.speed) {
-    entity.maxSpeed_ = def.speed;
-  }
-  if (def.sight) {
-    entity.sight_ = def.sight;
-  }
   if (def.default_state) {
     entity.defaultState_ = def.default_state;
   }
@@ -76,9 +63,15 @@ function entityInit(entity, name, params) {
   entity.state_ = new entity.defaultState_(params);
 
   // Set some functions on the entity
+  entity.getID = function () {
+    return this.id_;
+  };
   entity.getName = function () {
     return this.name_;
-  }
+  };
+  entity.getDefinition = function () {
+    return this.def_;
+  };
   entity.hasCooldown = function (name) {
     return name in this.cooldowns_;
   };
@@ -109,11 +102,16 @@ function entityInit(entity, name, params) {
 
   entity.getPlayerID = function () {
     return this.pid_;
-  }
+  };
   entity.setPlayerID = function (pid) {
     this.pid_ = pid;
     return this;
-  }
+  };
+  entity.getTeamID = function () {
+    var player_id = this.getPlayerID();
+    var player = player_id ? Players.getPlayer(player_id) : null;
+    return player ? player.getTeamID() : NO_TEAM;
+  };
 
   entity.getPart = function (name) {
     for (var i = 0; i < this.parts_.length; i++) {

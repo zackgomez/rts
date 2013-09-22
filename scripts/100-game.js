@@ -1,12 +1,15 @@
 var Game = function () {
   var exports = {};
 
-  var entities = {}
+  var entities = {};
+  var game_to_render_id = {};
+  var last_id = STARTING_EID;
 
   // returns the ID of the spawned entity
   var spawnEntity = function (name, params) {
-    var entity = SpawnEntity(name, params);
-    entityInit(entity, name, params);
+    var id = last_id++;
+    var entity = {};
+    entityInit(entity, id, name, params);
 
     entities[entity.getID()] = entity;
 
@@ -123,6 +126,21 @@ var Game = function () {
 
   exports.render = function () {
     // TODO render entities
+    for (var eid in entities) {
+      var game_entity = entities[eid];
+      var render_id = game_to_render_id[eid];
+      if (!render_id) {
+        render_id = SpawnRenderEntity();
+      }
+      var render_entity = GetRenderEntity(render_id);
+      var entity_def = entity.getDefinition();
+      if (entity_def.model) {
+        render_entity.setModel(entity_def.model);
+      }
+      if (entity_def.size) {
+        render_entity.setSize(entity_def.size)
+      }
+    }
     
     return {
       players: Players.getRequisitionCounts(),

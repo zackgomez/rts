@@ -246,7 +246,6 @@ void GameEntity::updateUIInfo() {
   auto hotkey = String::New("hotkey");
   if (jsinfo->Has(hotkey)) {
     std::string hotkey_str = *String::AsciiValue(jsinfo->Get(hotkey));
-    LOG(DEBUG) << "has hotkey " << hotkey_str << '\n';
     if (!hotkey_str.empty()) {
       invariant(hotkey_str.size() == 1, "expected single character hotkey string");
       uiInfo_.hotkey = hotkey_str[0];
@@ -254,7 +253,6 @@ void GameEntity::updateUIInfo() {
     }
     auto *player = Game::get()->getPlayer(getPlayerID());
     if (player && player->isLocal()) {
-      LOG(DEBUG) << "setting hotkey " << hotkey_str << '\n';
       std::set<id_t> sel;
       sel.insert(getID());
       auto *lp = (LocalPlayer *)player;
