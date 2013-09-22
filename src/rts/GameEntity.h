@@ -17,8 +17,7 @@ namespace rts {
 // TODO(zack): merge with actor
 class GameEntity : public ModelEntity {
  public:
-  explicit GameEntity(id_t id,
-      const std::string &name, const Json::Value &params);
+  explicit GameEntity(id_t id);
   virtual ~GameEntity();
 
   static const uint32_t P_GAMEENTITY = 293013864;
@@ -57,12 +56,11 @@ class GameEntity : public ModelEntity {
     }
     return properties_.count(property);
   }
-  void setProperty(uint32_t property, bool val) {
-    if (val) {
-      properties_.insert(property);
-    } else {
-      properties_.erase(property);
-    }
+  void addProperty(uint32_t property) {
+    properties_.insert(property);
+  }
+  void clearProperties() {
+    properties_.clear();
   }
 
   // The player that owns this entity, or NO_PLAYER
@@ -128,7 +126,6 @@ class GameEntity : public ModelEntity {
   std::vector<glm::vec3> pathQueue_;
 
  private:
-  std::string name_;
   float maxSpeed_;
   float sight_;
 

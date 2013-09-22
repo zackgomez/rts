@@ -9,26 +9,13 @@
 
 namespace rts {
 
-GameEntity::GameEntity(
-    id_t id,
-    const std::string &name,
-    const Json::Value &params)
+GameEntity::GameEntity(id_t id)
   : ModelEntity(id),
     playerID_(NO_PLAYER),
-    name_(name),
     maxSpeed_(0.f),
     sight_(0.f),
     warp_(false),
     uiInfo_() {
-  setProperty(P_RENDERABLE, true);
-
-  if (params.isMember("pos")) {
-    setPosition(glm::vec3(toVec2(params["pos"]), 0.f));
-  }
-  if (params.isMember("angle")) {
-    setAngle(params["angle"].asFloat());
-  }
-
   resetTexture();
 }
 
@@ -138,7 +125,6 @@ void GameEntity::checksum(Checksum &chksum) const {
   chksum
     .process(id)
     .process(playerID_)
-    .process(name_)
     .process(getPosition())
     .process(getAngle())
     .process(getSize())

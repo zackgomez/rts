@@ -447,7 +447,6 @@ void Game::renderJS() {
   auto script = Game::get()->getScript();
   HandleScope scope(script->getIsolate());
   TryCatch try_catch;
-  auto global = script->getGlobal();
 
   Handle<Function> game_render_function = Handle<Function>::Cast(
       gameObject_->Get(String::New("render")));

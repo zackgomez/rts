@@ -19,6 +19,8 @@ function entityInit(entity, id, name, params) {
   entity.properties_ = def.properties || [];
   entity.maxSpeed_ = def.speed || 0;
   entity.sight_ = def.sight || 0;
+  entity.pos_ = params.pos || [0, 0];
+  entity.angle = params.angle || 0;
 
   // TODO(zack): some kind of copy properties or something, this sucks
   if (def.default_state) {
@@ -111,6 +113,9 @@ function entityInit(entity, id, name, params) {
     var player_id = this.getPlayerID();
     var player = player_id ? Players.getPlayer(player_id) : null;
     return player ? player.getTeamID() : NO_TEAM;
+  };
+  entity.getPosition2 = function () {
+    return this.pos_;
   };
 
   entity.getPart = function (name) {

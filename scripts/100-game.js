@@ -2,7 +2,7 @@ var Game = function () {
   var exports = {};
 
   var entities = {};
-  var game_to_render_id = {};
+  var eid_to_render_entity = {};
   var last_id = STARTING_EID;
 
   // returns the ID of the spawned entity
@@ -125,7 +125,6 @@ var Game = function () {
   };
 
   exports.render = function () {
-    // TODO render entities
     for (var eid in entities) {
       var game_entity = entities[eid];
       var render_id = game_to_render_id[eid];
@@ -140,6 +139,8 @@ var Game = function () {
       if (entity_def.size) {
         render_entity.setSize(entity_def.size)
       }
+      render_entity.setPosition2(game_entity.getPosition2());
+      render_entity.setProperties(entity.properties_);
     }
     
     return {

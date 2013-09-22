@@ -29,16 +29,13 @@ static Handle<Value> jsGameRandom(const Arguments &args) {
   return Number::New(Game::get()->gameRandom());
 }
 
-static Handle<Value> jsSpawnEntity(const Arguments &args) {
-  if (args.Length() < 2) return Undefined();
+static Handle<Value> jsSpawnRenderEntity(const Arguments &args) {
+  invariant(args.Length() == 0, "object spawnRenderEntity(void)");
   HandleScope scope(args.GetIsolate());
 
   auto script = Game::get()->getScript();
-  std::string name(*String::AsciiValue(args[0]));
-  Json::Value params = script->jsToJSON(Handle<Object>::Cast(args[1]));
-
   id_t eid = Renderer::get()->newEntityID();
-  GameEntity *e = new GameEntity(eid, name, params);
+  GameEntity *e = new GameEntity(eid);
   invariant(e, "couldn't allocate new entity");
   Renderer::get()->spawnEntity(e);
 
@@ -48,8 +45,9 @@ static Handle<Value> jsSpawnEntity(const Arguments &args) {
   return scope.Close(wrapper);
 }
 
-static Handle<Value> jsDestroyEntity(const Arguments &args) {
+static Handle<Value> jsDestroyRenderEntity(const Arguments &args) {
   if (args.Length() < 2) return Undefined();
+  invariant(args.Length() == 1, "void DestroyRenderEntity(int eid");
   HandleScope scope(args.GetIsolate());
 
   id_t eid = args[0]->IntegerValue();
@@ -372,14 +370,19 @@ static Handle<Value> entitySetSize(const Arguments &args) {
   return Undefined();
 }
 
-static Handle<Value> entitySetProperty(const Arguments &args) {
-  if (args.Length() < 2) return Undefined();
+static Handle<Value> entitySetProperties(const Arguments &args) {
+  invariant(args.Length() == 1, "void entitySetProperties(array properties)");
 
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   GameEntity *e = static_cast<GameEntity *>(wrap->Value());
-  e->setProperty(args[0]->IntegerValue(), args[1]->BooleanValue());
+
+  auto js_properties = Handle<Array>::Cast(args[0]);
+  for (int i = 0; i < js_properties->Length(); i++) {
+    e->addProperty(js_properties->Get(Integer::New(i))->IntegerValue());
+  }
+
   return Undefined();
 }
 static Handle<Value> entitySetPlayerID(const Arguments &args) {
@@ -431,11 +434,11 @@ void GameScript::init() {
       String::New("GameRandom"),
       FunctionTemplate::New(jsGameRandom));
   global->Set(
-      String::New("SpawnEntity"),
-      FunctionTemplate::New(jsSpawnEntity));
+      String::New("SpawnRenderEntity"),
+      FunctionTemplate::New(jsSpawnRenderEntity));
   global->Set(
-      String::New("DestroyEntity"),
-      FunctionTemplate::New(jsDestroyEntity));
+      String::New("DestroyRenderEntity"),
+      FunctionTemplate::New(jsDestroyRenderEntity));
   global->Set(
       String::New("GetNearbyEntities"),
       FunctionTemplate::New(jsGetNearbyEntities));
@@ -482,8 +485,8 @@ void GameScript::init() {
       FunctionTemplate::New(entitySetSight));
 
   entityTemplate_->Set(
-      String::New("setProperty"),
-      FunctionTemplate::New(entitySetProperty));
+      String::New("setProperties"),
+      FunctionTemplate::New(entitySetProperties));
   entityTemplate_->Set(
       String::New("setPlayerID"),
       FunctionTemplate::New(entitySetPlayerID));
