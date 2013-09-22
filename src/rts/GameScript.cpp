@@ -77,6 +77,13 @@ static Handle<Value> jsRuntimeBinding(const Arguments &args) {
   return scope.Close(binding_map->Get(name));
 }
 
+static Handle<Value> runtimeSetGameObject(const Arguments &args) {
+  invariant(args.Length() == 1, "void SetGameObject(object game)");
+
+  HandleScope scope(args.GetIsolate());
+  Game::get()->setJSGameObject(args[0]->ToObject());
+}
+
 static Handle<Value> jsGameRandom(const Arguments &args) {
   return Number::New(Game::get()->gameRandom());
 }
@@ -575,7 +582,6 @@ void GameScript::init(const std::string &init_function_path) {
   HandleScope handle_scope(isolate_);
 
   Handle<ObjectTemplate> global = ObjectTemplate::New();
-
   global->Set(
       String::New("Log"),
       FunctionTemplate::New(jsLog));
@@ -614,7 +620,21 @@ void GameScript::init(const std::string &init_function_path) {
       FunctionTemplate::New(jsRuntimeBinding)->GetFunction());
   context_->Global()->Set(String::New("runtime"), runtime_object);
 
-  // define entity object
+  auto source_map = getSourceMap();
+  auto runtime_object = Object::New();
+  runtime_object->Set(
+      String::New("source_map"),
+      source_map);
+  runtime_object->Set(
+      String::New("eval"),
+      FunctionTemplate::New(runtimeEval)->GetFunction());
+  runtime_object->Set(
+      String::New("setGameObject"),
+      FunctionTemplate::New(runtimeSetGameObject)->GetFunction());
+  context_->Global()->Set(
+      String::New("runtime"),
+      runtime_object);
+
   entityTemplate_ =
       Persistent<ObjectTemplate>::New(isolate_, ObjectTemplate::New());
   entityTemplate_->SetInternalFieldCount(1);
@@ -656,15 +676,6 @@ void GameScript::init(const std::string &init_function_path) {
   entityTemplate_->Set(
       String::New("setUIInfo"),
       FunctionTemplate::New(entitySetUIInfo));
-
-  auto source_map = getSourceMap();
-  auto runtime_object = Object::New();
-  runtime_object->Set(
-      String::New("source_map"),
-      source_map);
-  runtime_object->Set(
-      String::New("eval"),
-      FunctionTemplate::New(runtimeEval)->GetFunction());
 
   std::ifstream init_file(init_function_path);
   std::string init_function_source;

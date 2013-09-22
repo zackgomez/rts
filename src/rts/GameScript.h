@@ -63,7 +63,6 @@ template<typename T> void checkJSResult(
     jsFail(try_catch, msg);
   }
 }
-
 };
 
 #endif  // SRC_RTS_GAMESCRIPT_H_

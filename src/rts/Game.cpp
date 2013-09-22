@@ -125,11 +125,6 @@ void Game::start() {
   v8::Context::Scope context_scope(script_.getContext());
   
   HandleScope scope(script_.getIsolate());
-  auto global = script_.getGlobal();
-
-  gameObject_ = v8::Persistent<v8::Object>::New(
-      script_.getIsolate(),
-      global->Get(String::New("Game"))->ToObject());
 
   Handle<Array> js_player_defs = Array::New();
   float starting_requisition = fltParam("global.startingRequisition");
