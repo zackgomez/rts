@@ -119,6 +119,10 @@ function entityInit(entity, name, params) {
     var player = Players.getPlayer(this.getPlayerID());
     var part = this.getPart(part_name);
     var upgrade = part.getAvailableUpgrades()[upgrade_name];
+    if (!upgrade) {
+      Log('asked to upgrade nonexistent upgrade:', upgrade_name);
+      return;
+    }
     var req = player.getRequisition();
     if (upgrade.req_cost < req) {
       player.addRequisition(-upgrade.req_cost);
