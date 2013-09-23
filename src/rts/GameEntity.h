@@ -17,7 +17,8 @@ namespace rts {
 // TODO(zack): merge with actor
 class GameEntity : public ModelEntity {
  public:
-  explicit GameEntity(id_t id);
+  explicit GameEntity(id_t id,
+      const std::string &name, const Json::Value &params);
   virtual ~GameEntity();
 
   static const uint32_t P_GAMEENTITY = 293013864;
@@ -56,11 +57,12 @@ class GameEntity : public ModelEntity {
     }
     return properties_.count(property);
   }
-  void addProperty(uint32_t property) {
-    properties_.insert(property);
-  }
-  void clearProperties() {
-    properties_.clear();
+  void setProperty(uint32_t property, bool val) {
+    if (val) {
+      properties_.insert(property);
+    } else {
+      properties_.erase(property);
+    }
   }
 
   // The player that owns this entity, or NO_PLAYER
@@ -83,12 +85,6 @@ class GameEntity : public ModelEntity {
   }
   void setPlayerID(id_t pid);
 
-  void setUIInfo(const UIInfo &ui_info) {
-    uiInfo_ = ui_info;
-  };
-  void updateActions(const std::vector<UIAction> actions) {
-    actions_ = actions;
-  }
   void setTookDamage(int part_idx);
   Clock::time_point getLastTookDamage(uint32_t part) const;
   const std::vector<UIAction> &getActions() const {
@@ -132,6 +128,7 @@ class GameEntity : public ModelEntity {
   std::vector<glm::vec3> pathQueue_;
 
  private:
+  std::string name_;
   float maxSpeed_;
   float sight_;
 
@@ -143,6 +140,8 @@ class GameEntity : public ModelEntity {
   std::vector<UIAction> actions_;
 
   void resetTexture();
+  void updateUIInfo();
+  void updateActions();
 };
 };  // namespace rts
 

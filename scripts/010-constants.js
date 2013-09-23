@@ -17,10 +17,6 @@ var NO_TEAM = 0;
 
 var GAME_ID = 1;
 
-var STARTING_PID = 100;
-var STARTING_TID = 200;
-var STARTING_EID = 300;
-
 // --
 // -- Damage Types --
 // --

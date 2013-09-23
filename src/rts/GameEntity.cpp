@@ -9,13 +9,29 @@
 
 namespace rts {
 
-GameEntity::GameEntity(id_t id)
+GameEntity::GameEntity(
+    id_t id,
+    const std::string &name,
+    const Json::Value &params)
   : ModelEntity(id),
     playerID_(NO_PLAYER),
+    name_(name),
     maxSpeed_(0.f),
     sight_(0.f),
     warp_(false),
     uiInfo_() {
+  setProperty(P_RENDERABLE, true);
+
+  if (params.isMember("pid")) {
+    playerID_ = assertPid(toID(params["pid"]));
+  }
+  if (params.isMember("pos")) {
+    setPosition(glm::vec3(toVec2(params["pos"]), 0.f));
+  }
+  if (params.isMember("angle")) {
+    setAngle(params["angle"].asFloat());
+  }
+
   resetTexture();
 }
 
@@ -115,6 +131,9 @@ void GameEntity::resolve(float dt) {
     }
     setSpeed(speed);
   }
+
+  updateUIInfo();
+  updateActions();
 }
 
 void GameEntity::checksum(Checksum &chksum) const {
@@ -122,6 +141,7 @@ void GameEntity::checksum(Checksum &chksum) const {
   chksum
     .process(id)
     .process(playerID_)
+    .process(name_)
     .process(getPosition())
     .process(getAngle())
     .process(getSize())
@@ -177,11 +197,6 @@ void GameEntity::updateUIInfo() {
   checkJSResult(ret, try_catch, "entityGetUIInfo:");
 
   auto jsinfo = ret->ToObject();
-
-  auto pid_str = String::New("pid");
-  invariant(jsinfo->Has(pid_str), "UIInfo must have pid");
-  setPlayerID(jsinfo->Get(pid_str)->IntegerValue());
-
   auto parts_str = String::New("parts");
   if (jsinfo->Has(parts_str)) {
     auto parts = Handle<Array>::Cast(jsinfo->Get(parts_str));
@@ -233,13 +248,6 @@ void GameEntity::updateUIInfo() {
       invariant(hotkey_str.size() == 1, "expected single character hotkey string");
       uiInfo_.hotkey = hotkey_str[0];
       invariant(isControlGroupHotkey(uiInfo_.hotkey), "bad hotkey in uiinfo");
-    }
-    auto *player = Game::get()->getPlayer(getPlayerID());
-    if (player && player->isLocal()) {
-      std::set<id_t> sel;
-      sel.insert(getID());
-      auto *lp = (LocalPlayer *)player;
-      lp->addSavedSelection(hotkey_str[0], sel);
     }
   }
   auto minimap_icon = String::New("minimap_icon");

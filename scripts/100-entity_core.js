@@ -5,25 +5,34 @@
 // --
 
 // This function is called on an entity when it is created.
-function entityInit(entity, id, name, params) {
-  var def = must_have_idx(EntityDefs, name);
-
-  entity.id_ = id;
+function entityInit(entity, name, params) {
   entity.name_ = name;
-  entity.def_ = def;
   entity.defaultState_ = NullState;
   entity.cooldowns_ = {};
   entity.retreat_ = false;
-  entity.pid_ = params.pid || NO_PLAYER;
   entityResetDeltas(entity);
-  entity.properties_ = def.properties || [];
-  entity.maxSpeed_ = def.speed || 0;
-  entity.sight_ = def.sight || 0;
-  entity.pos_ = params.pos || [0, 0];
-  entity.angle = params.angle || 0;
-  entity.currentSpeed_ = 0;
-
+  var def = EntityDefs[name];
+  if (!def) {
+    throw new Error('No def for ' + name);
+  }
   // TODO(zack): some kind of copy properties or something, this sucks
+  if (def.properties) {
+    for (var i = 0; i < def.properties.length; i++) {
+      entity.setProperty(def.properties[i], true);
+    }
+  }
+  if (def.model) {
+    entity.setModel(def.model);
+  }
+  if (def.size) {
+    entity.setSize(def.size);
+  }
+  if (def.speed) {
+    entity.maxSpeed_ = def.speed;
+  }
+  if (def.sight) {
+    entity.sight_ = def.sight;
+  }
   if (def.default_state) {
     entity.defaultState_ = def.default_state;
   }
@@ -56,36 +65,20 @@ function entityInit(entity, id, name, params) {
   if (def.actions) {
     entity.actions_ = def.actions;
   }
+  if (def.hotkey) {
+    registerEntityHotkey(entity.getID(), def.hotkey);
+    entity.hotkey_ = def.hotkey;
+  }
   if (def.minimap_icon) {
     entity.minimap_icon_ = def.minimap_icon;
   }
-  if (def.hotkey) {
-    entity.hotkey_ = def.hotkey;
-  }
 
   entity.state_ = new entity.defaultState_(params);
-  // Holds the 'intent' of the entity w.r.t. movement for this frame
-  entity.movementIntent_ = null;
 
   // Set some functions on the entity
-  entity.getID = function () {
-    return this.id_;
-  };
   entity.getName = function () {
     return this.name_;
-  };
-  entity.getDefinition = function () {
-    return this.def_;
-  };
-  entity.hasProperty = function (property) {
-    // TODO(zack): optimize this...
-    for (var i = 0; i < this.properties_.length; i++) {
-      if (this.properties_[i] === property) {
-        return true;
-      }
-    }
-    return false;
-  };
+  }
   entity.hasCooldown = function (name) {
     return name in this.cooldowns_;
   };
@@ -114,25 +107,6 @@ function entityInit(entity, id, name, params) {
     this.effects_[name] = effect;
   };
 
-  entity.getPlayerID = function () {
-    return this.pid_;
-  };
-  entity.setPlayerID = function (pid) {
-    this.pid_ = pid;
-    return this;
-  };
-  entity.getTeamID = function () {
-    var player_id = this.getPlayerID();
-    var player = player_id ? Players.getPlayer(player_id) : null;
-    return player ? player.getTeamID() : NO_TEAM;
-  };
-  entity.getPosition2 = function () {
-    return this.pos_;
-  };
-  entity.getSight = function () {
-    return this.sight_;
-  };
-
   entity.getPart = function (name) {
     for (var i = 0; i < this.parts_.length; i++) {
       if (this.parts_[i].getName() === name) {
@@ -154,32 +128,13 @@ function entityInit(entity, id, name, params) {
     }
   };
 
-  // Basic movement intent setters
-  entity.remainStationary = function () {
-    this.movementIntent_ = null;
-    return this;
-  };
-  entity.turnTowards = function (pt) {
-    this.movementIntent_ = {
-      look_at: pt,
-    };
-    return this;
-  };
-  entity.moveTowards = function (pt) {
-    this.movementIntent_ = {
-      look_at: pt,
-      move_towards: pt,
-    };
-    return this;
-  };
-
   // Find entities near the current one.
   // Calls the passed callback for each entity in range.
   // If the callback returns true, it will continue passing entities until
   // there are no more
   entity.getNearbyEntities = function (range, callback) {
-    Game.getNearbyEntities(entity.getPosition2(), range, function (entity) {
-      return callback(entity);
+    GetNearbyEntities(entity.getPosition2(), range, function (eid) {
+      return callback(Game.getEntity(eid));
     });
   };
 
@@ -317,8 +272,6 @@ function entityResetDeltas(entity) {
 // Called once per tick.  Should not do any direct updates, should only set
 // intents (like moveTowards, attack, etc) or send messages.
 function entityUpdate(entity, dt) {
-  entity.movementIntent_ = null;
-
   for (var ename in entity.effects_) {
     var res = entity.effects_[ename](entity);
     if (!res) {
@@ -443,7 +396,8 @@ function entityResolve(entity, dt) {
 
   // Attributes
   var speed_modifier = entity.deltas.max_speed_percent;
-  entity.currentSpeed_ = speed_modifier * entity.maxSpeed_;
+  entity.setMaxSpeed(speed_modifier * entity.maxSpeed_);
+  entity.setSight(entity.sight_);
 
   // Resolved!
   entityResetDeltas(entity);
@@ -653,7 +607,6 @@ function entityGetUIInfo(eid) {
       ui_info.cappingPlayerID = entity.cappingPlayerID_;
     }
   }
-  ui_info.pid = entity.getPlayerID();
   
   ui_info.parts = [];
   if (entity.parts_) {

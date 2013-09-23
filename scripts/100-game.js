@@ -1,16 +1,12 @@
 var Game = function () {
   var exports = {};
 
-  var entities = {};
-  var eid_to_render_entity = {};
-  var render_entities = {};
-  var last_id = STARTING_EID;
+  var entities = {}
 
   // returns the ID of the spawned entity
   var spawnEntity = function (name, params) {
-    var id = last_id++;
-    var entity = {};
-    entityInit(entity, id, name, params);
+    var entity = SpawnEntity(name, params);
+    entityInit(entity, name, params);
 
     entities[entity.getID()] = entity;
 
@@ -43,16 +39,6 @@ var Game = function () {
 
   exports.getEntity = function (eid) {
     return entities[eid];
-  };
-
-  exports.getNearbyEntities = function (pos2, range, callback) {
-    GetNearbyEntities(pos2, range, function (render_id) {
-      var render_entity = render_entities[render_id];
-      invariant(render_entity, "unknown render id passed to getNearbyEntities");
-      var game_entity = entities[render_entity.eid];
-      invariant(game_entity, "invalid entity for getNearbyEntities callback");
-      return callback(game_entity);
-    });
   };
 
   exports.init = function (map_def, player_defs) {
@@ -114,12 +100,8 @@ var Game = function () {
       var entity = entities[eid];
       var status = entityResolve(entity, dt);
       if (status === EntityStatus.DEAD) {
+        DestroyEntity(eid);
         delete entities[eid];
-        if (eid in eid_to_render_entity) {
-          var render_entity = eid_to_render_entity[eid];
-          DestroyRenderEntity(render_entity.getID());
-          delete eid_to_render_entity[eid];
-        }
         continue;
       }
 
@@ -140,27 +122,7 @@ var Game = function () {
   };
 
   exports.render = function () {
-    for (var eid in entities) {
-      var game_entity = entities[eid];
-      var render_entity = eid_to_render_entity[eid];
-      if (!render_entity) {
-        render_entity = SpawnRenderEntity();
-        render_entity.eid = eid;
-        eid_to_render_entity[eid] = render_entity;
-        render_entities[render_entity.getID()] = render_entity;
-      }
-      var entity_def = game_entity.getDefinition();
-      if (entity_def.model) {
-        render_entity.setModel(entity_def.model);
-      }
-      if (entity_def.size) {
-        render_entity.setSize(entity_def.size)
-      }
-      render_entity.setPosition2(game_entity.getPosition2());
-      render_entity.setProperties(game_entity.properties_);
-      render_entity.setMaxSpeed(game_entity.currentSpeed_);
-      render_entity.setSight(game_entity.getSight());
-    }
+    // TODO render entities
     
     return {
       players: Players.getRequisitionCounts(),
