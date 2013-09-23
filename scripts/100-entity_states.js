@@ -195,7 +195,7 @@ function ProjectileState(params) {
   this.update = function (entity) {
     var target = Game.getEntity(this.targetID);
     if (!target) {
-      entity.destroy();
+      entity.deltas.should_destroy = true;
       return null;
     }
 
