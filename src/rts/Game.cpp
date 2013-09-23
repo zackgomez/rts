@@ -49,6 +49,7 @@ Game::Game(Map *map, const std::vector<Player *> &players)
     paused_(true),
     running_(true) {
   random_ = new GameRandom(45); // TODO(zack): pass in seed
+  std::set<int> team_ids;
   for (auto player : players) {
     player->setGame(this);
     // Set up visibility map
@@ -58,6 +59,10 @@ Game::Game(Map *map, const std::vector<Player *> &players)
         func);
     visibilityMaps_[player->getPlayerID()] = vismap;
     requisition_[player->getPlayerID()] = 0.f;
+    team_ids.insert(player->getTeamID());
+  }
+  for (int tid : team_ids) {
+    victoryPoints_[tid] = 0.f;
   }
   // sort players to ensure consistency
   std::sort(
