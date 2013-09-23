@@ -208,8 +208,13 @@ function entityInit(id, name, params) {
   // If the callback returns true, it will continue passing entities until
   // there are no more
   entity.getNearbyEntities = function (range, callback) {
-    Game.getNearbyEntities(entity.getPosition2(), range, function (entity) {
-      return callback(entity);
+    GetNearbyEntities(entity.getPosition2(), range, function (eid) {
+      var game_entity = Game.getEntity(eid);
+      invariant(
+        game_entity,
+        "Could not find entity for nearby entities callback"
+      );
+      return callback(game_entity);
     });
   };
 
@@ -353,6 +358,7 @@ function entityInit(id, name, params) {
 // Helper function that clears out the deltas at the end of the resolve.
 function entityResetDeltas(entity) {
   entity.deltas = {
+    should_destroy: false,
     capture: {},
     damage_list: [],
     healing_list: [],
@@ -391,6 +397,10 @@ function entityResolve(entity, dt) {
   var messages = MessageHub.getMessagesForEntity(entity.getID());
   for (var i = 0; i < messages.length; i++) {
     entityHandleMessage(entity, messages[i]);
+  }
+
+  if (entity.deltas.should_destroy) {
+    return EntityStatus.DEAD;
   }
 
   for (var cd in entity.cooldowns_) {
