@@ -28,8 +28,8 @@ var Teams = (function() {
           vps += must_have_idx(message, 'amount');
         } else if (message.type === MessageTypes.ADD_REQUISITION) {
           var req = must_have_idx(message, 'amount');
-          for (var i = 0; i < players.length; i++) {
-            Players.getPlayer(players[i]).addRequisition(req);
+          for (var j = 0; j < players.length; j++) {
+            Players.getPlayer(players[j]).addRequisition(req);
           }
         } else {
           invariant_violation(
