@@ -86,7 +86,7 @@ class GameEntity : public ModelEntity {
   void setUIInfo(const UIInfo &ui_info) {
     uiInfo_ = ui_info;
   };
-  void updateActions(const std::vector<UIAction> actions) {
+  void setActions(const std::vector<UIAction> &actions) {
     actions_ = actions;
   }
   void setTookDamage(int part_idx);

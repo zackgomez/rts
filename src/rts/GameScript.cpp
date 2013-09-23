@@ -360,6 +360,7 @@ static Handle<Value> entitySetProperties(const Arguments &args) {
 
   return Undefined();
 }
+
 static Handle<Value> entitySetPlayerID(const Arguments &args) {
   if (args.Length() < 1) return Undefined();
 
@@ -371,6 +372,140 @@ static Handle<Value> entitySetPlayerID(const Arguments &args) {
   if (player) {
     e->setPlayerID(player->getPlayerID());
   }
+  return Undefined();
+}
+
+static Handle<Value> entitySetActions(const Arguments &args) {
+  invariant(args.Length() == 1, "void setAction(array actions)");
+
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  auto *e = static_cast<GameEntity *>(wrap->Value());
+
+  auto name = String::New("name");
+  auto icon = String::New("icon");
+  auto hotkey = String::New("hotkey");
+  auto tooltip = String::New("tooltip");
+  auto targeting = String::New("targeting");
+  auto range = String::New("range");
+  auto radius = String::New("radius");
+  auto state = String::New("state");
+  auto cooldown = String::New("cooldown");
+
+  auto jsactions = Handle<Array>::Cast(args[0]);
+  std::vector<UIAction> actions;
+  for (int i = 0; i < jsactions->Length(); i++) {
+    Handle<Object> jsaction = Handle<Object>::Cast(jsactions->Get(i));
+    UIAction uiaction;
+    uiaction.owner = e->getID();
+    uiaction.name = *String::AsciiValue(jsaction->Get(name));
+    uiaction.icon = *String::AsciiValue(jsaction->Get(icon));
+    std::string hotkey_str = *String::AsciiValue(jsaction->Get(hotkey));
+    uiaction.hotkey = !hotkey_str.empty() ? hotkey_str[0] : '\0';
+    uiaction.tooltip = *String::AsciiValue(jsaction->Get(tooltip));
+    uiaction.targeting = static_cast<UIAction::TargetingType>(
+        jsaction->Get(targeting)->IntegerValue());
+    uiaction.range = jsaction->Get(range)->NumberValue();
+    uiaction.radius = jsaction->Get(radius)->NumberValue();
+    uiaction.state = static_cast<UIAction::ActionState>(
+        jsaction->Get(state)->Uint32Value());
+    uiaction.cooldown = jsaction->Get(cooldown)->NumberValue();
+    actions.push_back(uiaction);
+  }
+
+  e->setActions(actions);
+
+  return Undefined();
+}
+
+static Handle<Value> entitySetUIInfo(const Arguments &args) {
+  invariant(args.Length() == 1, "void setUIInfo(object ui_info)");
+
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  auto *e = static_cast<GameEntity *>(wrap->Value());
+  auto script = Game::get()->getScript();
+
+  auto jsinfo = args[0]->ToObject();
+
+  auto ui_info = GameEntity::UIInfo();
+  auto pid_str = String::New("pid");
+  invariant(jsinfo->Has(pid_str), "UIInfo must have pid");
+  e->setPlayerID(jsinfo->Get(pid_str)->IntegerValue());
+
+  auto parts_str = String::New("parts");
+  if (jsinfo->Has(parts_str)) {
+    auto parts = Handle<Array>::Cast(jsinfo->Get(parts_str));
+    for (int i = 0; i < parts->Length(); i++) {
+      auto jspart = Handle<Object>::Cast(parts->Get(i));
+      GameEntity::UIPart part;
+      part.health = script->jsToVec2(
+          Handle<Array>::Cast(jspart->Get(String::New("health"))));
+      part.tooltip = *String::AsciiValue(
+          jspart->Get(String::New("tooltip")));
+      part.name = *String::AsciiValue(
+          jspart->Get(String::New("name")));
+      auto jsupgrades = Handle<Array>::Cast(
+          jspart->Get(String::New("upgrades")));
+      for (int j = 0; j < jsupgrades->Length(); j++) {
+        auto jsupgrade = Handle<Object>::Cast(jsupgrades->Get(j));
+        GameEntity::UIPartUpgrade upgrade;
+        upgrade.part = part.name;
+        upgrade.name = *String::AsciiValue(jsupgrade->Get(String::New("name")));
+        part.upgrades.push_back(upgrade);
+      }
+      ui_info.parts.push_back(part);
+    }
+  }
+  auto mana = String::New("mana");
+  if (jsinfo->Has(mana)) {
+    ui_info.mana = script->jsToVec2(
+        Handle<Array>::Cast(jsinfo->Get(mana)));
+  }
+  auto capture = String::New("capture");
+  if (jsinfo->Has(capture)) {
+    ui_info.capture = script->jsToVec2(
+        Handle<Array>::Cast(jsinfo->Get(capture)));
+  }
+  auto cap_pid = String::New("cappingPlayerID");
+  ui_info.capture_pid = 0;
+  if (jsinfo->Has(cap_pid)) {
+    ui_info.capture_pid = jsinfo->Get(cap_pid)->IntegerValue();
+  }
+  auto retreat = String::New("retreat");
+  ui_info.retreat = false;
+  if (jsinfo->Has(retreat)) {
+    ui_info.retreat = jsinfo->Get(retreat)->BooleanValue();
+  }
+  auto hotkey = String::New("hotkey");
+  if (jsinfo->Has(hotkey)) {
+    std::string hotkey_str = *String::AsciiValue(jsinfo->Get(hotkey));
+    if (!hotkey_str.empty()) {
+      invariant(hotkey_str.size() == 1, "expected single character hotkey string");
+      ui_info.hotkey = hotkey_str[0];
+      invariant(isControlGroupHotkey(ui_info.hotkey), "bad hotkey in uiinfo");
+    }
+    auto *player = Game::get()->getPlayer(e->getPlayerID());
+    if (player && player->isLocal()) {
+      std::set<id_t> sel;
+      sel.insert(e->getID());
+      auto *lp = (LocalPlayer *)player;
+      lp->addSavedSelection(hotkey_str[0], sel);
+    }
+  }
+  auto minimap_icon = String::New("minimap_icon");
+  if (jsinfo->Has(minimap_icon)) {
+    ui_info.minimap_icon = *String::AsciiValue(jsinfo->Get(minimap_icon));
+  }
+
+  auto extra = String::New("extra");
+  invariant(jsinfo->Has(extra), "UIInfo should have extra map");
+  ui_info.extra = script->jsToJSON(jsinfo->Get(extra));
+
+  e->setUIInfo(ui_info);
+
   return Undefined();
 }
 
@@ -453,6 +588,12 @@ void GameScript::init() {
   entityTemplate_->Set(
       String::New("setPlayerID"),
       FunctionTemplate::New(entitySetPlayerID));
+  entityTemplate_->Set(
+      String::New("setActions"),
+      FunctionTemplate::New(entitySetActions));
+  entityTemplate_->Set(
+      String::New("setUIInfo"),
+      FunctionTemplate::New(entitySetUIInfo));
 
   entityTemplate_->Set(
       String::New("containsPoint"),

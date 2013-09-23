@@ -23,7 +23,6 @@ var Game = function () {
     for (var i = 0; i < messages.length; i++) {
       var message = messages[i];
       var type = must_have_idx(message, 'type');
-      Log('got message', JSON.stringify(messages[i]));
       if (type === MessageTypes.SPAWN) {
         spawnEntity(
           must_have_idx(message, 'name'),
@@ -149,6 +148,7 @@ var Game = function () {
         eid_to_render_entity[eid] = render_entity;
         render_entities[render_entity.getID()] = render_entity;
       }
+
       var entity_def = game_entity.getDefinition();
       if (entity_def.model) {
         render_entity.setModel(entity_def.model);
@@ -160,6 +160,11 @@ var Game = function () {
       render_entity.setProperties(game_entity.properties_);
       render_entity.setMaxSpeed(game_entity.currentSpeed_);
       render_entity.setSight(game_entity.getSight());
+
+      var ui_info = entityGetUIInfo(game_entity);
+      render_entity.setUIInfo(ui_info);
+      var actions = entityGetActions(game_entity);
+      render_entity.setActions(actions);
     }
     
     return {

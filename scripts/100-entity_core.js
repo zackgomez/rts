@@ -611,9 +611,7 @@ function entityHandleAction(entity, action_name, args) {
 
 // Returns an array of actions and their associated state.  This is
 // used by the UI to display the bottom bar.
-function entityGetActions(eid) {
-  var entity = Game.getEntity(eid);
-  invariant(entity, 'could not find entity for entityGetActions');
+function entityGetActions(entity) {
   if (!entity.actions_) {
     return [];
   }
@@ -642,10 +640,7 @@ function entityGetActions(eid) {
 
 // Returns info about this entity, like health or mana.
 // It is used by the UI to display this information
-function entityGetUIInfo(eid) {
-  var entity = Game.getEntity(eid);
-  invariant(entity, 'could not find entity for entityGetUIInfo');
-
+function entityGetUIInfo(entity) {
   var ui_info = {};
   if (entity.hasProperty(P_CAPPABLE)) {
     if (entity.cappingPlayerID_) {
