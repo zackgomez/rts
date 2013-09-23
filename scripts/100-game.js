@@ -86,9 +86,14 @@ var Game = function () {
       }
 
       // send to each ordered entity
-      var eid_arr = must_have_idx(input, 'entity');
-      for (var j = 0; j < eid_arr.length; j++) {
-        var entity = Game.getEntity(eid_arr[j]);
+      var render_id_arr = must_have_idx(input, 'entity');
+      for (var j = 0; j < render_id_arr.length; j++) {
+        var render_entity = render_entities[render_id_arr[j]];
+        if (!render_entity) {
+          continue;
+        }
+        var entity = Game.getEntity(render_entity.eid);
+        invariant(entity, "missing game entity for order");
         invariant(
           must_have_idx(input, 'from_pid') === entity.getPlayerID(),
           'can only recieve input from controlling player'
