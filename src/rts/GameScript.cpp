@@ -49,7 +49,7 @@ static Handle<Value> jsSpawnEntity(const Arguments &args) {
 }
 
 static Handle<Value> jsDestroyEntity(const Arguments &args) {
-  if (args.Length() < 2) return Undefined();
+  invariant(args.Length() == 1, "void DestroyEntity(int eid)");
   HandleScope scope(args.GetIsolate());
 
   id_t eid = args[0]->IntegerValue();

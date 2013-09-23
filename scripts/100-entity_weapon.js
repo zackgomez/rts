@@ -122,7 +122,7 @@ var Weapons = (function () {
 				};
 				MessageHub.sendMessage({
 					to: GAME_ID,
-					from: this.getID(),
+					from: entity.getID(),
 					type: MessageTypes.SPAWN,
 					name: 'projectile',
 					params: params,
