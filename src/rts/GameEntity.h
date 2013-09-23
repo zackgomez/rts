@@ -83,6 +83,12 @@ class GameEntity : public ModelEntity {
   }
   void setPlayerID(id_t pid);
 
+  void setUIInfo(const UIInfo &ui_info) {
+    uiInfo_ = ui_info;
+  };
+  void updateActions(const std::vector<UIAction> actions) {
+    actions_ = actions;
+  }
   void setTookDamage(int part_idx);
   Clock::time_point getLastTookDamage(uint32_t part) const;
   const std::vector<UIAction> &getActions() const {
@@ -137,8 +143,6 @@ class GameEntity : public ModelEntity {
   std::vector<UIAction> actions_;
 
   void resetTexture();
-  void updateUIInfo();
-  void updateActions();
 };
 };  // namespace rts
 

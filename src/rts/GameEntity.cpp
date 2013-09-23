@@ -115,9 +115,6 @@ void GameEntity::resolve(float dt) {
     }
     setSpeed(speed);
   }
-
-  updateUIInfo();
-  updateActions();
 }
 
 void GameEntity::checksum(Checksum &chksum) const {
