@@ -257,56 +257,31 @@ static Handle<Value> entityOnEvent(const Arguments &args) {
   return Undefined();
 }
 
-static Handle<Value> entityHasProperty(const Arguments &args) {
-  if (args.Length() < 1) return Undefined();
+static Handle<Value> entitySetPosition2(const Arguments &args) {
+  invariant(args.Length() == 1, "void setPosition2(vec2 p)");
 
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  auto *game_entity = static_cast<GameEntity *>(wrap->Value());
-  return scope.Close(Boolean::New(game_entity->hasProperty(args[0]->Uint32Value())));
+  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
+
+  auto js_pos = Handle<Array>::Cast(args[0]);
+  invariant(js_pos->Length() == 2, "expected vec2");
+  glm::vec2 new_pos(
+      js_pos->Get(Integer::New(0))->NumberValue(),
+      js_pos->Get(Integer::New(1))->NumberValue());
+  e->setPosition(new_pos);
+
+  return Undefined();
 }
 
 static Handle<Value> entityGetID(const Arguments &args) {
+  invariant(args.Length() == 0, "int getID()");
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   GameEntity *e = static_cast<GameEntity *>(wrap->Value());
-  Handle<Integer> ret = Integer::New(e->getID());
-  return scope.Close(ret);
-}
-
-static Handle<Value> entityGetTeamID(const Arguments &args) {
-  HandleScope scope(args.GetIsolate());
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
-  Handle<Integer> ret = Integer::New(e->getTeamID());
-  return scope.Close(ret);
-}
-
-static Handle<Value> entityGetPosition2(const Arguments &args) {
-  HandleScope scope(args.GetIsolate());
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
-  auto pos2 = e->getPosition2();
-  Handle<Array> ret = Array::New(2);
-  ret->Set(0, Number::New(pos2.x));
-  ret->Set(1, Number::New(pos2.y));
-  return scope.Close(ret);
-}
-
-static Handle<Value> entityGetDirection(const Arguments &args) {
-  HandleScope scope(args.GetIsolate());
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
-  auto pos2 = e->getDirection();
-  Handle<Array> ret = Array::New(2);
-  ret->Set(0, Number::New(pos2.x));
-  ret->Set(1, Number::New(pos2.y));
-  return scope.Close(ret);
+  return scope.Close(Integer::New(e->getID()));
 }
 
 static Handle<Value> entityGetAngle(const Arguments &args) {
@@ -453,27 +428,15 @@ void GameScript::init() {
       Persistent<ObjectTemplate>::New(isolate_, ObjectTemplate::New());
   entityTemplate_->SetInternalFieldCount(1);
   entityTemplate_->Set(
-      String::New("hasProperty"),
-      FunctionTemplate::New(entityHasProperty));
-  entityTemplate_->Set(
       String::New("getID"),
       FunctionTemplate::New(entityGetID));
-  entityTemplate_->Set(
-      String::New("getTeamID"),
-      FunctionTemplate::New(entityGetTeamID));
-  entityTemplate_->Set(
-      String::New("getPosition2"),
-      FunctionTemplate::New(entityGetPosition2));
-  entityTemplate_->Set(
-      String::New("getDirection"),
-      FunctionTemplate::New(entityGetDirection));
-  entityTemplate_->Set(
-      String::New("getAngle"),
-      FunctionTemplate::New(entityGetAngle));
 
   entityTemplate_->Set(
       String::New("setModel"),
       FunctionTemplate::New(entitySetModel));
+  entityTemplate_->Set(
+      String::New("setPosition2"),
+      FunctionTemplate::New(entitySetPosition2));
   entityTemplate_->Set(
       String::New("setMaxSpeed"),
       FunctionTemplate::New(entitySetMaxSpeed));
@@ -490,18 +453,6 @@ void GameScript::init() {
   entityTemplate_->Set(
       String::New("setPlayerID"),
       FunctionTemplate::New(entitySetPlayerID));
-  entityTemplate_->Set(
-      String::New("remainStationary"),
-      FunctionTemplate::New(entityRemainStationary));
-  entityTemplate_->Set(
-      String::New("turnTowards"),
-      FunctionTemplate::New(entityTurnTowards));
-  entityTemplate_->Set(
-      String::New("moveTowards"),
-      FunctionTemplate::New(entityMoveTowards));
-  entityTemplate_->Set(
-      String::New("warpPosition"),
-      FunctionTemplate::New(entityWarpPosition));
 
   entityTemplate_->Set(
       String::New("containsPoint"),
