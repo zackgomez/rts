@@ -25,6 +25,38 @@ void checkJSResult(
   }
 }
 
+static Handle<Value> jsPointInOBB2(const Arguments &args);
+static Handle<Value> getCollisionBinding() {
+  HandleScope scope;
+  auto binding = Object::New();
+  binding->Set(
+      String::New("pointInOBB2"),
+      FunctionTemplate::New(jsPointInOBB2)->GetFunction());
+
+  return scope.Close(binding);
+}
+
+static Handle<Value> jsLocationVisible(const Arguments &args);
+static Handle<Value> getPathingBinding() {
+  HandleScope scope;
+  auto binding = Object::New();
+  binding->Set(
+      String::New("locationVisible"),
+      FunctionTemplate::New(jsLocationVisible)->GetFunction());
+
+  return scope.Close(binding);
+}
+
+static Handle<Value> jsRuntimeBinding(const Arguments &args) {
+  invariant(args.Length() == 1, "value runtime.binding(string name)");
+  HandleScope scope(args.GetIsolate());
+
+  auto name = Handle<String>::Cast(args[0]);
+  auto binding_map = Game::get()->getScript()->getBindings();
+  invariant(binding_map->Has(args[0]), "unknown binding");
+  return scope.Close(binding_map->Get(name));
+}
+
 static Handle<Value> jsGameRandom(const Arguments &args) {
   return Number::New(Game::get()->gameRandom());
 }
@@ -105,17 +137,17 @@ static Handle<Value> jsGetNearbyEntities(const Arguments &args) {
   return Undefined();
 }
 
-static Handle<Value> entityContainsPoint(const Arguments &args) {
-  if (args.Length() < 1) return Undefined();
+static Handle<Value> jsPointInOBB2(const Arguments &args) {
+  invariant(args.Length() == 4, "bool pointInOBB2(p, center, size, angle)");
   HandleScope scope(args.GetIsolate());
+  auto script = Game::get()->getScript();
 
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
-  const glm::vec2 pt = Game::get()->getScript()->jsToVec2(
-      Handle<Array>::Cast(args[0]));
+  auto pt = script->jsToVec2(Handle<Array>::Cast(args[0]));
+  auto center = script->jsToVec2(Handle<Array>::Cast(args[1]));
+  auto size = script->jsToVec2(Handle<Array>::Cast(args[2]));
+  auto angle = args[3]->NumberValue();
 
-  bool contains = entity->pointInEntity(pt);
+  bool contains = pointInBox(pt, center, size, angle);
   return scope.Close(Boolean::New(contains));
 }
 
@@ -154,18 +186,16 @@ static Handle<Value> entityDistanceToEntity(const Arguments &args) {
   return scope.Close(Number::New(dist));
 }
 
-static Handle<Value> entityIsVisibleTo(const Arguments &args) {
-  invariant(args.Length() == 1, "expected (id_t pid)");
+static Handle<Value> jsLocationVisible(const Arguments &args) {
+  invariant(args.Length() == 2, "expected (id_t pid, vec2 pt)");
   HandleScope scope(args.GetIsolate());
-
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
+  auto script = Game::get()->getScript();
 
   id_t pid = args[0]->IntegerValue();
+  glm::vec2 pt = script->jsToVec2(Handle<Array>::Cast(args[1]));
 
   auto vismap = Game::get()->getVisibilityMap(pid);
-  bool visible = vismap->locationVisible(entity->getPosition2());
+  bool visible = vismap->locationVisible(pt);
 
   return scope.Close(Boolean::New(visible));
 }
@@ -330,17 +360,30 @@ static Handle<Value> entitySetSight(const Arguments &args) {
 }
 
 static Handle<Value> entitySetSize(const Arguments &args) {
-  invariant(args.Length() == 1, "setSetSize takes 1 arg");
+  invariant(args.Length() == 1, "setSize takes 1 arg");
 
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   GameEntity *e = static_cast<GameEntity *>(wrap->Value());
 
-  glm::vec3 size = Game::get()->getScript()->jsToVec3(
+  glm::vec2 size = Game::get()->getScript()->jsToVec2(
       Handle<Array>::Cast(args[0]));
-  e->setSize(glm::vec2(size));
-  e->setHeight(size.z);
+  e->setSize(size);
+
+  return Undefined();
+}
+
+static Handle<Value> entitySetHeight(const Arguments &args) {
+  invariant(args.Length() == 1, "setHeight takes 1 arg");
+
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
+
+  float height = args[0]->NumberValue();
+  e->setHeight(height);
 
   return Undefined();
 }
@@ -520,6 +563,7 @@ GameScript::~GameScript() {
     Context::Scope context_scope(isolate_, context_);
 
     entityTemplate_.Dispose();
+    jsBindings_.Dispose();
     context_.Dispose(isolate_);
   }
   isolate_->Exit();
@@ -559,6 +603,23 @@ void GameScript::init() {
   context_.Reset(isolate_, Context::New(isolate_, nullptr, global));
   Context::Scope context_scope(isolate_, context_);
 
+  // init bindings
+  jsBindings_ = Persistent<Object>::New(isolate_, Object::New());
+  jsBindings_->Set(
+      String::New("collision"),
+      getCollisionBinding());
+  jsBindings_->Set(
+      String::New("pathing"),
+      getPathingBinding());
+
+  // set up runtime object
+  auto runtime_object = Object::New();
+  runtime_object->Set(
+      String::New("binding"),
+      FunctionTemplate::New(jsRuntimeBinding)->GetFunction());
+  context_->Global()->Set(String::New("runtime"), runtime_object);
+
+  // define entity object
   entityTemplate_ =
       Persistent<ObjectTemplate>::New(isolate_, ObjectTemplate::New());
   entityTemplate_->SetInternalFieldCount(1);
@@ -579,6 +640,9 @@ void GameScript::init() {
       String::New("setSize"),
       FunctionTemplate::New(entitySetSize));
   entityTemplate_->Set(
+      String::New("setHeight"),
+      FunctionTemplate::New(entitySetHeight));
+  entityTemplate_->Set(
       String::New("setSight"),
       FunctionTemplate::New(entitySetSight));
 
@@ -596,17 +660,11 @@ void GameScript::init() {
       FunctionTemplate::New(entitySetUIInfo));
 
   entityTemplate_->Set(
-      String::New("containsPoint"),
-      FunctionTemplate::New(entityContainsPoint));
-  entityTemplate_->Set(
       String::New("distanceToEntity"),
       FunctionTemplate::New(entityDistanceToEntity));
   entityTemplate_->Set(
       String::New("distanceToPoint"),
       FunctionTemplate::New(entityDistanceToPoint));
-  entityTemplate_->Set(
-      String::New("isVisibleTo"),
-      FunctionTemplate::New(entityIsVisibleTo));
 
   entityTemplate_->Set(
       String::New("onEvent"),
@@ -706,27 +764,21 @@ Json::Value GameScript::jsToJSON(const Handle<Value> js) const {
 }
 
 glm::vec2 GameScript::jsToVec2(const Handle<Array> arr) const {
+  invariant(
+      arr->Length() == 2,
+      "trying to convert an incorrectly sized array to vec2");
+
   glm::vec2 ret;
-
-  if (arr->Length() != 2) {
-    LOG(WARNING) << "Trying to convert array of size "
-      << arr->Length() << " to vec2\n";
-    return ret;
-  }
-
   ret.x = arr->Get(0)->NumberValue();
   ret.y = arr->Get(1)->NumberValue();
   return ret;
 }
 glm::vec3 GameScript::jsToVec3(const Handle<Array> arr) const {
+  invariant(
+      arr->Length() == 3,
+      "trying to convert an incorrectly sized array to vec2");
+
   glm::vec3 ret;
-
-  if (arr->Length() != 3) {
-    LOG(WARNING) << "Trying to convert array of size "
-      << arr->Length() << " to vec3\n";
-    return ret;
-  }
-
   ret.x = arr->Get(0)->NumberValue();
   ret.y = arr->Get(1)->NumberValue();
   ret.z = arr->Get(2)->NumberValue();

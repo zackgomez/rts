@@ -5,7 +5,8 @@
 // --
 
 // This function is called on an entity when it is created.
-function entityInit(entity, id, name, params) {
+function entityInit(id, name, params) {
+  var entity = {};
   var def = must_have_idx(EntityDefs, name);
 
   entity.id_ = id;
@@ -19,6 +20,8 @@ function entityInit(entity, id, name, params) {
   entity.properties_ = def.properties || [];
   entity.maxSpeed_ = def.speed || 0;
   entity.sight_ = def.sight || 0;
+  entity.size_ = def.size_ || [0, 0];
+  entity.height_ = def.height_ || 0;
   entity.pos_ = params.pos || [0, 0];
   entity.angle = params.angle || 0;
   entity.currentSpeed_ = 0;
@@ -128,6 +131,15 @@ function entityInit(entity, id, name, params) {
   };
   entity.getPosition2 = function () {
     return this.pos_;
+  };
+  entity.getSize = function () {
+    return this.size_;
+  };
+  entity.getHeight = function () {
+    return this.height_;
+  };
+  entity.getAngle = function () {
+    return this.angle_;
   };
   entity.getSight = function () {
     return this.sight_;
@@ -297,6 +309,20 @@ function entityInit(entity, id, name, params) {
     }
     return modified_parts;
   };
+
+  entity.containsPoint = function (p) {
+    return Collision.pointInOBB2(
+      p,
+      this.getPosition2(),
+      this.getSize(),
+      this.getAngle()
+    );
+  };
+  entity.isVisibleTo = function (pid) {
+    return Pathing.locationVisible(pid, this.getPosition2());
+  };
+
+  return entity;
 }
 
 // Helper function that clears out the deltas at the end of the resolve.

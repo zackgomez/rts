@@ -35,6 +35,13 @@ public:
     return entityTemplate_;
   }
 
+  // TODO(zack): replace with getBinding(const char *name) const that does
+  // lazy loading of new bindings.  binding would have init method that returns
+  // a value as its binding.
+  v8::Handle<v8::Object> getBindings() const {
+    return jsBindings_;
+  }
+
   v8::Handle<v8::Value> jsonToJS(const Json::Value &json) const;
   Json::Value jsToJSON(const v8::Handle<v8::Value> json) const;
   glm::vec2 jsToVec2(const v8::Handle<v8::Array> js) const;
@@ -45,6 +52,7 @@ private:
   v8::Persistent<v8::Context> context_;
   v8::Isolate *isolate_;
 
+  v8::Persistent<v8::Object> jsBindings_;
   v8::Persistent<v8::ObjectTemplate> entityTemplate_;
 
   void loadScripts();

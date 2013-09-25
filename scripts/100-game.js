@@ -9,8 +9,7 @@ var Game = function () {
   // returns the ID of the spawned entity
   var spawnEntity = function (name, params) {
     var id = last_id++;
-    var entity = {};
-    entityInit(entity, id, name, params);
+    var entity = entityInit(id, name, params);
 
     entities[entity.getID()] = entity;
 
@@ -158,9 +157,8 @@ var Game = function () {
       if (entity_def.model) {
         render_entity.setModel(entity_def.model);
       }
-      if (entity_def.size) {
-        render_entity.setSize(entity_def.size)
-      }
+      render_entity.setSize(game_entity.getSize());
+      render_entity.setHeight(game_entity.getHeight());
       render_entity.setPosition2(game_entity.getPosition2());
       render_entity.setProperties(game_entity.properties_);
       render_entity.setMaxSpeed(game_entity.currentSpeed_);
