@@ -20,10 +20,10 @@ function entityInit(id, name, params) {
   entity.properties_ = def.properties || [];
   entity.maxSpeed_ = def.speed || 0;
   entity.sight_ = def.sight || 0;
-  entity.size_ = def.size_ || [0, 0];
-  entity.height_ = def.height_ || 0;
+  entity.size_ = def.size || [0, 0];
+  entity.height_ = def.height || 0;
   entity.pos_ = params.pos || [0, 0];
-  entity.angle = params.angle || 0;
+  entity.angle_ = params.angle || 0;
   entity.currentSpeed_ = 0;
 
   // TODO(zack): some kind of copy properties or something, this sucks
@@ -134,6 +134,12 @@ function entityInit(id, name, params) {
   };
   entity.getSize = function () {
     return this.size_;
+  };
+  entity.getDirection = function () {
+    return [
+      Math.cos(this.angle_),
+      Math.sin(this.angle_),
+    ];
   };
   entity.getHeight = function () {
     return this.height_;

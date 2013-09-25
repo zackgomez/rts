@@ -149,7 +149,6 @@ function ProductionAction(params) {
   };
 
   this.exec = function (entity, target) {
-    Log(entity.getID(), 'starting', this.params.prod_name);
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
     Players.getPlayer(entity.getPlayerID()).addRequisition(
       -this.params.req_cost
