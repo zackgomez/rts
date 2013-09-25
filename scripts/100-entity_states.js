@@ -195,7 +195,7 @@ function ProjectileState(params) {
   this.update = function (entity) {
     var target = Game.getEntity(this.targetID);
     if (!target) {
-      entity.destroy();
+      entity.deltas.should_destroy = true;
       return null;
     }
 
@@ -210,7 +210,7 @@ function ProjectileState(params) {
         health_target: this.health_target,
         on_hit_cooldowns: this.on_hit_cooldowns,
       });
-      entity.destroy();
+      entity.deltas.should_destroy = true;
     }
 
     entity.moveTowards(target.getPosition2());
