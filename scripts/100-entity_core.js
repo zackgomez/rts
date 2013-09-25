@@ -184,6 +184,12 @@ function entityInit(id, name, params) {
     };
     return this;
   };
+  entity.warpPosition = function (pt) {
+    this.movementIntent_ = {
+      warp: pt,
+    };
+    return this;
+  };
 
   // Find entities near the current one.
   // Calls the passed callback for each entity in range.
