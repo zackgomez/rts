@@ -135,7 +135,13 @@ var Game = function () {
     }
 
     var new_bodies = Pathing.stepAllForward(entities, dt);
-    // TODO(zack): set new body positions
+    for (var key in new_bodies) {
+      var entity = must_have_idx(entities, key);
+      var body = new_bodies[key];
+      // HACK ALERT
+      entity.pos_ = body.pos;
+      entity.angle_ = body.angle;
+    }
 
     var players = Players.getPlayers();
     for (var pid in players) {

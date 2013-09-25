@@ -11,6 +11,11 @@ var Collision = function () {
 var Pathing = function () {
   var exports = {}
 
+  // HACK ALERT
+  _.mixin({ mapValues: function (obj, f_val) {
+      return _.object(_.keys(obj), _.map(obj, f_val));
+  }});
+
   var binding = runtime.binding('pathing');
 
   var update_body = function (body, dt) {
@@ -58,7 +63,7 @@ var Pathing = function () {
   // getSpeed()
   // getMovementIntent()
   exports.stepAllForward = function (bodies, dt) {
-    return _.map(bodies, function (body) { return update_body(body, dt); });
+    return _.mapValues(bodies, function (body) { return update_body(body, dt); });
 
     // TODO collision detection
     // TODO make warp's not interpolate
