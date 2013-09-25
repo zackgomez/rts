@@ -124,9 +124,16 @@ function vecDistance(v1, v2) {
   return vecLength(vecSub(v1, v2));
 }
 
+// Returns angle between vector and [1, 0] in degrees
+function vecAngle(v) {
+  invariant(v.length === 2, 'can only get angle between 2d vectors');
+  return 180 / Math.PI * Math.atan2(v[1], v[0]);
+}
+
 function vecAngleBetween(v1, v2) {
-  // cosθ = a.b / |a||b|
-  return 180 / Math.PI * Math.acos(vecDot(v1, v2) / (vecLength(v1) * vecLength(v2)));
+  invariant(v1.length === 2, 'can only get angle between 2d vectors');
+  var diff = vecSub(v1, v2);
+  return 180 / Math.PI * Math.atan2(diff[1], diff[0]);
 }
 
 function invariant(condition, message) {

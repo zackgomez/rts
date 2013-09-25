@@ -31,7 +31,7 @@ var Pathing = function () {
     }
 
     if (movement_intent.look_at) {
-      angle = vecAngleBetween(vecSub(movement_intent.look_at, pos), [1, 0]);
+      angle = vecAngle(vecSub(movement_intent.look_at, pos));
     }
 
     if (movement_intent.warp) {

@@ -344,7 +344,7 @@ function entityInit(id, name, params) {
   };
   entity.distanceToEntity = function (entity) {
     // TODO(zack): upgrade to point - obb test
-    return vecLength(vecSub(entity.getPosition2(), this.getPosition2()));
+    return vecDistance(entity.getPosition2(), this.getPosition2());
   };
 
   return entity;
