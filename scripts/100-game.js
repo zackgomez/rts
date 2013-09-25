@@ -171,10 +171,13 @@ var Game = function () {
       }
       render_entity.setSize(game_entity.getSize());
       render_entity.setHeight(game_entity.getHeight());
-      render_entity.setPosition2(game_entity.getPosition2());
       render_entity.setProperties(game_entity.properties_);
-      render_entity.setMaxSpeed(game_entity.currentSpeed_);
       render_entity.setSight(game_entity.getSight());
+
+      // TODO(zack): have these do interpolation
+      //render_entity.setMaxSpeed(game_entity.currentSpeed_);
+      render_entity.setPosition2(game_entity.getPosition2());
+      render_entity.setAngle(game_entity.getAngle());
 
       var ui_info = entityGetUIInfo(game_entity);
       render_entity.setUIInfo(ui_info);

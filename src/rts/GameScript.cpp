@@ -305,6 +305,19 @@ static Handle<Value> entitySetPosition2(const Arguments &args) {
   return Undefined();
 }
 
+static Handle<Value> entitySetAngle(const Arguments &args) {
+  invariant(args.Length() == 1, "void setAngle(float a)");
+
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
+
+  e->setAngle(args[0]->NumberValue());
+
+  return Undefined();
+}
+
 static Handle<Value> entityGetID(const Arguments &args) {
   invariant(args.Length() == 0, "int getID()");
   HandleScope scope(args.GetIsolate());
@@ -401,20 +414,6 @@ static Handle<Value> entitySetProperties(const Arguments &args) {
     e->addProperty(js_properties->Get(Integer::New(i))->IntegerValue());
   }
 
-  return Undefined();
-}
-
-static Handle<Value> entitySetPlayerID(const Arguments &args) {
-  if (args.Length() < 1) return Undefined();
-
-  HandleScope scope(args.GetIsolate());
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  auto *e = static_cast<GameEntity *>(wrap->Value());
-  auto player = Game::get()->getPlayer(args[0]->IntegerValue());
-  if (player) {
-    e->setPlayerID(player->getPlayerID());
-  }
   return Undefined();
 }
 
@@ -634,6 +633,9 @@ void GameScript::init() {
       String::New("setPosition2"),
       FunctionTemplate::New(entitySetPosition2));
   entityTemplate_->Set(
+      String::New("setAngle"),
+      FunctionTemplate::New(entitySetAngle));
+  entityTemplate_->Set(
       String::New("setMaxSpeed"),
       FunctionTemplate::New(entitySetMaxSpeed));
   entityTemplate_->Set(
@@ -649,9 +651,6 @@ void GameScript::init() {
   entityTemplate_->Set(
       String::New("setProperties"),
       FunctionTemplate::New(entitySetProperties));
-  entityTemplate_->Set(
-      String::New("setPlayerID"),
-      FunctionTemplate::New(entitySetPlayerID));
   entityTemplate_->Set(
       String::New("setActions"),
       FunctionTemplate::New(entitySetActions));

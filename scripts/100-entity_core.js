@@ -340,7 +340,7 @@ function entityInit(id, name, params) {
     return Pathing.locationVisible(pid, this.getPosition2());
   };
   entity.distanceToPoint = function (pt) {
-    return vecDistance(vecSub(pt, this.getPosition2()));
+    return vecDistance(pt, this.getPosition2());
   };
   entity.distanceToEntity = function (entity) {
     // TODO(zack): upgrade to point - obb test
