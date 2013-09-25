@@ -67,11 +67,22 @@ var EntityStatus = {
 // -- Utility --
 // --
 function vecAdd(v1, v2) {
-  if (v1.length != v2.length) return undefined;
+  invariant(v1.length === v2.length, "vectors must have same length");
 
   var ret = [];
   for (var i = 0; i < v1.length; i++) {
     ret.push(v1[i] + v2[i]);
+  }
+  return ret;
+}
+
+// returns v1 - v2
+function vecSub(v1, v2) {
+  invariant(v1.length === v2.length, "vectors must have same length");
+
+  var ret = [];
+  for (var i = 0; i < v1.length; i++) {
+    ret.push(v1[i] - v2[i]);
   }
   return ret;
 }
@@ -82,6 +93,27 @@ function vecMul(v, s) {
     ret.push(v[i] * s);
   }
   return ret;
+}
+
+function vecDot(v1, v2) {
+  invariant(
+    v1.length === v2.length,
+    "must have same sized vectors to dot"
+  );
+
+  var dot = 0;
+  for (var i = 0; i < v1.length; i++) {
+    dot += v1[i] * v2[i];
+  }
+  return dot;
+};
+
+function vecLength2(v) {
+  return vecDot(v, v);
+};
+
+function vecLength(v) {
+  return Math.sqrt(vecLength2(v));
 }
 
 function invariant(condition, message) {

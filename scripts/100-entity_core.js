@@ -321,6 +321,9 @@ function entityInit(id, name, params) {
   entity.isVisibleTo = function (pid) {
     return Pathing.locationVisible(pid, this.getPosition2());
   };
+  entity.distanceToPoint = function (pt) {
+    return vecLength(vecSub(pt, this.getPosition2()));
+  };
 
   return entity;
 }
