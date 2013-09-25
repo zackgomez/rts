@@ -116,6 +116,19 @@ function vecLength(v) {
   return Math.sqrt(vecLength2(v));
 }
 
+function vecNormalize(v) {
+  return vecMul(v, 1 / vecLength(v));
+}
+
+function vecDistance(v1, v2) {
+  return vecLength(vecSub(v1, v2));
+}
+
+function vecAngleBetween(v1, v2) {
+  // cosθ = a.b / |a||b|
+  return 180 / Math.PI * Math.acos(vecDot(v1, v2) / (vecLength(v1) * vecLength(v2)));
+}
+
 function invariant(condition, message) {
   if (!condition) {
     invariant_violation(message);

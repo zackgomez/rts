@@ -137,9 +137,15 @@ function entityInit(id, name, params) {
   };
   entity.getDirection = function () {
     return [
-      Math.cos(this.angle_),
-      Math.sin(this.angle_),
+      Math.cos(this.angle_ * Math.PI / 180),
+      Math.sin(this.angle_ * Math.PI / 180),
     ];
+  };
+  entity.getMovementIntent = function () {
+    return this.movementIntent_;
+  }
+  entity.getSpeed = function () {
+    return this.currentSpeed_;
   };
   entity.getHeight = function () {
     return this.height_;
@@ -334,7 +340,11 @@ function entityInit(id, name, params) {
     return Pathing.locationVisible(pid, this.getPosition2());
   };
   entity.distanceToPoint = function (pt) {
-    return vecLength(vecSub(pt, this.getPosition2()));
+    return vecDistance(vecSub(pt, this.getPosition2()));
+  };
+  entity.distanceToEntity = function (entity) {
+    // TODO(zack): upgrade to point - obb test
+    return vecLength(vecSub(entity.getPosition2(), this.getPosition2()));
   };
 
   return entity;

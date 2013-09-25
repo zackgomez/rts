@@ -109,6 +109,7 @@ var Game = function () {
       entityUpdate(entities[eid], dt);
     }
 
+
     // TODO(zack): remove this, and replace with 'state creation'
     // when the time comes
     // 'resolve' entities
@@ -133,6 +134,9 @@ var Game = function () {
       eids_by_player[pid][entity.getName()] = eid;
     }
 
+    var new_bodies = Pathing.stepAllForward(entities, dt);
+    // TODO(zack): set new body positions
+
     var players = Players.getPlayers();
     for (var pid in players) {
       players[pid].units = must_have_idx(eids_by_player, pid);
@@ -140,6 +144,8 @@ var Game = function () {
 
     // spawn entities, handle resources, etc
     handleMessages();
+
+    // TODO(zack): check win condition
   };
 
   exports.render = function () {
