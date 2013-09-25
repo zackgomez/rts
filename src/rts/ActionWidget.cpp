@@ -65,7 +65,7 @@ void ActionWidget::render(float dt) {
     }
 
     if (action_hover && action.radius > 0) {
-      auto ent = Game::get()->getEntity(action.owner);
+      auto ent = Game::get()->getEntity(action.render_id);
       if (ent) {
         auto pos = ent->getPosition(simdt) + glm::vec3(0, 0, 0.1f);
         glm::mat4 transform = glm::scale(

@@ -72,7 +72,7 @@ class Game {
 
   void destroyEntity(id_t eid);
   GameEntity * getEntity(id_t eid);
-  const GameEntity * getEntity(id_t eid) const;
+  const GameEntity * getEntity(const std::string &game_id) const;
   const GameEntity * findEntity(std::function<bool(const GameEntity *)> f) const;
   const Player * getPlayer(id_t pid) const;
   const std::vector<Player *>& getPlayers() const { return players_; }

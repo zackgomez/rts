@@ -110,29 +110,26 @@ class LocalPlayer : public Player {
     return true;
   }
 
-  void setSelection(const std::set<id_t> &selection) {
+  void setSelection(const std::set<std::string> &selection) {
     selection_ = selection;
   }
-  void setSelection(std::set<id_t> &&selection) {
-    selection_ = std::move(selection);
+  bool isSelected(const std::string &game_id) const {
+    return selection_.find(game_id) != selection_.end();
   }
-  bool isSelected(id_t eid) const {
-    return selection_.find(eid) != selection_.end();
-  }
-  const std::set<id_t>& getSelection() const {
+  const std::set<std::string>& getSelection() const {
     return selection_;
   }
 
-  virtual void addSavedSelection(char hotkey, const std::set<id_t> &sel) {
+  virtual void addSavedSelection(char hotkey, const std::set<std::string> &sel) {
     savedSelections_[hotkey] = sel;
   }
-  const std::map<char, std::set<id_t>> getSavedSelections() const {
+  const std::map<char, std::set<std::string>> getSavedSelections() const {
     return savedSelections_;
   }
-  std::set<id_t> getSavedSelection(char hotkey) const {
+  std::set<std::string> getSavedSelection(char hotkey) const {
     auto it = savedSelections_.find(hotkey);
     if (it == savedSelections_.end()) {
-      return std::set<id_t>();
+      return std::set<std::string>();
     }
     return it->second;
   }
@@ -143,8 +140,8 @@ class LocalPlayer : public Player {
 
   std::queue<PlayerAction> actions_;
   std::mutex actionMutex_;
-  std::set<id_t> selection_;
-  std::map<char, std::set<id_t>> savedSelections_;
+  std::set<std::string> selection_;
+  std::map<char, std::set<std::string>> savedSelections_;
 };
 
 class DummyPlayer : public Player {

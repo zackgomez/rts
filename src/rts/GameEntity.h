@@ -82,6 +82,12 @@ class GameEntity : public ModelEntity {
     sight_ = sight;
   }
   void setPlayerID(id_t pid);
+  void setGameID(const std::string &id) {
+    gameID_ = id;
+  }
+  const std::string& getGameID() const {
+    return gameID_;
+  }
 
   void setUIInfo(const UIInfo &ui_info) {
     uiInfo_ = ui_info;
@@ -124,6 +130,7 @@ class GameEntity : public ModelEntity {
 
  protected:
   id_t playerID_;
+  std::string gameID_;
 
   bool warp_;
   glm::vec2 warpTarget_;

@@ -118,7 +118,7 @@ void MinimapWidget::render(float dt) {
     } else {
       if (!player) { //no player
         pcolor =  vec3Param("colors.minimap.neutral");
-      } else if (localPlayer->isSelected(e->getID())) { //selected
+      } else if (localPlayer->isSelected(e->getGameID())) { //selected
         pcolor = vec3Param("colors.minimap.local_selected");
       } else if (player->getPlayerID() == localPlayerID_) { //local player
         pcolor = vec3Param("colors.minimap.local");

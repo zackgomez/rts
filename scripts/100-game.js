@@ -3,7 +3,6 @@ var Game = function () {
 
   var entities = {};
   var eid_to_render_entity = {};
-  var render_entities = {};
   var last_id = STARTING_EID;
 
   // returns the ID of the spawned entity
@@ -44,10 +43,8 @@ var Game = function () {
   };
 
   exports.getNearbyEntities = function (pos2, range, callback) {
-    GetNearbyEntities(pos2, range, function (render_id) {
-      var render_entity = render_entities[render_id];
-      invariant(render_entity, "unknown render id passed to getNearbyEntities");
-      var game_entity = entities[render_entity.eid];
+    GetNearbyEntities(pos2, range, function (id) {
+      var game_entity = entities[id];
       invariant(game_entity, "invalid entity for getNearbyEntities callback");
       return callback(game_entity);
     });
@@ -85,21 +82,17 @@ var Game = function () {
       }
 
       // send to each ordered entity
-      var render_id_arr = must_have_idx(input, 'entity');
-      for (var j = 0; j < render_id_arr.length; j++) {
-        var render_entity = render_entities[render_id_arr[j]];
-        if (!render_entity) {
+      var id_arr = must_have_idx(input, 'entity');
+      for (var j = 0; j < id_arr.length; j++) {
+        var entity = entities[id_arr[j]];
+        if (!entity) {
+          Log('message to unknown entity', id_arr[j]);
           continue;
         }
-        var entity = Game.getEntity(render_entity.eid);
-        invariant(entity, "missing game entity for order");
         invariant(
           must_have_idx(input, 'from_pid') === entity.getPlayerID(),
           'can only recieve input from controlling player'
         );
-        if (!entity) {
-          continue;
-        }
         entityHandleOrder(entity, input);
       }
     }
@@ -160,11 +153,11 @@ var Game = function () {
       var render_entity = eid_to_render_entity[eid];
       if (!render_entity) {
         render_entity = SpawnRenderEntity();
-        render_entity.eid = eid;
         eid_to_render_entity[eid] = render_entity;
-        render_entities[render_entity.getID()] = render_entity;
       }
 
+      render_entity.eid = eid;
+      render_entity.setGameID(eid);
       var entity_def = game_entity.getDefinition();
       if (entity_def.model) {
         render_entity.setModel(entity_def.model);

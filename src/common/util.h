@@ -38,6 +38,7 @@ std::ostream& operator<< (std::ostream &os, const glm::vec2 &v);
 std::ostream& operator<< (std::ostream &os, const glm::vec3 &v);
 std::ostream& operator<< (std::ostream &os, const glm::vec4 &v);
 
+Json::Value toJson(const std::string &s);
 Json::Value toJson(const glm::vec2 &v);
 Json::Value toJson(const glm::vec3 &v);
 Json::Value toJson(const glm::vec4 &v);

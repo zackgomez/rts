@@ -393,13 +393,11 @@ GameEntity * Game::getEntity(id_t eid) {
   return (GameEntity *)it->second;
 }
 
-const GameEntity * Game::getEntity(id_t eid) const {
-  auto entities = Renderer::get()->getEntities();
-  auto it = entities.find(eid);
-  if (it == entities.end() || !it->second->hasProperty(GameEntity::P_GAMEENTITY)) {
-    return nullptr;
-  }
-  return (const GameEntity *)it->second;
+const GameEntity * Game::getEntity(const std::string &game_id) const {
+  // TODO this is horribly inefficient :-/
+  return findEntity([=](const GameEntity *e) -> bool {
+        return e->getGameID() == game_id;
+      });
 }
 
 const GameEntity * Game::findEntity(
@@ -441,7 +439,7 @@ float Game::getRequisition(id_t pid) const {
   return it->second;
 }
 
-// Populate victoryPoints_ map from JS values.
+// Reconcile javascript state with engine state
 void Game::renderJS() {
   using namespace v8;
   auto script = Game::get()->getScript();

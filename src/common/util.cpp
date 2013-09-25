@@ -32,6 +32,10 @@ std::ostream& operator<< (std::ostream &os, const glm::vec4 &v) {
   return os;
 }
 
+Json::Value toJson(const std::string &s) {
+  return s;
+}
+
 Json::Value toJson(const glm::vec2 &v) {
   Json::Value jv;
   jv[0] = v[0];

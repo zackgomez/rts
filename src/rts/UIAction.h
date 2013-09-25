@@ -21,7 +21,8 @@ struct UIAction {
     UNAVAILABLE = 3,
   };
 
-  id_t owner;
+  id_t render_id;
+  std::string owner_id;
   std::string name;
   char hotkey;
   std::string icon;

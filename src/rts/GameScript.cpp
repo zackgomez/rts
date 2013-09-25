@@ -126,9 +126,12 @@ static Handle<Value> jsGetNearbyEntities(const Arguments &args) {
       if (!e->hasProperty(GameEntity::P_GAMEENTITY)) {
         return true;
       }
+      auto game_entity = (GameEntity *)e;
       TryCatch try_catch;
       const int argc = 1;
-      Handle<Value> argv[argc] = {Integer::New(e->getID())};
+      Handle<Value> argv[argc] = {
+        String::New(game_entity->getGameID().c_str()),
+      };
       auto ret = callback->Call(args.Holder(), argc, argv);
       checkJSResult(ret, try_catch, "getNearbyEntities callback:");
       return ret->BooleanValue();
@@ -327,13 +330,16 @@ static Handle<Value> entityGetID(const Arguments &args) {
   return scope.Close(Integer::New(e->getID()));
 }
 
-static Handle<Value> entityGetAngle(const Arguments &args) {
+static Handle<Value> entitySetGameID(const Arguments &args) {
+  invariant(args.Length() == 1, "setGameID(string id)");
+
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   GameEntity *e = static_cast<GameEntity *>(wrap->Value());
-  Handle<Value> ret = Number::New(e->getAngle());
-  return scope.Close(ret);
+
+  e->setGameID(*String::AsciiValue(args[0]->ToString()));
+  return Undefined();
 }
 
 static Handle<Value> entitySetModel(const Arguments &args) {
@@ -440,7 +446,8 @@ static Handle<Value> entitySetActions(const Arguments &args) {
   for (int i = 0; i < jsactions->Length(); i++) {
     Handle<Object> jsaction = Handle<Object>::Cast(jsactions->Get(i));
     UIAction uiaction;
-    uiaction.owner = e->getID();
+    uiaction.render_id = e->getID();
+    uiaction.owner_id = e->getGameID();
     uiaction.name = *String::AsciiValue(jsaction->Get(name));
     uiaction.icon = *String::AsciiValue(jsaction->Get(icon));
     std::string hotkey_str = *String::AsciiValue(jsaction->Get(hotkey));
@@ -531,8 +538,8 @@ static Handle<Value> entitySetUIInfo(const Arguments &args) {
     }
     auto *player = Game::get()->getPlayer(e->getPlayerID());
     if (player && player->isLocal()) {
-      std::set<id_t> sel;
-      sel.insert(e->getID());
+      std::set<std::string> sel;
+      sel.insert(e->getGameID());
       auto *lp = (LocalPlayer *)player;
       lp->addSavedSelection(hotkey_str[0], sel);
     }
@@ -626,6 +633,9 @@ void GameScript::init() {
       String::New("getID"),
       FunctionTemplate::New(entityGetID));
 
+  entityTemplate_->Set(
+      String::New("setGameID"),
+      FunctionTemplate::New(entitySetGameID));
   entityTemplate_->Set(
       String::New("setModel"),
       FunctionTemplate::New(entitySetModel));

@@ -122,7 +122,7 @@ void GameController::onCreate() {
         glm::vec3 v3;
         v3.x = pos.x * Renderer::get()->getMapSize().x;
         v3.y = -1 * pos.y * Renderer::get()->getMapSize().y;
-        Json::Value order = handleRightClick(0, NULL, v3);
+        Json::Value order = handleRightClick(nullptr, v3);
         attemptIssueOrder(order);
       }
     });
@@ -279,7 +279,7 @@ void GameController::renderExtra(float dt) {
   renderHighlights(highlights_, dt);
 
   if (!action_.name.empty()) {
-    GameEntity *e = Game::get()->getEntity(action_.owner);
+    GameEntity *e = Game::get()->getEntity(action_.render_id);
     invariant(e, "Unable to find action owner");
 
     glm::vec3 owner_pos = e->getPosition() + glm::vec3(0, 0, 0.1f);
@@ -481,15 +481,14 @@ void GameController::frameUpdate(float dt) {
   }
 
   // Deselect dead entities
-  std::set<id_t> newsel;
-  for (auto eid : player_->getSelection()) {
-    assertEid(eid);
-    const GameEntity *e = Game::get()->getEntity(eid);
+  std::set<std::string> newsel;
+  for (auto game_id : player_->getSelection()) {
+    const GameEntity *e = Game::get()->getEntity(game_id);
     if (e && e->getPlayerID() == player_->getPlayerID()) {
-      newsel.insert(eid);
+      newsel.insert(game_id);
     }
   }
-  if (!action_.name.empty() && !newsel.count(action_.owner)) {
+  if (!action_.name.empty() && !newsel.count(action_.owner_id)) {
     action_.name.clear();
   }
   player_->setSelection(newsel);
@@ -512,15 +511,14 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
     return;
   }
   Json::Value order;
-  std::set<id_t> newSelect = player_->getSelection();
+  std::set<std::string> newSelect = player_->getSelection();
 
   glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
   if (isinf(loc.x) || isinf(loc.y)) {
     return;
   }
   // The entity (maybe) under the cursor
-  id_t eid = selectEntity(screenCoord);
-  const GameEntity *entity = Game::get()->getEntity(eid);
+  const GameEntity *entity = selectEntity(screenCoord);
 
   if (button == MouseButton::LEFT) {
     if (!order_.empty()) {
@@ -528,14 +526,14 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
       order["entity"] = toJson(player_->getSelection());
       order["target"] = toJson(loc);
       if (entity && entity->getTeamID() != player_->getTeamID()) {
-        order["target_id"] = toJson(entity->getID());
+        order["target_id"] = entity->getGameID();
       }
       order_.clear();
     } else if (!action_.name.empty()) {
-      if (!newSelect.count(action_.owner)) {
+      if (!newSelect.count(action_.owner_id)) {
         return;
       }
-      std::set<id_t> ids(&action_.owner, (&action_.owner)+1);
+      std::set<std::string> ids(&action_.owner_id, (&action_.owner_id)+1);
       if (action_.targeting == UIAction::TargetingType::NONE) {
         order["type"] = OrderTypes::ACTION;
         order["entity"] = toJson(ids);
@@ -555,7 +553,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
         order["type"] = OrderTypes::ACTION;
         order["entity"] = toJson(ids);
         order["action"] = action_.name;
-        order["target_id"] = toJson(entity->getID());
+        order["target_id"] = entity->getGameID();
         highlightEntity(entity->getID());
       } else if (action_.targeting == UIAction::TargetingType::ALLY) {
         if (!entity
@@ -567,7 +565,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
         order["type"] = OrderTypes::ACTION;
         order["entity"] = toJson(ids);
         order["action"] = action_.name;
-        order["target_id"] = toJson(entity->getID());
+        order["target_id"] = entity->getGameID();
         highlightEntity(entity->getID());
       } else if (action_.targeting == UIAction::TargetingType::PATHABLE) {
         if (Game::get()->getMap()->getNavMesh()->isPathable(glm::vec2(loc))) {
@@ -590,11 +588,11 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
       }
       // If there is an entity and its ours, select
       if (entity && entity->getPlayerID() == player_->getPlayerID()) {
-        newSelect.insert(eid);
+        newSelect.insert(entity->getGameID());
       }
     }
   } else if (button == MouseButton::RIGHT) {
-    order = handleRightClick(eid, entity, loc);
+    order = handleRightClick(entity, loc);
   } else if (button == MouseButton::WHEEL_UP) {
     Renderer::get()->zoomCamera(-fltParam("local.mouseZoomSpeed"));
   } else if (button == MouseButton::WHEEL_DOWN) {
@@ -620,9 +618,9 @@ void GameController::attemptIssueOrder(Json::Value order) {
 
 
 
-Json::Value GameController::handleRightClick(const id_t eid, 
-  const GameEntity *entity, 
-  const glm::vec3 &loc) {
+Json::Value GameController::handleRightClick(
+    const GameEntity *entity,
+    const glm::vec3 &loc) {
   Json::Value order;
   // TODO(connor) make right click actions on minimap
   // If there is an order, it is canceled by right click
@@ -645,11 +643,11 @@ Json::Value GameController::handleRightClick(const id_t eid,
         order["type"] = OrderTypes::ATTACK;
       }
       order["entity"] = toJson(player_->getSelection());
-      order["target_id"] = toJson(eid);
+      order["target_id"] = entity->getGameID();
     // If we have a selection, and they didn't click on the current
     // selection, move them to target
     } else if (!player_->getSelection().empty()
-        && (!entity || !player_->getSelection().count(eid))) {
+        && (!entity || !player_->getSelection().count(entity->getGameID()))) {
       //loc.x/y wil be -/+HUGE_VAL if outside map bounds
       if (loc.x != HUGE_VAL && loc.y != HUGE_VAL && loc.x != -HUGE_VAL && loc.y != -HUGE_VAL) {
         // Visual feedback
@@ -667,19 +665,21 @@ Json::Value GameController::handleRightClick(const id_t eid,
 
 void GameController::mouseUp(const glm::vec2 &screenCoord, int button) {
   if (button == MouseButton::LEFT) {
-    std::set<id_t> newSelect;
     if (leftDrag_ &&
         glm::distance(leftStart_, screenCoord) > fltParam("hud.minDragDistance")) {
-      auto selection = player_->getSelection();
-      newSelect = selectEntities(
+      auto selected_entities = selectEntities(
         leftStart_,
         screenCoord,
         player_->getPlayerID());
 
+      std::set<std::string> new_selection;
       if (shift_) {
-        newSelect.insert(selection.begin(), selection.end());
+        new_selection = player_->getSelection();
       }
-      player_->setSelection(std::move(newSelect));
+      for (auto entity : selected_entities) {
+        new_selection.insert(entity->getGameID());
+      }
+      player_->setSelection(std::move(new_selection));
     }
 
     leftDrag_ = false;
@@ -722,8 +722,8 @@ void GameController::keyPress(const KeyEvent &ev) {
       // center camera for double tapping
       if (!saved_selection.empty()) {
         if (saved_selection == player_->getSelection()) {
-          id_t eid = *(saved_selection.begin());
-          auto entity = Game::get()->getEntity(eid);
+          auto game_id = *(saved_selection.begin());
+          auto entity = Game::get()->getEntity(game_id);
           glm::vec3 pos = entity->getPosition();
           Renderer::get()->setCameraLookAt(pos);
         }
@@ -751,7 +751,7 @@ void GameController::keyPress(const KeyEvent &ev) {
         order_.clear();
         action_.name.clear();
       } else {
-        player_->setSelection(std::set<id_t>());
+        player_->setSelection(std::set<std::string>());
       }
     } else if (key == INPUT_KEY_LEFT_SHIFT || key == INPUT_KEY_RIGHT_SHIFT) {
       shift_ = true;
@@ -839,26 +839,25 @@ void GameController::minimapUpdateCamera(const glm::vec2 &screenCoord) {
   Renderer::get()->setCameraLookAt(finalPos);
 }
 
-id_t GameController::selectEntity(const glm::vec2 &screenCoord) const {
+GameEntity * GameController::selectEntity(const glm::vec2 &screenCoord) const {
   glm::vec3 origin, dir;
   std::tie(origin, dir) = Renderer::get()->screenToRay(screenCoord);
-  auto entity = Renderer::get()->castRay(
+  return (GameEntity *)Renderer::get()->castRay(
       origin,
       dir,
       [](const ModelEntity *e) {
         return e->isVisible() && e->hasProperty(GameEntity::P_ACTOR);
       });
-
-  return entity ? entity->getID() : NO_ENTITY;
 }
 
-std::set<id_t> GameController::selectEntities(
-  const glm::vec2 &start, const glm::vec2 &end, id_t pid) const {
+std::set<GameEntity *> GameController::selectEntities(
+    const glm::vec2 &start,
+    const glm::vec2 &end,
+    id_t pid) const {
   assertPid(pid);
   // returnedEntities is a subset of those the user boxed, depending on some 
   // selection criteria
   std::set<GameEntity *> boxedEntities;
-  std::set<id_t> returnedEntities;
 
   glm::vec2 terrainStart = Renderer::get()->screenToTerrain(start).xy;
   glm::vec2 terrainEnd = Renderer::get()->screenToTerrain(end).xy;
@@ -889,12 +888,13 @@ std::set<id_t> GameController::selectEntities(
       }
     }
   }
+  std::set<GameEntity *> ret;
   for (const auto &e : boxedEntities) {
     if (!onlySelectUnits || e->hasProperty(GameEntity::P_UNIT)) {
-      returnedEntities.insert(e->getID());
+      ret.insert(e);
     }
   }
-  return returnedEntities;
+  return ret;
 }
 
 void GameController::highlight(const glm::vec2 &mapCoord) {
@@ -988,6 +988,7 @@ void renderEntity(
   if (!e->hasProperty(GameEntity::P_ACTOR) || !e->isVisible()) {
     return;
   }
+  auto game_entity = (const GameEntity *)e;
   auto pos = e->getPosition(dt);
   auto transform = glm::translate(glm::mat4(1.f), pos);
   record_section("renderActorInfo");
@@ -998,7 +999,7 @@ void renderEntity(
         transform,
         glm::vec3(0, 0, 0.1)),
       glm::vec3(0.25f + sqrt(entitySize.x * entitySize.y)));
-  if (localPlayer->isSelected(e->getID())) {
+  if (localPlayer->isSelected(game_entity->getGameID())) {
     // A bit of a hack here...
     renderCircleColor(
         circleTransform,
@@ -1086,7 +1087,7 @@ void renderEntity(
 
   glEnable(GL_DEPTH_TEST);
   // Render path if selected
-  if (localPlayer->isSelected(actor->getID())) {
+  if (localPlayer->isSelected(actor->getGameID())) {
     auto pathQueue = actor->getPathQueue();
     // TODO(zack): remove z hack
     const auto zhack = glm::vec3(0, 0, 0.05f);
@@ -1120,7 +1121,7 @@ void GameController::handleUIAction(const UIAction &action) {
     player_action["type"] = ActionTypes::ORDER;
     Json::Value order;
     order["type"] = OrderTypes::ACTION;
-    std::set<id_t> ids(&action.owner, (&action.owner)+1);
+    std::set<std::string> ids(&action.owner_id, (&action.owner_id)+1);
     order["entity"] = toJson(ids);
     order["action"] = action.name;
     player_action["order"] = order;

@@ -72,14 +72,17 @@ class GameController : public Controller {
 
   void minimapUpdateCamera(const glm::vec2 &screenCoord);
   void handleUIAction(const UIAction &action);
-  // returns NO_ENTITY if no acceptable entity near click
-  id_t selectEntity(const glm::vec2 &screenCoord) const;
-  std::set<id_t> selectEntities(const glm::vec2 &start,
-      const glm::vec2 &end, id_t pid) const;
+  // returns null if no acceptable entity near click
+  GameEntity * selectEntity(const glm::vec2 &screenCoord) const;
+  std::set<GameEntity *> selectEntities(
+      const glm::vec2 &start,
+      const glm::vec2 &end,
+      id_t pid) const;
   void highlight(const glm::vec2 &mapCoord);
   void highlightEntity(id_t eid);
-  Json::Value handleRightClick(const id_t eid, const GameEntity *entity, 
-    const glm::vec3 &loc);
+  Json::Value handleRightClick(
+      const GameEntity *entity,
+      const glm::vec3 &loc);
 
   std::string getCursorTexture() const;
 
