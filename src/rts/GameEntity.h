@@ -105,24 +105,10 @@ class GameEntity : public ModelEntity {
   }
 
   void collide(const GameEntity *other, float dt);
-  // TODO(zack): remove this function
-  void resolve(float dt);
 
   void checksum(Checksum &chksum) const;
 
   std::vector<glm::vec3> getPathNodes() const;
-
-  float distanceToEntity(const GameEntity *e) const;
-
-  // helper functions for update
-  // Don't move or rotate
-  void remainStationary();
-  // Rotates to face position
-  void turnTowards(const glm::vec2 &pos);
-  // Moves towards position as fast as possible (probably rotates)
-  void moveTowards(const glm::vec2 &pos);
-  // Teleports to the given position
-  void warpPosition(const glm::vec2 &pos);
 
   const std::vector<glm::vec3>& getPathQueue() const {
     return pathQueue_;

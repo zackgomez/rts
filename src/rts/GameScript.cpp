@@ -153,41 +153,6 @@ static Handle<Value> jsPointInOBB2(const Arguments &args) {
   return scope.Close(Boolean::New(contains));
 }
 
-static Handle<Value> entityDistanceToPoint(const Arguments &args) {
-  if (args.Length() < 1) return Undefined();
-  HandleScope scope(args.GetIsolate());
-
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
-  const glm::vec2 target = Game::get()->getScript()->jsToVec2(
-      Handle<Array>::Cast(args[0]));
-
-  float dist = glm::distance(entity->getPosition2(), target);
-  return scope.Close(Number::New(dist));
-}
-
-static Handle<Value> entityDistanceToEntity(const Arguments &args) {
-  if (args.Length() < 1) return Undefined();
-  HandleScope scope(args.GetIsolate());
-
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
-
-  Local<Object> targetobj = Local<Object>::Cast(args[0]);
-  Local<External> targetwrap = Local<External>::Cast(targetobj->GetInternalField(0));
-  GameEntity *target = static_cast<GameEntity *>(targetwrap->Value());
-
-  if (!target) {
-    return scope.Close(Number::New(HUGE_VAL));
-  }
-
-  float dist = entity->distanceToEntity(target);
-
-  return scope.Close(Number::New(dist));
-}
-
 static Handle<Value> jsLocationVisible(const Arguments &args) {
   invariant(args.Length() == 2, "expected (id_t pid, vec2 pt)");
   HandleScope scope(args.GetIsolate());
@@ -200,69 +165,6 @@ static Handle<Value> jsLocationVisible(const Arguments &args) {
   bool visible = vismap->locationVisible(pt);
 
   return scope.Close(Boolean::New(visible));
-}
-
-static Handle<Value> entityRemainStationary(const Arguments &args) {
-  HandleScope scope(args.GetIsolate());
-
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
-
-  entity->remainStationary();
-
-  return Undefined();
-}
-
-static Handle<Value> entityTurnTowards(const Arguments &args) {
-  invariant(args.Length() == 1, "void turnTowards(vec3 point)");
-
-  HandleScope scope(args.GetIsolate());
-
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
-
-  auto script = Game::get()->getScript();
-  glm::vec2 pos = script->jsToVec2(Handle<Array>::Cast(args[0]));
-
-  entity->turnTowards(pos);
-
-  return Undefined();
-}
-
-static Handle<Value> entityMoveTowards(const Arguments &args) {
-  invariant(args.Length() == 1, "Expected 1 arg to moveTowards");
-
-  HandleScope scope(args.GetIsolate());
-
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
-
-  auto script = Game::get()->getScript();
-  glm::vec2 pos = script->jsToVec2(Handle<Array>::Cast(args[0]));
-
-  entity->moveTowards(pos);
-
-  return Undefined();
-}
-
-static Handle<Value> entityWarpPosition(const Arguments &args) {
-  if (args.Length() < 1) return Undefined();
-
-  HandleScope scope(args.GetIsolate());
-
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
-
-  auto script = Game::get()->getScript();
-  glm::vec2 pos = script->jsToVec2(Handle<Array>::Cast(args[0]));
-
-  entity->warpPosition(pos);
-
-  return Undefined();
 }
 
 static Handle<Value> entityOnEvent(const Arguments &args) {
@@ -666,13 +568,6 @@ void GameScript::init() {
   entityTemplate_->Set(
       String::New("setUIInfo"),
       FunctionTemplate::New(entitySetUIInfo));
-
-  entityTemplate_->Set(
-      String::New("distanceToEntity"),
-      FunctionTemplate::New(entityDistanceToEntity));
-  entityTemplate_->Set(
-      String::New("distanceToPoint"),
-      FunctionTemplate::New(entityDistanceToPoint));
 
   entityTemplate_->Set(
       String::New("onEvent"),

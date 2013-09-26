@@ -301,11 +301,6 @@ void Game::update(float dt) {
     }
   }
 
-  // Update positions for pathfinding, etc
-  for (auto entity : entities) {
-    entity->resolve(dt);
-  }
-
   // Collision detection
   for (auto it = entities.begin(); it != entities.end(); it++) {
     GameEntity *e1 = *it;

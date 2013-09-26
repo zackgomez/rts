@@ -46,10 +46,6 @@ id_t GameEntity::getTeamID() const {
   return Game::get()->getPlayer(playerID_)->getTeamID();
 }
 
-float GameEntity::distanceToEntity(const GameEntity *e) const {
-  return e->distanceFromPoint(getPosition2());
-}
-
 void GameEntity::setPlayerID(id_t pid) {
   assertPid(pid);
   playerID_ = pid;
@@ -59,63 +55,6 @@ void GameEntity::setPlayerID(id_t pid) {
 
 void GameEntity::setTookDamage(int part_idx) {
   lastTookDamage_[part_idx] = Clock::now();
-}
-
-void GameEntity::remainStationary() {
-  warp_ = false;
-  pathQueue_ = std::vector<glm::vec3>();
-  lastTargetPos_ = glm::vec2(HUGE_VAL);
-  setSpeed(0.f);
-}
-
-void GameEntity::turnTowards(const glm::vec2 &targetPos) {
-  warp_ = false;
-  setAngle(angleToTarget(targetPos));
-  lastTargetPos_ = glm::vec2(HUGE_VAL);
-  setSpeed(0.f);
-}
-
-void GameEntity::moveTowards(const glm::vec2 &targetPos) {
-  warp_ = false;
-  if (hasProperty(P_COLLIDABLE)) {
-    if (targetPos != lastTargetPos_) {
-      pathQueue_ = Game::get()->getMap()->getNavMesh()->getPath(
-          getPosition(),
-          glm::vec3(targetPos, 0));
-      lastTargetPos_ = targetPos;
-    }
-  } else {
-    pathQueue_.clear();
-    pathQueue_.push_back(glm::vec3(targetPos, 0.f));
-  }
-}
-
-void GameEntity::warpPosition(const glm::vec2 &pos) {
-  warp_ = true;
-  warpTarget_ = pos;
-  setSpeed(0.f);
-  lastTargetPos_ = glm::vec2(HUGE_VAL);
-  pathQueue_ = std::vector<glm::vec3>();
-}
-
-void GameEntity::resolve(float dt) {
-	if (hasProperty(P_MOBILE) && warp_) {
-		setPosition(warpTarget_);
-	} else if (hasProperty(P_MOBILE) && !pathQueue_.empty() && getMaxSpeed() > 0) {
-    glm::vec2 targetPos(pathQueue_.front());
-    float dist = glm::length(targetPos - getPosition2());
-    float speed = getMaxSpeed();
-    // rotate
-    turnTowards(targetPos);
-    // move
-    // Set speed careful not to overshoot
-    if (dist < speed * dt) {
-      speed = dist / dt;
-      // 'pop'
-      pathQueue_.erase(pathQueue_.begin());
-    }
-    setSpeed(speed);
-  }
 }
 
 void GameEntity::checksum(Checksum &chksum) const {
