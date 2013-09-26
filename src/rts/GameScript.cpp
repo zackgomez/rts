@@ -61,16 +61,13 @@ static Handle<Value> jsGameRandom(const Arguments &args) {
   return Number::New(Game::get()->gameRandom());
 }
 
-static Handle<Value> jsSpawnEntity(const Arguments &args) {
-  if (args.Length() < 2) return Undefined();
+static Handle<Value> jsSpawnRenderEntity(const Arguments &args) {
+  invariant(args.Length() == 0, "object spawnRenderEntity(void)");
   HandleScope scope(args.GetIsolate());
 
   auto script = Game::get()->getScript();
-  std::string name(*String::AsciiValue(args[0]));
-  Json::Value params = script->jsToJSON(Handle<Object>::Cast(args[1]));
-
   id_t eid = Renderer::get()->newEntityID();
-  GameEntity *e = new GameEntity(eid, name, params);
+  GameEntity *e = new GameEntity(eid);
   invariant(e, "couldn't allocate new entity");
   Renderer::get()->spawnEntity(e);
 
@@ -80,8 +77,9 @@ static Handle<Value> jsSpawnEntity(const Arguments &args) {
   return scope.Close(wrapper);
 }
 
-static Handle<Value> jsDestroyEntity(const Arguments &args) {
-  invariant(args.Length() == 1, "void DestroyEntity(int eid)");
+static Handle<Value> jsDestroyRenderEntity(const Arguments &args) {
+  if (args.Length() < 2) return Undefined();
+  invariant(args.Length() == 1, "void DestroyRenderEntity(int eid");
   HandleScope scope(args.GetIsolate());
 
   id_t eid = args[0]->IntegerValue();
@@ -292,41 +290,22 @@ static Handle<Value> entityOnEvent(const Arguments &args) {
   return Undefined();
 }
 
-static Handle<Value> entityHasProperty(const Arguments &args) {
-  if (args.Length() < 1) return Undefined();
+static Handle<Value> entitySetPosition2(const Arguments &args) {
+  invariant(args.Length() == 1, "void setPosition2(vec2 p)");
 
-  HandleScope scope(args.GetIsolate());
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  auto *game_entity = static_cast<GameEntity *>(wrap->Value());
-  return scope.Close(Boolean::New(game_entity->hasProperty(args[0]->Uint32Value())));
-}
-
-static Handle<Value> entityGetID(const Arguments &args) {
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   GameEntity *e = static_cast<GameEntity *>(wrap->Value());
-  Handle<Integer> ret = Integer::New(e->getID());
-  return scope.Close(ret);
-}
 
-static Handle<Value> entityGetPlayerID(const Arguments &args) {
-  HandleScope scope(args.GetIsolate());
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
-  Handle<Integer> ret = Integer::New(e->getPlayerID());
-  return scope.Close(ret);
-}
+  auto js_pos = Handle<Array>::Cast(args[0]);
+  invariant(js_pos->Length() == 2, "expected vec2");
+  glm::vec2 new_pos(
+      js_pos->Get(Integer::New(0))->NumberValue(),
+      js_pos->Get(Integer::New(1))->NumberValue());
+  e->setPosition(new_pos);
 
-static Handle<Value> entityGetTeamID(const Arguments &args) {
-  HandleScope scope(args.GetIsolate());
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
-  Handle<Integer> ret = Integer::New(e->getTeamID());
-  return scope.Close(ret);
+  return Undefined();
 }
 
 static Handle<Value> entitySetAngle(const Arguments &args) {
@@ -342,16 +321,13 @@ static Handle<Value> entitySetAngle(const Arguments &args) {
   return Undefined();
 }
 
-static Handle<Value> entityGetDirection(const Arguments &args) {
+static Handle<Value> entityGetID(const Arguments &args) {
+  invariant(args.Length() == 0, "int getID()");
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   GameEntity *e = static_cast<GameEntity *>(wrap->Value());
-  auto pos2 = e->getDirection();
-  Handle<Array> ret = Array::New(2);
-  ret->Set(0, Number::New(pos2.x));
-  ret->Set(1, Number::New(pos2.y));
-  return scope.Close(ret);
+  return scope.Close(Integer::New(e->getID()));
 }
 
 static Handle<Value> entitySetGameID(const Arguments &args) {
@@ -431,14 +407,19 @@ static Handle<Value> entitySetHeight(const Arguments &args) {
   return Undefined();
 }
 
-static Handle<Value> entitySetProperty(const Arguments &args) {
-  if (args.Length() < 2) return Undefined();
+static Handle<Value> entitySetProperties(const Arguments &args) {
+  invariant(args.Length() == 1, "void entitySetProperties(array properties)");
 
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   GameEntity *e = static_cast<GameEntity *>(wrap->Value());
-  e->setProperty(args[0]->IntegerValue(), args[1]->BooleanValue());
+
+  auto js_properties = Handle<Array>::Cast(args[0]);
+  for (int i = 0; i < js_properties->Length(); i++) {
+    e->addProperty(js_properties->Get(Integer::New(i))->IntegerValue());
+  }
+
   return Undefined();
 }
 
@@ -613,17 +594,14 @@ void GameScript::init() {
       String::New("GameRandom"),
       FunctionTemplate::New(jsGameRandom));
   global->Set(
-      String::New("SpawnEntity"),
-      FunctionTemplate::New(jsSpawnEntity));
+      String::New("SpawnRenderEntity"),
+      FunctionTemplate::New(jsSpawnRenderEntity));
   global->Set(
-      String::New("DestroyEntity"),
-      FunctionTemplate::New(jsDestroyEntity));
+      String::New("DestroyRenderEntity"),
+      FunctionTemplate::New(jsDestroyRenderEntity));
   global->Set(
       String::New("GetNearbyEntities"),
       FunctionTemplate::New(jsGetNearbyEntities));
-  global->Set(
-      String::New("registerEntityHotkey"),
-      FunctionTemplate::New(jsRegisterEntityHotkey));
   global->Set(
       String::New("AddEffect"),
       FunctionTemplate::New(jsAddEffect));
@@ -652,26 +630,8 @@ void GameScript::init() {
       Persistent<ObjectTemplate>::New(isolate_, ObjectTemplate::New());
   entityTemplate_->SetInternalFieldCount(1);
   entityTemplate_->Set(
-      String::New("hasProperty"),
-      FunctionTemplate::New(entityHasProperty));
-  entityTemplate_->Set(
       String::New("getID"),
       FunctionTemplate::New(entityGetID));
-  entityTemplate_->Set(
-      String::New("getPlayerID"),
-      FunctionTemplate::New(entityGetPlayerID));
-  entityTemplate_->Set(
-      String::New("getTeamID"),
-      FunctionTemplate::New(entityGetTeamID));
-  entityTemplate_->Set(
-      String::New("getPosition2"),
-      FunctionTemplate::New(entityGetPosition2));
-  entityTemplate_->Set(
-      String::New("getDirection"),
-      FunctionTemplate::New(entityGetDirection));
-  entityTemplate_->Set(
-      String::New("getAngle"),
-      FunctionTemplate::New(entityGetAngle));
 
   entityTemplate_->Set(
       String::New("setGameID"),
@@ -699,14 +659,21 @@ void GameScript::init() {
       FunctionTemplate::New(entitySetSight));
 
   entityTemplate_->Set(
-      String::New("setProperty"),
-      FunctionTemplate::New(entitySetProperty));
+      String::New("setProperties"),
+      FunctionTemplate::New(entitySetProperties));
   entityTemplate_->Set(
       String::New("setActions"),
       FunctionTemplate::New(entitySetActions));
   entityTemplate_->Set(
       String::New("setUIInfo"),
       FunctionTemplate::New(entitySetUIInfo));
+
+  entityTemplate_->Set(
+      String::New("distanceToEntity"),
+      FunctionTemplate::New(entityDistanceToEntity));
+  entityTemplate_->Set(
+      String::New("distanceToPoint"),
+      FunctionTemplate::New(entityDistanceToPoint));
 
   entityTemplate_->Set(
       String::New("onEvent"),

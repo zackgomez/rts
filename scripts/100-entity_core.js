@@ -11,9 +11,11 @@ function entityInit(id, name, params) {
 
   entity.id_ = id;
   entity.name_ = name;
+  entity.def_ = def;
   entity.defaultState_ = NullState;
   entity.cooldowns_ = {};
   entity.retreat_ = false;
+  entity.pid_ = params.pid || NO_PLAYER;
   entityResetDeltas(entity);
   entity.properties_ = def.properties || [];
   entity.maxSpeed_ = def.speed || 0;
@@ -25,23 +27,6 @@ function entityInit(id, name, params) {
   entity.currentSpeed_ = 0;
 
   // TODO(zack): some kind of copy properties or something, this sucks
-  if (def.properties) {
-    for (var i = 0; i < def.properties.length; i++) {
-      entity.setProperty(def.properties[i], true);
-    }
-  }
-  if (def.model) {
-    entity.setModel(def.model);
-  }
-  if (def.size) {
-    entity.setSize(def.size);
-  }
-  if (def.speed) {
-    entity.maxSpeed_ = def.speed;
-  }
-  if (def.sight) {
-    entity.sight_ = def.sight;
-  }
   if (def.default_state) {
     entity.defaultState_ = def.default_state;
   }
@@ -74,20 +59,36 @@ function entityInit(id, name, params) {
   if (def.actions) {
     entity.actions_ = def.actions;
   }
-  if (def.hotkey) {
-    registerEntityHotkey(entity.getID(), def.hotkey);
-    entity.hotkey_ = def.hotkey;
-  }
   if (def.minimap_icon) {
     entity.minimap_icon_ = def.minimap_icon;
   }
+  if (def.hotkey) {
+    entity.hotkey_ = def.hotkey;
+  }
 
   entity.state_ = new entity.defaultState_(params);
+  // Holds the 'intent' of the entity w.r.t. movement for this frame
+  entity.movementIntent_ = null;
 
   // Set some functions on the entity
+  entity.getID = function () {
+    return this.id_;
+  };
   entity.getName = function () {
     return this.name_;
-  }
+  };
+  entity.getDefinition = function () {
+    return this.def_;
+  };
+  entity.hasProperty = function (property) {
+    // TODO(zack): optimize this...
+    for (var i = 0; i < this.properties_.length; i++) {
+      if (this.properties_[i] === property) {
+        return true;
+      }
+    }
+    return false;
+  };
   entity.hasCooldown = function (name) {
     return name in this.cooldowns_;
   };
@@ -168,10 +169,6 @@ function entityInit(id, name, params) {
     var player = Players.getPlayer(this.getPlayerID());
     var part = this.getPart(part_name);
     var upgrade = part.getAvailableUpgrades()[upgrade_name];
-    if (!upgrade) {
-      Log('asked to upgrade nonexistent upgrade:', upgrade_name);
-      return;
-    }
     var req = player.getRequisition();
     if (upgrade.req_cost < req) {
       player.addRequisition(-upgrade.req_cost);
@@ -211,13 +208,8 @@ function entityInit(id, name, params) {
   // If the callback returns true, it will continue passing entities until
   // there are no more
   entity.getNearbyEntities = function (range, callback) {
-    GetNearbyEntities(entity.getPosition2(), range, function (eid) {
-      var game_entity = Game.getEntity(eid);
-      invariant(
-        game_entity,
-        "Could not find entity for nearby entities callback"
-      );
-      return callback(game_entity);
+    Game.getNearbyEntities(entity.getPosition2(), range, function (entity) {
+      return callback(entity);
     });
   };
 
@@ -361,7 +353,6 @@ function entityInit(id, name, params) {
 // Helper function that clears out the deltas at the end of the resolve.
 function entityResetDeltas(entity) {
   entity.deltas = {
-    should_destroy: false,
     capture: {},
     damage_list: [],
     healing_list: [],
@@ -377,6 +368,8 @@ function entityResetDeltas(entity) {
 // Called once per tick.  Should not do any direct updates, should only set
 // intents (like moveTowards, attack, etc) or send messages.
 function entityUpdate(entity, dt) {
+  entity.movementIntent_ = null;
+
   for (var ename in entity.effects_) {
     var res = entity.effects_[ename](entity);
     if (!res) {
@@ -398,10 +391,6 @@ function entityResolve(entity, dt) {
   var messages = MessageHub.getMessagesForEntity(entity.getID());
   for (var i = 0; i < messages.length; i++) {
     entityHandleMessage(entity, messages[i]);
-  }
-
-  if (entity.deltas.should_destroy) {
-    return EntityStatus.DEAD;
   }
 
   for (var cd in entity.cooldowns_) {
@@ -505,8 +494,7 @@ function entityResolve(entity, dt) {
 
   // Attributes
   var speed_modifier = entity.deltas.max_speed_percent;
-  entity.setMaxSpeed(speed_modifier * entity.maxSpeed_);
-  entity.setSight(entity.sight_);
+  entity.currentSpeed_ = speed_modifier * entity.maxSpeed_;
 
   // Resolved!
   entityResetDeltas(entity);
@@ -711,6 +699,7 @@ function entityGetUIInfo(entity) {
       ui_info.cappingPlayerID = entity.cappingPlayerID_;
     }
   }
+  ui_info.pid = entity.getPlayerID();
   
   ui_info.parts = [];
   if (entity.parts_) {

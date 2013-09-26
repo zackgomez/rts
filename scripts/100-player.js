@@ -56,12 +56,16 @@ var Players = (function() {
       },
     });
     var player = {
+      tid: tid,
       retreat_location: retreat_location,
       units: {},
       requisition: def.starting_requisition,
 
+      getTeamID: function () {
+        return this.tid;
+      },
       getRetreatLocation: function () {
-        return retreat_location;
+        return this.retreat_location;
       },
       getRequisition: function () {
         return this.requisition;

@@ -111,8 +111,12 @@ var Game = function () {
       var entity = entities[eid];
       var status = entityResolve(entity, dt);
       if (status === EntityStatus.DEAD) {
-        DestroyEntity(eid);
         delete entities[eid];
+        if (eid in eid_to_render_entity) {
+          var render_entity = eid_to_render_entity[eid];
+          DestroyRenderEntity(render_entity.getID());
+          delete eid_to_render_entity[eid];
+        }
         continue;
       }
 
