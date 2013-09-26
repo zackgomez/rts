@@ -78,7 +78,6 @@ static Handle<Value> jsSpawnRenderEntity(const Arguments &args) {
 }
 
 static Handle<Value> jsDestroyRenderEntity(const Arguments &args) {
-  if (args.Length() < 2) return Undefined();
   invariant(args.Length() == 1, "void DestroyRenderEntity(int eid");
   HandleScope scope(args.GetIsolate());
 

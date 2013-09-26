@@ -212,14 +212,7 @@ function entityInit(id, name, params) {
   // If the callback returns true, it will continue passing entities until
   // there are no more
   entity.getNearbyEntities = function (range, callback) {
-    GetNearbyEntities(entity.getPosition2(), range, function (eid) {
-      var game_entity = Game.getEntity(eid);
-      invariant(
-        game_entity,
-        "Could not find entity for nearby entities callback"
-      );
-      return callback(game_entity);
-    });
+    return Game.getNearbyEntities(entity.getPosition2(), range, callback);
   };
 
   // @return Entity object or null if no target
@@ -354,6 +347,10 @@ function entityInit(id, name, params) {
   entity.distanceToEntity = function (entity) {
     // TODO(zack): upgrade to point - obb test
     return vecDistance(entity.getPosition2(), this.getPosition2());
+  };
+
+  entity.onEvent = function () {
+    // TODO(zack): do something here
   };
 
   return entity;
