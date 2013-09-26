@@ -1,9 +1,11 @@
 #include "rts/GameScript.h"
 #include <v8.h>
 #include <sstream>
+#include "common/Collision.h"
 #include "common/util.h"
 #include "rts/Game.h"
 #include "rts/GameController.h"
+#include "rts/Map.h"
 #include "rts/Player.h"
 #include "rts/Renderer.h"
 #include "rts/ResourceManager.h"
@@ -37,12 +39,16 @@ static Handle<Value> getCollisionBinding() {
 }
 
 static Handle<Value> jsLocationVisible(const Arguments &args);
+static Handle<Value> jsResolveCollisions(const Arguments &args);
 static Handle<Value> getPathingBinding() {
   HandleScope scope;
   auto binding = Object::New();
   binding->Set(
       String::New("locationVisible"),
       FunctionTemplate::New(jsLocationVisible)->GetFunction());
+  binding->Set(
+      String::New("resolveCollisions"),
+      FunctionTemplate::New(jsResolveCollisions)->GetFunction());
 
   return scope.Close(binding);
 }
@@ -154,7 +160,7 @@ static Handle<Value> jsPointInOBB2(const Arguments &args) {
 }
 
 static Handle<Value> jsLocationVisible(const Arguments &args) {
-  invariant(args.Length() == 2, "expected (id_t pid, vec2 pt)");
+  invariant(args.Length() == 2, "locationVisible(id_t pid, vec2 pt): bool");
   HandleScope scope(args.GetIsolate());
   auto script = Game::get()->getScript();
 
@@ -165,6 +171,55 @@ static Handle<Value> jsLocationVisible(const Arguments &args) {
   bool visible = vismap->locationVisible(pt);
 
   return scope.Close(Boolean::New(visible));
+}
+
+static Handle<Value> jsResolveCollisions(const Arguments &args) {
+  invariant(
+      args.Length() == 2,
+      "resolveCollisions(map<key, objecy> bodies, float dt): void");
+  HandleScope scope(args.GetIsolate());
+  auto script = Game::get()->getScript();
+  auto pos_str = String::New("pos");
+  auto size_str = String::New("size");
+  auto vel_str = String::New("pos");
+  auto angle_str = String::New("angle");
+
+  auto bodies = Handle<Object>::Cast(args[0]);
+  float dt = args[1]->NumberValue();
+
+  auto keys = bodies->GetOwnPropertyNames();
+  for (auto i = 0; i < keys->Length(); i++) {
+    auto body1 = Handle<Object>::Cast(bodies->Get(keys->Get(i)));
+    auto pos1 = script->jsToVec2(Handle<Array>::Cast(body1->Get(pos_str)));
+    auto size1 = script->jsToVec2(Handle<Array>::Cast(body1->Get(size_str)));
+    auto angle1 = body1->Get(angle_str)->NumberValue();
+    auto vel1 = script->jsToVec2(Handle<Array>::Cast(body1->Get(pos_str)));
+    Rect rect1(pos1, size1, angle1);
+
+    for (auto j = i+1; j < keys->Length(); j++) {
+      auto body2 = Handle<Object>::Cast(bodies->Get(keys->Get(j)));
+      auto pos2 = script->jsToVec2(Handle<Array>::Cast(body2->Get(pos_str)));
+      auto size2 = script->jsToVec2(Handle<Array>::Cast(body2->Get(size_str)));
+      auto angle2 = body2->Get(angle_str)->NumberValue();
+      auto vel2 = script->jsToVec2(Handle<Array>::Cast(body2->Get(pos_str)));
+      Rect rect2(pos2, size2, angle2);
+
+      float time;
+      if ((time = boxBoxCollision(
+            rect1,
+            vel1,
+            rect2,
+            vel2,
+            dt)) != NO_INTERSECTION) {
+        LOG(DEBUG) << "collision! " << rect1.pos << ' ' << rect2.pos
+          << " | " << rect1.size << ' ' << rect2.size
+          << " | " << rect1.angle << ' ' << rect2.angle
+          << " | " << dt <<  " @ " << time << '\n';
+      }
+    }
+  }
+
+  return Undefined();
 }
 
 static Handle<Value> entityOnEvent(const Arguments &args) {
@@ -204,7 +259,10 @@ static Handle<Value> entitySetPosition2(const Arguments &args) {
   glm::vec2 new_pos(
       js_pos->Get(Integer::New(0))->NumberValue(),
       js_pos->Get(Integer::New(1))->NumberValue());
-  e->setPosition(new_pos);
+  glm::vec3 full_pos(
+      new_pos,
+      Game::get()->getMap()->getMapHeight(new_pos));
+  e->setPosition(full_pos);
 
   return Undefined();
 }

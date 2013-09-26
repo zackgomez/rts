@@ -17,14 +17,17 @@ var Pathing = function () {
   }});
 
   var binding = runtime.binding('pathing');
+  var resolveCollisions = binding.resolveCollisions;
 
   var update_body = function (body, dt) {
     var movement_intent = body.getMovementIntent();
     var pos = body.getPosition2();
+    var size = body.getSize();
     var angle = body.getAngle();
     if (!movement_intent) {
       return {
         pos: pos,
+        size: size,
         angle: angle,
         vel: [0, 0],
       };
@@ -37,6 +40,7 @@ var Pathing = function () {
     if (movement_intent.warp) {
       return {
         pos: movement_intent.warp,
+        size: size,
         angle: angle,
         vel: [0, 0],
       };
@@ -51,6 +55,7 @@ var Pathing = function () {
     }
     return {
       pos: vecAdd(pos, vecMul(vel, dt)),
+      size: size,
       angle: angle,
       vel: vel,
     };
@@ -63,7 +68,13 @@ var Pathing = function () {
   // getSpeed()
   // getMovementIntent()
   exports.stepAllForward = function (bodies, dt) {
-    return _.mapValues(bodies, function (body) { return update_body(body, dt); });
+    var new_bodies = _.mapValues(
+      bodies,
+      function (body) { return update_body(body, dt); }
+    );
+    resolveCollisions(new_bodies, dt);
+
+    return new_bodies;
 
     // TODO collision detection
     // TODO make warp's not interpolate

@@ -283,15 +283,18 @@ void Game::update(float dt) {
     }
   }
 
+  /*
   // Integrate positions before updating entities, to ensure the render displays
   // extrapolated information.  This is safe and provides a better experience.
   for (auto entity : entities) {
     entity->integrate(dt);
   }
+  */
 
   // Update javascript, passing player input
   updateJS(js_player_inputs, dt);
 
+  /*
   entities.clear();
   for (auto it : Renderer::get()->getEntities()) {
     if (it.second->hasProperty(GameEntity::P_GAMEENTITY)) {
@@ -330,6 +333,7 @@ void Game::update(float dt) {
       }
     }
   }
+  */
 
   for (auto &vit : visibilityMaps_) {
     vit.second->clear();
