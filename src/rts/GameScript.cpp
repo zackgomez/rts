@@ -175,10 +175,12 @@ static Handle<Value> jsLocationVisible(const Arguments &args) {
 
 static Handle<Value> jsResolveCollisions(const Arguments &args) {
   invariant(
-      args.Length() == 2,
-      "resolveCollisions(map<key, objecy> bodies, float dt): void");
+      args.Length() == 3,
+      "resolveCollisions(map<key, objecy> bodies, float dt, func callback): void");
   HandleScope scope(args.GetIsolate());
   auto script = Game::get()->getScript();
+  auto global = script->getContext()->Global();
+
   auto pos_str = String::New("pos");
   auto size_str = String::New("size");
   auto vel_str = String::New("pos");
@@ -186,22 +188,25 @@ static Handle<Value> jsResolveCollisions(const Arguments &args) {
 
   auto bodies = Handle<Object>::Cast(args[0]);
   float dt = args[1]->NumberValue();
+  auto callback = Handle<Function>::Cast(args[2]);
 
   auto keys = bodies->GetOwnPropertyNames();
   for (auto i = 0; i < keys->Length(); i++) {
-    auto body1 = Handle<Object>::Cast(bodies->Get(keys->Get(i)));
+    auto key1 = keys->Get(i);
+    auto body1 = Handle<Object>::Cast(bodies->Get(key1));
     auto pos1 = script->jsToVec2(Handle<Array>::Cast(body1->Get(pos_str)));
     auto size1 = script->jsToVec2(Handle<Array>::Cast(body1->Get(size_str)));
     auto angle1 = body1->Get(angle_str)->NumberValue();
-    auto vel1 = script->jsToVec2(Handle<Array>::Cast(body1->Get(pos_str)));
+    auto vel1 = script->jsToVec2(Handle<Array>::Cast(body1->Get(vel_str)));
     Rect rect1(pos1, size1, angle1);
 
     for (auto j = i+1; j < keys->Length(); j++) {
-      auto body2 = Handle<Object>::Cast(bodies->Get(keys->Get(j)));
+      auto key2 = keys->Get(j);
+      auto body2 = Handle<Object>::Cast(bodies->Get(key2));
       auto pos2 = script->jsToVec2(Handle<Array>::Cast(body2->Get(pos_str)));
       auto size2 = script->jsToVec2(Handle<Array>::Cast(body2->Get(size_str)));
       auto angle2 = body2->Get(angle_str)->NumberValue();
-      auto vel2 = script->jsToVec2(Handle<Array>::Cast(body2->Get(pos_str)));
+      auto vel2 = script->jsToVec2(Handle<Array>::Cast(body2->Get(vel_str)));
       Rect rect2(pos2, size2, angle2);
 
       float time;
@@ -211,10 +216,10 @@ static Handle<Value> jsResolveCollisions(const Arguments &args) {
             rect2,
             vel2,
             dt)) != NO_INTERSECTION) {
-        LOG(DEBUG) << "collision! " << rect1.pos << ' ' << rect2.pos
-          << " | " << rect1.size << ' ' << rect2.size
-          << " | " << rect1.angle << ' ' << rect2.angle
-          << " | " << dt <<  " @ " << time << '\n';
+        const int argc = 3;
+        Handle<Value> argv[] = { key1, key2, Number::New(time) };
+
+        callback->Call(global, argc, argv);
       }
     }
   }

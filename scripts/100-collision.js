@@ -72,7 +72,17 @@ var Pathing = function () {
       bodies,
       function (body) { return update_body(body, dt); }
     );
-    resolveCollisions(new_bodies, dt);
+    var collisions = [];
+    resolveCollisions(new_bodies, dt, function (a, b, t) {
+      collisions.push({
+        a: a,
+        b: b,
+        t: t,
+      });
+    });
+
+    // TODO(zack): do something with the collisions here
+    Log('collisions', JSON.stringify(collisions));
 
     return new_bodies;
 
