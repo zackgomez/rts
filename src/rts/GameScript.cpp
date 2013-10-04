@@ -40,6 +40,7 @@ static Handle<Value> getCollisionBinding() {
 
 static Handle<Value> jsLocationVisible(const Arguments &args);
 static Handle<Value> jsResolveCollisions(const Arguments &args);
+static Handle<Value> jsComputePath(const Arguments &args);
 static Handle<Value> getPathingBinding() {
   HandleScope scope;
   auto binding = Object::New();
@@ -49,6 +50,9 @@ static Handle<Value> getPathingBinding() {
   binding->Set(
       String::New("resolveCollisions"),
       FunctionTemplate::New(jsResolveCollisions)->GetFunction());
+  binding->Set(
+      String::New("computePath"),
+      FunctionTemplate::New(jsComputePath)->GetFunction());
 
   return scope.Close(binding);
 }
@@ -225,6 +229,31 @@ static Handle<Value> jsResolveCollisions(const Arguments &args) {
   }
 
   return Undefined();
+}
+
+static Handle<Value> jsComputePath(const Arguments &args) {
+  invariant(
+      args.Length() == 2,
+      "computePath(vec2 start, vec2 end): array<vec2> path");
+  HandleScope scope(args.GetIsolate());
+  auto script = Game::get()->getScript();
+  auto navmesh = Game::get()->getMap()->getNavMesh();
+
+  glm::vec3 start(
+      script->jsToVec2(Handle<Array>::Cast(args[0])),
+      0.f);
+  glm::vec3 end(
+      script->jsToVec2(Handle<Array>::Cast(args[1])),
+      0.f);
+
+  auto path = navmesh->getPath(start, end);
+
+  auto jspath = Array::New();
+  for (const auto &node : path) {
+    jspath->Set(jspath->Length(), script->vec2ToJS(glm::vec2(node)));
+  }
+
+  return scope.Close(jspath);
 }
 
 static Handle<Value> entityOnEvent(const Arguments &args) {
@@ -511,6 +540,16 @@ static Handle<Value> entitySetUIInfo(const Arguments &args) {
   auto minimap_icon = String::New("minimap_icon");
   if (jsinfo->Has(minimap_icon)) {
     ui_info.minimap_icon = *String::AsciiValue(jsinfo->Get(minimap_icon));
+  }
+  auto path_str = String::New("path");
+  if (jsinfo->Has(path_str)) {
+    auto jspath = Handle<Array>::Cast(jsinfo->Get(path_str));
+    for (auto i = 0; i < jspath->Length(); i++) {
+      glm::vec3 node(
+          script->jsToVec2(Handle<Array>::Cast(jspath->Get(i))),
+          0.f);
+      ui_info.path.push_back(node);
+    }
   }
 
   auto extra = String::New("extra");

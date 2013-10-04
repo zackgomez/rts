@@ -48,6 +48,7 @@ class GameEntity : public ModelEntity {
     char hotkey;
     std::string minimap_icon;
     Json::Value extra;
+    std::vector<glm::vec3> path;
   };
 
   virtual bool hasProperty(uint32_t property) const final override {
@@ -105,8 +106,6 @@ class GameEntity : public ModelEntity {
   }
 
   void checksum(Checksum &chksum) const;
-
-  std::vector<glm::vec3> getPathNodes() const;
 
   const std::vector<glm::vec3>& getPathQueue() const {
     return pathQueue_;

@@ -67,8 +67,4 @@ void GameEntity::checksum(Checksum &chksum) const {
     .process(getHeight())
     .process(getSpeed());
 }
-
-std::vector<glm::vec3> GameEntity::getPathNodes() const {
-  return pathQueue_;
-}
 };  // rts

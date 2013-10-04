@@ -1088,7 +1088,7 @@ void renderEntity(
   glEnable(GL_DEPTH_TEST);
   // Render path if selected
   if (localPlayer->isSelected(actor->getGameID())) {
-    auto pathQueue = actor->getPathQueue();
+    const auto &pathQueue = ui_info.path;
     // TODO(zack): remove z hack
     const auto zhack = glm::vec3(0, 0, 0.05f);
     auto prev = pos + zhack;

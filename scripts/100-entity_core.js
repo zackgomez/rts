@@ -745,6 +745,8 @@ function entityGetUIInfo(entity) {
     ui_info.mana = [entity.mana_, entity.maxMana_];
   }
 
+  ui_info.path = entity.path_ || [];
+
   // TODO(zack): figure out if there is a better way
   ui_info.extra = {};
   if (entity.getName() === "victory_point") {

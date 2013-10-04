@@ -18,6 +18,7 @@ var Pathing = function () {
 
   var binding = runtime.binding('pathing');
   var resolveCollisions = binding.resolveCollisions;
+  var computePath = binding.computePath;
 
   var update_body = function (body, dt) {
     var movement_intent = body.getMovementIntent();
@@ -47,9 +48,13 @@ var Pathing = function () {
     }
     var vel = [0, 0];
     var target_pos = movement_intent.move_towards;
+    var path = [];
     if (target_pos) {
+      path = computePath(pos, target_pos);
+      invariant(path.length >= 1, 'path must have at least one node');
+      var node = path[0];
       vel = vecMul(
-        vecNormalize(vecSub(target_pos, pos)),
+        vecNormalize(vecSub(node, pos)),
         body.getSpeed()
       );
     }
@@ -58,6 +63,7 @@ var Pathing = function () {
       size: size,
       angle: angle,
       vel: vel,
+      path: path,
     };
   };
 

@@ -134,6 +134,7 @@ var Game = function () {
       // HACK ALERT
       entity.pos_ = body.pos;
       entity.angle_ = body.angle;
+      entity.path_ = body.path;
     }
 
     var players = Players.getPlayers();
