@@ -274,12 +274,10 @@ void Game::update(float dt) {
 
   auto engine_lock = Renderer::get()->lockEngine();
 
-  auto s = Clock::now();
   // Update javascript, passing player input
   updateJS(js_player_inputs, dt);
   // Synchronize with JS about resources/vps/etc
   renderJS();
-  LOG(DEBUG) << "JS update time: " << Clock::secondsSince(s) << '\n';
 
   std::vector<GameEntity *> entities;
   for (auto it : Renderer::get()->getEntities()) {

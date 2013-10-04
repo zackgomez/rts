@@ -349,9 +349,18 @@ function entityInit(id, name, params) {
     return vecDistance(entity.getPosition2(), this.getPosition2());
   };
 
-  entity.onEvent = function () {
-    // TODO(zack): do something here
+  entity.onEvent = function (name, params) {
+    this.events_.push({
+      name: name,
+      params: params,
+    });
   };
+  entity.getEvents = function () {
+    return this.events_ || [];
+  };
+  entity.clearEvents = function () {
+    this.events_ = [];
+  }
 
   return entity;
 }

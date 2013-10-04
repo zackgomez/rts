@@ -256,30 +256,6 @@ static Handle<Value> jsComputePath(const Arguments &args) {
   return scope.Close(jspath);
 }
 
-static Handle<Value> entityOnEvent(const Arguments &args) {
-  if (args.Length() != 2) {
-    invariant_violation("entity.onEvent(name, params)");
-  }
-
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  GameEntity *entity = static_cast<GameEntity *>(wrap->Value());
-
-  HandleScope scope(args.GetIsolate());
-  std::string name(*String::AsciiValue(args[0]));
-
-  // TODO(zack); kill this entire function, use the global version
-  auto effect = makeEntityEffect(
-        entity,
-        name,
-        Handle<Object>::Cast(args[1]));
-  if (effect) {
-    entity->addExtraEffect(effect);
-  }
-
-  return Undefined();
-}
-
 static Handle<Value> entitySetPosition2(const Arguments &args) {
   invariant(args.Length() == 1, "void setPosition2(vec2 p)");
 
@@ -670,10 +646,6 @@ void GameScript::init() {
   entityTemplate_->Set(
       String::New("setUIInfo"),
       FunctionTemplate::New(entitySetUIInfo));
-
-  entityTemplate_->Set(
-      String::New("onEvent"),
-      FunctionTemplate::New(entityOnEvent));
 
   loadScripts();
 }

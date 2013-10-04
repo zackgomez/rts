@@ -179,7 +179,7 @@ function TeleportAction(params) {
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
     entity.mana_ -= this.params.mana_cost;
     entity.warpPosition(target);
-    AddEffect('teleport', {
+    entity.onEffect('teleport', {
       start: entity.getPosition2(),
       end: target,
     });
@@ -221,9 +221,7 @@ function SnipeAction(params) {
       damage_type: 'ranged',
       health_target: HEALTH_TARGET_RANDOM,
     });
-    AddEffect('snipe', {
-      source_eid: entity.getID(),
-    });
+    entity.onEvent('snipe', {});
   };
 }
 SnipeAction.prototype = ActionPrototype;
@@ -305,7 +303,7 @@ function HealAction(params) {
       health_target: this.params.health_target,
     });
 
-    target_entity.onEvent('heal', {});
+    target_entity.onEvent('heal_target', {});
   };
 }
 HealAction.prototype = ActionPrototype;

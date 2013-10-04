@@ -59,6 +59,14 @@ class Renderer {
   const std::map<id_t, ModelEntity *>& getEntities() const {
     return entities_;
   }
+  ModelEntity * getEntity(id_t id) {
+    auto it = entities_.find(id);
+    if (it != entities_.end()) {
+      return it->second;
+    }
+    return nullptr;
+  }
+
   const ModelEntity * castRay(
       const glm::vec3 &origin,
       const glm::vec3 &dir,

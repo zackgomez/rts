@@ -47,39 +47,6 @@ Effect *makeCannedParticleEffect(
       part_info_func);
 }
 
-void add_jseffect(const std::string &name, v8::Handle<v8::Object> params) {
-  auto *script = Game::get()->getScript();
-  auto json_params = script->jsToJSON(params);
-  if (name == "teleport") {
-    glm::vec3 start = glm::vec3(toVec2(json_params["start"]), 0.5f);
-    glm::vec3 end = glm::vec3(toVec2(json_params["end"]), 0.5f);
-    Renderer::get()->getEffectManager()->addEffect(
-        makeCannedParticleEffect("effects.teleport", start, end, glm::vec3(0.f)));
-  } else if (name == "snipe") {
-    id_t eid = params->Get(v8::String::New("source_eid"))->IntegerValue();
-    auto *entity = Game::get()->getEntity(eid);
-    if (!entity) {
-      return;
-    }
-    // TODO(zack): get this position from the model (weapon tip)
-    auto pos = glm::vec3(
-        entity->getPosition2() + 1.0f * entity->getDirection(),
-        1.0f);
-    auto shot_pos = pos + 1.5f * glm::vec3(entity->getDirection(), 0.f);
-    Renderer::get()->getEffectManager()->addEffect(
-        makeCannedParticleEffect("effects.muzzle_flash", pos, pos, glm::vec3(0.f)));
-    // TODO(zack): make this be cylindrically billboarded
-    Renderer::get()->getEffectManager()->addEffect(
-        makeCannedParticleEffect(
-          "effects.snipe_shot",
-          pos,
-          shot_pos,
-          glm::normalize(shot_pos - pos)));
-  } else {
-    invariant_violation("Unknown effect " + name);
-  }
-}
-
 RenderFunction makeTextureBelowEffect(
 		const ModelEntity *entity,
 		float duration,
@@ -145,15 +112,47 @@ Effect * makeOnDamageEffect(
       });
 }
 
-RenderFunction makeEntityEffect(
-		const ModelEntity *entity,
-    const std::string &name,
-    v8::Handle<v8::Object> params) {
-	using namespace v8;
+void add_jseffect(const std::string &name, v8::Handle<v8::Object> params) {
+  using namespace v8;
 
-	if (name == "heal") {
-		return makeTextureBelowEffect(entity, 3.5f, "heal_icon", 2.f);
+  auto *script = Game::get()->getScript();
+  auto json_params = script->jsToJSON(params);
+  if (name == "teleport") {
+    glm::vec3 start = glm::vec3(toVec2(json_params["start"]), 0.5f);
+    glm::vec3 end = glm::vec3(toVec2(json_params["end"]), 0.5f);
+    Renderer::get()->getEffectManager()->addEffect(
+        makeCannedParticleEffect("effects.teleport", start, end, glm::vec3(0.f)));
+  } else if (name == "snipe") {
+    id_t eid = params->Get(String::New("eid"))->IntegerValue();
+    auto *entity = Renderer::get()->getEntity(eid);
+    if (!entity) {
+      return;
+    }
+    // TODO(zack): get this position from the model (weapon tip)
+    auto pos = glm::vec3(
+        entity->getPosition2() + 1.0f * entity->getDirection(),
+        1.0f);
+    auto shot_pos = pos + 1.5f * glm::vec3(entity->getDirection(), 0.f);
+    Renderer::get()->getEffectManager()->addEffect(
+        makeCannedParticleEffect("effects.muzzle_flash", pos, pos, glm::vec3(0.f)));
+    // TODO(zack): make this be cylindrically billboarded
+    Renderer::get()->getEffectManager()->addEffect(
+        makeCannedParticleEffect(
+          "effects.snipe_shot",
+          pos,
+          shot_pos,
+          glm::normalize(shot_pos - pos)));
+  } else if (name == "heal_target") {
+    id_t render_id = params->Get(String::New("eid"))->IntegerValue();
+    auto *entity = Renderer::get()->getEntity(render_id);
+		entity->addExtraEffect(
+        makeTextureBelowEffect(entity, 3.5f, "heal_icon", 2.f));
   } else if (name == "on_damage") {
+    id_t render_id = params->Get(String::New("eid"))->IntegerValue();
+    auto *entity = Renderer::get()->getEntity(render_id);
+    if (!entity) {
+      return;
+    }
     auto parts_handle = params->Get(String::New("parts"));
     invariant(!parts_handle.IsEmpty(), "missing 'parts' for on_damage message");
     auto parts = Handle<Array>::Cast(parts_handle);
@@ -168,10 +167,9 @@ RenderFunction makeEntityEffect(
             entity,
             amount));
     }
-    return nullptr;
-	} else {
-		invariant_violation("unknown effect " + name);
-	}
+  } else {
+    invariant_violation("Unknown effect " + name);
+  }
 }
 
 }  // rts

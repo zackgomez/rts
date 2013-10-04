@@ -157,6 +157,7 @@ var Game = function () {
         eid_to_render_entity[eid] = render_entity;
       }
 
+      var render_id = render_entity.getID();
       render_entity.eid = eid;
       render_entity.setGameID(eid);
       var entity_def = game_entity.getDefinition();
@@ -177,6 +178,14 @@ var Game = function () {
       render_entity.setUIInfo(ui_info);
       var actions = entityGetActions(game_entity);
       render_entity.setActions(actions);
+
+      var events = game_entity.getEvents(); 
+      game_entity.clearEvents();
+      for (var i = 0; i < events.length; i++) {
+        var event = events[i];
+        event.params.eid = render_id;
+        AddEffect(event.name, event.params);
+      }
     }
     
     return {
