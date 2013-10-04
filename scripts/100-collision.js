@@ -54,11 +54,14 @@ var Pathing = function () {
       );
     }
     return {
-      pos: vecAdd(pos, vecMul(vel, dt)),
+      pos: pos,
       size: size,
       angle: angle,
       vel: vel,
     };
+  };
+
+  var collide = function (a, b, dt) {
   };
 
   // each body has
@@ -81,12 +84,35 @@ var Pathing = function () {
       });
     });
 
-    // TODO(zack): do something with the collisions here
-    Log('collisions', JSON.stringify(collisions));
+    for (var i = 0; i < collisions.length; i++) {
+      var collision = collisions[i];
+      var a = collision.a;
+      var b = collision.b;
+
+      if (vecNonZero(new_bodies[a].vel) || vecNonZero(new_bodies[b].vel)) {
+        continue;
+      }
+      if (bodies[a].getPlayerID() !== bodies[b].getPlayerID()) {
+        continue;
+      }
+
+      var diff = vecSub(new_bodies[b].pos, new_bodies[a].pos);
+      var dist = vecLength(diff);
+      var dir = dist > 0.00001 ? vecMul(diff, 1 / dist) : vecRandDir2();
+      if (bodies[a].hasProperty(P_MOBILE)) {
+        new_bodies[a].vel = vecSub(new_bodies[a].vel, dir);
+      }
+      if (bodies[b].hasProperty(P_MOBILE)) {
+        new_bodies[b].vel = vecAdd(new_bodies[b].vel, dir);
+      }
+    }
+
+    _.each(new_bodies, function (body) {
+      body.pos = vecAdd(body.pos, vecMul(body.vel, dt));
+    });
 
     return new_bodies;
 
-    // TODO collision detection
     // TODO make warp's not interpolate
   };
 

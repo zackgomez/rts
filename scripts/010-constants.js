@@ -136,6 +136,22 @@ function vecAngleBetween(v1, v2) {
   return 180 / Math.PI * Math.atan2(diff[1], diff[0]);
 }
 
+function vecNonZero(v) {
+  for (var i = 0; i < v.length; i++) {
+    if (v[i] !== 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function vecRandDir2() {
+  return vecNormalize([
+    (GameRandom() - 0.5) * 2,
+    (GameRandom() - 0.5) * 2,
+  ]);
+}
+
 function invariant(condition, message) {
   if (!condition) {
     invariant_violation(message);
