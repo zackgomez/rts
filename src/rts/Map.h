@@ -25,7 +25,6 @@ class Map {
 
   // Initializes the map and any start entities/etc
   void init();
-  void update(float dt);
   
   NavMesh* getNavMesh() const { return navmesh_; }
 

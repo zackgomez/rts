@@ -61,15 +61,14 @@ var Pathing = function () {
     };
   };
 
-  var collide = function (a, b, dt) {
-  };
-
   // each body has
   // getPosition2()
   // getSize()
   // getAngle()
   // getSpeed()
   // getMovementIntent()
+  // getPlayerID()
+  // hasProperty()
   exports.stepAllForward = function (bodies, dt) {
     var new_bodies = _.mapValues(
       bodies,
@@ -112,8 +111,6 @@ var Pathing = function () {
     });
 
     return new_bodies;
-
-    // TODO make warp's not interpolate
   };
 
   // function locationVisible(int player, vec2 pos): bool

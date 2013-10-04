@@ -29,10 +29,6 @@ size_t Map::getMaxPlayers() const {
   return must_have_idx(definition_, "players").asUInt();
 }
 
-void Map::update(float dt) {
-  // nop
-}
-
 void Map::init() {
   Renderer::get()->setMapSize(getSize());
   Renderer::get()->setMapColor(getColor());

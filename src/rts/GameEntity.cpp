@@ -71,31 +71,4 @@ void GameEntity::checksum(Checksum &chksum) const {
 std::vector<glm::vec3> GameEntity::getPathNodes() const {
   return pathQueue_;
 }
-
-void GameEntity::collide(const GameEntity *collider, float dt) {
-  if (!hasProperty(P_MOBILE)) {
-    return;
-  }
-  if (!collider->hasProperty(P_ACTOR)
-      || collider->getPlayerID() != getPlayerID()) {
-    return;
-  }
-
-  // if either entity is moving forward, just ignore the message
-  if (getSpeed() != 0.f || collider->getSpeed() != 0.f) {
-    return;
-  }
-
-  // get difference between positions at time of intersection
-  auto diff = getPosition2(dt) - collider->getPosition2(dt);
-  float overlap_dist = glm::length(diff);
-
-  // seperate away, or randomly if exactly the same pos
-  auto dir = (overlap_dist > 1e-6f)
-    ? diff / overlap_dist
-    : randDir2();
-
-  float bumpSpeed = ::fltParam("global.bumpSpeed");
-  addBumpVel(glm::vec3(dir * bumpSpeed, 0.f));
-}
 };  // rts

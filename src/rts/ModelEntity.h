@@ -51,9 +51,6 @@ public:
   float getSpeed() const {
     return speed_;
   }
-  const glm::vec3& getBumpVel() const {
-    return bumpVel_;
-  }
 
   float distanceFromPoint(const glm::vec2 &pt) const;
 
@@ -104,9 +101,6 @@ private:
   glm::vec3 pos_;
   float angle_;
   glm::vec3 size_;
-
-  // velocity not related to forward movement
-  glm::vec3 bumpVel_;
 
   float speed_;
 

@@ -104,8 +104,6 @@ class GameEntity : public ModelEntity {
     return uiInfo_;
   }
 
-  void collide(const GameEntity *other, float dt);
-
   void checksum(Checksum &chksum) const;
 
   std::vector<glm::vec3> getPathNodes() const;

@@ -13,7 +13,6 @@ ModelEntity::ModelEntity(id_t id)
     angle_(0.f),
     size_(0.f),
     speed_(0.f),
-    bumpVel_(0.f),
     scale_(1.f),
     color_(0.f),
     visible_(true) {
@@ -30,7 +29,7 @@ const Rect ModelEntity::getRect(float dt) const {
 }
 
 const glm::vec3 ModelEntity::getVelocity() const {
-  return glm::vec3(getDirection() * speed_, 0.f) + bumpVel_;
+  return glm::vec3(getDirection() * speed_, 0.f);
 }
 
 void ModelEntity::setPosition(const glm::vec2 &pos) {
@@ -50,12 +49,6 @@ void ModelEntity::setHeight(float height) {
 }
 void ModelEntity::setSpeed(float speed) {
   speed_ = speed;
-}
-void ModelEntity::setBumpVel(const glm::vec3 &bumpVel) {
-  bumpVel_ = bumpVel;
-}
-void ModelEntity::addBumpVel(const glm::vec3 &delta) {
-  bumpVel_ += delta;
 }
 
 void ModelEntity::setVisible(bool visible) {

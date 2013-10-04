@@ -178,7 +178,6 @@ void Game::start() {
 }
 
 void Game::update(float dt) {
-  auto lock = Renderer::get()->lockEngine();
   v8::Locker locker(script_.getIsolate());
   v8::Context::Scope context_scope(script_.getContext());
   v8::HandleScope scope(script_.getIsolate());
@@ -273,9 +272,6 @@ void Game::update(float dt) {
   // Allow more actions
   actionLock.unlock();
 
-  // Update pathing
-  map_->update(dt);
-
   std::vector<GameEntity *> entities;
   for (auto it : Renderer::get()->getEntities()) {
     if (it.second->hasProperty(GameEntity::P_GAMEENTITY)) {
@@ -283,57 +279,10 @@ void Game::update(float dt) {
     }
   }
 
-  /*
-  // Integrate positions before updating entities, to ensure the render displays
-  // extrapolated information.  This is safe and provides a better experience.
-  for (auto entity : entities) {
-    entity->integrate(dt);
-  }
-  */
-
+  auto engine_lock = Renderer::get()->lockEngine();
+  auto s = Clock::now();
   // Update javascript, passing player input
   updateJS(js_player_inputs, dt);
-
-  /*
-  entities.clear();
-  for (auto it : Renderer::get()->getEntities()) {
-    if (it.second->hasProperty(GameEntity::P_GAMEENTITY)) {
-      entities.push_back((GameEntity *)it.second);
-      // clear collision velocity
-      it.second->setBumpVel(glm::vec3(0.f));
-    }
-  }
-
-  // Collision detection
-  for (auto it = entities.begin(); it != entities.end(); it++) {
-    GameEntity *e1 = *it;
-    if (!e1->hasProperty(GameEntity::P_COLLIDABLE)) {
-      continue;
-    }
-    // Collide with map
-    e1->setPosition(
-      glm::vec3(
-        glm::vec2(e1->getPosition()),
-        map_->getMapHeight(glm::vec2(e1->getPosition()))));
-    auto it2 = it;
-    for (it2++; it2 != entities.end(); it2++) {
-      GameEntity *e2 = *it2;
-      if (!e2->hasProperty(GameEntity::P_COLLIDABLE)) {
-        continue;
-      }
-      float time;
-      if ((time = boxBoxCollision(
-            e1->getRect(),
-            glm::vec2(e1->getVelocity()),
-            e2->getRect(),
-            glm::vec2(e2->getVelocity()),
-            dt)) != NO_INTERSECTION) {
-        e1->collide(e2, time);
-        e2->collide(e1, time);
-      }
-    }
-  }
-  */
 
   for (auto &vit : visibilityMaps_) {
     vit.second->clear();
@@ -344,6 +293,7 @@ void Game::update(float dt) {
 
   // Synchronize with JS about resources/vps/etc
   renderJS();
+  LOG(DEBUG) << "JS update time: " << Clock::secondsSince(s) << '\n';
 
   // TODO(zack): move this win condition into JS
   // Check to see if this player has won
