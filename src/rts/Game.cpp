@@ -272,28 +272,27 @@ void Game::update(float dt) {
   // Allow more actions
   actionLock.unlock();
 
+  auto engine_lock = Renderer::get()->lockEngine();
+
+  auto s = Clock::now();
+  // Update javascript, passing player input
+  updateJS(js_player_inputs, dt);
+  // Synchronize with JS about resources/vps/etc
+  renderJS();
+  LOG(DEBUG) << "JS update time: " << Clock::secondsSince(s) << '\n';
+
   std::vector<GameEntity *> entities;
   for (auto it : Renderer::get()->getEntities()) {
     if (it.second->hasProperty(GameEntity::P_GAMEENTITY)) {
       entities.push_back((GameEntity *)it.second);
     }
   }
-
-  auto engine_lock = Renderer::get()->lockEngine();
-  auto s = Clock::now();
-  // Update javascript, passing player input
-  updateJS(js_player_inputs, dt);
-
   for (auto &vit : visibilityMaps_) {
     vit.second->clear();
     for (auto entity : entities) {
       vit.second->processEntity(entity);
     }
   }
-
-  // Synchronize with JS about resources/vps/etc
-  renderJS();
-  LOG(DEBUG) << "JS update time: " << Clock::secondsSince(s) << '\n';
 
   // TODO(zack): move this win condition into JS
   // Check to see if this player has won
