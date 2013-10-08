@@ -17,6 +17,7 @@ CommandWidget::~CommandWidget() {
 }
 
 CommandWidget* CommandWidget::addMessage(const std::string &s) {
+  std::unique_lock<std::mutex> lock(lock_);
   messages_.push_back(s);
   return this;
 }
@@ -65,6 +66,7 @@ CommandWidget* CommandWidget::captureText(const std::string &prefix) {
 }
 
 void CommandWidget::render(float dt) {
+  std::unique_lock<std::mutex> lock(lock_);
   if (showDuration_ <= 0.f && !capturing_) {
     return;
   }

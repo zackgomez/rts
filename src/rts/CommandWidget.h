@@ -1,6 +1,7 @@
 #pragma once
 #include "rts/Widgets.h"
 #include <vector>
+#include <mutex>
 
 namespace rts {
 
@@ -19,7 +20,7 @@ class CommandWidget : public StaticWidget {
     closeOnSubmit_ = close;
   }
 
-  // TODO(zack): make this synchronized
+  // Thread-safe
   CommandWidget* addMessage(const std::string &msg);
 
   typedef std::function<void(const std::string &newText)> OnTextSubmittedHandler;
@@ -37,6 +38,6 @@ class CommandWidget : public StaticWidget {
   OnTextSubmittedHandler textSubmittedHandler_;
   std::string buffer_;
   std::vector<std::string> messages_;
-
+  std::mutex lock_;
 };
 };  // rts
