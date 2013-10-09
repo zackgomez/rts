@@ -41,7 +41,7 @@ COMMONOBJ = $(patsubst $(COMMONDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(COMMONS
 RTSOBJ = $(patsubst $(RTSDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(RTSSRC))) obj/rts-main.o
 DEPTHGENOBJ = obj/depthfieldgen.o
 
-RESOURCES = config.json local.json models scripts shaders images fonts
+RESOURCES = config.json local.json models scripts shaders images fonts maps
 
 all: obj $(PROGRAM) depthfieldgen
 
@@ -96,7 +96,7 @@ tags:
 
 
 
-COMPANY=somedudes
+COMPANY=graphenegames
 ICONFILE=
 BUNDLEPACKAGE=APPL
 BUNDLESIGNATURE=????
@@ -130,6 +130,9 @@ $(BUNDLE):
 $(BUNDLE)/Contents/MacOS/$(PROGRAM): $(PROGRAM)
 	@echo "==== Copying executable ===="
 	cp $^ $(BUNDLE)/Contents/MacOS/$(PROGRAM) 
+	touch $(BUNDLE)/Contents/MacOS/bundle_marker
+	echo '.' | dylibbundler \
+		-od -b -x $(BUNDLE)/Contents/MacOS/$(PROGRAM) -d $(BUNDLE)/Contents/libs
 
 #  This copies the icon file into the bundle.
 $(MACICON): $(ICONFILE)
