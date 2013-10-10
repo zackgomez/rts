@@ -132,6 +132,7 @@ void matchmakerThread() {
 }
 
 void set_working_directory(int argc, char **argv) {
+#ifndef _MSC_VER
   namespace fs = boost::filesystem;
 	fs::path full_path = fs::system_complete(fs::path(argv[0]));
 	auto exec_dir = full_path.branch_path();
@@ -141,9 +142,9 @@ void set_working_directory(int argc, char **argv) {
 		// In bundle.app/Contents/MacOS
 		// going to bundle.app/Contents/Resources
 		auto resource_path = exec_dir/fs::path("../Resources");
-		LOG(DEBUG) << "path: " << resource_path << '\n';
 		fs::current_path(resource_path);
 	}
+#endif _MSC_VER
 }
 
 int main(int argc, char **argv) {
