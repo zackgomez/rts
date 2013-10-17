@@ -2,6 +2,7 @@ var Game = function () {
   var exports = {};
 
   var entities = {};
+  var teams = {};
   var eid_to_render_entity = {};
   var last_id = STARTING_EID;
 
@@ -17,6 +18,9 @@ var Game = function () {
 
   var handleMessages = function () {
     var messages = MessageHub.getMessagesForEntity(GAME_ID);
+
+    var vp_changes = object_fill_keys(Object.keys(teams), 0);
+
     // Spawn new entities
     for (var i = 0; i < messages.length; i++) {
       var message = messages[i];
@@ -26,15 +30,30 @@ var Game = function () {
           must_have_idx(message, 'name'),
           must_have_idx(message, 'params')
         );
+      } else if (type == MessageTypes.ADD_VPS) {
+        var tid = must_have_idx(message, 'tid')
+        vp_changes[tid] += must_have_idx(message, 'amount');
       } else {
         invariant_violation('Unable to handle message with type ' + type);
       }
     }
 
-    var teams = Teams.getTeams();
+    var min = _.reduce(
+      vp_changes,
+      function(min, num) {
+        return Math.min(min, num);
+      },
+      Infinity
+    );
+    for (var tid in vp_changes) {
+      vp_changes[tid] -= min;
+    }
+
     for (var tid in teams) {
       var messages = MessageHub.getMessagesForEntity(tid);
-      teams[tid].update(messages);
+      var team = teams[tid];
+      team.update(messages);
+      team.addVictoryPoints(vp_changes[tid]);
     }
   };
 
@@ -64,6 +83,16 @@ var Game = function () {
     for (var i = 0; i < player_defs.length; i++) {
       var player_def = player_defs[i];
       Players.playerInit(player_def);
+    }
+
+    var players = Players.getPlayers();
+    for (var pid in players) {
+      var player = players[pid];
+      var tid = player.getTeamID();
+
+      var team = teams[tid] || new Team(tid);
+      team.addPlayer(pid);
+      teams[tid] = team;
     }
 
     handleMessages();
@@ -187,10 +216,17 @@ var Game = function () {
         AddEffect(event.name, event.params);
       }
     }
+
+    var vps = _.map(teams, function (team, tid) {
+      return {
+        tid: tid,
+        vps: team.getVictoryPoints(),
+      };
+    });
     
     return {
       players: Players.getRequisitionCounts(),
-      teams: Teams.getVictoryPoints(),
+      teams: vps,
     };
   };
 

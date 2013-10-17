@@ -21,8 +21,6 @@ var Players = (function() {
       throw new Error('player '+pid+' already exists!');
     }
 
-    Teams.addPlayer(tid, pid);
-
     MessageHub.sendMessage({
       to: GAME_ID,
       from: pid,

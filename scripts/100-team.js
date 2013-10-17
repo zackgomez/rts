@@ -1,95 +1,44 @@
-var Teams = (function() {
-
-  // External API
-  var exports = {};
+var Team = (function() {
 
   // Map from team ID to team objects.
   // Team objects have the property 'victoryPoints'
-  var teams = {};
-
   var Team = function (tid) {
-    var players = [];
-    var victoryPoints = 0;
+    this.players = [];
+    this.victoryPoints = 0;
+  };
 
-    this.getVictoryPoints = function () {
-      return victoryPoints;
-    }
+  Team.prototype.getVictoryPoints = function () {
+    return this.victoryPoints;
+  };
+  Team.prototype.addVictoryPoints = function (amount) {
+    Log('adding', amount);
+    this.victoryPoints += amount;
+    return this;
+  };
 
-    this.addPlayer = function (pid) {
-      players.push(pid);
-      return this;
-    };
+  Team.prototype.addPlayer = function (pid) {
+    this.players.push(pid);
+    return this;
+  };
 
-    this.update = function (messages) {
-      var vps = 0;
-      for (var i = 0; i < messages.length; i++) {
-        var message = messages[i];
-        if (message.type === MessageTypes.ADD_VPS) {
-          vps += must_have_idx(message, 'amount');
-        } else if (message.type === MessageTypes.ADD_REQUISITION) {
-          var req = must_have_idx(message, 'amount');
-          for (var j = 0; j < players.length; j++) {
-            Players.getPlayer(players[j]).addRequisition(req);
-          }
-        } else {
-          invariant_violation(
-            'Unknown message of type \'' + message.type + '\' sent to team'
-          );
+  Team.prototype.update = function (messages) {
+    var vps = 0;
+    for (var i = 0; i < messages.length; i++) {
+      var message = messages[i];
+      if (message.type === MessageTypes.ADD_REQUISITION) {
+        var req = must_have_idx(message, 'amount');
+        for (var j = 0; j < this.players.length; j++) {
+          Players.getPlayer(this.players[j]).addRequisition(req);
         }
+      } else {
+        invariant_violation(
+          'Unknown message of type \'' + message.type + '\' sent to team'
+        );
       }
-
-      victoryPoints += vps;
-    };
-  };
-
-  var verifyTeam = function (tid) {
-    invariant(
-      teams[tid] !== undefined, 
-      "Teams API: Must provide a valid team ID for Teams API calls"
-    );
-  };
-
-  exports.getVictoryPoints = function() {
-    var ret = [];
-    for (var tid in teams) {
-      ret.push({
-        tid: tid,
-        vps: teams[tid].getVictoryPoints(),
-      });
     }
-    return ret;
+
+    return this;
   };
 
-
-  // Create a new team, with zero victory points.
-  exports.addTeam = function(tid) {
-    if (tid in teams) {
-      return;
-    }
-    teams[tid] = new Team(tid);
-  };
-  exports.addPlayer = function(tid, pid) {
-    this.addTeam(tid);
-    verifyTeam(tid);
-    teams[tid].addPlayer(pid);
-  };
-
-  // @param tid the team getting the points
-  // @param amount how much gained or lost
-  // @param entity (victory point) we're receiving it from
-  exports.addVPs = function(tid, amount, from_eid) {
-    verifyTeam(tid);
-    teams[tid].addVictoryPoints(amount, from_eid);
-  };
-
-  exports.addRequisition = function(tid, amount, from_eid) {
-    verifyTeam(tid);
-    teams[tid].addRequisition(amount, from_eid);
-  };
-
-  exports.getTeams = function () {
-    return teams;
-  };
-
-  return exports;
+  return Team;
 })();
