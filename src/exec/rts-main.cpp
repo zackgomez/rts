@@ -144,7 +144,7 @@ void set_working_directory(int argc, char **argv) {
 		auto resource_path = exec_dir/fs::path("../Resources");
 		fs::current_path(resource_path);
 	}
-#endif _MSC_VER
+#endif
 }
 
 int main(int argc, char **argv) {
