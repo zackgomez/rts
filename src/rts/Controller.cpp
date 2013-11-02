@@ -1,4 +1,4 @@
-#define GLM_SWIZZLE_XYZW
+#define GLM_SWIZZLE
 #include <functional>
 #include "rts/Controller.h"
 #include "rts/Input.h"

@@ -11,7 +11,6 @@ var Team = (function() {
     return this.victoryPoints;
   };
   Team.prototype.addVictoryPoints = function (amount) {
-    Log('adding', amount);
     this.victoryPoints += amount;
     return this;
   };

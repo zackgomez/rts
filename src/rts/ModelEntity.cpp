@@ -1,4 +1,4 @@
-#define GLM_SWIZZLE_XYZW
+#define GLM_SWIZZLE
 #include "rts/ModelEntity.h"
 #include "common/ParamReader.h"
 #include "rts/Game.h"
@@ -162,9 +162,13 @@ bool ModelEntity::pointInEntity(const glm::vec2 &p) {
 }
 
 float ModelEntity::distanceFromPoint(const glm::vec2 &pt) const {
+  auto rect = getRect();
+  if (rect.contains(pt)) {
+    return 0.f;
+  }
   return rayBox2Intersection(
     pt,
     glm::normalize(getPosition2() - pt),
-    getRect());
+    rect);
 }
 }  // rts

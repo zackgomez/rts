@@ -1,4 +1,4 @@
-#define GLM_SWIZZLE_XYZW
+#define GLM_SWIZZLE
 #include "rts/UI.h"
 #include <sstream>
 #include <functional>

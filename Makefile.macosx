@@ -4,7 +4,7 @@ PROGVER=0.3
 CXX=c++
 MAKEDEPEND=$(CXX) -MM
 GLFWDIR=lib/glfw-3.0.1
-GLM=lib/glm-0.9.2.7
+GLM=lib/glm
 JSON=lib/jsoncpp
 STBI=lib/stbi
 STBTT=lib/stb_truetype
@@ -45,7 +45,7 @@ RESOURCES = config.json local.json models scripts shaders images fonts maps
 
 all: obj $(PROGRAM) depthfieldgen
 
-$(PROGRAM): $(RTSOBJ) $(COMMONOBJ) local.json $(BOOSTDYLIBS)
+$(PROGRAM): $(RTSOBJ) $(COMMONOBJ) local.json $(BOOSTDYLIBS) libassimp.3.dylib
 	$(CXX) $(CXXFLAGS) -o $@ $(RTSOBJ) $(COMMONOBJ) $(LDFLAGS) 
 
 depthfieldgen: $(DEPTHGENOBJ) $(COMMONOBJ)
@@ -56,6 +56,8 @@ tests: $(TESTOBJ) $(GTESTLIB) $(COMMONOBJ)
 
 libboost_%.dylib:
 	cp lib/boost_1_50_macosx/$@ $@
+libassimp.3.dylib:
+	cp lib/assimp/lib-macosx/libassimp.3.dylib $@
 
 $(OBJDIR)/%.o: $(RTSDIR)/%.cpp
 	$(CXX) -c $(CXXFLAGS) -o $(OBJDIR)/$*.o $<
@@ -189,6 +191,5 @@ depend: .depend
 .depend: $(COMMONSRC) $(RTSSRC) $(TESTSRC)
 	$(CXX) $(CXXFLAGS) -MM -MG $^ \
 		| sed -e 's/^\(.*\):/obj\/\1:/' > ./.depend
-
 
 include .depend

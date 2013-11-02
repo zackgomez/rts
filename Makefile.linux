@@ -1,5 +1,5 @@
 CXX=g++
-GLM=lib/glm-0.9.2.7
+GLM=lib/glm
 JSON=lib/jsoncpp
 STBI=lib/stbi
 STBTT=lib/stb_truetype

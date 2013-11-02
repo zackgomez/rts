@@ -1,4 +1,4 @@
-#define GLM_SWIZZLE_XYZW
+#define GLM_SWIZZLE
 #include "rts/Renderer.h"
 #include <sstream>
 #include <GL/glew.h>
