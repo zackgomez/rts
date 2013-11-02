@@ -118,7 +118,7 @@ dist:
 dist/$(BUNDLE): dist bundle $(BUNDLE)
 	cp -r $(BUNDLE) dist/
 $(PROGRAM).dmg: dist/$(BUNDLE)
-	hdiutil create -ov -srcfolder ./dist $@
+	hdiutil create -volname $(PROGRAM) -ov -srcfolder ./dist $@
 
 #  This builds the bundle's directory structure.
 $(BUNDLE):
