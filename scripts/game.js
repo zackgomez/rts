@@ -1,14 +1,21 @@
 var must_have_idx = require('must_have_idx');
 
+var Entity = require('entity');
+
+var constants = require('constants');
+var IDConst = constants.IDConst;
+var MessageTypes = constants.MessageTypes;
+var EntityStatus = constants.EntityStatus;
+
 var entities = {};
 var teams = {};
 var eid_to_render_entity = {};
-var last_id = STARTING_EID;
+var last_id = IDConst.STARTING_EID;
 
 // returns the ID of the spawned entity
 var spawnEntity = function (name, params) {
   var id = last_id++;
-  var entity = entityInit(id, name, params);
+  var entity = new Entity(id, name, params);
 
   entities[entity.getID()] = entity;
 
@@ -16,7 +23,7 @@ var spawnEntity = function (name, params) {
 };
 
 var handleMessages = function () {
-  var messages = MessageHub.getMessagesForEntity(GAME_ID);
+  var messages = MessageHub.getMessagesForEntity(IDConst.GAME_ID);
 
   var vp_changes = object_fill_keys(Object.keys(teams), 0);
 
@@ -121,13 +128,13 @@ exports.update = function (player_inputs, dt) {
         must_have_idx(input, 'from_pid') === entity.getPlayerID(),
         'can only recieve input from controlling player'
       );
-      entityHandleOrder(entity, input);
+      entity.handleOrder(input);
     }
   }
 
   // update entities
   for (var eid in entities) {
-    entityUpdate(entities[eid], dt);
+    entities[eid].update(dt);
   }
 
 
@@ -137,7 +144,7 @@ exports.update = function (player_inputs, dt) {
   var eids_by_player = {};
   for (var eid in entities) {
     var entity = entities[eid];
-    var status = entityResolve(entity, dt);
+    var status = entity.resolve(dt);
     if (status === EntityStatus.DEAD) {
       delete entities[eid];
       if (eid in eid_to_render_entity) {
@@ -202,9 +209,9 @@ exports.render = function () {
     render_entity.setPosition2(game_entity.getPosition2());
     render_entity.setAngle(game_entity.getAngle());
 
-    var ui_info = entityGetUIInfo(game_entity);
+    var ui_info = game_entity.getUIInfo();
     render_entity.setUIInfo(ui_info);
-    var actions = entityGetActions(game_entity);
+    var actions = game_entity.getActions();
     render_entity.setActions(actions);
 
     var events = game_entity.getEvents(); 
