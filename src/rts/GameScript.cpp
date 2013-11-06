@@ -614,14 +614,11 @@ void GameScript::init(const std::string &init_function_path) {
       getPathingBinding());
 
   // set up runtime object
+  auto source_map = getSourceMap();
   auto runtime_object = Object::New();
   runtime_object->Set(
       String::New("binding"),
       FunctionTemplate::New(jsRuntimeBinding)->GetFunction());
-  context_->Global()->Set(String::New("runtime"), runtime_object);
-
-  auto source_map = getSourceMap();
-  auto runtime_object = Object::New();
   runtime_object->Set(
       String::New("source_map"),
       source_map);

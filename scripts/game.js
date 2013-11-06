@@ -1,3 +1,5 @@
+var must_have_idx = require('must_have_idx');
+
 var entities = {};
 var teams = {};
 var eid_to_render_entity = {};
