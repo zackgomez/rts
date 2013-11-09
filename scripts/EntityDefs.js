@@ -1,3 +1,4 @@
+var EntityProperties = require('constants').EntityProperties;
 var EntityConsts = {
   retreat_speed: 1.5,
 };
@@ -8,12 +9,12 @@ var EntityConsts = {
 var EntityDefs = {
   unit: {
     properties: [
-      P_ACTOR,
-      P_UNIT,
-      P_TARGETABLE,
-      P_RENDERABLE,
-      P_COLLIDABLE,
-      P_MOBILE,
+      EntityProperties.P_ACTOR,
+      EntityProperties.P_UNIT,
+      EntityProperties.P_TARGETABLE,
+      EntityProperties.P_RENDERABLE,
+      EntityProperties.P_COLLIDABLE,
+      EntityProperties.P_MOBILE,
     ],
     model: 'ranged_unit',
     default_state: UnitIdleState,
@@ -107,12 +108,12 @@ var EntityDefs = {
   },
   melee_unit: {
     properties: [
-      P_ACTOR,
-      P_UNIT,
-      P_TARGETABLE,
-      P_RENDERABLE,
-      P_COLLIDABLE,
-      P_MOBILE,
+      EntityProperties.P_ACTOR,
+      EntityProperties.P_UNIT,
+      EntityProperties.P_TARGETABLE,
+      EntityProperties.P_RENDERABLE,
+      EntityProperties.P_COLLIDABLE,
+      EntityProperties.P_MOBILE,
     ],
     model: 'melee_unit',
     default_state: UnitIdleState,
@@ -187,12 +188,12 @@ var EntityDefs = {
   },
   tanky_melee_unit: {
     properties: [
-      P_ACTOR,
-      P_UNIT,
-      P_TARGETABLE,
-      P_RENDERABLE,
-      P_COLLIDABLE,
-      P_MOBILE,
+      EntityProperties.P_ACTOR,
+      EntityProperties.P_UNIT,
+      EntityProperties.P_TARGETABLE,
+      EntityProperties.P_RENDERABLE,
+      EntityProperties.P_COLLIDABLE,
+      EntityProperties.P_MOBILE,
     ],
     model: 'tanky_melee_unit',
     default_state: UnitIdleState,
@@ -269,10 +270,10 @@ var EntityDefs = {
   },
   base: {
     properties: [
-      P_ACTOR,
-      P_TARGETABLE,
-      P_RENDERABLE,
-      P_COLLIDABLE,
+      EntityProperties.P_ACTOR,
+      EntityProperties.P_TARGETABLE,
+      EntityProperties.P_RENDERABLE,
+      EntityProperties.P_COLLIDABLE,
     ],
     model: 'building',
     size: [2.5, 2.5],
@@ -319,10 +320,10 @@ var EntityDefs = {
   },
   victory_point: {
     properties: [
-      P_ACTOR,
-      P_CAPPABLE,
-      P_RENDERABLE,
-      P_COLLIDABLE,
+      EntityProperties.P_ACTOR,
+      EntityProperties.P_CAPPABLE,
+      EntityProperties.P_RENDERABLE,
+      EntityProperties.P_COLLIDABLE,
     ],
     model: 'victory_point',
     minimap_icon: 'vp_minimap_icon',
@@ -338,10 +339,10 @@ var EntityDefs = {
   },
   req_point: {
     properties: [
-      P_ACTOR,
-      P_CAPPABLE,
-      P_RENDERABLE,
-      P_COLLIDABLE,
+      EntityProperties.P_ACTOR,
+      EntityProperties.P_CAPPABLE,
+      EntityProperties.P_RENDERABLE,
+      EntityProperties.P_COLLIDABLE,
     ],
     model: 'req_point',
     minimap_icon: 'req_minimap_icon',
@@ -357,8 +358,8 @@ var EntityDefs = {
   },
   projectile: {
     properties: [
-      P_RENDERABLE,
-      P_MOBILE,
+      EntityProperties.P_RENDERABLE,
+      EntityProperties.P_MOBILE,
     ],
     model: 'basic_bullet',
     speed: 10.0,
@@ -367,3 +368,10 @@ var EntityDefs = {
     default_state: ProjectileState,
   },
 };
+
+EntityDefs.EntityConsts = {
+  retreat_speed: 1.5,
+};
+
+
+module.exports = EntityDefs;

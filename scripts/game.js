@@ -1,6 +1,6 @@
 var must_have_idx = require('must_have_idx');
 
-var Entity = require('entity');
+var Entity = require('Entity');
 
 var constants = require('constants');
 var IDConst = constants.IDConst;

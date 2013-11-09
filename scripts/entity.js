@@ -1,10 +1,6 @@
-// This file contains the core entity logic
+var must_have_idx = require('must_have_idx');
+var EntityDefs = require('EntityDefs');
 
-// --
-// -- Entity Functions --
-// --
-
-// This function is called on an entity when it is created.
 var Entity = function (id, name, params) {
   var def = must_have_idx(EntityDefs, name);
   var entity = this;

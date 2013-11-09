@@ -1,9 +1,5 @@
 // This file is for constants and global utility functions
-
-// --
-// -- Constants --
-// --
-exports.Properties = {
+exports.EntityProperties = {
   P_CAPPABLE: 815586235,
   P_TARGETABLE: 463132888,
   P_ACTOR: 913794634,
@@ -13,6 +9,9 @@ exports.Properties = {
   P_UNIT: 118468328,
 };
 
+// --
+// -- Constants --
+// --
 exports.IDConst = {
   NO_PLAYER: 0,
   NO_ENTITY: 0,
