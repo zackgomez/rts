@@ -1,3 +1,4 @@
+var _ = require('underscore');
 var must_have_idx = require('must_have_idx');
 
 var Entity = require('Entity');

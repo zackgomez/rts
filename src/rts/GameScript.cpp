@@ -698,10 +698,11 @@ void GameScript::init(const std::string &init_function_path) {
 Handle<Value> runtimeEvalImpl(Handle<String> source, Handle<Object> kwargs) {
   TryCatch try_catch;
 
-  auto filename = *String::AsciiValue(kwargs->Get(String::New("filename")));
+  auto jsfilename = kwargs->Get(String::New("filename"));
+  auto filename = *String::AsciiValue(jsfilename);
   LOG(DEBUG) << "Filename: " << filename << '\n';
 
-  Handle<Script> script = Script::Compile(source);
+  Handle<Script> script = Script::Compile(source, jsfilename);
   checkJSResult(script, try_catch, "compile:");
 
   Handle<Value> result = script->Run();

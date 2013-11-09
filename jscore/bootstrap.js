@@ -4,24 +4,33 @@
 // This file largely ripped from the Node.js minimal module system and startup
 // process
 (function (runtime) {
+  this.global = this;
+
   function bootstrap() {
+    bootstrap.globalVariables();
+
     var invariant = NativeModule.require('invariant').invariant;
     var main = NativeModule.require('main').main;
-    Log('main', typeof main);
     invariant(
       typeof main === 'function',
       'main module must export a function \'main\''
     );
 
     main();
-  }
+  };
+
+  bootstrap.globalVariables = function () {
+    global.global = global;
+    global.root = global;
+    global.runtime = runtime;
+  };
 
   function NativeModule(id) {
     this.filename = id + '.js';
     this.id = id;
     this.exports = {};
     this.loaded = false;
-  }
+  };
 
   NativeModule._source = runtime.source_map;
   NativeModule._cache = {};
@@ -74,7 +83,8 @@
     source = NativeModule.wrap(source);
 
     var fn = runtime.eval(source, {filename: this.filename});
-    fn(this.exports, NativeModule.require, this, this.filename);
+    var args = [this.exports, NativeModule.require, this, this.filename];
+    fn.apply(this.exports, args);
 
     this.loaded = true;
   };

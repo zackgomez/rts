@@ -68,7 +68,9 @@ var ActionPrototype = {
   },
 };
 
-function ReinforceAction(params) {
+var Actions = {};
+
+Actions.ReinforceAction = function (params) {
   this.targeting = TargetingTypes.NONE;
   this.params = params;
   this.params.hotkey = 'g';
@@ -116,9 +118,9 @@ function ReinforceAction(params) {
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
   };
 }
-ReinforceAction.prototype = ActionPrototype;
+Actions.ReinforceAction.prototype = ActionPrototype;
 
-function ProductionAction(params) {
+Actions.ProductionAction = function (params) {
   this.targeting = TargetingTypes.NONE;
   this.params = params;
   this.params.cooldown_name = 'production';
@@ -160,9 +162,9 @@ function ProductionAction(params) {
     });
   };
 }
-ProductionAction.prototype = ActionPrototype;
+Actions.ProductionAction.prototype = ActionPrototype;
 
-function TeleportAction(params) {
+Actions.TeleportAction = function (params) {
   this.targeting = TargetingTypes.PATHABLE;
   this.params = params;
 
@@ -185,9 +187,9 @@ function TeleportAction(params) {
     });
   };
 }
-TeleportAction.prototype = ActionPrototype;
+Actions.TeleportAction.prototype = ActionPrototype;
 
-function SnipeAction(params) {
+Actions.SnipeAction = function (params) {
   this.targeting = TargetingTypes.ENEMY;
   this.params = params;
 
@@ -224,9 +226,9 @@ function SnipeAction(params) {
     entity.onEvent('snipe', {});
   };
 }
-SnipeAction.prototype = ActionPrototype;
+Actions.SnipeAction.prototype = ActionPrototype;
 
-function CenteredAOEAction(params) {
+Actions.CenteredAOEAction = function (params) {
   this.targeting = TargetingTypes.NONE;
   this.params = params;
 
@@ -268,9 +270,9 @@ function CenteredAOEAction(params) {
       });
   };
 }
-CenteredAOEAction.prototype = ActionPrototype;
+Actions.CenteredAOEAction.prototype = ActionPrototype;
 
-function HealAction(params) {
+Actions.HealAction = function (params) {
   this.targeting = TargetingTypes.ALLY;
   this.params = params;
 
@@ -306,4 +308,6 @@ function HealAction(params) {
     target_entity.onEvent('heal_target', {});
   };
 }
-HealAction.prototype = ActionPrototype;
+Actions.HealAction.prototype = ActionPrototype;
+
+module.exports = Actions;

@@ -8,14 +8,14 @@
 // it should return a new state if the state is to transition, and null
 // otherwise
 
-
 function NullState(params) {
   this.update = function (entity) {
     return null;
   };
-}
+};
+exports.NullState = NullState;
 
-function UnitIdleState() {
+function UnitIdleState(params) {
   this.targetID = null;
 
   this.update = function (entity) {
@@ -29,7 +29,8 @@ function UnitIdleState() {
 
     return null;
   };
-}
+};
+exports.UnitIdleState = UnitIdleState;
 
 function UnitMoveState(params) {
   this.target = params.target;
@@ -41,7 +42,8 @@ function UnitMoveState(params) {
     entity.moveTowards(this.target);
     return null;
   };
-}
+};
+exports.UnitMoveState = UnitMoveState;
 
 function UnitCaptureState(params) {
   this.targetID = params.target_id;
@@ -68,7 +70,8 @@ function UnitCaptureState(params) {
     }
     return null;
   };
-}
+};
+exports.UnitCaptureState = UnitCaptureState;
 
 function UnitAttackState(params) {
   this.targetID = params.target_id;
@@ -84,7 +87,8 @@ function UnitAttackState(params) {
 
     entity.pursue(target);
   };
-}
+};
+exports.UnitAttackState = UnitAttackState;
 
 function UnitAttackMoveState(params) {
   this.targetPos = params.target;
@@ -107,7 +111,8 @@ function UnitAttackMoveState(params) {
 
     return null;
   };
-}
+};
+exports.UnitAttackMoveState = UnitAttackMoveState;
 
 function HoldPositionState() {
   this.targetID = null;
@@ -121,7 +126,8 @@ function HoldPositionState() {
       entity.attack(targetEnemy);
     }
   };
-}
+};
+exports.HoldPositionState = HoldPositionState;
 
 function UntargetedAbilityState(params) {
   this.next_state = params.state;
@@ -131,7 +137,8 @@ function UntargetedAbilityState(params) {
     var next_state = this.next_state.update(entity);
     return next_state ? next_state : this.next_state;
   };
-}
+};
+exports.UntargetedAbilityState = UntargetedAbilityState;
 
 function LocationAbilityState(params) {
   this.target = params.target;
@@ -145,7 +152,8 @@ function LocationAbilityState(params) {
     entity.moveTowards(this.target);
     return null;
   };
-}
+};
+exports.LocationAbilityState = LocationAbilityState;
 
 function TargetedAbilityState(params) {
   this.target_id = params.target_id;
@@ -164,6 +172,7 @@ function TargetedAbilityState(params) {
     entity.moveTowards(target.getPosition2()); return null;
   };
 }
+exports.TargetedAbilityState = TargetedAbilityState;
 
 function RetreatState(params) {
   this.update = function (entity) {
@@ -183,7 +192,8 @@ function RetreatState(params) {
 
     return null;
   };
-}
+};
+exports.RetreatState = RetreatState;
 
 function ProjectileState(params) {
   this.targetID = params.target_id;
@@ -216,4 +226,5 @@ function ProjectileState(params) {
     entity.moveTowards(target.getPosition2());
     return null;
   };
-}
+};
+exports.ProjectileState = ProjectileState;

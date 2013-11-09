@@ -1,4 +1,6 @@
+var Actions = require('Actions');
 var EntityProperties = require('constants').EntityProperties;
+var EntityStates = require('EntityStates');
 var EntityConsts = {
   retreat_speed: 1.5,
 };
@@ -17,7 +19,7 @@ var EntityDefs = {
       EntityProperties.P_MOBILE,
     ],
     model: 'ranged_unit',
-    default_state: UnitIdleState,
+    default_state: EntityStates.UnitIdleState,
     size: [0.6, 0.6],
     height: 1.25,
     speed: 3.0,
@@ -75,7 +77,7 @@ var EntityDefs = {
       };
     },
     actions: {
-      snipe: new SnipeAction({
+      snipe: new Actions.SnipeAction({
         range: 7.0,
         cooldown_name: 'snipe',
         cooldown: 10.0,
@@ -86,7 +88,7 @@ var EntityDefs = {
         part: 'left',
         part_upgrade: 'advanced_rifle',
       }),
-      heal: new HealAction({
+      heal: new Actions.HealAction({
         range: 5.0,
         cooldown_name: 'heal',
         cooldown: 8.0,
@@ -98,7 +100,7 @@ var EntityDefs = {
         part: 'head',
         part_upgrade: 'heal',
       }),
-      reinforce: new ReinforceAction({
+      reinforce: new Actions.ReinforceAction({
         req_cost: 10,
         cooldown_name: 'reinforce',
         cooldown: 7.0,
@@ -116,7 +118,7 @@ var EntityDefs = {
       EntityProperties.P_MOBILE,
     ],
     model: 'melee_unit',
-    default_state: UnitIdleState,
+    default_state: EntityStates.UnitIdleState,
     size: [0.6, 0.6],
     height: 1.0,
     speed: 4.0,
@@ -167,7 +169,7 @@ var EntityDefs = {
       };
     },
     actions: {
-      teleport: new TeleportAction({
+      teleport: new Actions.TeleportAction({
         range: 8.0,
         cooldown_name: 'teleport',
         cooldown: 2.0,
@@ -178,7 +180,7 @@ var EntityDefs = {
         part_upgrade: 'teleport',
       }),
 
-      reinforce: new ReinforceAction({
+      reinforce: new Actions.ReinforceAction({
         req_cost: 5,
         cooldown_name: 'reinforce',
         cooldown: 5.0,
@@ -196,7 +198,7 @@ var EntityDefs = {
       EntityProperties.P_MOBILE,
     ],
     model: 'tanky_melee_unit',
-    default_state: UnitIdleState,
+    default_state: EntityStates.UnitIdleState,
     size: [1.6, 1.6],
     height: 1.0,
     speed: 2.8,
@@ -250,7 +252,7 @@ var EntityDefs = {
       };
     },
     actions: {
-      blast: new CenteredAOEAction({
+      blast: new Actions.CenteredAOEAction({
         mana_cost: 60,
         radius: 3.0,
         damage: 35,
@@ -260,7 +262,7 @@ var EntityDefs = {
         icon: 'melee_icon',
         hotkey: 'q',
       }),
-      reinforce: new ReinforceAction({
+      reinforce: new Actions.ReinforceAction({
         req_cost: 5,
         cooldown_name: 'reinforce',
         cooldown: 5.0,
@@ -295,21 +297,21 @@ var EntityDefs = {
       };
     },
     actions: {
-      prod_melee: new ProductionAction({
+      prod_melee: new Actions.ProductionAction({
         prod_name: 'melee_unit',
         req_cost: 70,
         time_cost: 2.5,
         icon: 'melee_icon',
         hotkey: 'q',
       }),
-      prod_ranged: new ProductionAction({
+      prod_ranged: new Actions.ProductionAction({
         prod_name: 'unit',
         req_cost: 100,
         time_cost: 5.0,
         icon: 'ranged_icon',
         hotkey: 'w',
       }),
-      prod_tanky_melee: new ProductionAction({
+      prod_tanky_melee: new Actions.ProductionAction({
         prod_name: 'tanky_melee_unit',
         req_cost: 190,
         time_cost: 6.0,
@@ -365,7 +367,7 @@ var EntityDefs = {
     speed: 10.0,
     size: [0.6, 0.6],
     height: 0.3,
-    default_state: ProjectileState,
+    default_state: EntityStates.ProjectileState,
   },
 };
 
