@@ -1,5 +1,6 @@
 var must_have_idx = require('must_have_idx');
 var EntityDefs = require('EntityDefs');
+var EntityStates = require('EntityStates');
 
 var Entity = function (id, name, params) {
   var def = must_have_idx(EntityDefs, name);
@@ -8,7 +9,7 @@ var Entity = function (id, name, params) {
   entity.id_ = id;
   entity.name_ = name;
   entity.def_ = def;
-  entity.defaultState_ = NullState;
+  entity.defaultState_ = EntityStates.NullState;
   entity.cooldowns_ = {};
   entity.retreat_ = false;
   entity.pid_ = params.pid || NO_PLAYER;

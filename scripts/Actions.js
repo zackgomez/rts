@@ -19,6 +19,10 @@
 // This is the list of common boilerplate/helper methods for actions.
 // It expects one thing, a this.params object with icon and perhaps
 // range/cooldown parameters
+
+var DamageTypes = require('constants').DamageTypes;
+var TargetingTypes = require('constants').TargetingTypes;
+
 var ActionPrototype = {
   getState: function (entity) {
     if (!this.isAvailable(entity)) {
@@ -221,7 +225,7 @@ Actions.SnipeAction = function (params) {
       type: MessageTypes.ATTACK,
       damage: this.params.damage,
       damage_type: 'ranged',
-      health_target: HEALTH_TARGET_RANDOM,
+      health_target: DamageTypes.HEALTH_TARGET_RANDOM,
     });
     entity.onEvent('snipe', {});
   };
@@ -263,7 +267,7 @@ Actions.CenteredAOEAction = function (params) {
             type: MessageTypes.ATTACK,
             damage: damage,
             damage_type: damage_type,
-            health_target: HEALTH_TARGET_AOE,
+            health_target: DamageTypes.HEALTH_TARGET_AOE,
           });
         }
         return true;

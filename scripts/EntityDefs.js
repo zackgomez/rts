@@ -1,4 +1,5 @@
 var Actions = require('Actions');
+var DamageTypes = require('constants').DamageTypes;
 var EntityProperties = require('constants').EntityProperties;
 var EntityStates = require('EntityStates');
 var EntityConsts = {
@@ -93,7 +94,7 @@ var EntityDefs = {
         cooldown_name: 'heal',
         cooldown: 8.0,
         healing: 25.0,
-        health_target: HEALTH_TARGET_AOE,
+        health_target: DamageTypes.HEALTH_TARGET_AOE,
         mana_cost: 40,
         icon: 'heal_icon',
         hotkey: 'w',
