@@ -9,9 +9,11 @@ var IDConst = constants.IDConst;
 var MessageTypes = constants.MessageTypes;
 var EntityStatus = constants.EntityStatus;
 
+var Collision = require('Collision');
 var Entity = require('Entity');
-var Players = require('Players');
 var MessageHub = require('MessageHub');
+var Pathing = require('Pathing');
+var Players = require('Players');
 var Team = require('Team');
 
 

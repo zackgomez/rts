@@ -26,3 +26,4 @@ msvc/rts/*.user
 /nbproject/private/
 nbproject
 .depend
+.DS_STORE

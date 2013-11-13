@@ -1,5 +1,9 @@
+var _ = require('underscore');
 var must_have_idx = require('must_have_idx');
 
+var ActionStates = require('constants').ActionStates;
+var DamageTypes = require('constants').DamageTypes;
+var EntityProperties = require('constants').EntityProperties;
 var EntityStatus = require('constants').EntityStatus;
 var IDConst = require('constants').IDConst;
 var MessageTypes = require('constants').MessageTypes;
@@ -230,7 +234,7 @@ var Entity = function (id, name, params) {
       // TODO(zack): only consider 'visible' enemies
       return target.getPlayerID() != IDConst.NO_PLAYER &&
         target.getTeamID() != this.getTeamID() &&
-        target.hasProperty(P_TARGETABLE) &&
+        target.hasProperty(EntityProperties.P_TARGETABLE) &&
         target.isVisibleTo(entity.getPlayerID());
     }.bind(this);
 
@@ -294,7 +298,7 @@ var Entity = function (id, name, params) {
 
   entity.updatePartHealth = function (health_target, amount) {
     var modified_parts = [];
-    if (health_target == HEALTH_TARGET_AOE) {
+    if (health_target == DamageTypes.HEALTH_TARGET_AOE) {
       var i = 0;
       this.parts_.forEach(function (part) {
         if (part.getHealth() > 0) {
@@ -303,7 +307,7 @@ var Entity = function (id, name, params) {
         }
         i++;
       });
-    } else if (health_target == HEALTH_TARGET_RANDOM) {
+    } else if (health_target == DamageTypes.HEALTH_TARGET_RANDOM) {
       // Pick the last part with health
       var candidate_parts = [];
       this.parts_.forEach(function (part) {
@@ -317,7 +321,7 @@ var Entity = function (id, name, params) {
         part.addHealth(amount);
         modified_parts.push(part_idx);
       }
-    } else if (health_target == HEALTH_TARGET_LOWEST) {
+    } else if (health_target == DamageTypes.HEALTH_TARGET_LOWEST) {
       var best_part = null;
       var best_idx = null;
       for (var i = 0; i < entity.parts_.length; i++) {
@@ -453,7 +457,7 @@ Entity.prototype.resolve = function (dt) {
   if (this.deltas.healing_rate) {
     this.deltas.healing_list.push({
       healing: dt * this.deltas.healing_rate,
-      health_target: HEALTH_TARGET_AOE,
+      health_target: DamageTypes.HEALTH_TARGET_AOE,
     });
   }
   if (this.parts_) {
@@ -604,16 +608,16 @@ Entity.prototype.handleOrder = function (order) {
       action_args.target_id = order.target_id;
     }
     this.handleAction(action_name, action_args);
-  } else if (type == 'MOVE' && this.hasProperty(P_MOBILE)) {
+  } else if (type == 'MOVE' && this.hasProperty(EntityProperties.P_MOBILE)) {
     this.state_ = new UnitMoveState({
       target: order.target,
     });
-  } else if (type == 'RETREAT' && this.hasProperty(P_MOBILE)) {
+  } else if (type == 'RETREAT' && this.hasProperty(EntityProperties.P_MOBILE)) {
     this.retreat_ = true;
     this.state_ = new RetreatState();
   } else if (type == 'STOP') {
     this.state_ = new UnitIdleState();
-  } else if (type == 'CAPTURE' && this.hasProperty(P_UNIT)) {
+  } else if (type == 'CAPTURE' && this.hasProperty(EntityProperties.P_UNIT)) {
     if (!this.captureRange_) {
       Log('Entity without capturing ability told to cap!');
       return;
@@ -628,7 +632,7 @@ Entity.prototype.handleOrder = function (order) {
       this.state_ = new UnitAttackState({
         target_id: order.target_id,
       });
-    } else if (entity.hasProperty(P_MOBILE)) {
+    } else if (entity.hasProperty(EntityProperties.P_MOBILE)) {
       this.state_ = new UnitAttackMoveState({
         target: order.target,
       });
@@ -722,7 +726,7 @@ Entity.prototype.getActions = function () {
 // It is used by the UI to display this information
 Entity.prototype.getUIInfo = function () {
   var ui_info = {};
-  if (this.hasProperty(P_CAPPABLE)) {
+  if (this.hasProperty(EntityProperties.P_CAPPABLE)) {
     if (this.cappingPlayerID_) {
       ui_info.capture = [this.capAmount_, 5.0];
       ui_info.cappingPlayerID = this.cappingPlayerID_;

@@ -20,8 +20,12 @@
 // It expects one thing, a this.params object with icon and perhaps
 // range/cooldown parameters
 
+var ActionStates = require('constants').ActionStates;
 var DamageTypes = require('constants').DamageTypes;
+var EntityProperties = require('constants').EntityProperties;
 var TargetingTypes = require('constants').TargetingTypes;
+
+var Players = require('Players');
 
 var ActionPrototype = {
   getState: function (entity) {
@@ -260,7 +264,7 @@ Actions.CenteredAOEAction = function (params) {
       this.params.radius,
       function (candidate) {
         if (candidate.getTeamID() != entity.getTeamID() &&
-            candidate.hasProperty(P_TARGETABLE)) {
+            candidate.hasProperty(EntityProperties.P_TARGETABLE)) {
           MessageHub.sendMessage({
             to: candidate.getID(),
             from: entity.getID(),

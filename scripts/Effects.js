@@ -1,5 +1,7 @@
 var IDConst = require('constants').IDConst;
 var MessageTypes = require('constants').MessageTypes;
+var MessageHub = require('MessageHub');
+
 // This file contains entity effects.  Effects are run once per frame and
 // should set intent (send messages, adjust deltas) but not actually change
 // values on the entity
