@@ -23,8 +23,12 @@
 var ActionStates = require('constants').ActionStates;
 var DamageTypes = require('constants').DamageTypes;
 var EntityProperties = require('constants').EntityProperties;
+var Effects = require('Effects');
+var MessageTypes = require('constants').MessageTypes;
 var TargetingTypes = require('constants').TargetingTypes;
 
+var Game = require('game');
+var MessageHub = require('MessageHub');
 var Players = require('Players');
 
 var ActionPrototype = {
@@ -164,7 +168,7 @@ Actions.ProductionAction = function (params) {
       -this.params.req_cost
     );
 
-    entity.effects_['production'] = makeProductionEffect({
+    entity.effects_['production'] = Effects.makeProductionEffect({
       prod_name: this.params.prod_name,
       cooldown_name: this.params.cooldown_name,
     });
@@ -189,7 +193,7 @@ Actions.TeleportAction = function (params) {
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
     entity.mana_ -= this.params.mana_cost;
     entity.warpPosition(target);
-    entity.onEffect('teleport', {
+    entity.onEvent('teleport', {
       start: entity.getPosition2(),
       end: target,
     });

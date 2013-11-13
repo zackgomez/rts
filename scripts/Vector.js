@@ -48,15 +48,15 @@ module.exports = {
   },
 
   length: function (v) {
-    return Math.sqrt(vecLength2(v));
+    return Math.sqrt(this.length2(v));
   },
 
   normalize: function (v) {
-    return this.mul(v, 1 / vecLength(v));
+    return this.mul(v, 1 / this.length(v));
   },
 
   distance: function (v1, v2) {
-    return this.length(vecSub(v1, v2));
+    return this.length(this.sub(v1, v2));
   },
 
   // Returns angle between vector and [1, 0] in degrees

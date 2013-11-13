@@ -1,6 +1,8 @@
 var IDConst = require('constants').IDConst;
 var MessageTypes = require('constants').MessageTypes;
 var MessageHub = require('MessageHub');
+var Players = require('Players');
+var Vector = require('Vector');
 
 // This file contains entity effects.  Effects are run once per frame and
 // should set intent (send messages, adjust deltas) but not actually change
@@ -30,7 +32,7 @@ module.exports = {
         name: prod_name,
         params: {
           pid: entity.getPlayerID(),
-          pos: vecAdd(entity.getPosition2(), entity.getDirection()),
+          pos: Vector.add(entity.getPosition2(), entity.getDirection()),
           angle: entity.getAngle(),
         },
       });

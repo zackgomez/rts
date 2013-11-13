@@ -1,5 +1,7 @@
 var _ = require('underscore');
 var must_have_idx = require('must_have_idx');
+var invariant = require('invariant').invariant;
+var invariant_violation = require('invariant').invariant_violation;
 
 var ActionStates = require('constants').ActionStates;
 var DamageTypes = require('constants').DamageTypes;
@@ -9,11 +11,14 @@ var IDConst = require('constants').IDConst;
 var MessageTypes = require('constants').MessageTypes;
 var TargetingTypes = require('constants').TargetingTypes;
 
+var Collision = require('Collision');
 var EntityDefs = require('EntityDefs');
 var EntityStates = require('EntityStates');
 var MessageHub = require('MessageHub');
 var Game = require('game');
+var Pathing = require('Pathing');
 var Players = require('Players');
+var Vector = require('Vector');
 var Weapons = require('Weapons');
 
 var Entity = function (id, name, params) {
@@ -354,11 +359,11 @@ var Entity = function (id, name, params) {
     return Pathing.locationVisible(pid, this.getPosition2());
   };
   entity.distanceToPoint = function (pt) {
-    return vecDistance(pt, this.getPosition2());
+    return Vector.distance(pt, this.getPosition2());
   };
   entity.distanceToEntity = function (entity) {
     // TODO(zack): upgrade to point - obb test
-    return vecDistance(entity.getPosition2(), this.getPosition2());
+    return Vector.distance(entity.getPosition2(), this.getPosition2());
   };
 
   entity.onEvent = function (name, params) {
@@ -445,7 +450,7 @@ Entity.prototype.resolve = function (dt) {
   if (this.deltas.vp_rate) {
     var vps = dt * this.deltas.vp_rate;
     MessageHub.sendMessage({
-      to: GAME_ID,
+      to: IDConst.GAME_ID,
       from: this.getID(),
       tid: this.getTeamID(),
       type: MessageTypes.ADD_VPS,
@@ -609,31 +614,31 @@ Entity.prototype.handleOrder = function (order) {
     }
     this.handleAction(action_name, action_args);
   } else if (type == 'MOVE' && this.hasProperty(EntityProperties.P_MOBILE)) {
-    this.state_ = new UnitMoveState({
+    this.state_ = new EntityStates.UnitMoveState({
       target: order.target,
     });
   } else if (type == 'RETREAT' && this.hasProperty(EntityProperties.P_MOBILE)) {
     this.retreat_ = true;
-    this.state_ = new RetreatState();
+    this.state_ = new EntityStates.RetreatState();
   } else if (type == 'STOP') {
-    this.state_ = new UnitIdleState();
+    this.state_ = new EntityStates.UnitIdleState();
   } else if (type == 'CAPTURE' && this.hasProperty(EntityProperties.P_UNIT)) {
     if (!this.captureRange_) {
       Log('Entity without capturing ability told to cap!');
       return;
     }
-    this.state_ = new UnitCaptureState({
+    this.state_ = new EntityStates.UnitCaptureState({
       target_id: order.target_id,
     });
   } else if (type == 'HOLD') {
-    this.state_ = new HoldPositionState();
+    this.state_ = new EntityStates.HoldPositionState();
   } else if (type == 'ATTACK') {
     if (order.target_id) {
-      this.state_ = new UnitAttackState({
+      this.state_ = new EntityStates.UnitAttackState({
         target_id: order.target_id,
       });
-    } else if (entity.hasProperty(EntityProperties.P_MOBILE)) {
-      this.state_ = new UnitAttackMoveState({
+    } else if (this.hasProperty(EntityProperties.P_MOBILE)) {
+      this.state_ = new EntityStates.UnitAttackMoveState({
         target: order.target,
       });
     }
@@ -660,27 +665,27 @@ Entity.prototype.handleAction = function (action_name, args) {
     return;
   }
   if (action.targeting == TargetingTypes.NONE) {
-    this.state_ = new UntargetedAbilityState({
+    this.state_ = new EntityStates.UntargetedAbilityState({
       action: action,
       state: this.state_,
     });
   } else if (action.targeting == TargetingTypes.LOCATION) {
-    this.state_ = new LocationAbilityState({
+    this.state_ = new EntityStates.LocationAbilityState({
       target: args.target,
       action: action,
     });
   } else if (action.targeting == TargetingTypes.ENEMY) {
-    this.state_ = new TargetedAbilityState({
+    this.state_ = new EntityStates.TargetedAbilityState({
       target_id: args.target_id,
       action: action,
     });
   } else if (action.targeting == TargetingTypes.ALLY) {
-    this.state_ = new TargetedAbilityState({
+    this.state_ = new EntityStates.TargetedAbilityState({
       target_id: args.target_id,
       action: action,
     });
   } else if (action.targeting == TargetingTypes.PATHABLE) {
-    this.state_ = new LocationAbilityState({
+    this.state_ = new EntityStates.LocationAbilityState({
       target: args.target,
       action: action,
     });

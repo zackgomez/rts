@@ -7,6 +7,10 @@
 // state update(entity)
 // it should return a new state if the state is to transition, and null
 // otherwise
+var EntityProperties = require('constants').EntityProperties;
+var Game = require('game');
+var MessageHub = require('MessageHub');
+var MessageTypes = require('constants').MessageTypes;
 
 function NullState(params) {
   this.update = function (entity) {
@@ -51,7 +55,7 @@ function UnitCaptureState(params) {
   this.update = function (entity) {
     var target = Game.getEntity(this.targetID);
     if (!target ||
-        !target.hasProperty(P_CAPPABLE) ||
+        !target.hasProperty(EntityProperties.P_CAPPABLE) ||
         target.getPlayerID() == entity.getPlayerID()) {
       return new UnitIdleState();
     }
@@ -80,7 +84,7 @@ function UnitAttackState(params) {
     var target = Game.getEntity(this.targetID);
     // TODO(zack): or if the target isn't visible
     if (!target ||
-        !target.hasProperty(P_TARGETABLE) ||
+        !target.hasProperty(EntityProperties.P_TARGETABLE) ||
         target.getTeamID() == entity.getTeamID()) {
       return new UnitIdleState();
     }

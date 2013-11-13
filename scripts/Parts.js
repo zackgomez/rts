@@ -1,4 +1,5 @@
 var _ = require('underscore');
+var invariant = require('invariant').invariant;
 
 function Part(params) {
   if (!params.health) {
