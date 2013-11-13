@@ -1,4 +1,6 @@
 var must_have_idx = require('must_have_idx');
+var IDConst = require('constants').IDConst;
+var TargetingTypes = require('constants').TargetingTypes;
 var EntityDefs = require('EntityDefs');
 var EntityStates = require('EntityStates');
 
@@ -12,7 +14,7 @@ var Entity = function (id, name, params) {
   entity.defaultState_ = EntityStates.NullState;
   entity.cooldowns_ = {};
   entity.retreat_ = false;
-  entity.pid_ = params.pid || NO_PLAYER;
+  entity.pid_ = params.pid || IDConst.NO_PLAYER;
   entity.properties_ = def.properties || [];
   entity.maxSpeed_ = def.speed || 0;
   entity.sight_ = def.sight || 0;
@@ -125,7 +127,7 @@ var Entity = function (id, name, params) {
   entity.getTeamID = function () {
     var player_id = this.getPlayerID();
     var player = player_id ? Players.getPlayer(player_id) : null;
-    return player ? player.getTeamID() : NO_TEAM;
+    return player ? player.getTeamID() : IDConst.NO_TEAM;
   };
   entity.getPosition2 = function () {
     return this.pos_;
@@ -218,7 +220,7 @@ var Entity = function (id, name, params) {
     // Only looking for targetable entities belonging to enemy teams
     var is_viable_target = function (target) {
       // TODO(zack): only consider 'visible' enemies
-      return target.getPlayerID() != NO_PLAYER &&
+      return target.getPlayerID() != IDConst.NO_PLAYER &&
         target.getTeamID() != this.getTeamID() &&
         target.hasProperty(P_TARGETABLE) &&
         target.isVisibleTo(entity.getPlayerID());

@@ -1,7 +1,9 @@
 var Actions = require('Actions');
 var DamageTypes = require('constants').DamageTypes;
+var Effects = require('Effects');
 var EntityProperties = require('constants').EntityProperties;
 var EntityStates = require('EntityStates');
+
 var EntityConsts = {
   retreat_speed: 1.5,
 };
@@ -74,7 +76,7 @@ var EntityDefs = {
     hotkey: '2',
     getEffects: function (entity) {
       return {
-        mana_regen: makeManaRegenEffect(2.5),
+        mana_regen: Effects.makeManaRegenEffect(2.5),
       };
     },
     actions: {
@@ -166,7 +168,7 @@ var EntityDefs = {
     },
     getEffects: function (entity) {
       return {
-        mana_regen: makeManaRegenEffect(5.0),
+        mana_regen: Effects.makeManaRegenEffect(5.0),
       };
     },
     actions: {
@@ -241,8 +243,8 @@ var EntityDefs = {
     },
     getEffects: function (entity) {
       return {
-        mana_regen: makeManaRegenEffect(2.5),
-        damage_buff_aura: makeDamageBuffAura({
+        mana_regen: Effects.makeManaRegenEffect(2.5),
+        damage_buff_aura: Effects.makeDamageBuffAura({
           radius: 10,
           amount: 0.20,
           active_func: function (entity) {
@@ -293,8 +295,8 @@ var EntityDefs = {
     hotkey: '`',
     getEffects: function (entity) {
       return {
-        req_gen: makeReqGenEffect(1.0),
-        base_healing: makeHealingAura(5.0, 5.0),
+        req_gen: Effects.makeReqGenEffect(1.0),
+        base_healing: Effects.makeHealingAura(5.0, 5.0),
       };
     },
     actions: {
@@ -336,7 +338,7 @@ var EntityDefs = {
     cap_time: 5.0,
     getEffects: function (entity) {
       return {
-        vp_gen: makeVpGenEffect(1.0),
+        vp_gen: Effects.makeVpGenEffect(1.0),
       };
     },
   },
@@ -355,7 +357,7 @@ var EntityDefs = {
     cap_time: 5.0,
     getEffects: function (entity) {
       return {
-        req_gen: makeReqGenEffect(1.0),
+        req_gen: Effects.makeReqGenEffect(1.0),
       };
     },
   },
