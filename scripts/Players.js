@@ -1,4 +1,5 @@
 var invariant = require('invariant').invariant;
+var Vector = require('Vector');
 
 var IDConst = require('constants').IDConst;
 var MessageTypes = require('constants').MessageTypes;
@@ -43,9 +44,9 @@ PlayersAPI.playerInit = function (def) {
     Math.cos(starting_def.angle * Math.PI / 180),
     Math.sin(starting_def.angle * Math.PI / 180),
   ];
-  var retreat_location = vecAdd(
+  var retreat_location = Vector.add(
     starting_def.pos,
-    vecMul(base_dir, 3)
+    Vector.mul(base_dir, 3)
   );
 
   MessageHub.sendMessage({

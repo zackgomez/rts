@@ -1,5 +1,8 @@
 var _ = require('underscore');
 var must_have_idx = require('must_have_idx');
+var object_fill_keys = require('object_fill_keys');
+var invariant = require('invariant').invariant;
+var invariant_violation = require('invariant').invariant_violation;
 
 var Entity = require('Entity');
 var Players = require('Players');
