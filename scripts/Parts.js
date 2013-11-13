@@ -1,6 +1,5 @@
-//
-// -- Core part class definition
-// --
+var _ = require('underscore');
+
 function Part(params) {
   if (!params.health) {
     throw new Error("Missing part health");
@@ -104,10 +103,8 @@ function Part(params) {
   };
 }
 
-function makePart(params) {
+Part.makePart = function (params) {
   return new Part(params);
 }
 
-// 
-// -- Part update functions
-//
+module.exports = Part;

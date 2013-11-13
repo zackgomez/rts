@@ -3,6 +3,7 @@ var DamageTypes = require('constants').DamageTypes;
 var Effects = require('Effects');
 var EntityProperties = require('constants').EntityProperties;
 var EntityStates = require('EntityStates');
+var makePart = require('Parts').makePart;
 
 var EntityConsts = {
   retreat_speed: 1.5,

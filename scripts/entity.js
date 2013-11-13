@@ -1,8 +1,16 @@
 var must_have_idx = require('must_have_idx');
+
+var EntityStatus = require('constants').EntityStatus;
 var IDConst = require('constants').IDConst;
+var MessageTypes = require('constants').MessageTypes;
 var TargetingTypes = require('constants').TargetingTypes;
+
 var EntityDefs = require('EntityDefs');
 var EntityStates = require('EntityStates');
+var MessageHub = require('MessageHub');
+var Game = require('game');
+var Players = require('Players');
+var Weapons = require('Weapons');
 
 var Entity = function (id, name, params) {
   var def = must_have_idx(EntityDefs, name);
