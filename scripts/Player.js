@@ -7,25 +7,30 @@ var MessageTypes = require('constants').MessageTypes;
 var MessageHub = require('MessageHub');
 
 // Create a new player.
-// @param pid the player ID
 // @param start_def dictionary with keys for `pos` and `angle`
 var Player = function (def) {
   this.pid = def.pid;
   this.tid = def.tid;
   this.units = {};
   this.requisition = def.starting_requisition;
+  this.spawned = false;
 
-  var starting_def = def.starting_location;
+  this.base_location = def.starting_location;
 
   var base_dir = [
-    Math.cos(starting_def.angle * Math.PI / 180),
-    Math.sin(starting_def.angle * Math.PI / 180),
+    Math.cos(this.base_location.angle * Math.PI / 180),
+    Math.sin(this.base_location.angle * Math.PI / 180),
   ];
 
   this.retreat_location = Vector.add(
-    starting_def.pos,
+    this.base_location.pos,
     Vector.mul(base_dir, 3)
   );
+};
+
+Player.prototype.spawn = function () {
+  invariant(!this.spawned, 'player already spawned');
+  this.spawned = true;
 
   MessageHub.sendMessage({
     to: IDConst.GAME_ID,
@@ -34,8 +39,8 @@ var Player = function (def) {
     name: 'base',
     params: {
       pid: this.pid,
-      pos: starting_def.pos,
-      angle: starting_def.angle,
+      pos: this.base_location.pos,
+      angle: this.base_location.angle,
     },
   })
 
@@ -47,7 +52,7 @@ var Player = function (def) {
     params: {
       pid: this.pid,
       pos: this.retreat_location,
-      angle: starting_def.angle,
+      angle: this.base_location.angle,
     },
   });
 };

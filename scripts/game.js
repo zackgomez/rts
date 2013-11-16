@@ -116,6 +116,10 @@ exports.init = function (map_def, player_defs) {
     teams[tid] = team;
   }
 
+  _.each(players, function (player) {
+    player.spawn();
+  });
+
   handleMessages();
 };
 
