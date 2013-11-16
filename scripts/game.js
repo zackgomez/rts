@@ -151,7 +151,7 @@ exports.update = function (player_inputs, dt) {
   // TODO(zack): remove this, and replace with 'state creation'
   // when the time comes
   // 'resolve' entities
-  var eids_by_player = {};
+  var eids_by_player = object_fill_keys(_.keys(Players.getPlayers()), {});
   for (var eid in entities) {
     var entity = entities[eid];
     var status = entity.resolve(dt);
@@ -166,10 +166,9 @@ exports.update = function (player_inputs, dt) {
     }
 
     var pid = entity.getPlayerID();
-    if (!eids_by_player[pid]) {
-      eids_by_player[pid] = {};
+    if (pid !== IDConst.NO_PLAYER) {
+      eids_by_player[pid][entity.getName()] = eid;
     }
-    eids_by_player[pid][entity.getName()] = eid;
   }
 
   var new_bodies = Pathing.stepAllForward(entities, dt);
