@@ -82,7 +82,7 @@ module.exports = {
         if (nearby_entity.getTeamID() == entity.getTeamID()) {
           nearby_entity.addEffect(
             params.name,
-            makeDamageFactorEffect({
+            module.exports.makeDamageFactorEffect({
               factor: 1 + params.amount,
               cooldown_name: cooldown_name,
             })
