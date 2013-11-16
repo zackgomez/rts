@@ -13,11 +13,12 @@ var Collision = require('Collision');
 var Entity = require('Entity');
 var MessageHub = require('MessageHub');
 var Pathing = require('Pathing');
-var Players = require('Players');
+var Player = require('Player');
 var Team = require('Team');
 
 
 var entities = {};
+var players = {};
 var teams = {};
 var eid_to_render_entity = {};
 var last_id = IDConst.STARTING_EID;
@@ -78,7 +79,7 @@ exports.getEntity = function (eid) {
 };
 
 exports.getPlayer = function (pid) {
-  return Players.getPlayer(pid);
+  return must_have_idx(players, pid);
 };
 
 exports.getNearbyEntities = function (pos2, range, callback) {
@@ -102,10 +103,10 @@ exports.init = function (map_def, player_defs) {
   // initialize players and teams
   for (var i = 0; i < player_defs.length; i++) {
     var player_def = player_defs[i];
-    Players.playerInit(player_def);
+    var player = new Player(player_def);
+    players[player.getPlayerID()] = player;
   }
 
-  var players = Players.getPlayers();
   for (var pid in players) {
     var player = players[pid];
     var tid = player.getTeamID();
@@ -155,7 +156,7 @@ exports.update = function (player_inputs, dt) {
   // TODO(zack): remove this, and replace with 'state creation'
   // when the time comes
   // 'resolve' entities
-  var eids_by_player = object_fill_keys(_.keys(Players.getPlayers()), {});
+  var eids_by_player = object_fill_keys(_.keys(players), {});
   for (var eid in entities) {
     var entity = entities[eid];
     var status = entity.resolve(dt);
@@ -185,7 +186,6 @@ exports.update = function (player_inputs, dt) {
     entity.path_ = body.path;
   }
 
-  var players = Players.getPlayers();
   for (var pid in players) {
     players[pid].units = must_have_idx(eids_by_player, pid);
   }
@@ -242,9 +242,15 @@ exports.render = function () {
       vps: team.getVictoryPoints(),
     };
   });
+  var player_render = _.map(players, function (player, pid) {
+    return {
+      pid: pid,
+      req: player.getRequisition(),
+    };
+  });
 
   return {
-    players: Players.getRequisitionCounts(),
+    players: player_render,
     teams: vps,
   };
 };
