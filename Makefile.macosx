@@ -27,7 +27,7 @@ GTESTLIB=lib/gtest-1.6.0/libgtest.a
 CXXFLAGS=-g -O0 -Wall -I$(GLM) -std=c++11 -stdlib=libc++ -I$(JSON) -I$(STBI) \
 				 -I$(STBTT) -I$(SRCDIR) -I$(GTESTDIR)/include -U__STRICT_ANSI__\
 				 -I$(BOOSTDIR) -I$(FMOD)/inc -I$(V8DIR)/include -Wno-reorder \
-				 -I$(GLFWDIR)/include -I$(ASSIMPDIR)/include
+				 -I$(GLFWDIR)/include -I$(ASSIMPDIR)/include -DMACOSX
 #CXXFLAGS+=-DSECTION_RECORDING
 
 COMMONSRC=$(wildcard $(COMMONDIR)/*.cpp)

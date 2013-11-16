@@ -52,7 +52,14 @@ static int convert_glfw_key(int key) {
 
   case GLFW_KEY_F10:
     return INPUT_KEY_F10;
+
+  // XXX(zack): this is a dirty hack
+#ifdef MACOSX
+  case GLFW_KEY_WORLD_1:
+    return GLFW_KEY_GRAVE_ACCENT;
+#endif
   }
+
   if (isprint(key)) {
     return key;
   }
