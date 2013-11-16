@@ -9,9 +9,6 @@ exports.EntityProperties = {
   P_UNIT: 118468328,
 };
 
-// --
-// -- Constants --
-// --
 exports.IDConst = {
   NO_PLAYER: 0,
   NO_ENTITY: 0,
@@ -24,9 +21,10 @@ exports.IDConst = {
   STARTING_EID: 3000,
 };
 
-// --
-// -- Damage Types --
-// --
+exports.EntityConsts = {
+  retreat_speed: 1.5,
+};
+
 exports.DamageTypes = {
   HEALTH_TARGET_AOE: -1,
   HEALTH_TARGET_RANDOM: -2,

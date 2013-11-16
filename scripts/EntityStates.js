@@ -7,6 +7,8 @@
 // state update(entity)
 // it should return a new state if the state is to transition, and null
 // otherwise
+var invariant = require('invariant').invariant;
+var EntityConsts = require('constants').EntityConsts;
 var EntityProperties = require('constants').EntityProperties;
 var Game = require('game');
 var MessageHub = require('MessageHub');
@@ -180,7 +182,7 @@ exports.TargetedAbilityState = TargetedAbilityState;
 
 function RetreatState(params) {
   this.update = function (entity) {
-    var player = Players.getPlayer(entity.getPlayerID());
+    var player = Game.getPlayer(entity.getPlayerID());
     var retreat_point = player.getRetreatLocation();
 
     invariant(entity.retreat_, "Must be retreating while in RetreatState");

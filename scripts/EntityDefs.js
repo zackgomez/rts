@@ -5,10 +5,6 @@ var EntityProperties = require('constants').EntityProperties;
 var EntityStates = require('EntityStates');
 var makePart = require('Parts').makePart;
 
-var EntityConsts = {
-  retreat_speed: 1.5,
-};
-
 // --
 // -- Entity Definitions --
 // --
@@ -373,10 +369,6 @@ var EntityDefs = {
     height: 0.3,
     default_state: EntityStates.ProjectileState,
   },
-};
-
-EntityDefs.EntityConsts = {
-  retreat_speed: 1.5,
 };
 
 

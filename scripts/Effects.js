@@ -1,7 +1,7 @@
 var IDConst = require('constants').IDConst;
+var Game = require('game');
 var MessageTypes = require('constants').MessageTypes;
 var MessageHub = require('MessageHub');
-var Players = require('Players');
 var Vector = require('Vector');
 
 // This file contains entity effects.  Effects are run once per frame and
@@ -17,7 +17,7 @@ module.exports = {
         return true;
       }
 
-      var player = Players.getPlayer(entity.getPlayerID());
+      var player = Game.getPlayer(entity.getPlayerID());
       if (player.units[prod_name]) {
         Log('WTF producing a unit that already exists?!');
       }

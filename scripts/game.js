@@ -77,6 +77,10 @@ exports.getEntity = function (eid) {
   return entities[eid];
 };
 
+exports.getPlayer = function (pid) {
+  return Players.getPlayer(pid);
+};
+
 exports.getNearbyEntities = function (pos2, range, callback) {
   GetNearbyEntities(pos2, range, function (id) {
     var game_entity = entities[id];

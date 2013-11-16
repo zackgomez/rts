@@ -17,7 +17,6 @@ var EntityStates = require('EntityStates');
 var MessageHub = require('MessageHub');
 var Game = require('game');
 var Pathing = require('Pathing');
-var Players = require('Players');
 var Vector = require('Vector');
 var Weapons = require('Weapons');
 
@@ -143,7 +142,7 @@ var Entity = function (id, name, params) {
   };
   entity.getTeamID = function () {
     var player_id = this.getPlayerID();
-    var player = player_id ? Players.getPlayer(player_id) : null;
+    var player = player_id ? Game.getPlayer(player_id) : null;
     return player ? player.getTeamID() : IDConst.NO_TEAM;
   };
   entity.getPosition2 = function () {
@@ -183,7 +182,7 @@ var Entity = function (id, name, params) {
     throw new Error('couldn\'t find part '+ name);
   };
   entity.startUpgrade = function (part_name, upgrade_name) {
-    var player = Players.getPlayer(this.getPlayerID());
+    var player = Game.getPlayer(this.getPlayerID());
     var part = this.getPart(part_name);
     var upgrade = part.getAvailableUpgrades()[upgrade_name];
     if (!upgrade) {

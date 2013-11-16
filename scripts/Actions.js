@@ -29,7 +29,6 @@ var TargetingTypes = require('constants').TargetingTypes;
 
 var Game = require('game');
 var MessageHub = require('MessageHub');
-var Players = require('Players');
 
 var ActionPrototype = {
   getState: function (entity) {
@@ -109,7 +108,7 @@ Actions.ReinforceAction = function (params) {
         break;
       }
     }
-    var req = Players.getPlayer(entity.getPlayerID()).getRequisition();
+    var req = Game.getPlayer(entity.getPlayerID()).getRequisition();
     return req >= this.params.req_cost && disabled_part && near_base;
   };
 
@@ -125,7 +124,7 @@ Actions.ReinforceAction = function (params) {
         break;
       }
     }
-    var player = Players.getPlayer(entity.getPlayerID());
+    var player = Game.getPlayer(entity.getPlayerID());
     player.addRequisition(-this.params.req_cost);
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
   };
@@ -145,7 +144,7 @@ Actions.ProductionAction = function (params) {
   };
 
   this.isEnabled = function (entity) {
-    var owner = Players.getPlayer(entity.getPlayerID());
+    var owner = Game.getPlayer(entity.getPlayerID());
     var unit_constructed = this.params.prod_name in owner.units;
 
     // Always disabled if unit is already produced
@@ -158,13 +157,13 @@ Actions.ProductionAction = function (params) {
     if (entity.hasCooldown('production')) {
       return true;
     }
-    var req = Players.getPlayer(entity.getPlayerID()).getRequisition();
+    var req = Game.getPlayer(entity.getPlayerID()).getRequisition();
     return req > this.params.req_cost;
   };
 
   this.exec = function (entity, target) {
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
-    Players.getPlayer(entity.getPlayerID()).addRequisition(
+    Game.getPlayer(entity.getPlayerID()).addRequisition(
       -this.params.req_cost
     );
 

@@ -41,7 +41,7 @@ COMMONOBJ = $(patsubst $(COMMONDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(COMMONS
 RTSOBJ = $(patsubst $(RTSDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(RTSSRC))) obj/rts-main.o
 DEPTHGENOBJ = obj/depthfieldgen.o
 
-RESOURCES = config.json local.json models scripts shaders images fonts maps
+RESOURCES = config.json local.json models scripts shaders images fonts maps jscore
 
 all: obj $(PROGRAM) depthfieldgen
 
@@ -83,7 +83,7 @@ local.json: local.json.default
 
 clean:
 	rm -f rts tests depthfieldgen obj/* $(GTESTLIB)
-	rm -rf obj/ rts.app
+	rm -rf obj/ rts.app rts.dmg
 
 force_look:
 	true
