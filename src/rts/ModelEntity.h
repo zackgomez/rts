@@ -48,10 +48,6 @@ public:
   }
   // Bounding rectangle
   Rect getRect() const;
-  const glm::vec3 getVelocity() const;
-  float getSpeed() const {
-    return speed_;
-  }
 
   float distanceFromPoint(const glm::vec2 &pt) const;
 
@@ -67,11 +63,6 @@ public:
   void setSize(const glm::vec2 &size);
   void setAngle(float angle);
   void setHeight(float height);
-  void setTurnSpeed(float turn_speed);
-  void setSpeed(float speed);
-  void setBumpVel(const glm::vec3 &vel);
-  void addBumpVel(const glm::vec3 &delta);
-
 
   // Graphics setters
   void setVisible(bool visible);
@@ -102,8 +93,6 @@ private:
   glm::vec3 pos_;
   float angle_;
   glm::vec3 size_;
-
-  float speed_;
 
   bool visible_;
 

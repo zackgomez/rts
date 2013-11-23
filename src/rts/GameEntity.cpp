@@ -55,16 +55,4 @@ void GameEntity::setPlayerID(id_t pid) {
 void GameEntity::setTookDamage(int part_idx) {
   lastTookDamage_[part_idx] = Clock::now();
 }
-
-void GameEntity::checksum(Checksum &chksum) const {
-  id_t id = getID();
-  chksum
-    .process(id)
-    .process(playerID_)
-    .process(getPosition())
-    .process(getAngle())
-    .process(getSize())
-    .process(getHeight())
-    .process(getSpeed());
-}
 };  // rts

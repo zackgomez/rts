@@ -12,7 +12,6 @@ ModelEntity::ModelEntity(id_t id)
     pos_(HUGE_VAL),
     angle_(0.f),
     size_(0.f),
-    speed_(0.f),
     scale_(1.f),
     color_(0.f),
     visible_(true) {
@@ -24,12 +23,8 @@ ModelEntity::~ModelEntity() {
 Rect ModelEntity::getRect() const {
   return Rect(glm::vec2(pos_), getSize(), glm::radians(angle_));
 }
-const Rect ModelEntity::getRect(float dt) const {
-  return Rect(glm::vec2(getPosition(dt)), getSize(), glm::radians(getAngle(dt)));
-}
-
-const glm::vec3 ModelEntity::getVelocity() const {
-  return glm::vec3(getDirection() * speed_, 0.f);
+const Rect ModelEntity::getRect(float t) const {
+  return Rect(glm::vec2(getPosition(t)), getSize(), glm::radians(getAngle(t)));
 }
 
 void ModelEntity::setPosition(const glm::vec2 &pos) {
@@ -46,9 +41,6 @@ void ModelEntity::setAngle(float angle) {
 }
 void ModelEntity::setHeight(float height) {
   size_.z = height;
-}
-void ModelEntity::setSpeed(float speed) {
-  speed_ = speed;
 }
 
 void ModelEntity::setVisible(bool visible) {
@@ -74,14 +66,14 @@ void ModelEntity::addExtraEffect(const RenderFunction &func) {
   renderFuncs_.push_back(func);
 }
 
-void ModelEntity::render(float dt) {
+void ModelEntity::render(float t) {
   if (!visible_) {
     return;
   }
   if (meshName_.empty()) {
     return;
   }
-  glm::mat4 transform = getTransform(dt);
+  glm::mat4 transform = getTransform(t);
 
   // TODO(zack): make this part of a model object
   auto meshShader = ResourceManager::get()->getShader("unit");
@@ -96,7 +88,7 @@ void ModelEntity::render(float dt) {
     shader->makeActive();
     shader->uniform4f("color", glm::vec4(0.8f, 0.3f, 0.3f, 0.6f));
 
-    auto pos = getPosition(dt) + glm::vec3(0.f, 0.f, getHeight()/2.f);
+    auto pos = getPosition(t) + glm::vec3(0.f, 0.f, getHeight()/2.f);
     ::renderModel(
         glm::scale(
           glm::translate(glm::mat4(1.f), pos),
@@ -106,7 +98,7 @@ void ModelEntity::render(float dt) {
 
   // Now render additional effects
   for (auto it = renderFuncs_.begin(); it != renderFuncs_.end(); ) {
-    if ((*it)(dt)) {
+    if ((*it)(t)) {
       it++;
     } else {
       it = renderFuncs_.erase(it);
@@ -114,32 +106,30 @@ void ModelEntity::render(float dt) {
   }
 }
 
-void ModelEntity::integrate(float dt) {
-  pos_ = getPosition(dt);
-}
-
-glm::mat4 ModelEntity::getTransform(float dt) const {
-  const float rotAngle = getAngle(dt);
+glm::mat4 ModelEntity::getTransform(float t) const {
+  const float rotAngle = getAngle(t);
 
   return
     glm::scale(
       glm::rotate(
         // TODO(zack): remove this z position hack (used to make collision
         // objects (plane.obj) appear above the map
-        glm::translate(glm::mat4(1.f), getPosition(dt) + glm::vec3(.0f, .0f, .01f)),
+        glm::translate(glm::mat4(1.f), getPosition(t) + glm::vec3(.0f, .0f, .01f)),
         rotAngle, glm::vec3(0, 0, 1)),
       glm::vec3(scale_));
 }
 
-glm::vec2 ModelEntity::getPosition2(float dt) const {
-  return glm::vec2(getPosition(dt));
+glm::vec2 ModelEntity::getPosition2(float t) const {
+  return glm::vec2(getPosition(t));
 }
 
-glm::vec3 ModelEntity::getPosition(float dt) const {
-  return pos_ + getVelocity() * dt;
+glm::vec3 ModelEntity::getPosition(float t) const {
+  // TODO(zack): interpolate curve
+  return pos_;
 }
 
-float ModelEntity::getAngle(float dt) const {
+float ModelEntity::getAngle(float t) const {
+  // TODO(zack): interpolate curve
   return angle_;
 }
 

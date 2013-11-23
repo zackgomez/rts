@@ -105,8 +105,6 @@ class GameEntity : public ModelEntity {
     return uiInfo_;
   }
 
-  void checksum(Checksum &chksum) const;
-
   const std::vector<glm::vec3>& getPathQueue() const {
     return pathQueue_;
   }

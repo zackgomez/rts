@@ -99,11 +99,6 @@ bool Game::updatePlayers() {
 
 TickChecksum Game::checksum() {
   Checksum chksum;
-  for (auto it : Renderer::get()->getEntities()) {
-    if (it.second->hasProperty(GameEntity::P_GAMEENTITY)) {
-      static_cast<GameEntity *>(it.second)->checksum(chksum);
-    }
-  }
 
   TickChecksum ret;
   ret.entity_checksum = chksum.getChecksum();
@@ -168,6 +163,7 @@ void Game::start() {
     }
   }
 
+  Renderer::get()->setGameTime(elapsedTime_);
   // Game is ready to go!
   unpause();
 }

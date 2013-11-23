@@ -145,6 +145,7 @@ void Renderer::render() {
   for (auto &it : entities_) {
     renderEntity(it.second);
   }
+  // render overlay second for z ordering issues
   if (entityOverlayRenderer_) {
     for (auto &it : entities_) {
       renderEntityOverlay(it.second);
@@ -163,7 +164,7 @@ void Renderer::renderEntity(ModelEntity *entity) {
   if (!entity->isVisible()) {
     return;
   }
-  entity->render(simdt_);
+  entity->render(gameTime_);
 }
 
 void Renderer::renderEntityOverlay(ModelEntity *entity) {
@@ -174,7 +175,7 @@ void Renderer::renderEntityOverlay(ModelEntity *entity) {
 	if (!entity->isVisible()) {
 			return;
 	}
-  entityOverlayRenderer_(entity, simdt_);
+  entityOverlayRenderer_(entity, gameTime_);
 }
 
 void Renderer::renderUI() {
@@ -213,9 +214,12 @@ void Renderer::renderMap() {
 
 void Renderer::startRender() {
   renderdt_ = Clock::secondsSince(lastRender_);
+  lastRender_ = Clock::now();
 
   simdt_ *= timeMultiplier_;
   renderdt_ *= timeMultiplier_;
+
+  gameTime_ += renderdt_;
 
   glClearColor(0.f, 0.f, 0.f, 0.f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -239,8 +243,6 @@ void Renderer::startRender() {
   setParam("renderer.light.ambient", glm::vec3(0.1f));
   setParam("renderer.light.diffuse", glm::vec3(1.f));
   setParam("renderer.light.specular", glm::vec3(1.f));
-
-  lastRender_ = Clock::now();
 }
 
 void Renderer::endRender() {

@@ -96,6 +96,9 @@ class Renderer {
   void setTimeMultiplier(float t) {
     timeMultiplier_ = t;
   }
+  void setGameTime(float t) {
+    gameTime_ = t;
+  }
   // eventually replace this with a set map geometry or something similar
   void setMapSize(const glm::vec2 &mapSize) {
     mapSize_ = mapSize;
@@ -185,6 +188,8 @@ class Renderer {
   Camera camera_;
   // render/simulation dt are scaled by this
   float timeMultiplier_;
+  // 'game' time, affected by timeMultiplier
+  float gameTime_;
   // Used to interpolate, last tick seen, and dt since last tick
   Clock::time_point lastTickTime_;
   float simdt_;

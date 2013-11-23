@@ -41,7 +41,7 @@ static void renderEntity(
     const LocalPlayer *localPlayer,
     const std::map<id_t, float>& entityHighlights,
     const ModelEntity *e,
-    float dt);
+    float t);
 
 static void renderHighlights(
     std::vector<MapHighlight> &highlights,
@@ -984,12 +984,12 @@ void renderEntity(
     const LocalPlayer *localPlayer,
     const std::map<id_t, float>& entityHighlights,
     const ModelEntity *e,
-    float dt) {
+    float t) {
   if (!e->hasProperty(GameEntity::P_ACTOR) || !e->isVisible()) {
     return;
   }
   auto game_entity = (const GameEntity *)e;
-  auto pos = e->getPosition(dt);
+  auto pos = e->getPosition(t);
   auto transform = glm::translate(glm::mat4(1.f), pos);
   record_section("renderActorInfo");
   // TODO(zack): only render for actors currently on screen/visible
