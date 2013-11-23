@@ -307,7 +307,7 @@ id_t Renderer::newEntityID() {
   return nextEntityID_++;
 }
 
-void Renderer::spawnEntity(Entity *ent) {
+void Renderer::spawnEntity(ModelEntity *ent) {
   invariant(ent, "Cannot spawn null entity");
   invariant(entities_.find(ent->getID()) == entities_.end(),
       "cannot add spawn entity with already existing ID");

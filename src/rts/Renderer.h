@@ -82,7 +82,7 @@ class Renderer {
       float radius);
   // Internally synchronized
   id_t newEntityID();
-  void spawnEntity(Entity *ent);
+  void spawnEntity(ModelEntity *ent);
   void removeEntity(id_t eid);
   void clearEntities();
 

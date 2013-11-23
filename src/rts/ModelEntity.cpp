@@ -8,7 +8,7 @@
 namespace rts {
 
 ModelEntity::ModelEntity(id_t id)
-  : Entity(id),
+  : id_(id),
     pos_(HUGE_VAL),
     angle_(0.f),
     size_(0.f),

@@ -4,13 +4,11 @@
 #include "common/Collision.h"
 #include "common/util.h"
 #include "rts/EffectFactory.h"
-#include "rts/Entity.h"
 #include "rts/Graphics.h"
 
 namespace rts {
 
-class ModelEntity : public Entity
-{
+class ModelEntity {
 public:
   ModelEntity(id_t id);
   virtual ~ModelEntity();
@@ -18,6 +16,9 @@ public:
   static const uint32_t P_RENDERABLE = 565038773;
   static const uint32_t P_COLLIDABLE = 983556954;
 
+  id_t getID() const {
+    return id_;
+  }
   virtual bool hasProperty(uint32_t property) const {
     // TODO(zack): remove, this is a hack for collision objects
     if (property == P_RENDERABLE) {
@@ -94,10 +95,10 @@ public:
   bool pointInEntity(const glm::vec2 &p);
   float angleToTarget(const glm::vec2 &pos) const;
 
-protected:
+private:
   static glm::vec2 getDirection(float angle);
 
-private:
+  id_t id_;
   glm::vec3 pos_;
   float angle_;
   glm::vec3 size_;
