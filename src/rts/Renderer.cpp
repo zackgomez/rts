@@ -275,35 +275,6 @@ const ModelEntity *Renderer::castRay(
   return ret;
 }
 
-void Renderer::getNearbyEntities(
-    const glm::vec3 &pos,
-    float radius,
-    std::function<bool(const ModelEntity *)> callback) const {
-  for (auto pair : entities_) {
-    auto entity = pair.second;
-    float dist = entity->distanceFromPoint(glm::vec2(pos));
-
-    if (dist < radius) {
-      if (!callback(entity)) {
-        return;
-      }
-    }
-  }
-}
-std::vector<const ModelEntity *> Renderer::getNearbyEntitiesArray(
-    const glm::vec3& pos,
-    float radius) {
-  std::vector<const ModelEntity *> ret;
-  getNearbyEntities(
-      pos,
-      radius,
-      [&ret] (const ModelEntity *e) -> bool {
-        ret.push_back(e);
-        return true;
-      });
-  return ret;
-}
-
 id_t Renderer::newEntityID() {
   // this is an atomic variable, safe!
   return nextEntityID_++;

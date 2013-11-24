@@ -83,10 +83,11 @@ exports.getPlayer = function (pid) {
 };
 
 exports.getNearbyEntities = function (pos2, range, callback) {
-  GetNearbyEntities(pos2, range, function (id) {
-    var game_entity = entities[id];
-    invariant(game_entity, "invalid entity for getNearbyEntities callback");
-    return callback(game_entity);
+  _.all(entities, function (entity) {
+    if (entity.distanceToPoint(pos2) < range) {
+      return callback(entity);
+    }
+    return true;
   });
 };
 

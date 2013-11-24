@@ -71,15 +71,6 @@ class Renderer {
       const glm::vec3 &origin,
       const glm::vec3 &dir,
       std::function<bool(const ModelEntity *)> filter) const;
-  // callback should return false when done
-  void getNearbyEntities(
-      const glm::vec3& pos,
-      float radius,
-      std::function<bool(const ModelEntity *)> callback) const;
-  // Prefer the callback version
-  std::vector<const ModelEntity *> getNearbyEntitiesArray(
-      const glm::vec3& pos,
-      float radius);
   // Internally synchronized
   id_t newEntityID();
   void spawnEntity(ModelEntity *ent);

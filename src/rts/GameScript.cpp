@@ -137,35 +137,6 @@ static Handle<Value> jsAddEffect(const Arguments &args) {
   return Undefined();
 }
 
-static Handle<Value> jsGetNearbyEntities(const Arguments &args) {
-  invariant(args.Length() == 3, "expected 3 args: pos2, radius, callback");
-  HandleScope scope(args.GetIsolate());
-
-  auto script = Game::get()->getScript();
-  glm::vec3 pos = glm::vec3(script->jsToVec2(
-      Handle<Array>::Cast(args[0])), 0.f);
-  float radius = args[1]->NumberValue();
-  Handle<Function> callback = Handle<Function>::Cast(args[2]);
-
-  Renderer::get()->getNearbyEntities(pos, radius,
-    [&](const ModelEntity *e) -> bool {
-      if (!e->hasProperty(GameEntity::P_GAMEENTITY)) {
-        return true;
-      }
-      auto game_entity = (GameEntity *)e;
-      TryCatch try_catch;
-      const int argc = 1;
-      Handle<Value> argv[argc] = {
-        String::New(game_entity->getGameID().c_str()),
-      };
-      auto ret = callback->Call(args.Holder(), argc, argv);
-      checkJSResult(ret, try_catch, "getNearbyEntities callback:");
-      return ret->BooleanValue();
-    });
-
-  return Undefined();
-}
-
 static Handle<Value> jsPointInOBB2(const Arguments &args) {
   invariant(args.Length() == 4, "bool pointInOBB2(p, center, size, angle)");
   HandleScope scope(args.GetIsolate());
@@ -594,9 +565,6 @@ void GameScript::init(const std::string &init_function_path) {
   global->Set(
       String::New("DestroyRenderEntity"),
       FunctionTemplate::New(jsDestroyRenderEntity));
-  global->Set(
-      String::New("GetNearbyEntities"),
-      FunctionTemplate::New(jsGetNearbyEntities));
   global->Set(
       String::New("AddEffect"),
       FunctionTemplate::New(jsAddEffect));
