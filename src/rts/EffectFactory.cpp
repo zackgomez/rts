@@ -114,6 +114,8 @@ Effect * makeOnDamageEffect(
 
 void add_jseffect(const std::string &name, v8::Handle<v8::Object> params) {
   using namespace v8;
+  // TODO(zack): this should be a param passed to this function
+  float t = Renderer::get()->getGameTime();
 
   auto *script = Game::get()->getScript();
   auto json_params = script->jsToJSON(params);
@@ -130,9 +132,9 @@ void add_jseffect(const std::string &name, v8::Handle<v8::Object> params) {
     }
     // TODO(zack): get this position from the model (weapon tip)
     auto pos = glm::vec3(
-        entity->getPosition2() + 1.0f * entity->getDirection(),
+        entity->getPosition2(t) + 1.0f * entity->getDirection(t),
         1.0f);
-    auto shot_pos = pos + 1.5f * glm::vec3(entity->getDirection(), 0.f);
+    auto shot_pos = pos + 1.5f * glm::vec3(entity->getDirection(t), 0.f);
     Renderer::get()->getEffectManager()->addEffect(
         makeCannedParticleEffect("effects.muzzle_flash", pos, pos, glm::vec3(0.f)));
     // TODO(zack): make this be cylindrically billboarded

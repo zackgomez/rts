@@ -282,7 +282,8 @@ void GameController::renderExtra(float dt) {
     GameEntity *e = Game::get()->getEntity(action_.render_id);
     invariant(e, "Unable to find action owner");
 
-    glm::vec3 owner_pos = e->getPosition() + glm::vec3(0, 0, 0.1f);
+    float t = Renderer::get()->getGameTime();
+    glm::vec3 owner_pos = e->getPosition(t) + glm::vec3(0, 0, 0.1f);
     glm::mat4 transform = glm::scale(
         glm::translate(glm::mat4(1.f), owner_pos),
         glm::vec3(2 * action_.range));
@@ -418,6 +419,7 @@ std::string GameController::getCursorTexture() const {
 }
 
 void GameController::frameUpdate(float dt) {
+  float t = Renderer::get()->getGameTime();
   // update visibility
   // TODO(zack): this should be done once per tick instead of once per render
   auto visibilityMap = Game::get()->getVisibilityMap(player_->getPlayerID());
@@ -426,7 +428,7 @@ void GameController::frameUpdate(float dt) {
     if (e->hasProperty(GameEntity::P_CAPPABLE)) {
       e->setVisible(true);
     } else if (e->hasProperty(GameEntity::P_ACTOR)) {
-      e->setVisible(visibilityMap->locationVisible(e->getPosition2()));
+      e->setVisible(visibilityMap->locationVisible(e->getPosition2(t)));
     }
   }
 
@@ -699,6 +701,7 @@ void GameController::mouseMotion(const glm::vec2 &screenCoord) {
 }
 
 void GameController::keyPress(const KeyEvent &ev) {
+  float t = Renderer::get()->getGameTime();
   int key = ev.key;
   // TODO(zack) watch out for pausing here
   // Actions available in all player states:
@@ -724,7 +727,7 @@ void GameController::keyPress(const KeyEvent &ev) {
         if (saved_selection == player_->getSelection()) {
           auto game_id = *(saved_selection.begin());
           auto entity = Game::get()->getEntity(game_id);
-          glm::vec3 pos = entity->getPosition();
+          glm::vec3 pos = entity->getPosition(t);
           Renderer::get()->setCameraLookAt(pos);
         }
       }
@@ -1014,7 +1017,7 @@ void renderEntity(
   }
 
   bool visible = Game::get()->getVisibilityMap(
-    localPlayer->getPlayerID())->locationVisible(e->getPosition2());
+    localPlayer->getPlayerID())->locationVisible(e->getPosition2(t));
   if (!visible) {
     return;
   }
