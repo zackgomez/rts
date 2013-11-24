@@ -133,22 +133,10 @@ float ModelEntity::getAngle(float t) const {
   return angle_;
 }
 
-glm::vec2 ModelEntity::getDirection(float angle) {
+glm::vec2 ModelEntity::getDirection(float t) {
+  float angle = getAngle(t);
   float rad = deg2rad(angle);
   return glm::vec2(cosf(rad), sinf(rad));
-}
-
-glm::vec2 ModelEntity::getDirection() const {
-  return getDirection(angle_);
-}
-
-float ModelEntity::angleToTarget(const glm::vec2 &target) const {
-  glm::vec2 delta = target - getPosition2();
-  return rad2deg(atan2(delta.y , delta.x));
-}
-
-bool ModelEntity::pointInEntity(const glm::vec2 &p) {
-  return pointInBox(p, glm::vec2(pos_), size_.xy, angle_);
 }
 
 float ModelEntity::distanceFromPoint(const glm::vec2 &pt) const {

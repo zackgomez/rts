@@ -90,6 +90,9 @@ class Renderer {
   void setGameTime(float t) {
     gameTime_ = t;
   }
+  float getGameTime() const {
+    return gameTime_;
+  }
   // eventually replace this with a set map geometry or something similar
   void setMapSize(const glm::vec2 &mapSize) {
     mapSize_ = mapSize;

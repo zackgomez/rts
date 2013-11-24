@@ -27,17 +27,6 @@ public:
     return false;
   }
 
-  glm::vec2 getPosition2() const {
-    return glm::vec2(pos_);
-  }
-  const glm::vec3& getPosition() const {
-    return pos_;
-  }
-  // This unit's facing angle (relative to +x axis)
-  float getAngle() const {
-    return angle_;
-  }
-  glm::vec2 getDirection() const;
   // This unit's bounding box
   glm::vec2 getSize() const {
     return glm::vec2(size_);
@@ -52,11 +41,12 @@ public:
   float distanceFromPoint(const glm::vec2 &pt) const;
 
   // Interpolation functions
-  glm::vec2 getPosition2(float dt) const;
-  glm::vec3 getPosition(float dt) const;
-  float getAngle(float dt) const;
-  glm::mat4 getTransform(float dt) const;
-  const Rect getRect(float dt) const;
+  glm::vec2 getPosition2(float t) const;
+  glm::vec3 getPosition(float t) const;
+  glm::vec2 getDirection(float t);
+  float getAngle(float t) const;
+  glm::mat4 getTransform(float t) const;
+  const Rect getRect(float t) const;
 
   void setPosition(const glm::vec2 &pos);
   void setPosition(const glm::vec3 &pos);
@@ -78,16 +68,9 @@ public:
     return visible_;
   }
 
-  void render(float dt);
-  // Integrates position using velocities and timestep
-  void integrate(float dt);
-
-  // Some queries
-  bool pointInEntity(const glm::vec2 &p);
-  float angleToTarget(const glm::vec2 &pos) const;
+  void render(float t);
 
 private:
-  static glm::vec2 getDirection(float angle);
 
   id_t id_;
   glm::vec3 pos_;
