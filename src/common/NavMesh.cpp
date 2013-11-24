@@ -365,7 +365,6 @@ const std::vector<glm::vec3> NavMesh::getPath(const glm::vec3 &start,
 
     // Iterate over current face's neighbor
     HalfEdge *he = current_face->he;
-    int n = 0;
     do {
       Face *neighbor = he->flip->face;
       if (neighbor) {

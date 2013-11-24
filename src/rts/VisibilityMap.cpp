@@ -3,6 +3,7 @@
 #include "rts/GameEntity.h"
 #include "rts/Map.h"
 #include "rts/Player.h"
+#include "rts/Renderer.h"
 
 namespace rts {
 
@@ -38,7 +39,8 @@ void VisibilityMap::processEntity(const GameEntity *entity) {
     return;
   }
   if (func_(entity)) {
-    auto pos = entity->getPosition2();
+    float t = Renderer::get()->getGameTime();
+    auto pos = entity->getPosition2(t);
     auto sight = entity->getSight();
     glm::ivec2 min = glm::max(worldToGrid(pos - sight), 0);
     glm::ivec2 max = glm::min(worldToGrid(pos + sight), gridDim_);

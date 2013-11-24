@@ -138,15 +138,4 @@ glm::vec2 ModelEntity::getDirection(float t) {
   float rad = deg2rad(angle);
   return glm::vec2(cosf(rad), sinf(rad));
 }
-
-float ModelEntity::distanceFromPoint(const glm::vec2 &pt) const {
-  auto rect = getRect();
-  if (rect.contains(pt)) {
-    return 0.f;
-  }
-  return rayBox2Intersection(
-    pt,
-    glm::normalize(getPosition2() - pt),
-    rect);
-}
 }  // rts
