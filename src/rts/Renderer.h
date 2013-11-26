@@ -7,8 +7,8 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include "common/Clock.h"
+#include "common/Types.h"
 #include "rts/Camera.h"
-#include "rts/ModelEntity.h"
 #ifdef USE_FMOD
 #include <fmod.hpp>
 #endif  // USE_FMOD

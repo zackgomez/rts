@@ -43,7 +43,7 @@ void Map::init() {
     glm::vec2 pos = toVec2(collision_object_def["pos"]);
     glm::vec2 size = toVec2(collision_object_def["size"]);
     ModelEntity *obj = new ModelEntity(eid);
-    obj->setPosition(glm::vec3(pos, 0.1f));
+    obj->setPosition(0.f, glm::vec3(pos, 0.1f));
     obj->setSize(size);
     obj->setAngle(collision_object_def["angle"].asFloat());
 

@@ -3,6 +3,7 @@
 #include <string>
 #include "common/Collision.h"
 #include "common/util.h"
+#include "rts/Curves.h"
 #include "rts/EffectFactory.h"
 #include "rts/Graphics.h"
 
@@ -35,10 +36,6 @@ public:
   float getHeight() const {
     return size_.z;
   }
-  // Bounding rectangle
-  Rect getRect() const;
-
-  float distanceFromPoint(const glm::vec2 &pt) const;
 
   // Interpolation functions
   glm::vec2 getPosition2(float t) const;
@@ -48,8 +45,8 @@ public:
   glm::mat4 getTransform(float t) const;
   const Rect getRect(float t) const;
 
-  void setPosition(const glm::vec2 &pos);
-  void setPosition(const glm::vec3 &pos);
+  void setPosition(float t, const glm::vec2 &pos);
+  void setPosition(float t, const glm::vec3 &pos);
   void setSize(const glm::vec2 &size);
   void setAngle(float angle);
   void setHeight(float height);
@@ -71,9 +68,8 @@ public:
   void render(float t);
 
 private:
-
   id_t id_;
-  glm::vec3 pos_;
+  Vec3Curve posCurve_;
   float angle_;
   glm::vec3 size_;
 

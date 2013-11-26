@@ -26,8 +26,8 @@ ActionWidget::~ActionWidget() {
 }
 
 void ActionWidget::render(float dt) {
+  const auto t = Renderer::get()->getGameTime();
   auto actions = actionsFunc_();
-  const auto simdt = Renderer::get()->getSimDT();
 
   size_t num_actions = actions.size();
   // Center of the first box
@@ -67,7 +67,7 @@ void ActionWidget::render(float dt) {
     if (action_hover && action.radius > 0) {
       auto ent = Game::get()->getEntity(action.render_id);
       if (ent) {
-        auto pos = ent->getPosition(simdt) + glm::vec3(0, 0, 0.1f);
+        auto pos = ent->getPosition(t) + glm::vec3(0, 0, 0.1f);
         glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.f), pos),
             glm::vec3(action.radius * 2.f));

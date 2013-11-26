@@ -17,6 +17,7 @@ var Player = require('Player');
 var Team = require('Team');
 
 
+var elapsed_time = 0;
 var entities = {};
 var players = {};
 var teams = {};
@@ -122,6 +123,8 @@ exports.init = function (map_def, player_defs) {
   });
 
   handleMessages();
+
+  this.render();
 };
 
 exports.update = function (player_inputs, dt) {
@@ -199,6 +202,8 @@ exports.update = function (player_inputs, dt) {
   handleMessages();
 
   // TODO(zack): check win condition
+
+  elapsed_time += dt;
 };
 
 exports.render = function () {
@@ -224,7 +229,7 @@ exports.render = function () {
 
     // TODO(zack): have these do interpolation
     //render_entity.setMaxSpeed(game_entity.currentSpeed_);
-    render_entity.setPosition2(game_entity.getPosition2());
+    render_entity.setPosition2(elapsed_time, game_entity.getPosition2());
     render_entity.setAngle(game_entity.getAngle());
 
     var ui_info = game_entity.getUIInfo();

@@ -9,7 +9,7 @@ namespace rts {
 
 ModelEntity::ModelEntity(id_t id)
   : id_(id),
-    pos_(HUGE_VAL),
+    posCurve_(glm::vec3(0.f)),
     angle_(0.f),
     size_(0.f),
     scale_(1.f),
@@ -20,18 +20,16 @@ ModelEntity::ModelEntity(id_t id)
 ModelEntity::~ModelEntity() {
 }
 
-Rect ModelEntity::getRect() const {
-  return Rect(glm::vec2(pos_), getSize(), glm::radians(angle_));
-}
 const Rect ModelEntity::getRect(float t) const {
   return Rect(glm::vec2(getPosition(t)), getSize(), glm::radians(getAngle(t)));
 }
 
-void ModelEntity::setPosition(const glm::vec2 &pos) {
-  pos_ = glm::vec3(pos, pos_.z);
+void ModelEntity::setPosition(float t, const glm::vec2 &pos) {
+  // TODO(zack): make this only vec2 or vec3
+  posCurve_.addKeyframe(t, glm::vec3(pos, 0.f));
 }
-void ModelEntity::setPosition(const glm::vec3 &pos) {
-  pos_ = pos;
+void ModelEntity::setPosition(float t, const glm::vec3 &pos) {
+  posCurve_.addKeyframe(t, pos);
 }
 void ModelEntity::setSize(const glm::vec2 &size) {
   size_.xy = size;
@@ -124,8 +122,7 @@ glm::vec2 ModelEntity::getPosition2(float t) const {
 }
 
 glm::vec3 ModelEntity::getPosition(float t) const {
-  // TODO(zack): interpolate curve
-  return pos_;
+  return posCurve_.linearSample(t);
 }
 
 float ModelEntity::getAngle(float t) const {
