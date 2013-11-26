@@ -216,14 +216,15 @@ static Handle<Value> jsResolveCollisions(const Arguments &args) {
 }
 
 static Handle<Value> entitySetPosition2(const Arguments &args) {
-  invariant(args.Length() == 1, "void setPosition2(vec2 p)");
+  invariant(args.Length() == 2, "void setPosition2(float t, vec2 p)");
 
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   GameEntity *e = static_cast<GameEntity *>(wrap->Value());
 
-  auto js_pos = Handle<Array>::Cast(args[0]);
+  auto t = args[0]->NumberValue();
+  auto js_pos = Handle<Array>::Cast(args[1]);
   invariant(js_pos->Length() == 2, "expected vec2");
   glm::vec2 new_pos(
       js_pos->Get(Integer::New(0))->NumberValue(),
@@ -231,7 +232,7 @@ static Handle<Value> entitySetPosition2(const Arguments &args) {
   glm::vec3 full_pos(
       new_pos,
       Game::get()->getMap()->getMapHeight(new_pos));
-  e->setPosition(full_pos);
+  e->setPosition(t, full_pos);
 
   return Undefined();
 }
