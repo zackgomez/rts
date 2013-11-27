@@ -10,7 +10,6 @@ NetPlayer::NetPlayer(id_t playerID, id_t teamID, const std::string &name,
     const glm::vec3 &color, NetConnectionPtr conn)
   : Player(playerID, teamID, name, color),
     connection_(conn),
-    doneTick_(-1e6),
     localPlayerID_(-1),
     ready_(false) {
   assert(connection_);

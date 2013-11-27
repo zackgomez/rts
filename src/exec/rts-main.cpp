@@ -46,7 +46,6 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
   const float simrate = fltParam("game.simrate");
   const float simdt = 1.f / simrate;
 
-  Clock::time_point last = Clock::now();
   FPSCalculator updateTimer(10);
 
   game->start();
@@ -57,16 +56,19 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
     Renderer::get()->setController(controller);
   });
 
+  Clock::time_point start = Clock::now();
+	int tick_count = 0;
+
   while (game->isRunning()) {
     game->update(simdt);
 
-    float delay = glm::clamp(2 * simdt - Clock::secondsSince(last), 0.f, simdt);
-    last = Clock::now();
+		tick_count++;
+		float delay = simdt * tick_count - Clock::secondsSince(start);
     std::chrono::milliseconds delayms(static_cast<int>(1000 * delay));
     std::this_thread::sleep_for(delayms);
 
     float fps = updateTimer.sample();
-    if (fps < (simrate * 0.95f)) {
+    if (fps < simrate) {
       LOG(WARNING) << "Simulation update rate low: "
         << fps << " / " << simrate << '\n';
     }
