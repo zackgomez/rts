@@ -47,8 +47,9 @@ public:
 
   void setPosition(float t, const glm::vec2 &pos);
   void setPosition(float t, const glm::vec3 &pos);
+  void setAngle(float t, float angle);
+
   void setSize(const glm::vec2 &size);
-  void setAngle(float angle);
   void setHeight(float height);
 
   // Graphics setters
@@ -70,7 +71,8 @@ public:
 private:
   id_t id_;
   Vec3Curve posCurve_;
-  float angle_;
+	FloatCurve angleCurve_;
+
   glm::vec3 size_;
 
   bool visible_;

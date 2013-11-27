@@ -34,8 +34,8 @@ void ModelEntity::setPosition(float t, const glm::vec3 &pos) {
 void ModelEntity::setSize(const glm::vec2 &size) {
   size_.xy = size;
 }
-void ModelEntity::setAngle(float angle) {
-  angle_ = angle;
+void ModelEntity::setAngle(float t, float angle) {
+	angleCurve_.addKeyframe(t, angle);
 }
 void ModelEntity::setHeight(float height) {
   size_.z = height;

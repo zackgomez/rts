@@ -25,8 +25,6 @@ class NetPlayer : public Player {
  private:
   NetConnectionPtr connection_;
   std::mutex mutex_;
-  // last tick that is fully received
-  tick_t doneTick_;
 
   // The id of the local player who's actions we want to send
   id_t localPlayerID_;
