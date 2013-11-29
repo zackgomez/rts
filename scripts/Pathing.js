@@ -46,6 +46,7 @@ var update_body = function (body, dt) {
     path = computePath(pos, target_pos);
     invariant(path.length >= 1, 'path must have at least one node');
     var node = path[0];
+    angle = Vector.angle(Vector.sub(node, pos));
     vel = Vector.mul(
       Vector.normalize(Vector.sub(node, pos)),
       body.getSpeed()

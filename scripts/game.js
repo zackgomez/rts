@@ -227,10 +227,8 @@ exports.render = function () {
     render_entity.setProperties(game_entity.properties_);
     render_entity.setSight(game_entity.getSight());
 
-    // TODO(zack): have these do interpolation
-    //render_entity.setMaxSpeed(game_entity.currentSpeed_);
     render_entity.setPosition2(elapsed_time, game_entity.getPosition2());
-    render_entity.setAngle(game_entity.getAngle());
+    render_entity.setAngle(elapsed_time, game_entity.getAngle());
 
     var ui_info = game_entity.getUIInfo();
     render_entity.setUIInfo(ui_info);

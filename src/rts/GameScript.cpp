@@ -238,14 +238,14 @@ static Handle<Value> entitySetPosition2(const Arguments &args) {
 }
 
 static Handle<Value> entitySetAngle(const Arguments &args) {
-  invariant(args.Length() == 1, "void setAngle(float a)");
+  invariant(args.Length() == 2, "void setAngle(float t, float a)");
 
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   GameEntity *e = static_cast<GameEntity *>(wrap->Value());
 
-  e->setAngle(args[0]->NumberValue());
+  e->setAngle(args[0]->NumberValue(), args[1]->NumberValue());
 
   return Undefined();
 }
