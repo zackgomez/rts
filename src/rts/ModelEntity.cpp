@@ -10,7 +10,7 @@ namespace rts {
 ModelEntity::ModelEntity(id_t id)
   : id_(id),
     posCurve_(glm::vec3(0.f)),
-    angle_(0.f),
+    angleCurve_(0.f),
     size_(0.f),
     scale_(1.f),
     color_(0.f),
@@ -126,8 +126,7 @@ glm::vec3 ModelEntity::getPosition(float t) const {
 }
 
 float ModelEntity::getAngle(float t) const {
-  // TODO(zack): interpolate curve
-  return angle_;
+  return angleCurve_.linearSample(t);
 }
 
 glm::vec2 ModelEntity::getDirection(float t) {
