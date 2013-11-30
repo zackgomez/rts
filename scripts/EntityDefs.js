@@ -14,7 +14,6 @@ var EntityDefs = {
       EntityProperties.P_ACTOR,
       EntityProperties.P_UNIT,
       EntityProperties.P_TARGETABLE,
-      EntityProperties.P_RENDERABLE,
       EntityProperties.P_COLLIDABLE,
       EntityProperties.P_MOBILE,
     ],
@@ -113,7 +112,6 @@ var EntityDefs = {
       EntityProperties.P_ACTOR,
       EntityProperties.P_UNIT,
       EntityProperties.P_TARGETABLE,
-      EntityProperties.P_RENDERABLE,
       EntityProperties.P_COLLIDABLE,
       EntityProperties.P_MOBILE,
     ],
@@ -193,7 +191,6 @@ var EntityDefs = {
       EntityProperties.P_ACTOR,
       EntityProperties.P_UNIT,
       EntityProperties.P_TARGETABLE,
-      EntityProperties.P_RENDERABLE,
       EntityProperties.P_COLLIDABLE,
       EntityProperties.P_MOBILE,
     ],
@@ -274,7 +271,6 @@ var EntityDefs = {
     properties: [
       EntityProperties.P_ACTOR,
       EntityProperties.P_TARGETABLE,
-      EntityProperties.P_RENDERABLE,
       EntityProperties.P_COLLIDABLE,
     ],
     model: 'building',
@@ -324,7 +320,6 @@ var EntityDefs = {
     properties: [
       EntityProperties.P_ACTOR,
       EntityProperties.P_CAPPABLE,
-      EntityProperties.P_RENDERABLE,
       EntityProperties.P_COLLIDABLE,
     ],
     model: 'victory_point',
@@ -343,7 +338,6 @@ var EntityDefs = {
     properties: [
       EntityProperties.P_ACTOR,
       EntityProperties.P_CAPPABLE,
-      EntityProperties.P_RENDERABLE,
       EntityProperties.P_COLLIDABLE,
     ],
     model: 'req_point',
@@ -360,7 +354,6 @@ var EntityDefs = {
   },
   projectile: {
     properties: [
-      EntityProperties.P_RENDERABLE,
       EntityProperties.P_MOBILE,
     ],
     model: 'basic_bullet',

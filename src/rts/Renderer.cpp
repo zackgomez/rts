@@ -158,9 +158,6 @@ void Renderer::render() {
 
 void Renderer::renderEntity(ModelEntity *entity) {
   record_section("renderEntity");
-  if (!entity->hasProperty(ModelEntity::P_RENDERABLE)) {
-    return;
-  }
   if (!entity->isVisible()) {
     return;
   }
@@ -169,9 +166,6 @@ void Renderer::renderEntity(ModelEntity *entity) {
 
 void Renderer::renderEntityOverlay(ModelEntity *entity) {
   record_section("renderEntity");
-  if (!entity->hasProperty(ModelEntity::P_RENDERABLE)) {
-      return;
-  }
 	if (!entity->isVisible()) {
 			return;
 	}

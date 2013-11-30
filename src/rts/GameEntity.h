@@ -70,12 +70,6 @@ class GameEntity : public ModelEntity {
   }
   id_t getTeamID() const;
 
-  float getMaxSpeed() const {
-    return maxSpeed_;
-  }
-  void setMaxSpeed(float max_speed) {
-    maxSpeed_ = max_speed;
-  }
   float getSight() const {
     return sight_;
   }
@@ -105,22 +99,11 @@ class GameEntity : public ModelEntity {
     return uiInfo_;
   }
 
-  const std::vector<glm::vec3>& getPathQueue() const {
-    return pathQueue_;
-  }
-
  protected:
   id_t playerID_;
   std::string gameID_;
 
-  bool warp_;
-  glm::vec2 warpTarget_;
-
-  glm::vec2 lastTargetPos_;
-  std::vector<glm::vec3> pathQueue_;
-
  private:
-  float maxSpeed_;
   float sight_;
 
   std::set<uint32_t> properties_;

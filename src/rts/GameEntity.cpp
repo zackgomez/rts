@@ -12,9 +12,7 @@ namespace rts {
 GameEntity::GameEntity(id_t id) : ModelEntity(id),
     playerID_(NO_PLAYER),
     gameID_(),
-    maxSpeed_(0.f),
     sight_(0.f),
-    warp_(false),
     uiInfo_() {
   resetTexture();
 }
