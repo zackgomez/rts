@@ -14,17 +14,12 @@ public:
   ModelEntity(id_t id);
   virtual ~ModelEntity();
 
-  static const uint32_t P_RENDERABLE = 565038773;
   static const uint32_t P_COLLIDABLE = 983556954;
 
   id_t getID() const {
     return id_;
   }
   virtual bool hasProperty(uint32_t property) const {
-    // TODO(zack): remove, this is a hack for collision objects
-    if (property == P_RENDERABLE) {
-      return true;
-    }
     return false;
   }
 
