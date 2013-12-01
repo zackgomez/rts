@@ -15,6 +15,7 @@ var MessageHub = require('MessageHub');
 var Pathing = require('Pathing');
 var Player = require('Player');
 var Team = require('Team');
+var Visibility = require('Visibility');
 
 
 var elapsed_time = 0;
@@ -23,6 +24,7 @@ var players = {};
 var teams = {};
 var eid_to_render_entity = {};
 var last_id = IDConst.STARTING_EID;
+var visibility_map = null;
 
 // returns the ID of the spawned entity
 var spawnEntity = function (name, params) {
@@ -108,6 +110,9 @@ exports.init = function (map_def, player_defs) {
     var player = new Player(player_def);
     players[player.getPlayerID()] = player;
   }
+
+  // Initialize visibility map
+  visibility_map = Visibility.VisibilityMap(map_def);
 
   for (var pid in players) {
     var player = players[pid];
