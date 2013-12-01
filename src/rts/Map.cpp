@@ -83,9 +83,7 @@ void Map::init() {
 }
 
 Json::Value Map::getMapDefinition() const {
-  Json::Value ret;
-  ret["entities"] = must_have_idx(definition_, "entities");
-  return ret;
+  return definition_;
 }
 
 Json::Value Map::getStartingLocation(int location_idx) const {

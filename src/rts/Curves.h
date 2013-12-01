@@ -45,8 +45,6 @@ void Curve<T>::addKeyframe(float t, const T &val) {
       break;
     }
   }
-  LOG(DEBUG) << "adding sample @ " << t << " current time: " 
-    << Renderer::get()->getGameTime() << '\n';
   data_.emplace_back(t, val);
 }
 
