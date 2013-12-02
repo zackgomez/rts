@@ -215,7 +215,7 @@ Actions.SnipeAction = function (params) {
   };
 
   this.exec = function (entity, target) {
-    var target_entity = Game.getEntity(target);
+    var target_entity = Game.getVisibleEntity(entity.getPlayerID(), target);
     if (!target_entity || target_entity.getTeamID() == entity.getTeamID()) {
       Log('not sniping', target, target_entity);
       return;
@@ -298,7 +298,7 @@ Actions.HealAction = function (params) {
   };
 
   this.exec = function (entity, target) {
-    var target_entity = Game.getEntity(target);
+    var target_entity = Game.getVisibleEntity(entity.getPlayerID(), target);
     if (!target_entity || target_entity.getTeamID() != entity.getTeamID()) {
       Log('not healing', target, target_entity);
       return;
