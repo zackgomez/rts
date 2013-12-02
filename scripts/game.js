@@ -81,11 +81,29 @@ exports.getEntity = function (eid) {
   return entities[eid];
 };
 
+exports.getVisibleEntity = function (pid, eid) {
+  var e = getEntity(eid);
+  if (!e) return e;
+  return visibility_map.isPointVisible(pid, e.getPosition2())
+    ? e
+    : null;
+}
+
 exports.getPlayer = function (pid) {
   return must_have_idx(players, pid);
 };
 
+exports.getNearbyVisibleEntities = function (pos2, range, pid, callback) {
+  this.getNearbyEntities(pos2, range, function (entity) {
+    if (visibility_map.isPointVisible(pid, entity.getPosition2())) {
+      return callback(entity);
+    }
+    return true;
+  });
+};
+
 exports.getNearbyEntities = function (pos2, range, callback) {
+  // use all to short circuit on the callback returning false
   _.all(entities, function (entity) {
     if (entity.distanceToPoint(pos2) < range) {
       return callback(entity);
