@@ -228,18 +228,21 @@ var Entity = function (id, name, params) {
   // If the callback returns true, it will continue passing entities until
   // there are no more
   entity.getNearbyEntities = function (range, callback) {
-    return Game.getNearbyEntities(entity.getPosition2(), range, callback);
+    return Game.getNearbyVisibleEntities(
+      entity.getPosition2(),
+      range,
+      entity.getPlayerID(),
+      callback
+    );
   };
 
   // @return Entity object or null if no target
   entity.findTarget = function (previous_target_id) {
     // Only looking for targetable entities belonging to enemy teams
     var is_viable_target = function (target) {
-      // TODO(zack): only consider 'visible' enemies
       return target.getPlayerID() != IDConst.NO_PLAYER &&
         target.getTeamID() != this.getTeamID() &&
-        target.hasProperty(EntityProperties.P_TARGETABLE) &&
-        target.isVisibleTo(entity.getPlayerID());
+        target.hasProperty(EntityProperties.P_TARGETABLE);
     }.bind(this);
 
     // Default to previous target
