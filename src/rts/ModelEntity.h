@@ -39,27 +39,23 @@ public:
   float getAngle(float t) const;
   glm::mat4 getTransform(float t) const;
   const Rect getRect(float t) const;
+  bool isVisible(float t) const;
 
   void setPosition(float t, const glm::vec2 &pos);
   void setPosition(float t, const glm::vec3 &pos);
   void setAngle(float t, float angle);
+  void setVisible(float t, bool visible);
 
   void setSize(const glm::vec2 &size);
   void setHeight(float height);
 
   // Graphics setters
-  void setVisible(bool visible);
   void setModelName(const std::string &meshName);
   void setModelName(std::string &&meshName);
   void setScale(const glm::vec3 &scale);
   void addExtraEffect(const RenderFunction &func);
   // Effect of color depends on material/model
   void setColor(const glm::vec3 &color);
-
-  // graphics getters
-  bool isVisible() const {
-    return visible_;
-  }
 
   void render(float t);
 
