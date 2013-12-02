@@ -14,7 +14,7 @@ ModelEntity::ModelEntity(id_t id)
     size_(0.f),
     scale_(1.f),
     color_(0.f),
-    visible_(true) {
+    visibleCurve_(true) {
 }
 
 ModelEntity::~ModelEntity() {
@@ -42,10 +42,10 @@ void ModelEntity::setHeight(float height) {
 }
 
 bool ModelEntity::isVisible(float t) const {
-  return visible_;
+  return visibleCurve_.stepSample(t);
 }
 void ModelEntity::setVisible(float t, bool visible) {
-  visible_ = visible;
+  visibleCurve_.addKeyframe(t, visible);
 }
 
 void ModelEntity::setColor(const glm::vec3 &color) {
@@ -68,7 +68,7 @@ void ModelEntity::addExtraEffect(const RenderFunction &func) {
 }
 
 void ModelEntity::render(float t) {
-  if (!visible_) {
+  if (!isVisible(t)) {
     return;
   }
   if (meshName_.empty()) {

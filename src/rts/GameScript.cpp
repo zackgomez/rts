@@ -250,6 +250,19 @@ static Handle<Value> entitySetAngle(const Arguments &args) {
   return Undefined();
 }
 
+static Handle<Value> entitySetVisible(const Arguments &args) {
+  invariant(args.Length() == 2, "void setVisible(float t, bool visible");
+
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
+
+  e->setVisible(args[0]->NumberValue(), args[1]->BooleanValue());
+
+  return Undefined();
+}
+
 static Handle<Value> entityGetID(const Arguments &args) {
   invariant(args.Length() == 0, "int getID()");
   HandleScope scope(args.GetIsolate());
@@ -579,6 +592,9 @@ void GameScript::init(const std::string &init_function_path) {
   entityTemplate_->Set(
       String::New("setAngle"),
       FunctionTemplate::New(entitySetAngle));
+  entityTemplate_->Set(
+      String::New("setVisible"),
+      FunctionTemplate::New(entitySetVisible));
   entityTemplate_->Set(
       String::New("setSize"),
       FunctionTemplate::New(entitySetSize));

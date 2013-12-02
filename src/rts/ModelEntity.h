@@ -66,7 +66,7 @@ private:
 
   glm::vec3 size_;
 
-  bool visible_;
+  Curve<bool> visibleCurve_;
 
   std::string meshName_;
   glm::vec3 color_;
