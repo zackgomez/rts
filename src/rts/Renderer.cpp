@@ -158,7 +158,7 @@ void Renderer::render() {
 
 void Renderer::renderEntity(ModelEntity *entity) {
   record_section("renderEntity");
-  if (!entity->isVisible()) {
+  if (!entity->isVisible(gameTime_)) {
     return;
   }
   entity->render(gameTime_);
@@ -166,7 +166,7 @@ void Renderer::renderEntity(ModelEntity *entity) {
 
 void Renderer::renderEntityOverlay(ModelEntity *entity) {
   record_section("renderEntity");
-	if (!entity->isVisible()) {
+	if (!entity->isVisible(gameTime_)) {
 			return;
 	}
   entityOverlayRenderer_(entity, gameTime_);

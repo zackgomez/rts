@@ -41,7 +41,10 @@ void ModelEntity::setHeight(float height) {
   size_.z = height;
 }
 
-void ModelEntity::setVisible(bool visible) {
+bool ModelEntity::isVisible(float t) const {
+  return visible_;
+}
+void ModelEntity::setVisible(float t, bool visible) {
   visible_ = visible;
 }
 

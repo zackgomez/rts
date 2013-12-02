@@ -34,7 +34,7 @@ bool MinimapWidget::handleClick(const glm::vec2 &pos, int button) {
   return true;
 }
 
-void MinimapWidget::renderBase(float dt) {
+void MinimapWidget::renderBase() {
   auto mapColor = Game::get()->getMap()->getColor();
 
   auto shader = ResourceManager::get()->getShader("minimap");
@@ -54,13 +54,14 @@ void MinimapWidget::renderBase(float dt) {
 }
 
 void MinimapWidget::render(float dt) {
+  const float t = Renderer::get()->getGameTime();
   // TODO(connor) we probably want some small buffer around the sides of the
   // minimap so we can see the underlay image..
 
   // TODO(connor) support other aspect ratios so they don't stretch or distort
 
   // Render base image
-  renderBase(dt);
+  renderBase();
 
   // Render viewport
   /*
@@ -106,8 +107,7 @@ void MinimapWidget::render(float dt) {
       continue;
     }
     const GameEntity *e = (const GameEntity *)pair.second;
-    //if (!visibilityMap->locationVisible(e->getPosition2())) {
-    if (!e->isVisible()) {
+    if (!e->isVisible(t)) {
       continue;
     }
     glm::vec2 pos = worldToMinimap(e->getPosition(Renderer::get()->getSimDT()));

@@ -357,9 +357,6 @@ var Entity = function (id, name, params) {
       this.getAngle()
     );
   };
-  entity.isVisibleTo = function (pid) {
-    return Pathing.locationVisible(pid, this.getPosition2());
-  };
   entity.distanceToPoint = function (pt) {
     return Vector.distance(pt, this.getPosition2());
   };

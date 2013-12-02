@@ -25,7 +25,7 @@ class MinimapWidget final : public StaticWidget {
 
   GLuint visibilityTex_;
 
-  void renderBase(float dt);
+  void renderBase();
   glm::vec2 worldToMinimap(const glm::vec3 &world) const;
 };
 

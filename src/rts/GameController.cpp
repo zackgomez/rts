@@ -16,8 +16,8 @@
 #include "rts/Player.h"
 #include "rts/PlayerAction.h"
 #include "rts/Renderer.h"
-#include "rts/VisibilityMap.h"
 #include "rts/UI.h"
+#include "rts/VisibilityMap.h"
 #include "rts/Widgets.h"
 
 #ifdef _MSC_VER
@@ -419,19 +419,6 @@ std::string GameController::getCursorTexture() const {
 }
 
 void GameController::frameUpdate(float dt) {
-  float t = Renderer::get()->getGameTime();
-  // update visibility
-  // TODO(zack): this should be done once per tick instead of once per render
-  auto visibilityMap = Game::get()->getVisibilityMap(player_->getPlayerID());
-  for (auto it : Renderer::get()->getEntities()) {
-    auto e = it.second;
-    if (e->hasProperty(GameEntity::P_CAPPABLE)) {
-      e->setVisible(true);
-    } else if (e->hasProperty(GameEntity::P_ACTOR)) {
-      e->setVisible(visibilityMap->locationVisible(e->getPosition2(t)));
-    }
-  }
-
   // Remove done highlights
   for (size_t i = 0; i < highlights_.size(); ) {
     if (highlights_[i].remaining <= 0.f) {
@@ -843,13 +830,14 @@ void GameController::minimapUpdateCamera(const glm::vec2 &screenCoord) {
 }
 
 GameEntity * GameController::selectEntity(const glm::vec2 &screenCoord) const {
+  float t = Renderer::get()->getGameTime();
   glm::vec3 origin, dir;
   std::tie(origin, dir) = Renderer::get()->screenToRay(screenCoord);
   return (GameEntity *)Renderer::get()->castRay(
       origin,
       dir,
-      [](const ModelEntity *e) {
-        return e->isVisible() && e->hasProperty(GameEntity::P_ACTOR);
+      [=](const ModelEntity *e) {
+        return e->isVisible(t) && e->hasProperty(GameEntity::P_ACTOR);
       });
 }
 
@@ -862,6 +850,7 @@ std::set<GameEntity *> GameController::selectEntities(
   // selection criteria
   std::set<GameEntity *> boxedEntities;
 
+  const float t = Renderer::get()->getGameTime();
   glm::vec2 terrainStart = Renderer::get()->screenToTerrain(start).xy;
   glm::vec2 terrainEnd = Renderer::get()->screenToTerrain(end).xy;
   
@@ -879,7 +868,7 @@ std::set<GameEntity *> GameController::selectEntities(
   for (const auto &pair : Renderer::get()->getEntities()) {
     auto e = pair.second;
     // Must be an actor owned by the passed player
-    if (!e->hasProperty(GameEntity::P_ACTOR) && e->isVisible()) {
+    if (!e->hasProperty(GameEntity::P_ACTOR) && e->isVisible(t)) {
       continue;
     }
     auto ge = (GameEntity *) e;
@@ -988,7 +977,7 @@ void renderEntity(
     const std::map<id_t, float>& entityHighlights,
     const ModelEntity *e,
     float t) {
-  if (!e->hasProperty(GameEntity::P_ACTOR) || !e->isVisible()) {
+  if (!e->hasProperty(GameEntity::P_ACTOR) || !e->isVisible(t)) {
     return;
   }
   auto game_entity = (const GameEntity *)e;
@@ -1014,12 +1003,6 @@ void renderEntity(
         circleTransform,
         glm::vec4(vec3Param("colors.targeted"), 1.f),
         fltParam("ui.highlight.thickness"));
-  }
-
-  bool visible = Game::get()->getVisibilityMap(
-    localPlayer->getPlayerID())->locationVisible(e->getPosition2(t));
-  if (!visible) {
-    return;
   }
 
   glDisable(GL_DEPTH_TEST);
