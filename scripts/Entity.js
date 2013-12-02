@@ -247,7 +247,7 @@ var Entity = function (id, name, params) {
 
     // Default to previous target
     if (previous_target_id) {
-      var previous_target = Game.getEntity(previous_target_id);
+      var previous_target = Game.getVisibleEntity(previous_target_id);
       if (previous_target && is_viable_target(previous_target)) {
         return previous_target;
       }
@@ -256,7 +256,7 @@ var Entity = function (id, name, params) {
     // Search for closest entity in sight range
     var new_target = null;
     var best_dist = Infinity;
-    this.getNearbyEntities(this.sight_, function (e) {
+    this.getNearbyEntities(this.sight_*2, function (e) {
       if (!is_viable_target(e)) {
         return true;
       }
