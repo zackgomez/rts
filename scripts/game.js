@@ -82,7 +82,7 @@ exports.getEntity = function (eid) {
 };
 
 exports.getVisibleEntity = function (pid, eid) {
-  var e = getEntity(eid);
+  var e = this.getEntity(eid);
   if (!e) return e;
   return visibility_map.isPointVisible(pid, e.getPosition2())
     ? e
