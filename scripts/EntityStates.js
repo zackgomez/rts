@@ -83,7 +83,7 @@ function UnitAttackState(params) {
   this.targetID = params.target_id;
 
   this.update = function (entity) {
-    var target = Game.getEntity(this.targetID);
+    var target = Game.getVisibleEntity(entity.getPlayerID(), this.targetID);
     // TODO(zack): or if the target isn't visible
     if (!target ||
         !target.hasProperty(EntityProperties.P_TARGETABLE) ||
@@ -165,7 +165,7 @@ function TargetedAbilityState(params) {
   this.target_id = params.target_id;
   this.action = params.action;
   this.update = function (entity) {
-    var target = Game.getEntity(this.target_id);
+    var target = Game.getVisibleEntity(entity.getPlayerID(), this.target_id);
     if (!target) {
       return new entity.defaultState_();
     }
@@ -209,6 +209,7 @@ function ProjectileState(params) {
   this.on_hit_cooldowns = params.on_hit_cooldowns;
 
   this.update = function (entity) {
+    // Entity doesn't need to be visible
     var target = Game.getEntity(this.targetID);
     if (!target) {
       entity.deltas.should_destroy = true;
