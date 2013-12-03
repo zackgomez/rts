@@ -280,14 +280,23 @@ static Handle<Value> entitySetAngle(const Arguments &args) {
 }
 
 static Handle<Value> entitySetVisible(const Arguments &args) {
-  invariant(args.Length() == 2, "void setVisible(float t, bool visible");
+  invariant(
+      args.Length() == 2,
+      "void setVisible(float t, pid[] visibility_set)");
 
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   GameEntity *e = static_cast<GameEntity *>(wrap->Value());
 
-  e->setVisible(args[0]->NumberValue(), args[1]->BooleanValue());
+  float t = args[0]->NumberValue();
+  auto jspids = Handle<Array>::Cast(args[1]);
+  VisibilitySet set;
+  for (int i = 0; i < jspids->Length(); i++) {
+    id_t pid = jspids->Get(i)->IntegerValue();
+    set.insert(pid);
+  }
+  e->setVisibilitySet(t, set);
 
   return Undefined();
 }

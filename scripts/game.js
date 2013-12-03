@@ -7,6 +7,7 @@ var invariant_violation = require('invariant').invariant_violation;
 var constants = require('constants');
 var IDConst = constants.IDConst;
 var MessageTypes = constants.MessageTypes;
+var EntityProperties = constants.EntityProperties;
 var EntityStatus = constants.EntityStatus;
 
 var Collision = require('Collision');
@@ -84,6 +85,7 @@ exports.getEntity = function (eid) {
 exports.getVisibleEntity = function (pid, eid) {
   var e = this.getEntity(eid);
   if (!e) return e;
+  if (e.hasProperty(EntityProperties.P_CAPPABLE)) return e;
   return visibility_map.isPointVisible(pid, e.getPosition2())
     ? e
     : null;
@@ -257,6 +259,14 @@ exports.render = function () {
     render_entity.setUIInfo(ui_info);
     var actions = game_entity.getActions();
     render_entity.setActions(actions);
+
+    var visibility_set = [];
+    _.each(players, function (player, pid) {
+      if (this.getVisibleEntity(pid, game_entity.getID())) {
+        visibility_set.push(pid);
+      }
+    }, this);
+    render_entity.setVisible(elapsed_time, visibility_set);
 
     var events = game_entity.getEvents(); 
     game_entity.clearEvents();
