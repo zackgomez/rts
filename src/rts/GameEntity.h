@@ -14,6 +14,8 @@ class Checksum;
 
 namespace rts {
 
+typedef std::set<id_t> VisibilitySet;
+
 // TODO(zack): merge with actor
 class GameEntity : public ModelEntity {
  public:
@@ -99,12 +101,16 @@ class GameEntity : public ModelEntity {
     return uiInfo_;
   }
 
- protected:
+  bool isVisibleTo(float t, id_t pid) const;
+  void setVisibilitySet(float t, const VisibilitySet &map);
+
+ private:
   id_t playerID_;
   std::string gameID_;
 
- private:
   float sight_;
+
+  Curve<VisibilitySet> visibilityCurve_;
 
   std::set<uint32_t> properties_;
 

@@ -419,6 +419,16 @@ std::string GameController::getCursorTexture() const {
 }
 
 void GameController::frameUpdate(float dt) {
+  float t = Renderer::get()->getGameTime();
+  for (auto &pair : Renderer::get()->getEntities()) {
+    auto *entity = pair.second;
+    if (!entity->hasProperty(GameEntity::P_GAMEENTITY)) {
+      continue;
+    }
+    auto *game_entity = (GameEntity *)entity;
+    game_entity->setVisible(
+        game_entity->isVisibleTo(t, player_->getPlayerID()));
+  }
   // Remove done highlights
   for (size_t i = 0; i < highlights_.size(); ) {
     if (highlights_[i].remaining <= 0.f) {
@@ -837,7 +847,10 @@ GameEntity * GameController::selectEntity(const glm::vec2 &screenCoord) const {
       origin,
       dir,
       [=](const ModelEntity *e) {
-        return e->isVisible(t) && e->hasProperty(GameEntity::P_ACTOR);
+        if (!e->hasProperty(GameEntity::P_ACTOR)) {
+          return false;
+        }
+        return ((GameEntity *)e)->isVisibleTo(t, player_->getPlayerID());
       });
 }
 
@@ -868,7 +881,7 @@ std::set<GameEntity *> GameController::selectEntities(
   for (const auto &pair : Renderer::get()->getEntities()) {
     auto e = pair.second;
     // Must be an actor owned by the passed player
-    if (!e->hasProperty(GameEntity::P_ACTOR) && e->isVisible(t)) {
+    if (!e->hasProperty(GameEntity::P_ACTOR) && e->isVisible()) {
       continue;
     }
     auto ge = (GameEntity *) e;
@@ -977,7 +990,7 @@ void renderEntity(
     const std::map<id_t, float>& entityHighlights,
     const ModelEntity *e,
     float t) {
-  if (!e->hasProperty(GameEntity::P_ACTOR) || !e->isVisible(t)) {
+  if (!e->hasProperty(GameEntity::P_ACTOR) || !e->isVisible()) {
     return;
   }
   auto game_entity = (const GameEntity *)e;

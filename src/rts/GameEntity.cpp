@@ -13,6 +13,7 @@ GameEntity::GameEntity(id_t id) : ModelEntity(id),
     playerID_(NO_PLAYER),
     gameID_(),
     sight_(0.f),
+    visibilityCurve_(VisibilitySet()),
     uiInfo_() {
   resetTexture();
 }
@@ -24,6 +25,15 @@ void GameEntity::resetTexture() {
   const Player *player = Game::get()->getPlayer(getPlayerID());
   auto color = player ? player->getColor() : ::vec3Param("global.defaultColor");
   setColor(color);
+}
+
+bool GameEntity::isVisibleTo(float t, id_t pid) const {
+  const auto& visibility_set = visibilityCurve_.stepSample(t);
+  return visibility_set.find(pid) != visibility_set.end();
+}
+
+void GameEntity::setVisibilitySet(float t, const VisibilitySet &flags) {
+  visibilityCurve_.addKeyframe(t, flags);
 }
 
 Clock::time_point GameEntity::getLastTookDamage(uint32_t part) const {

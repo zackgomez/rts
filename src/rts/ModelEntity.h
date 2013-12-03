@@ -39,12 +39,12 @@ public:
   float getAngle(float t) const;
   glm::mat4 getTransform(float t) const;
   const Rect getRect(float t) const;
-  bool isVisible(float t) const;
+  bool isVisible() const;
 
   void setPosition(float t, const glm::vec2 &pos);
   void setPosition(float t, const glm::vec3 &pos);
   void setAngle(float t, float angle);
-  void setVisible(float t, bool visible);
+  void setVisible(bool visible);
 
   void setSize(const glm::vec2 &size);
   void setHeight(float height);
@@ -66,7 +66,7 @@ private:
 
   glm::vec3 size_;
 
-  Curve<bool> visibleCurve_;
+  bool visible_;
 
   std::string meshName_;
   glm::vec3 color_;
