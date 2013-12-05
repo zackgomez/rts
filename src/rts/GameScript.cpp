@@ -515,7 +515,7 @@ void configure_v8() {
     strdup("--harmony_array_buffer"),
     strdup("--harmony_typed_arrays"),
   };
-  v8::V8::SetFlagsFromCommandLine(&argc, argv, false);
+  v8::V8::SetFlagsFromCommandLine(&argc, argv, true);
   for (int i = 0; i < v8_argc; i++) {
     free(argv[i]);
   }
@@ -530,6 +530,7 @@ void GameScript::init(const std::string &init_function_path) {
 
   HandleScope handle_scope(isolate_);
 
+  // TODO(zack): move these into a binding
   Handle<ObjectTemplate> global = ObjectTemplate::New();
   global->Set(
       String::New("Log"),

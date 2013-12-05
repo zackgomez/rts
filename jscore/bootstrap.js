@@ -3,14 +3,15 @@
 //
 // This file largely ripped from the Node.js minimal module system and startup
 // process
-(function (runtime) {
+(function (runtime, starting_module) {
   this.global = this;
 
   function bootstrap() {
     bootstrap.globalVariables();
+    starting_module = starting_module || 'main';
 
     var invariant = NativeModule.require('invariant').invariant;
-    var main = NativeModule.require('main').main;
+    var main = NativeModule.require(starting_module);
     invariant(
       typeof main === 'function',
       'main module must export a function \'main\''
