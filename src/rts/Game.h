@@ -17,7 +17,6 @@ namespace rts {
 
 class Map;
 class Player;
-class VisibilityMap;
 struct ChatMessage;
 struct TickChecksum {
   checksum_t entity_checksum;
@@ -79,7 +78,6 @@ class Game {
 
   float getRequisition(id_t pid) const;
   float getVictoryPoints(id_t tid) const;
-  const VisibilityMap* getVisibilityMap(id_t pid) const;
 
   typedef std::function<void(id_t pid, const Json::Value&)> ChatListener;
   void setChatListener(ChatListener cl) {
@@ -117,8 +115,6 @@ class Game {
   float elapsedTime_;
 
   GameScript script_;
-
-  std::map<id_t, VisibilityMap*> visibilityMaps_;
 
   // holds checksums before the tick specified by the index
   // checksums_[3] == checksum at the end of tick 2/beginning of tick 3

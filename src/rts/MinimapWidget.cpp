@@ -5,7 +5,6 @@
 #include "rts/Player.h"
 #include "rts/Map.h"
 #include "rts/Renderer.h"
-#include "rts/VisibilityMap.h"
 #include "rts/UI.h"
 
 namespace rts {
@@ -43,8 +42,7 @@ void MinimapWidget::renderBase() {
   shader->uniform1f("texture", 0);
   shader->uniform4f("texcoord", glm::vec4(0, 1, 1, 0));
 
-  auto visibilityMap = Game::get()->getVisibilityMap(localPlayerID_);
-  visibilityTex_ = visibilityMap->fillTexture(visibilityTex_);
+  // TODO(zack): fill visibilityTex_
 
   glActiveTexture(GL_TEXTURE0);
   glEnable(GL_TEXTURE_2D);
