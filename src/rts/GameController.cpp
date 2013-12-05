@@ -17,7 +17,6 @@
 #include "rts/PlayerAction.h"
 #include "rts/Renderer.h"
 #include "rts/UI.h"
-#include "rts/VisibilityMap.h"
 #include "rts/Widgets.h"
 
 #ifdef _MSC_VER
@@ -1100,10 +1099,7 @@ void renderEntity(
 }
 
 void GameController::updateMapShader(Shader *shader) const {
-  auto visibilityMap = Game::get()->getVisibilityMap(player_->getPlayerID());
-
-  visibilityMap->fillTexture(visTex_);
-
+  // TODO fill visTex_
   shader->uniform1i("texture", 0);
 
   glActiveTexture(GL_TEXTURE0);

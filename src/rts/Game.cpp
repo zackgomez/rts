@@ -11,7 +11,6 @@
 #include "rts/Map.h"
 #include "rts/Player.h"
 #include "rts/Renderer.h"
-#include "rts/VisibilityMap.h"
 
 namespace rts {
 
@@ -54,10 +53,6 @@ Game::Game(Map *map, const std::vector<Player *> &players)
     player->setGame(this);
     // Set up visibility map
     auto func = std::bind(&Player::visibleEntity, player, std::placeholders::_1);
-    VisibilityMap *vismap = new VisibilityMap(
-        map_->getSize(),
-        func);
-    visibilityMaps_[player->getPlayerID()] = vismap;
     requisition_[player->getPlayerID()] = 0.f;
     team_ids.insert(player->getTeamID());
   }
@@ -81,9 +76,6 @@ Game::Game(Map *map, const std::vector<Player *> &players)
 Game::~Game() {
   delete random_;
   delete map_;
-  for (auto map : visibilityMaps_) {
-    delete map.second;
-  }
   instance_ = nullptr;
 
 }
@@ -276,12 +268,6 @@ void Game::update(float dt) {
       entities.push_back((GameEntity *)it.second);
     }
   }
-  for (auto &vit : visibilityMaps_) {
-    vit.second->clear();
-    for (auto entity : entities) {
-      vit.second->processEntity(entity);
-    }
-  }
 
   // TODO(zack): move this win condition into JS
   // Check to see if this player has won
@@ -416,13 +402,6 @@ float Game::getVictoryPoints(id_t tid) const {
   auto it = victoryPoints_.find(assertTid(tid));
   invariant(it != victoryPoints_.end(),
       "Unknown teamID to get victory points for");
-  return it->second;
-}
-
-const VisibilityMap* Game::getVisibilityMap(id_t pid) const {
-  auto it = visibilityMaps_.find(pid);
-  invariant(it != visibilityMaps_.end(),
-      "Unknown playerID to get resources for");
   return it->second;
 }
 
