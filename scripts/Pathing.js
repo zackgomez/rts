@@ -114,6 +114,3 @@ exports.stepAllForward = function (bodies, dt) {
 
   return new_bodies;
 };
-
-// function locationVisible(int player, vec2 pos): bool
-exports.locationVisible = binding.locationVisible;

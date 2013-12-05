@@ -39,6 +39,7 @@ var Entity = function (id, name, params) {
   entity.pos_ = params.pos || [0, 0];
   entity.angle_ = params.angle || 0;
   entity.currentSpeed_ = 0;
+  entity.visibilitySet_ = [];
 
   entity.resetDeltas();
 
@@ -379,6 +380,14 @@ var Entity = function (id, name, params) {
   }
 
   return entity;
+}
+
+Entity.prototype.setVisibilitySet = function (set) {
+  this.visibilitySet_ = set;
+  return this;
+}
+Entity.prototype.getVisibilitySet = function () {
+  return this.visibilitySet_;
 }
 
 // Helper function that clears out the deltas at the end of the resolve.

@@ -1,3 +1,4 @@
+var _ = require('underscore');
 var invariant = require('invariant').invariant;
 
 module.exports = {
@@ -22,10 +23,38 @@ module.exports = {
     return ret;
   },
 
+  compMul: function (v1, v2) {
+    invariant(v1.length === v2.length, "vectors must have same length");
+
+    var ret = [];
+    for (var i = 0; i < v1.length; i++) {
+      ret.push(v1[i] * v2[i]);
+    }
+    return ret;
+  },
+
+  compDiv: function (v1, v2) {
+    invariant(v1.length === v2.length, "vectors must have same length");
+
+    var ret = [];
+    for (var i = 0; i < v1.length; i++) {
+      ret.push(v1[i] / v2[i]);
+    }
+    return ret;
+  },
+
   mul: function (v, s) {
     var ret = [];
     for (var i = 0; i < v.length; i++) {
       ret.push(v[i] * s);
+    }
+    return ret;
+  },
+
+  div: function (v, s) {
+    var ret = [];
+    for (var i = 0; i < v.length; i++) {
+      ret.push(v[i] / s);
     }
     return ret;
   },
@@ -86,5 +115,31 @@ module.exports = {
       (GameRandom() - 0.5) * 2,
     ];
     return this.normalize(vec);
+  },
+
+  min: function (v, s) {
+    return _.map(v, function (x) {
+      return Math.min(s, x);
+    });
+  },
+
+  max: function (v, s) {
+    return _.map(v, function (x) {
+      return Math.max(s, x);
+    });
+  },
+
+  clamp: function (v, min, max) {
+    return _.map(v, function (x) {
+      return Math.min(Math.max(x, min), max);
+    });
+  },
+
+  floor: function (v) {
+    return _.map(v, Math.floor);
+  },
+
+  ceil: function (v) {
+    return _.map(v, Math.ceil);
   },
 };

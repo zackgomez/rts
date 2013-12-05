@@ -85,10 +85,7 @@ exports.getEntity = function (eid) {
 exports.getVisibleEntity = function (pid, eid) {
   var e = this.getEntity(eid);
   if (!e) return e;
-  if (e.hasProperty(EntityProperties.P_CAPPABLE)) return e;
-  return visibility_map.isPointVisible(pid, e.getPosition2())
-    ? e
-    : null;
+  return _.contains(e.getVisibilitySet(), pid) ? e : null;
 }
 
 exports.getPlayer = function (pid) {
@@ -97,7 +94,7 @@ exports.getPlayer = function (pid) {
 
 exports.getNearbyVisibleEntities = function (pos2, range, pid, callback) {
   this.getNearbyEntities(pos2, range, function (entity) {
-    if (visibility_map.isPointVisible(pid, entity.getPosition2())) {
+    if (_.contains(entity.getVisibilitySet(), pid)) {
       return callback(entity);
     }
     return true;
@@ -132,7 +129,7 @@ exports.init = function (map_def, player_defs) {
   }
 
   // Initialize visibility map
-  visibility_map = Visibility.VisibilityMap(map_def);
+  visibility_map = Visibility.VisibilityMap(map_def, player_defs.length);
 
   for (var pid in players) {
     var player = players[pid];
@@ -226,6 +223,8 @@ exports.update = function (player_inputs, dt) {
   // spawn entities, handle resources, etc
   handleMessages();
 
+  visibility_map.update(entities);
+
   // TODO(zack): check win condition
 
   elapsed_time += dt;
@@ -260,13 +259,7 @@ exports.render = function () {
     var actions = game_entity.getActions();
     render_entity.setActions(actions);
 
-    var visibility_set = [];
-    _.each(players, function (player, pid) {
-      if (this.getVisibleEntity(pid, game_entity.getID())) {
-        visibility_set.push(pid);
-      }
-    }, this);
-    render_entity.setVisible(elapsed_time, visibility_set);
+    render_entity.setVisible(elapsed_time, game_entity.getVisibilitySet());
 
     var events = game_entity.getEvents(); 
     game_entity.clearEvents();
