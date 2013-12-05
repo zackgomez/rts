@@ -4,4 +4,4 @@ var main = function () {
   runtime.setGameObject(Game);
 }
 
-exports.main = main;
+module.exports = main;
