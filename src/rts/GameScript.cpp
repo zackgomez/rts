@@ -9,7 +9,6 @@
 #include "rts/Player.h"
 #include "rts/Renderer.h"
 #include "rts/ResourceManager.h"
-#include "rts/VisibilityMap.h"
 
 using namespace v8;
 
@@ -48,15 +47,11 @@ static Handle<Value> getCollisionBinding() {
   return scope.Close(binding);
 }
 
-static Handle<Value> jsLocationVisible(const Arguments &args);
 static Handle<Value> jsResolveCollisions(const Arguments &args);
 static Handle<Value> jsComputePath(const Arguments &args);
 static Handle<Value> getPathingBinding() {
   HandleScope scope;
   auto binding = Object::New();
-  binding->Set(
-      String::New("locationVisible"),
-      FunctionTemplate::New(jsLocationVisible)->GetFunction());
   binding->Set(
       String::New("resolveCollisions"),
       FunctionTemplate::New(jsResolveCollisions)->GetFunction());
@@ -149,20 +144,6 @@ static Handle<Value> jsPointInOBB2(const Arguments &args) {
 
   bool contains = pointInBox(pt, center, size, angle);
   return scope.Close(Boolean::New(contains));
-}
-
-static Handle<Value> jsLocationVisible(const Arguments &args) {
-  invariant(args.Length() == 2, "locationVisible(id_t pid, vec2 pt): bool");
-  HandleScope scope(args.GetIsolate());
-  auto script = Game::get()->getScript();
-
-  id_t pid = args[0]->IntegerValue();
-  glm::vec2 pt = script->jsToVec2(Handle<Array>::Cast(args[1]));
-
-  auto vismap = Game::get()->getVisibilityMap(pid);
-  bool visible = vismap->locationVisible(pt);
-
-  return scope.Close(Boolean::New(visible));
 }
 
 static Handle<Value> jsResolveCollisions(const Arguments &args) {
@@ -554,9 +535,24 @@ GameScript::~GameScript() {
   isolate_->Dispose();
 }
 
+void configure_v8() {
+  const int v8_argc = 4;
+  int argc = v8_argc;
+  char *argv[] = {
+    NULL,
+    strdup("--use_strict"),
+    strdup("--harmony_array_buffer"),
+    strdup("--harmony_typed_arrays"),
+  };
+  v8::V8::SetFlagsFromCommandLine(&argc, argv, false);
+  for (int i = 0; i < v8_argc; i++) {
+    free(argv[i]);
+  }
+}
+
 void GameScript::init(const std::string &init_function_path) {
-  const std::string v8_flags = "--use_strict";
-  v8::V8::SetFlagsFromString(v8_flags.c_str(), v8_flags.length());
+  configure_v8();
+
   isolate_ = Isolate::New();
   Locker locker(isolate_);
   isolate_->Enter();
