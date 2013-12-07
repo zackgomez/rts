@@ -66,12 +66,6 @@ class Player {
    */
   virtual void playerAction(id_t playerID, const PlayerAction &action) = 0;
 
-  /**
-   * Called to determine if the given GameEntity contributes to this player's
-   * vision.
-   */
-  virtual bool visibleEntity(const GameEntity *e) const;
-
   /* Returns this player's color. */
   glm::vec3 getColor() const {
     return color_;
