@@ -37,10 +37,6 @@ public:
   v8::Handle<v8::Object> getBindings() const {
     return jsBindings_;
   }
-  // TODO(zack): should be private, need to replace entity with binding
-  v8::Handle<v8::ObjectTemplate> getEntityTemplate() const {
-    return entityTemplate_;
-  }
 
 private:
 
@@ -48,7 +44,6 @@ private:
   v8::Isolate *isolate_;
 
   v8::Persistent<v8::Object> jsBindings_;
-  v8::Persistent<v8::ObjectTemplate> entityTemplate_;
 
   v8::Handle<v8::Object> getSourceMap() const;
 };

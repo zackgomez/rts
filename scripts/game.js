@@ -16,6 +16,7 @@ var MessageHub = require('MessageHub');
 var Pathing = require('Pathing');
 var Player = require('Player');
 var Team = require('Team');
+var Renderer = require('Renderer');
 var Visibility = require('Visibility');
 
 
@@ -194,7 +195,8 @@ exports.update = function (player_inputs, dt) {
       delete entities[eid];
       if (eid in eid_to_render_entity) {
         var render_entity = eid_to_render_entity[eid];
-        DestroyRenderEntity(render_entity.getID());
+        // TODO(zack): replace destruction here with setting alive curve to dead
+        Renderer.destroyEntity(render_entity.getID());
         delete eid_to_render_entity[eid];
       }
       continue;
@@ -236,7 +238,7 @@ exports.render = function () {
     var game_entity = entities[eid];
     var render_entity = eid_to_render_entity[eid];
     if (!render_entity) {
-      render_entity = SpawnRenderEntity();
+      render_entity = Renderer.spawnEntity();
       eid_to_render_entity[eid] = render_entity;
     }
 
@@ -267,7 +269,7 @@ exports.render = function () {
     for (var i = 0; i < events.length; i++) {
       var event = events[i];
       event.params.eid = render_id;
-      AddEffect(event.name, event.params);
+      Renderer.addEffect(event.name, event.params);
     }
   }
 
