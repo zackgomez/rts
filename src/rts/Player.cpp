@@ -7,10 +7,6 @@
 
 namespace rts {
 
-bool Player::visibleEntity(const GameEntity *entity) const {
-  return entity->getSight() > 0.f && entity->getTeamID() == teamID_;
-}
-
 LocalPlayer::LocalPlayer(id_t playerID, id_t teamID, const std::string &name,
     const glm::vec3 &color)
   : Player(playerID, teamID, name, color) {
