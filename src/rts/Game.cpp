@@ -51,8 +51,6 @@ Game::Game(Map *map, const std::vector<Player *> &players)
   std::set<int> team_ids;
   for (auto player : players) {
     player->setGame(this);
-    // Set up visibility map
-    auto func = std::bind(&Player::visibleEntity, player, std::placeholders::_1);
     requisition_[player->getPlayerID()] = 0.f;
     team_ids.insert(player->getTeamID());
   }
@@ -107,7 +105,7 @@ void Game::start() {
   pause();
 
   using namespace v8;
-  script_.init("jscore/bootstrap.js");
+  script_.init("game-main");
   v8::Locker locker(script_.getIsolate());
   v8::Context::Scope context_scope(script_.getContext());
   

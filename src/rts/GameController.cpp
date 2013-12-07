@@ -9,6 +9,7 @@
 #include "rts/ActorPanelWidget.h"
 #include "rts/CommandWidget.h"
 #include "rts/Game.h"
+#include "rts/GameScript.h"
 #include "rts/Input.h"
 #include "rts/Map.h"
 #include "rts/Matchmaker.h"
@@ -92,12 +93,14 @@ GameController::GameController(LocalPlayer *player)
     zoom_(0.f),
     order_(),
     action_() {
+  gameScript_ = new GameScript();
 }
 
 GameController::~GameController() {
 }
 
 void GameController::onCreate() {
+  gameScript_->init("ui-main");
   grab_mouse();
   // TODO(zack): delete texture
   glGenTextures(1, &visTex_);

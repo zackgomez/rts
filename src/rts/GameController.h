@@ -9,6 +9,7 @@ namespace rts {
 
 class LocalPlayer;
 class GameEntity;
+class GameScript;
 struct UIAction;
 
 struct MapHighlight {
@@ -46,6 +47,7 @@ class GameController : public Controller {
   // Member variables
   //
   LocalPlayer *player_;
+  GameScript *gameScript_;
 
   std::string state_;
   std::string order_;
