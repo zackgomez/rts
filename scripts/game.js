@@ -223,7 +223,8 @@ exports.update = function (player_inputs, dt) {
   // spawn entities, handle resources, etc
   handleMessages();
 
-  visibility_map.update(entities);
+  visibility_map.updateMap(entities);
+  visibility_map.updateEntityVisibilities(entities);
 
   // TODO(zack): check win condition
 
