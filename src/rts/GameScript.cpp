@@ -14,6 +14,8 @@ using namespace v8;
 
 namespace rts {
 
+static const std::string BOOTSTRAP_FILE = "jscore/bootstrap.js";
+
 void jsFail(const v8::TryCatch &try_catch, const std::string &msg) {
   LOG(ERROR) << msg << " "
     << *String::AsciiValue(try_catch.Exception()) << '\n'
@@ -521,7 +523,7 @@ void configure_v8() {
   }
 }
 
-void GameScript::init(const std::string &init_function_path) {
+void GameScript::init(const std::string &main_module_name) {
   configure_v8();
 
   isolate_ = Isolate::New();
@@ -529,6 +531,7 @@ void GameScript::init(const std::string &init_function_path) {
   isolate_->Enter();
 
   HandleScope handle_scope(isolate_);
+  TryCatch try_catch;
 
   // TODO(zack): move these into a binding
   Handle<ObjectTemplate> global = ObjectTemplate::New();
@@ -621,24 +624,30 @@ void GameScript::init(const std::string &init_function_path) {
       String::New("setUIInfo"),
       FunctionTemplate::New(entitySetUIInfo));
 
-  std::ifstream init_file(init_function_path);
-  std::string init_function_source;
-  std::getline(init_file, init_function_source, (char)EOF);
+  std::ifstream bootstrap_file(BOOTSTRAP_FILE);
+  std::string bootstrap_source;
+  std::getline(bootstrap_file, bootstrap_source, (char)EOF);
 
   auto kwargs = Object::New();
   kwargs->Set(
       String::New("filename"),
-      String::New(init_function_path.c_str()));
+      String::New(BOOTSTRAP_FILE.c_str()));
 
-  auto init_function_val = runtimeEvalImpl(
-      String::New(init_function_source.c_str()), 
+  auto bootstrap_func_val = runtimeEvalImpl(
+      String::New(bootstrap_source.c_str()), 
       kwargs);
+  checkJSResult(bootstrap_func_val, try_catch, "load bootstrapper");
   invariant(
-      init_function_val->IsFunction(),
+      bootstrap_func_val->IsFunction(),
       "init file must evaluate to a function");
-  const int argc = 1;
-  Handle<Value> argv[] = { runtime_object };
-  Handle<Function>::Cast(init_function_val)->Call(getGlobal(), argc, argv);
+  const int argc = 2;
+  Handle<Value> argv[] = {
+    runtime_object,
+    String::New(main_module_name.c_str()),
+  };
+  auto result = Handle<Function>::Cast(bootstrap_func_val)
+    ->Call(getGlobal(), argc, argv);
+  checkJSResult(result, try_catch, "bootstrap");
 }
 
 

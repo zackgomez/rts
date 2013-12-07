@@ -13,7 +13,7 @@ class GameScript {
 public:
   GameScript();
   ~GameScript();
-  void init(const std::string &init_file_path);
+  void init(const std::string &main_module_name);
 
   v8::Isolate * getIsolate() {
     return isolate_;

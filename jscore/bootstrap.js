@@ -8,9 +8,9 @@
 
   function bootstrap() {
     bootstrap.globalVariables();
-    starting_module = starting_module || 'main';
-
     var invariant = NativeModule.require('invariant').invariant;
+
+    invariant(starting_module, 'must have starting module');
     var main = NativeModule.require(starting_module);
     invariant(
       typeof main === 'function',
