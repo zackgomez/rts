@@ -64,13 +64,30 @@ VisibilityMap.prototype.isPointVisible = function (pid, pt) {
 }
 
 
-VisibilityMap.prototype.update = function (entities) {
+// entity needs getPlayerID(), getPosition2(), getSight()
+VisibilityMap.prototype.updateMap = function (entities) {
+  this.clearCells();
+  _.each(entities, function (entity) {
+    var pid = entity.getPlayerID();
+    if (pid === IDConst.NO_PLAYER) {
+      return;
+    }
+
+    // TODO(zack): fill out grid here
+    var cell_i = this.pointToCell(pid, entity.getPosition2());
+    this.data[cell_i] = 1;
+  }, this);
+}
+
+VisibilityMap.prototype.updateEntityVisibilities = function (entities) {
   var all_players = _.range(
     IDConst.STARTING_PID,
     IDConst.STARTING_PID + this.numPlayers
   );
-  this.clearCells();
   _.each(entities, function (entity) {
+    entity.setVisibilitySet(all_players);
+    return;
+    /*
     if (entity.hasProperty(EntityProperties.P_CAPPABLE)) {
       entity.setVisibilitySet(all_players);
       return;
@@ -81,9 +98,7 @@ VisibilityMap.prototype.update = function (entities) {
       return;
     }
     entity.setVisibilitySet([pid]);
-
-    var cell_i = this.pointToCell(pid, entity.getPosition2());
-    this.data[cell_i] = 1;
+    */
   }, this);
 }
 
