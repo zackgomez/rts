@@ -237,6 +237,7 @@ void GameScript::init(const std::string &main_module_name) {
   runtime_object->Set(
       String::New("eval"),
       FunctionTemplate::New(runtimeEval)->GetFunction());
+  // TODO(zack): move this to a binding
   runtime_object->Set(
       String::New("setGameObject"),
       FunctionTemplate::New(runtimeSetGameObject)->GetFunction());
