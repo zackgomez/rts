@@ -105,7 +105,11 @@ void Game::start() {
   pause();
 
   using namespace v8;
-  script_.init("game-main");
+  auto init_ret = script_.init("game-main");
+  invariant(
+      init_ret->IsObject(),
+      "expected js main function to return object");
+  gameObject_ = Persistent<Object>::Cast(init_ret);
   v8::Locker locker(script_.getIsolate());
   v8::Context::Scope context_scope(script_.getContext());
   
@@ -285,7 +289,6 @@ void Game::update(float dt) {
   // unlock entities automatically when lock goes out of scope
   // Next tick
   tick_++;
-  Renderer::get()->setLastTickTime(Clock::now());
 
   // unlock game automatically when lock goes out of scope
 }

@@ -29,8 +29,7 @@ Renderer::Renderer()
     camera_(glm::vec3(0.f), 5.f, 0.f, 45.f),
     resolution_(vec2Param("local.resolution")),
     timeMultiplier_(1.f),
-    lastTickTime_(Clock::now()),
-    firstTick_(Clock::now()),
+    startTime_(Clock::now()),
     lastRender_(Clock::now()),
     mapSize_(0.f),
     nextEntityID_(STARTING_EID) {
@@ -136,8 +135,6 @@ void Renderer::startMainloop() {
 void Renderer::render() {
   Clock::startSection("render");
 
-  simdt_ = Clock::secondsSince(lastTickTime_);
-
   startRender();
 
   renderMap();
@@ -210,7 +207,6 @@ void Renderer::startRender() {
   renderdt_ = Clock::secondsSince(lastRender_);
   lastRender_ = Clock::now();
 
-  simdt_ *= timeMultiplier_;
   renderdt_ *= timeMultiplier_;
 
   gameTime_ += renderdt_;

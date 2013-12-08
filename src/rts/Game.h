@@ -84,10 +84,6 @@ class Game {
     chatListener_ = cl;
   }
 
-  void setJSGameObject(v8::Handle<v8::Object> obj) {
-  gameObject_ = v8::Persistent<v8::Object>::New(script_.getIsolate(), obj);
-  }
-
   // Returns a value [0, 1), should be the same across all clients
   float gameRandom();
 

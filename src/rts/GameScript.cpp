@@ -73,13 +73,6 @@ static Handle<Value> jsRuntimeBinding(const Arguments &args) {
   return scope.Close(binding_map->Get(name));
 }
 
-static Handle<Value> runtimeSetGameObject(const Arguments &args) {
-  invariant(args.Length() == 1, "void SetGameObject(object game)");
-
-  HandleScope scope(args.GetIsolate());
-  Game::get()->setJSGameObject(args[0]->ToObject());
-}
-
 static Handle<Value> jsGameRandom(const Arguments &args) {
   return Number::New(Game::get()->gameRandom());
 }
@@ -220,7 +213,7 @@ void configure_v8() {
   }
 }
 
-void GameScript::init(const std::string &main_module_name) {
+v8::Persistent<v8::Value> GameScript::init(const std::string &main_module_name) {
   configure_v8();
 
   isolate_ = Isolate::New();
@@ -266,10 +259,6 @@ void GameScript::init(const std::string &main_module_name) {
   runtime_object->Set(
       String::New("eval"),
       FunctionTemplate::New(runtimeEval)->GetFunction());
-  // TODO(zack): move this to a binding
-  runtime_object->Set(
-      String::New("setGameObject"),
-      FunctionTemplate::New(runtimeSetGameObject)->GetFunction());
   context_->Global()->Set(
       String::New("runtime"),
       runtime_object);
@@ -296,9 +285,13 @@ void GameScript::init(const std::string &main_module_name) {
     runtime_object,
     String::New(main_module_name.c_str()),
   };
-  auto result = Handle<Function>::Cast(bootstrap_func_val)
+  auto ret = Handle<Function>::Cast(bootstrap_func_val)
     ->Call(getGlobal(), argc, argv);
-  checkJSResult(result, try_catch, "bootstrap");
+  checkJSResult(ret, try_catch, "bootstrap");
+  jsInitResult_ = v8::Persistent<v8::Value>(
+      Isolate::GetCurrent(),
+      ret);
+  return jsInitResult_;
 }
 
 

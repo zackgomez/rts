@@ -13,7 +13,11 @@ class GameScript {
 public:
   GameScript();
   ~GameScript();
-  void init(const std::string &main_module_name);
+
+  v8::Persistent<v8::Value> init(const std::string &main_module_name);
+  v8::Persistent<v8::Value> getInitReturn() {
+    return jsInitResult_;
+  }
 
   v8::Isolate * getIsolate() {
     return isolate_;
@@ -39,10 +43,10 @@ public:
   }
 
 private:
-
   v8::Persistent<v8::Context> context_;
   v8::Isolate *isolate_;
 
+  v8::Persistent<v8::Value> jsInitResult_;
   v8::Persistent<v8::Object> jsBindings_;
 
   v8::Handle<v8::Object> getSourceMap() const;
