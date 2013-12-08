@@ -888,7 +888,7 @@ std::set<GameEntity *> GameController::selectEntities(
     }
     auto ge = (GameEntity *) e;
     if (ge->getPlayerID() == pid
-        && boxInBox(dragRect, ge->getRect(Renderer::get()->getSimDT()))) {
+        && boxInBox(dragRect, ge->getRect(t))) {
       boxedEntities.insert(ge);
       if (ge->hasProperty(GameEntity::P_UNIT)) {
         onlySelectUnits = true;

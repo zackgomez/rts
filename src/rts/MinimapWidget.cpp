@@ -52,6 +52,7 @@ void MinimapWidget::renderBase() {
 }
 
 void MinimapWidget::render(float dt) {
+  const float t = Renderer::get()->getGameTime();
   // TODO(connor) we probably want some small buffer around the sides of the
   // minimap so we can see the underlay image..
 
@@ -107,7 +108,7 @@ void MinimapWidget::render(float dt) {
     if (!e->isVisible()) {
       continue;
     }
-    glm::vec2 pos = worldToMinimap(e->getPosition(Renderer::get()->getSimDT()));
+    glm::vec2 pos = worldToMinimap(e->getPosition(t));
     const Player *player = Game::get()->getPlayer(e->getPlayerID());
     glm::vec3 pcolor; 
     if (colorScheme == 0) {

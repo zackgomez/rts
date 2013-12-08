@@ -34,9 +34,6 @@ class Renderer {
     return effectManager_;
   }
 
-  float getSimDT() const {
-    return simdt_;
-  }
   float getAverageFPS() const {
     return averageFPS_;
   }
@@ -77,12 +74,8 @@ class Renderer {
   void removeEntity(id_t eid);
   void clearEntities();
 
-  // Sets the last update time for inter/extrapolation purposes
-  void setLastTickTime(const Clock::time_point &t) {
-    lastTickTime_ = t;
-  }
   float getRenderTime() {
-    return Clock::secondsSince(firstTick_);
+    return Clock::secondsSince(startTime_);
   }
   void setTimeMultiplier(float t) {
     timeMultiplier_ = t;
@@ -184,12 +177,9 @@ class Renderer {
   float timeMultiplier_;
   // 'game' time, affected by timeMultiplier
   float gameTime_;
-  // Used to interpolate, last tick seen, and dt since last tick
-  Clock::time_point lastTickTime_;
-  float simdt_;
-  Clock::time_point firstTick_;
   // For updating purely render aspects
   Clock::time_point lastRender_;
+  Clock::time_point startTime_;
   float renderdt_;
   float averageFPS_;
 };

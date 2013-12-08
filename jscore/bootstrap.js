@@ -17,7 +17,7 @@
       'main module must export a function \'main\''
     );
 
-    main();
+    return main();
   };
 
   bootstrap.globalVariables = function () {
@@ -94,5 +94,5 @@
     NativeModule._cache[this.id] = this;
   };
 
-  bootstrap();
+  return bootstrap();
 });

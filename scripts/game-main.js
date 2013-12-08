@@ -1,7 +1,7 @@
 var Game = require('game');
 
 var main = function () {
-  runtime.setGameObject(Game);
+  return Game;
 }
 
 module.exports = main;
