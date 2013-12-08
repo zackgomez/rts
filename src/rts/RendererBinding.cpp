@@ -116,7 +116,7 @@ static Handle<Value> entitySetSize(const Arguments &args) {
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   GameEntity *e = static_cast<GameEntity *>(wrap->Value());
 
-  glm::vec2 size = Game::get()->getScript()->jsToVec2(
+  glm::vec2 size = jsToVec2(
       Handle<Array>::Cast(args[0]));
   e->setSize(size);
 
@@ -205,7 +205,6 @@ static Handle<Value> entitySetUIInfo(const Arguments &args) {
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   auto *e = static_cast<GameEntity *>(wrap->Value());
-  auto script = Game::get()->getScript();
 
   auto jsinfo = args[0]->ToObject();
 
@@ -220,7 +219,7 @@ static Handle<Value> entitySetUIInfo(const Arguments &args) {
     for (int i = 0; i < parts->Length(); i++) {
       auto jspart = Handle<Object>::Cast(parts->Get(i));
       GameEntity::UIPart part;
-      part.health = script->jsToVec2(
+      part.health = jsToVec2(
           Handle<Array>::Cast(jspart->Get(String::New("health"))));
       part.tooltip = *String::AsciiValue(
           jspart->Get(String::New("tooltip")));
@@ -240,12 +239,12 @@ static Handle<Value> entitySetUIInfo(const Arguments &args) {
   }
   auto mana = String::New("mana");
   if (jsinfo->Has(mana)) {
-    ui_info.mana = script->jsToVec2(
+    ui_info.mana = jsToVec2(
         Handle<Array>::Cast(jsinfo->Get(mana)));
   }
   auto capture = String::New("capture");
   if (jsinfo->Has(capture)) {
-    ui_info.capture = script->jsToVec2(
+    ui_info.capture = jsToVec2(
         Handle<Array>::Cast(jsinfo->Get(capture)));
   }
   auto cap_pid = String::New("cappingPlayerID");
@@ -283,7 +282,7 @@ static Handle<Value> entitySetUIInfo(const Arguments &args) {
     auto jspath = Handle<Array>::Cast(jsinfo->Get(path_str));
     for (auto i = 0; i < jspath->Length(); i++) {
       glm::vec3 node(
-          script->jsToVec2(Handle<Array>::Cast(jspath->Get(i))),
+          jsToVec2(Handle<Array>::Cast(jspath->Get(i))),
           0.f);
       ui_info.path.push_back(node);
     }
@@ -291,7 +290,7 @@ static Handle<Value> entitySetUIInfo(const Arguments &args) {
 
   auto extra = String::New("extra");
   invariant(jsinfo->Has(extra), "UIInfo should have extra map");
-  ui_info.extra = script->jsToJSON(jsinfo->Get(extra));
+  ui_info.extra = jsToJSON(jsinfo->Get(extra));
 
   e->setUIInfo(ui_info);
 

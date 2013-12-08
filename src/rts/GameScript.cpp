@@ -6,6 +6,7 @@
 #include "rts/Game.h"
 #include "rts/Map.h"
 #include "rts/Player.h"
+#include "rts/NativeUIBinding.h"
 #include "rts/RendererBinding.h"
 #include "rts/ResourceManager.h"
 
@@ -62,10 +63,13 @@ static Handle<Value> getPathingBinding() {
 static Handle<Value> jsRuntimeBinding(const Arguments &args) {
   invariant(args.Length() == 1, "value runtime.binding(string name)");
   HandleScope scope(args.GetIsolate());
+  LOG(DEBUG) << "isolate addr: " << args.GetIsolate() << '\n';
 
   auto name = Handle<String>::Cast(args[0]);
   auto binding_map = Game::get()->getScript()->getBindings();
-  invariant(binding_map->Has(args[0]), "unknown binding");
+  invariant(
+    binding_map->Has(args[0]),
+    std::string("unknown binding ") + *String::AsciiValue(name));
   return scope.Close(binding_map->Get(name));
 }
 
@@ -87,11 +91,10 @@ static Handle<Value> jsLog(const Arguments &args) {
 static Handle<Value> jsPointInOBB2(const Arguments &args) {
   invariant(args.Length() == 4, "bool pointInOBB2(p, center, size, angle)");
   HandleScope scope(args.GetIsolate());
-  auto script = Game::get()->getScript();
 
-  auto pt = script->jsToVec2(Handle<Array>::Cast(args[0]));
-  auto center = script->jsToVec2(Handle<Array>::Cast(args[1]));
-  auto size = script->jsToVec2(Handle<Array>::Cast(args[2]));
+  auto pt = jsToVec2(Handle<Array>::Cast(args[0]));
+  auto center = jsToVec2(Handle<Array>::Cast(args[1]));
+  auto size = jsToVec2(Handle<Array>::Cast(args[2]));
   auto angle = args[3]->NumberValue();
 
   bool contains = pointInBox(pt, center, size, angle);
@@ -119,19 +122,19 @@ static Handle<Value> jsResolveCollisions(const Arguments &args) {
   for (auto i = 0; i < keys->Length(); i++) {
     auto key1 = keys->Get(i);
     auto body1 = Handle<Object>::Cast(bodies->Get(key1));
-    auto pos1 = script->jsToVec2(Handle<Array>::Cast(body1->Get(pos_str)));
-    auto size1 = script->jsToVec2(Handle<Array>::Cast(body1->Get(size_str)));
+    auto pos1 = jsToVec2(Handle<Array>::Cast(body1->Get(pos_str)));
+    auto size1 = jsToVec2(Handle<Array>::Cast(body1->Get(size_str)));
     auto angle1 = body1->Get(angle_str)->NumberValue();
-    auto vel1 = script->jsToVec2(Handle<Array>::Cast(body1->Get(vel_str)));
+    auto vel1 = jsToVec2(Handle<Array>::Cast(body1->Get(vel_str)));
     Rect rect1(pos1, size1, angle1);
 
     for (auto j = i+1; j < keys->Length(); j++) {
       auto key2 = keys->Get(j);
       auto body2 = Handle<Object>::Cast(bodies->Get(key2));
-      auto pos2 = script->jsToVec2(Handle<Array>::Cast(body2->Get(pos_str)));
-      auto size2 = script->jsToVec2(Handle<Array>::Cast(body2->Get(size_str)));
+      auto pos2 = jsToVec2(Handle<Array>::Cast(body2->Get(pos_str)));
+      auto size2 = jsToVec2(Handle<Array>::Cast(body2->Get(size_str)));
       auto angle2 = body2->Get(angle_str)->NumberValue();
-      auto vel2 = script->jsToVec2(Handle<Array>::Cast(body2->Get(vel_str)));
+      auto vel2 = jsToVec2(Handle<Array>::Cast(body2->Get(vel_str)));
       Rect rect2(pos2, size2, angle2);
 
       float time;
@@ -217,6 +220,9 @@ v8::Persistent<v8::Value> GameScript::init(const std::string &main_module_name) 
   jsBindings_->Set(
       String::New("renderer"),
       getRendererBinding());
+  jsBindings_->Set(
+      String::New("native_ui"),
+      getNativeUIBinding());
 
   // set up runtime object
   auto source_map = getSourceMap();
@@ -299,34 +305,38 @@ Handle<Object> GameScript::getGlobal() {
   return context_->Global();
 }
 
-Handle<Value> GameScript::jsonToJS(const Json::Value &json) const {
+Handle<Value> jsonToJS(const Json::Value &json) {
+  HandleScope handle_scope;
+  Handle<Value> ret;
   if (json.isArray()) {
     Handle<Array> jsarr = Array::New();
     for (int i = 0; i < json.size(); i++) {
       jsarr->Set(i, jsonToJS(json[i]));
     }
-    return jsarr;
+    ret = jsarr;
   } else if (json.isObject()) {
     Handle<Object> jsobj = Object::New();
     for (const auto &name : json.getMemberNames()) {
       auto jsname = String::New(name.c_str());
       jsobj->Set(jsname, jsonToJS(json[name]));
     }
-    return jsobj;
+    ret = jsobj;
   } else if (json.isDouble()) {
-    return Number::New(json.asDouble());
+    ret = Number::New(json.asDouble());
   } else if (json.isString()) {
-    return String::New(json.asCString());
+    ret = String::New(json.asCString());
   } else if (json.isIntegral()) {
-    return Integer::New(json.asInt64());
+    ret = Integer::New(json.asInt64());
   } else if (json.isBool()) {
-    return Boolean::New(json.asBool());
+    ret = Boolean::New(json.asBool());
   } else {
     invariant_violation("Unknown type to convert");
   }
+
+  return handle_scope.Close(ret);
 }
 
-Json::Value GameScript::jsToJSON(const Handle<Value> js) const {
+Json::Value jsToJSON(const Handle<Value> js) {
   if (js->IsArray()) {
     Json::Value ret;
     auto jsarr = Handle<Array>::Cast(js);
@@ -358,7 +368,7 @@ Json::Value GameScript::jsToJSON(const Handle<Value> js) const {
   }
 }
 
-glm::vec2 GameScript::jsToVec2(const Handle<Array> arr) const {
+glm::vec2 jsToVec2(const Handle<Array> arr) {
   invariant(
       arr->Length() == 2,
       "trying to convert an incorrectly sized array to vec2");
@@ -368,7 +378,7 @@ glm::vec2 GameScript::jsToVec2(const Handle<Array> arr) const {
   ret.y = arr->Get(1)->NumberValue();
   return ret;
 }
-glm::vec3 GameScript::jsToVec3(const Handle<Array> arr) const {
+glm::vec3 jsToVec3(const Handle<Array> arr) {
   invariant(
       arr->Length() == 3,
       "trying to convert an incorrectly sized array to vec2");
@@ -380,11 +390,12 @@ glm::vec3 GameScript::jsToVec3(const Handle<Array> arr) const {
   return ret;
 }
 
-Handle<Array> GameScript::vec2ToJS(const glm::vec2 &v) const {
+Handle<Array> vec2ToJS(const glm::vec2 &v) {
+  HandleScope scope;
   Handle<Array> ret = Array::New();
   ret->Set(0, Number::New(v[0]));
   ret->Set(1, Number::New(v[1]));
 
-  return ret;
+  return scope.Close(ret);
 }
 };  // rts

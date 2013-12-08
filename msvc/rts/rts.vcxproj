@@ -51,13 +51,14 @@
     <ClCompile Include="..\..\src\rts\MatrixStack.cpp" />
     <ClCompile Include="..\..\src\rts\MinimapWidget.cpp" />
     <ClCompile Include="..\..\src\rts\ModelEntity.cpp" />
+    <ClCompile Include="..\..\src\rts\NativeUIBinding.cpp" />
     <ClCompile Include="..\..\src\rts\NetPlayer.cpp" />
     <ClCompile Include="..\..\src\rts\Player.cpp" />
     <ClCompile Include="..\..\src\rts\Renderer.cpp" />
+    <ClCompile Include="..\..\src\rts\RendererBinding.cpp" />
     <ClCompile Include="..\..\src\rts\ResourceManager.cpp" />
     <ClCompile Include="..\..\src\rts\Shader.cpp" />
     <ClCompile Include="..\..\src\rts\UI.cpp" />
-    <ClCompile Include="..\..\src\rts\VisibilityMap.cpp" />
     <ClCompile Include="..\..\src\rts\Widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -97,21 +98,45 @@
     <ClInclude Include="..\..\src\rts\Message.h" />
     <ClInclude Include="..\..\src\rts\MinimapWidget.h" />
     <ClInclude Include="..\..\src\rts\ModelEntity.h" />
+    <ClInclude Include="..\..\src\rts\NativeUIBinding.h" />
     <ClInclude Include="..\..\src\rts\NetPlayer.h" />
     <ClInclude Include="..\..\src\rts\Player.h" />
     <ClInclude Include="..\..\src\rts\PlayerAction.h" />
     <ClInclude Include="..\..\src\rts\Renderer.h" />
+    <ClInclude Include="..\..\src\rts\RendererBinding.h" />
     <ClInclude Include="..\..\src\rts\ResourceManager.h" />
     <ClInclude Include="..\..\src\rts\Shader.h" />
     <ClInclude Include="..\..\src\rts\UI.h" />
     <ClInclude Include="..\..\src\rts\UIAction.h" />
-    <ClInclude Include="..\..\src\rts\VisibilityMap.h" />
     <ClInclude Include="..\..\src\rts\Widgets.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\config.json" />
     <None Include="..\..\local.json" />
     <None Include="..\..\local.json.default" />
+    <None Include="..\..\scripts\Actions.js" />
+    <None Include="..\..\scripts\Collision.js" />
+    <None Include="..\..\scripts\constants.js" />
+    <None Include="..\..\scripts\Effects.js" />
+    <None Include="..\..\scripts\Entity.js" />
+    <None Include="..\..\scripts\EntityDefs.js" />
+    <None Include="..\..\scripts\EntityStates.js" />
+    <None Include="..\..\scripts\game-main.js" />
+    <None Include="..\..\scripts\game.js" />
+    <None Include="..\..\scripts\invariant.js" />
+    <None Include="..\..\scripts\MessageHub.js" />
+    <None Include="..\..\scripts\must_have_idx.js" />
+    <None Include="..\..\scripts\object_fill_keys.js" />
+    <None Include="..\..\scripts\Parts.js" />
+    <None Include="..\..\scripts\Pathing.js" />
+    <None Include="..\..\scripts\Player.js" />
+    <None Include="..\..\scripts\Renderer.js" />
+    <None Include="..\..\scripts\Team.js" />
+    <None Include="..\..\scripts\ui-main.js" />
+    <None Include="..\..\scripts\underscore.js" />
+    <None Include="..\..\scripts\Vector.js" />
+    <None Include="..\..\scripts\Visibility.js" />
+    <None Include="..\..\scripts\Weapons.js" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and '$(VisualStudioVersion)' == ''">$(VCTargetsPath11)</VCTargetsPath>
@@ -199,6 +224,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_USE_MATH_DEFINES;_VARIADIC_MAX=8;GLFW_DLL;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0;ITERATOR_DEBUG_LEVEL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
