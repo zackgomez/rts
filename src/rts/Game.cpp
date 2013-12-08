@@ -128,7 +128,7 @@ void Game::start() {
         Number::New(starting_requisition));
     js_player_def->Set(
         String::New("starting_location"),
-        script_.jsonToJS(starting_location));
+        jsonToJS(starting_location));
 
     js_player_defs->Set(js_player_defs->Length(), js_player_def);
   }
@@ -136,7 +136,7 @@ void Game::start() {
   TryCatch try_catch;
   const int argc = 2;
   Handle<Value> argv[argc] = {
-    script_.jsonToJS(map_->getMapDefinition()),
+    jsonToJS(map_->getMapDefinition()),
     js_player_defs,
   };
   Handle<Function> game_init_method = Handle<Function>::Cast(
@@ -228,7 +228,7 @@ void Game::update(float dt) {
         order["from_pid"] = toJson(pid);
         js_player_inputs->Set(
             js_player_inputs->Length(),
-            script_.jsonToJS(order));
+            jsonToJS(order));
       } else {
         invariant_violation("unknown action type" + action["type"].asString());
       }

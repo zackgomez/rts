@@ -75,6 +75,7 @@ static void loadResources();
 
 static void glfw_error_callback(int error, const char *description) {
   LOG(ERROR) << "GLFW Error (" << error << "): " << description << '\n';
+  invariant_violation("glfw error");
 }
 
 glm::vec2 initEngine() {

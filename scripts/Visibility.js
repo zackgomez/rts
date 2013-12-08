@@ -4,7 +4,6 @@ var invariant = require('invariant').invariant;
 
 var IDConst = require('constants').IDConst;
 var EntityProperties = require('constants').EntityProperties;
-var Pathing = require('Pathing');
 var Vector = require('Vector');
 
 var cell_size = 0.5;
@@ -48,9 +47,14 @@ VisibilityMap.prototype.pointToCell = function (pid, pt) {
 
 VisibilityMap.prototype.clearCells = function () {
   for (var i = 0; i < this.data.length; i++) {
-    this.data[i] = 0;
+    // TODO HACK XXX REMOVE ME
+    this.data[i] = 1;
   }
 }
+
+VisibilityMap.prototype.getGridDim = function () {
+  return this.cellDims;
+};
 
 VisibilityMap.prototype.getRawData = function () {
   return this.data;

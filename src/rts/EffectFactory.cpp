@@ -117,8 +117,7 @@ void add_jseffect(const std::string &name, v8::Handle<v8::Object> params) {
   // TODO(zack): this should be a param passed to this function
   float t = Renderer::get()->getGameTime();
 
-  auto *script = Game::get()->getScript();
-  auto json_params = script->jsToJSON(params);
+  auto json_params = jsToJSON(params);
   if (name == "teleport") {
     glm::vec3 start = glm::vec3(toVec2(json_params["start"]), 0.5f);
     glm::vec3 end = glm::vec3(toVec2(json_params["end"]), 0.5f);

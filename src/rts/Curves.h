@@ -51,7 +51,7 @@ void Curve<T>::addKeyframe(float t, const T &val) {
 template<typename T>
 T Curve<T>::linearSample(float t) const {
   invariant(t >= 0, "only non-negative times allowed");
-  if (t > data_.back().t) {
+  if (t >= data_.back().t) {
     return data_.back().val;
   }
   // need two samples at t0 and t1 such that t0 < t < t1
