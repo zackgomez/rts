@@ -69,6 +69,7 @@ static Handle<Value> getPathingBinding() {
 static Handle<Value> jsRuntimeBinding(const Arguments &args) {
   invariant(args.Length() == 1, "value runtime.binding(string name)");
   HandleScope scope(args.GetIsolate());
+  LOG(DEBUG) << "isolate addr: " << args.GetIsolate() << '\n';
 
   auto name = Handle<String>::Cast(args[0]);
   auto binding_map = GameScript::getActiveGameScript()->getBindings();
