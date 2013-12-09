@@ -16,7 +16,6 @@ var EntityDefs = require('EntityDefs');
 var EntityStates = require('EntityStates');
 var MessageHub = require('MessageHub');
 var Game = require('game');
-var Pathing = require('Pathing');
 var Vector = require('Vector');
 var Weapons = require('Weapons');
 

@@ -1,8 +1,7 @@
-/*
 var invariant = require('invariant').invariant;
 var VisibilityMap = require('Visibility').VisibilityMap;
 
-var NativeUI = runtime.binding('native_ui');
+var NativeUI = runtime.binding('nativeui');
 
 var UI = function () {
   this.initialized = false;
@@ -29,11 +28,6 @@ var UI = function () {
 
 var main = function () {
   return new UI();
-}
-*/
-
-var main = function () {
-  return undefined;
 }
 
 module.exports = main;

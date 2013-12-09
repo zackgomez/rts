@@ -16,6 +16,12 @@ namespace rts {
 
 static const std::string BOOTSTRAP_FILE = "jscore/bootstrap.js";
 
+GameScript *GameScript::getActiveGameScript() {
+  auto isolate = Isolate::GetCurrent();
+  invariant(isolate, "must have active isolate");
+  return (GameScript *)isolate->GetData();
+}
+
 void jsFail(const v8::TryCatch &try_catch, const std::string &msg) {
   LOG(ERROR) << msg << " "
     << *String::AsciiValue(try_catch.Exception()) << '\n'
@@ -63,10 +69,9 @@ static Handle<Value> getPathingBinding() {
 static Handle<Value> jsRuntimeBinding(const Arguments &args) {
   invariant(args.Length() == 1, "value runtime.binding(string name)");
   HandleScope scope(args.GetIsolate());
-  LOG(DEBUG) << "isolate addr: " << args.GetIsolate() << '\n';
 
   auto name = Handle<String>::Cast(args[0]);
-  auto binding_map = Game::get()->getScript()->getBindings();
+  auto binding_map = GameScript::getActiveGameScript()->getBindings();
   invariant(
     binding_map->Has(args[0]),
     std::string("unknown binding ") + *String::AsciiValue(name));
@@ -106,8 +111,7 @@ static Handle<Value> jsResolveCollisions(const Arguments &args) {
       args.Length() == 3,
       "resolveCollisions(map<key, objecy> bodies, float dt, func callback): void");
   HandleScope scope(args.GetIsolate());
-  auto script = Game::get()->getScript();
-  auto global = script->getContext()->Global();
+  auto global = Context::GetCalling()->Global();
 
   auto pos_str = String::New("pos");
   auto size_str = String::New("size");
@@ -193,6 +197,7 @@ v8::Persistent<v8::Value> GameScript::init(const std::string &main_module_name) 
   isolate_ = Isolate::New();
   Locker locker(isolate_);
   isolate_->Enter();
+  isolate_->SetData(this);
 
   HandleScope handle_scope(isolate_);
   TryCatch try_catch;
@@ -221,7 +226,7 @@ v8::Persistent<v8::Value> GameScript::init(const std::string &main_module_name) 
       String::New("renderer"),
       getRendererBinding());
   jsBindings_->Set(
-      String::New("native_ui"),
+      String::New("nativeui"),
       getNativeUIBinding());
 
   // set up runtime object

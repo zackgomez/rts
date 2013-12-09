@@ -18,6 +18,7 @@ v8::Handle<v8::Array> vec2ToJS(const glm::vec2 &v);
 
 class GameScript {
 public:
+  static GameScript *getActiveGameScript();
   GameScript();
   ~GameScript();
 
