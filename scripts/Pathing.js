@@ -11,7 +11,7 @@ _.mixin({ mapValues: function (obj, f_val) {
 
 var binding = runtime.binding('pathing');
 var resolveCollisions = binding.resolveCollisions;
-var computePath = binding.computePath;
+var computePath = function (a, b) { return [b] }
 
 var update_body = function (body, dt) {
   var movement_intent = body.getMovementIntent();
