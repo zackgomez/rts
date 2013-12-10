@@ -110,8 +110,7 @@ void Game::start() {
       init_ret->IsObject(),
       "expected js main function to return object");
   gameObject_ = Persistent<Object>::Cast(init_ret);
-  v8::Locker locker(script_.getIsolate());
-  v8::Context::Scope context_scope(script_.getContext());
+  ENTER_GAMESCRIPT(&script_);
   
   HandleScope scope(script_.getIsolate());
 
@@ -163,8 +162,7 @@ void Game::start() {
 }
 
 void Game::update(float dt) {
-  v8::Locker locker(script_.getIsolate());
-  v8::Context::Scope context_scope(script_.getContext());
+  ENTER_GAMESCRIPT(&script_);
   v8::HandleScope scope(script_.getIsolate());
 
   // First update players

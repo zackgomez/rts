@@ -16,6 +16,10 @@ glm::vec3 jsToVec3(const v8::Handle<v8::Array> js);
 v8::Handle<v8::Array> vec2ToJS(const glm::vec2 &v);
 
 
+#define ENTER_GAMESCRIPT(script) \
+  v8::Locker locker((script)->getIsolate()); \
+  v8::Context::Scope context_scope((script)->getContext());
+
 class GameScript {
 public:
   static GameScript *getActiveGameScript();

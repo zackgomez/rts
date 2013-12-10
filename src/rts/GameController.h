@@ -3,13 +3,13 @@
 
 #include "rts/Controller.h"
 #include <GL/glew.h>
+#include "rts/GameScript.h"
 #include "rts/UIAction.h"
 
 namespace rts {
 
 class LocalPlayer;
 class GameEntity;
-class GameScript;
 struct UIAction;
 
 struct MapHighlight {
@@ -37,6 +37,8 @@ class GameController : public Controller {
   // Accessors
   // returns glm::vec4(HUGE_VAL) for no rect, or glm::vec4(start, end)
   glm::vec4 getDragRect() const;
+  // GameController takes ownership of the data
+  void setVisibilityData(void *data, size_t len);
 
  protected:
   virtual void frameUpdate(float dt) override;
@@ -48,6 +50,7 @@ class GameController : public Controller {
   //
   LocalPlayer *player_;
   GameScript *gameScript_;
+  v8::Persistent<v8::Object> jsController_;
 
   std::string state_;
   std::string order_;
@@ -70,6 +73,8 @@ class GameController : public Controller {
   glm::vec2 cameraPanDir_;
   float zoom_;
 
+  void *visData_;
+  size_t visDataLength_;
   GLuint visTex_;
 
   void minimapUpdateCamera(const glm::vec2 &screenCoord);

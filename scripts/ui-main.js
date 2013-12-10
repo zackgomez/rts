@@ -1,3 +1,4 @@
+var must_have_idx = require('must_have_idx');
 var invariant = require('invariant').invariant;
 var VisibilityMap = require('Visibility').VisibilityMap;
 
@@ -8,10 +9,15 @@ var UI = function () {
   this.visibilityMap = null;
 
   this.init = function (params) {
+    Log('init yoooo!');
     invariant(this.initialized === false, 'ui already initialized');
     this.initialized = true;
+    var map_def = {
+      origin: [0, 0],
+      size: must_have_idx(params, 'map_size'),
+    };
     this.visibilityMap = new VisibilityMap(
-      must_have_idx(params, 'map_size'),
+      map_def,
       must_have_idx(params, 'num_players')
     );
 

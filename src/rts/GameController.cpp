@@ -90,6 +90,8 @@ GameController::GameController(LocalPlayer *player)
     leftDragMinimap_(false),
     renderNavMesh_(false),
     state_(PlayerState::DEFAULT),
+    visData_(nullptr),
+    visDataLength_(0),
     zoom_(0.f),
     order_(),
     action_() {
@@ -99,8 +101,36 @@ GameController::GameController(LocalPlayer *player)
 GameController::~GameController() {
 }
 
+void call_js_controller_init(v8::Persistent<v8::Object> controller) {
+  using namespace v8;
+  HandleScope handle_scope;
+  TryCatch try_catch;
+  auto js_init_func = controller->Get(v8::String::New("init"));
+  invariant(
+    js_init_func->IsFunction(),
+    "must have jsController init func");
+  auto jsparams = v8::Object::New();
+  jsparams->Set(
+    v8::String::New("num_players"),
+    v8::Integer::New(Game::get()->getPlayers().size()));
+  jsparams->Set(
+    v8::String::New("map_size"),
+    vec2ToJS(Game::get()->getMap()->getSize()));
+  const int argc = 1;
+  v8::Handle<v8::Value> argv[] = {
+    jsparams,
+  };
+  auto js_ret = v8::Handle<v8::Function>::Cast(js_init_func)
+    ->Call(controller, argc, argv);
+  checkJSResult(js_ret, try_catch, "js controller init");
+}
+
 void GameController::onCreate() {
-  gameScript_->init("ui-main");
+  auto js_init_ret = gameScript_->init("ui-main");
+  jsController_ = v8::Persistent<v8::Object>::Cast(js_init_ret);
+  ENTER_GAMESCRIPT(gameScript_);
+  call_js_controller_init(jsController_);
+
   grab_mouse();
   // TODO(zack): delete texture
   glGenTextures(1, &visTex_);
@@ -260,6 +290,7 @@ void GameController::onDestroy() {
   Renderer::get()->setEntityOverlayRenderer(Renderer::EntityOverlayRenderer());
   getUI()->clearWidgets();
   glDeleteTextures(1, &visTex_);
+  
 }
 
 glm::vec4 GameController::getTeamColor(const id_t tid) const {
@@ -1108,6 +1139,11 @@ void GameController::updateMapShader(Shader *shader) const {
   glActiveTexture(GL_TEXTURE0);
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, visTex_);
+}
+void GameController::setVisibilityData(void *data, size_t len) {
+  invariant(data == nullptr, "cannot set visibility data twice");
+  visData_ = data;
+  visDataLength_ = len;
 }
 
 void GameController::handleUIAction(const UIAction &action) {
