@@ -139,13 +139,10 @@ void set_working_directory(int argc, char **argv) {
 	fs::path full_path = fs::system_complete(fs::path(argv[0]));
 	auto exec_dir = full_path.branch_path();
 	fs::current_path(exec_dir);
-  fs::path bundle_marker_path("bundle_marker");
-	if (fs::exists(bundle_marker_path)) {
-		// In bundle.app/Contents/MacOS
-		// going to bundle.app/Contents/Resources
-		auto resource_path = exec_dir/fs::path("../Resources");
-		fs::current_path(resource_path);
-	}
+	// In bundle.app/Contents/MacOS
+	// going to bundle.app/Contents/Resources
+	auto resource_path = exec_dir/fs::path("../Resources");
+	fs::current_path(resource_path);
 #endif
 }
 

@@ -18,6 +18,7 @@
 #include "common/ParamReader.h"
 #include "common/util.h"
 #include "rts/ResourceManager.h"
+#define STBI_HEADER_FILE_ONLY
 #include "stb_image.c"
 
 static bool initialized = false;
