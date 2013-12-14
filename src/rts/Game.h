@@ -35,9 +35,6 @@ class Game {
   const Map * getMap() const {
     return map_;
   }
-  tick_t getTick() const {
-    return tick_;
-  }
   float getElapsedTime() const {
     return elapsedTime_;
   }
@@ -51,8 +48,7 @@ class Game {
   // Can possibly block, but should never block long
   void addAction(id_t pid, const PlayerAction &act);
 
-  void destroyEntity(id_t eid);
-  GameEntity * getEntity(id_t eid);
+  const GameEntity * getEntity(id_t id) const;
   const GameEntity * getEntity(const std::string &game_id) const;
   const GameEntity * findEntity(std::function<bool(const GameEntity *)> f) const;
   const Player * getPlayer(id_t pid) const;
@@ -80,7 +76,6 @@ class Game {
   std::map<id_t, float> requisition_;
   // tid => float
   std::map<id_t, float> victoryPoints_;
-  tick_t tick_;
   float elapsedTime_;
 
   GameScript script_;
