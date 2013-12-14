@@ -14,7 +14,6 @@
       '../src',
       '../lib/glm',
       '../lib/v8/include',
-      '../lib/assimp/include',
       '../lib/glfw-3.0.1/include',
       '../lib/jsoncpp',
       '../lib/stb_truetype',
