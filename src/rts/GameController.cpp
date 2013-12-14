@@ -1029,7 +1029,7 @@ void renderEntity(
   auto transform = glm::translate(glm::mat4(1.f), pos);
   record_section("renderActorInfo");
   // TODO(zack): only render for actors currently on screen/visible
-  auto entitySize = e->getSize();
+  auto entitySize = e->getSize2(t);
   auto circleTransform = glm::scale(
       glm::translate(
         transform,
@@ -1050,7 +1050,7 @@ void renderEntity(
   }
 
   glDisable(GL_DEPTH_TEST);
-  glm::vec3 placardPos(0.f, 0.f, e->getHeight() + 0.50f);
+  glm::vec3 placardPos(0.f, 0.f, e->getHeight(t) + 0.50f);
   auto ndc = getProjectionStack().current() * getViewStack().current()
     * transform * glm::vec4(placardPos, 1.f);
   ndc /= ndc.w;

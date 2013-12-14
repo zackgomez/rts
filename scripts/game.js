@@ -243,16 +243,20 @@ exports.render = function () {
     }
 
     var render_id = render_entity.getID();
+    var entity_def = game_entity.getDefinition();
+    // non curve data
     render_entity.eid = eid;
     render_entity.setGameID(eid);
-    var entity_def = game_entity.getDefinition();
     if (entity_def.model) {
       render_entity.setModel(entity_def.model);
     }
-    render_entity.setSize(game_entity.getSize());
-    render_entity.setHeight(game_entity.getHeight());
     render_entity.setProperties(game_entity.properties_);
-    render_entity.setSight(game_entity.getSight());
+
+    var size2 = game_entity.getSize();
+    var size3 = [size2[0], size2[1], game_entity.getHeight()];
+    Log(JSON.stringify(size3));
+    render_entity.setSize(elapsed_time, size3);
+    render_entity.setSight(elapsed_time, game_entity.getSight());
 
     render_entity.setPosition2(elapsed_time, game_entity.getPosition2());
     render_entity.setAngle(elapsed_time, game_entity.getAngle());
@@ -260,7 +264,7 @@ exports.render = function () {
     var ui_info = game_entity.getUIInfo();
     render_entity.setUIInfo(elapsed_time, ui_info);
     var actions = game_entity.getActions();
-    render_entity.setActions(actions);
+    render_entity.setActions(elapsed_time, actions);
 
     render_entity.setVisible(elapsed_time, game_entity.getVisibilitySet());
 

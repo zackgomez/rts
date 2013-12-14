@@ -43,13 +43,13 @@ void Map::init() {
     glm::vec2 pos = toVec2(collision_object_def["pos"]);
     glm::vec2 size = toVec2(collision_object_def["size"]);
     ModelEntity *obj = new ModelEntity(eid);
-    obj->setSize(size);
+    obj->setSize(0.f, glm::vec3(size, 0.f));
     obj->setPosition(0.f, glm::vec3(pos, 0.1f));
     obj->setAngle(0.f, collision_object_def["angle"].asFloat());
 
     unpathable.push_back(std::make_tuple(pos, size));
 
-    obj->setScale(glm::vec3(2.f*obj->getSize(), 1.f));
+    obj->setScale(glm::vec3(2.f*size, 1.f));
     // TODO(zack): could be prettier than just a square
     obj->setModelName("square");
     Renderer::get()->spawnEntity(obj);

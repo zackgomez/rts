@@ -59,8 +59,9 @@ RenderFunction makeTextureBelowEffect(
 			return false;
 		}
 
-		auto entityPos = entity->getPosition(Renderer::get()->getGameTime());
-		auto entitySize = entity->getSize();
+    const float t = Renderer::get()->getGameTime();
+		auto entityPos = entity->getPosition(t);
+		auto entitySize = entity->getSize2(t);
 		auto transform =
 			glm::scale(
 				glm::translate(
@@ -77,8 +78,9 @@ RenderFunction makeTextureBelowEffect(
 Effect * makeOnDamageEffect(
     const ModelEntity *e,
     float amount) {
-  glm::vec3 pos = e->getPosition(Renderer::get()->getGameTime())
-    + glm::vec3(0.f, 0.f, e->getHeight());
+  const float t = Renderer::get()->getGameTime();
+  glm::vec3 pos = e->getPosition(t)
+    + glm::vec3(0.f, 0.f, e->getHeight(t));
   glm::vec3 dir = glm::normalize(glm::vec3(
         frand() * 2.f - 1.f,
         frand() * 2.f - 1.f,
