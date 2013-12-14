@@ -163,7 +163,6 @@ exports.update = function (player_inputs, dt) {
     }
 
     // send to each ordered entity
-    Log(JSON.stringify(input));
     var id_arr = must_have_idx(input, 'entity');
     for (var j = 0; j < id_arr.length; j++) {
       var entity = entities[id_arr[j]];

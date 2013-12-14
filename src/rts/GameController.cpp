@@ -312,7 +312,7 @@ void GameController::renderExtra(float dt) {
   renderHighlights(highlights_, dt);
 
   if (!action_.name.empty()) {
-    GameEntity *e = Game::get()->getEntity(action_.render_id);
+    const GameEntity *e = Game::get()->getEntity(action_.render_id);
     invariant(e, "Unable to find action owner");
 
     float t = Renderer::get()->getGameTime();

@@ -15,7 +15,6 @@ Game* Game::instance_ = nullptr;
 Game::Game(Map *map, const std::vector<Player *> &players)
   : map_(map),
     players_(players),
-    tick_(0),
     elapsedTime_(0.f),
     running_(true) {
   std::set<int> team_ids;
@@ -112,16 +111,17 @@ void Game::update(float dt) {
         jsonToJS(action));
 
   }
-  // TODO(zack): fill js_player_inputs with player actions here
+  actions_.clear();
   // Allow more actions
   actionLock.unlock();
 
-  auto engine_lock = Renderer::get()->lockEngine();
-
   // Update javascript, passing player input
   updateJS(js_player_inputs, dt);
+
   // Synchronize with JS about resources/vps/etc
+  auto engine_lock = Renderer::get()->lockEngine();
   renderJS();
+  engine_lock.unlock();
 
   // TODO(zack): move this win condition into JS
   // Check to see if this player has won
@@ -134,12 +134,6 @@ void Game::update(float dt) {
       running_ = false;
     }
   }
-
-  // unlock entities automatically when lock goes out of scope
-  // Next tick
-  tick_++;
-
-  // unlock game automatically when lock goes out of scope
 }
 
 void Game::addAction(id_t pid, const PlayerAction &act) {
@@ -160,11 +154,7 @@ void Game::addAction(id_t pid, const PlayerAction &act) {
   }
 }
 
-void Game::destroyEntity(id_t eid) {
-  Renderer::get()->removeEntity(eid);
-}
-
-GameEntity * Game::getEntity(id_t eid) {
+const GameEntity * Game::getEntity(id_t eid) const {
   auto entities = Renderer::get()->getEntities();
   auto it = entities.find(eid);
   if (it == entities.end() || !it->second->hasProperty(GameEntity::P_GAMEENTITY)) {
@@ -222,7 +212,7 @@ float Game::getRequisition(id_t pid) const {
 // Reconcile javascript state with engine state
 void Game::renderJS() {
   using namespace v8;
-  auto script = Game::get()->getScript();
+  auto script = &script_;
   HandleScope scope(script->getIsolate());
   TryCatch try_catch;
   auto game_object = getGameObject();
