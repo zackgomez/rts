@@ -1,9 +1,6 @@
 #include "rts/Game.h"
 #include <algorithm>
 #include <sstream>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/uniform_real.hpp>
-#include <boost/random/variate_generator.hpp>
 #include "common/ParamReader.h"
 #include "common/util.h"
 #include "rts/GameEntity.h"
@@ -13,29 +10,6 @@
 
 namespace rts {
 
-class GameRandom {
-public:
-  GameRandom(uint32_t seed)
-    : generator_(seed),
-      uni_(generator_, boost::uniform_real<>(0,1)),
-      last_(0.f) {
-  }
-
-  float randomFloat() {
-    return (last_ = uni_());
-  }
-  float getLastValue() {
-    return last_;
-  }
-
-private:
-  typedef boost::mt19937 base_generator_type;
-
-  base_generator_type generator_;
-  boost::variate_generator<base_generator_type&, boost::uniform_real<>> uni_;
-  float last_;
-};
-
 Game* Game::instance_ = nullptr;
 
 Game::Game(Map *map, const std::vector<Player *> &players)
@@ -44,7 +18,6 @@ Game::Game(Map *map, const std::vector<Player *> &players)
     tick_(0),
     elapsedTime_(0.f),
     running_(true) {
-  random_ = new GameRandom(45); // TODO(zack): pass in seed
   std::set<int> team_ids;
   for (auto player : players) {
     player->setGame(this);
@@ -69,7 +42,6 @@ Game::Game(Map *map, const std::vector<Player *> &players)
 }
 
 Game::~Game() {
-  delete random_;
   delete map_;
   instance_ = nullptr;
 
@@ -168,10 +140,6 @@ void Game::update(float dt) {
   tick_++;
 
   // unlock game automatically when lock goes out of scope
-}
-
-float Game::gameRandom() {
-  return random_->randomFloat();
 }
 
 void Game::addAction(id_t pid, const PlayerAction &act) {

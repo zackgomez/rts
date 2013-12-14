@@ -111,8 +111,8 @@ module.exports = {
 
   randDir2: function () {
     var vec = [
-      (GameRandom() - 0.5) * 2,
-      (GameRandom() - 0.5) * 2,
+      (Math.random() - 0.5) * 2,
+      (Math.random() - 0.5) * 2,
     ];
     return this.normalize(vec);
   },

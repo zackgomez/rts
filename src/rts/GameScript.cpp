@@ -80,10 +80,6 @@ static void jsRuntimeBinding(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(scope.Close(binding_map->Get(name)));
 }
 
-static void jsGameRandom(const FunctionCallbackInfo<Value> &args) {
-  args.GetReturnValue().Set(Number::New(Game::get()->gameRandom()));
-}
-
 static void jsLog(const FunctionCallbackInfo<Value> &args) {
   HandleScope scope(args.GetIsolate());
   for (int i = 0; i < args.Length(); i++) {
@@ -228,9 +224,6 @@ v8::Local<v8::Value> GameScript::init(const std::string &main_module_name) {
   global->Set(
       String::New("Log"),
       FunctionTemplate::New(jsLog));
-  global->Set(
-      String::New("GameRandom"),
-      FunctionTemplate::New(jsGameRandom));
 
   context_.Reset(isolate_, Context::New(isolate_, nullptr, global));
   Context::Scope context_scope(isolate_, context_);
