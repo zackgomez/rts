@@ -18,7 +18,6 @@ namespace rts {
 class Map;
 class Player;
 struct ChatMessage;
-class GameRandom;
 
 // Handles the game logic and player actions, is very multithread aware.
 class Game {
@@ -67,9 +66,6 @@ class Game {
     chatListener_ = cl;
   }
 
-  // Returns a value [0, 1), should be the same across all clients
-  float gameRandom();
-
  private:
   void updateJS(v8::Handle<v8::Array> player_inputs, float dt);
   // Load the victory points from JS.
@@ -92,7 +88,6 @@ class Game {
   bool running_;
 
   ChatListener chatListener_;
-  GameRandom *random_;
 
   v8::Persistent<v8::Object> gameObject_;
 

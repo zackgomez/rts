@@ -79,10 +79,6 @@ static Handle<Value> jsRuntimeBinding(const Arguments &args) {
   return scope.Close(binding_map->Get(name));
 }
 
-static Handle<Value> jsGameRandom(const Arguments &args) {
-  return Number::New(Game::get()->gameRandom());
-}
-
 static Handle<Value> jsLog(const Arguments &args) {
   HandleScope scope(args.GetIsolate());
   for (int i = 0; i < args.Length(); i++) {
@@ -208,9 +204,6 @@ v8::Persistent<v8::Value> GameScript::init(const std::string &main_module_name) 
   global->Set(
       String::New("Log"),
       FunctionTemplate::New(jsLog));
-  global->Set(
-      String::New("GameRandom"),
-      FunctionTemplate::New(jsGameRandom));
 
   context_.Reset(isolate_, Context::New(isolate_, nullptr, global));
   Context::Scope context_scope(isolate_, context_);
