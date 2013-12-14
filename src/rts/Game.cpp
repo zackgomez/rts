@@ -42,9 +42,7 @@ Game::Game(Map *map, const std::vector<Player *> &players)
   : map_(map),
     players_(players),
     tick_(0),
-    tickOffset_(2),
     elapsedTime_(0.f),
-    paused_(true),
     running_(true) {
   random_ = new GameRandom(45); // TODO(zack): pass in seed
   std::set<int> team_ids;
@@ -77,15 +75,6 @@ Game::~Game() {
 
 }
 
-bool Game::updatePlayers() {
-  for (auto player : players_) {
-    if (!player->isReady()) {
-      return false;
-    }
-  }
-  return true;
-}
-
 v8::Handle<v8::Object> Game::getGameObject() {
   auto obj = script_.getInitReturn();
   invariant(
@@ -95,10 +84,6 @@ v8::Handle<v8::Object> Game::getGameObject() {
 }
 
 void Game::start() {
-  // Lock the player update
-  auto lock = std::unique_lock<std::mutex>(actionMutex_);
-  pause();
-
   using namespace v8;
   auto init_ret = script_.init("game-main");
   ENTER_GAMESCRIPT(&script_);
@@ -137,83 +122,25 @@ void Game::start() {
   // Initialize map
   map_->init();
 
-  // Queue up offset number of 'done' frames
-  for (tick_ = -tickOffset_; tick_ < 0; tick_++) {
-    LOG(INFO) << "Running sync tick " << tick_ << '\n';
-    for (auto player : players_) {
-      player->startTick(tick_);
-    }
-  }
-
   Renderer::get()->setGameTime(elapsedTime_);
-  // Game is ready to go!
-  unpause();
 }
 
 void Game::update(float dt) {
   ENTER_GAMESCRIPT(&script_);
 
-  // First update players
-  // TODO(zack): less hacky dependence on paused_
-  if (!paused_) {
-    for (auto player : players_) {
-      player->startTick(tick_);
-    }
-  }
-
-  // If all the players aren't ready, we can't continue
-  bool playersReady = updatePlayers();
-  if (!playersReady) {
-    LOG(WARN) << "Not all players ready for tick " << tick_ << '\n';
-    pause();
-    return;
-  }
-  paused_ = false;
-  unpause();
-
   elapsedTime_ += dt;
 
   // Don't allow new actions during this time
   std::unique_lock<std::mutex> actionLock(actionMutex_);
-
   // Do actions
-  // It MUST be true that all players have added exactly one action of type
-  // none targetting this frame
   auto js_player_inputs = v8::Array::New();
-  for (auto &player : players_) {
-    id_t pid = player->getPlayerID();
-    auto actions = player->getActions();
-    std::vector<Json::Value> orders;
+  for (const auto action : actions_) {
+    js_player_inputs->Set(
+        js_player_inputs->Length(),
+        jsonToJS(action));
 
-    bool done = false;
-    for (const auto &action : actions) {
-      invariant(!done, "Action after DONE message??");
-      if (action["type"] == ActionTypes::DONE) {
-        done = true;
-        invariant(
-            toTick(action["tick"]) == (tick_ - tickOffset_),
-            "tick mismatch");
-      } else if (action["type"] == ActionTypes::LEAVE_GAME) {
-        running_ = false;
-        return;
-      } else if (action["type"] == ActionTypes::CHAT) {
-        invariant(action.isMember("chat"), "malformed CHAT action");
-        if (chatListener_) {
-          chatListener_(pid, action);
-        }
-      } else if (action["type"] == ActionTypes::ORDER) {
-        invariant(action.isMember("order"), "malformed ORDER action");
-        Json::Value order = action["order"];
-        order["from_pid"] = toJson(pid);
-        js_player_inputs->Set(
-            js_player_inputs->Length(),
-            jsonToJS(order));
-      } else {
-        invariant_violation("unknown action type" + action["type"].asString());
-      }
-    }
-    invariant(done, "Missing DONE message for player");
   }
+  // TODO(zack): fill js_player_inputs with player actions here
   // Allow more actions
   actionLock.unlock();
 
@@ -223,13 +150,6 @@ void Game::update(float dt) {
   updateJS(js_player_inputs, dt);
   // Synchronize with JS about resources/vps/etc
   renderJS();
-
-  std::vector<GameEntity *> entities;
-  for (auto it : Renderer::get()->getEntities()) {
-    if (it.second->hasProperty(GameEntity::P_GAMEENTITY)) {
-      entities.push_back((GameEntity *)it.second);
-    }
-  }
 
   // TODO(zack): move this win condition into JS
   // Check to see if this player has won
@@ -260,9 +180,15 @@ void Game::addAction(id_t pid, const PlayerAction &act) {
       "malformed player action" + act.toStyledString());
   invariant(getPlayer(pid), "action from unknown player");
 
-  // Broadcast action to all players
-  for (auto& player : players_) {
-    player->playerAction(pid, act);
+  if (act["type"] == ActionTypes::ORDER) {
+    std::unique_lock<std::mutex> lock(actionMutex_);
+    auto order = must_have_idx(act, "order");
+    order["from_pid"] = toJson(pid);
+    actions_.push_back(order);
+  } else if (act["type"] == ActionTypes::LEAVE_GAME) {
+    running_ = false;
+  } else {
+    invariant_violation(std::string("Unknown action type ") + act["type"].asString());
   }
 }
 
@@ -381,15 +307,5 @@ void Game::updateJS(v8::Handle<v8::Array> player_inputs, float dt) {
     Handle<Function>::Cast(game_object->Get(String::New("update")))
     ->Call(game_object, argc, argv);
   checkJSResult(ret, try_catch, "update:");
-}
-
-void Game::pause() {
-  paused_ = true;
-  Renderer::get()->setTimeMultiplier(0.f);
-}
-
-void Game::unpause() {
-  paused_ = false;
-  Renderer::get()->setTimeMultiplier(1.f);
 }
 };  // rts

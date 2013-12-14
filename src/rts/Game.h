@@ -42,9 +42,6 @@ class Game {
   float getElapsedTime() const {
     return elapsedTime_;
   }
-  bool isPaused() const {
-    return paused_;
-  }
   bool isRunning() const {
     return running_;
   }
@@ -74,10 +71,6 @@ class Game {
   float gameRandom();
 
  private:
-  // Returns true if all the players have submitted input for the current tick_
-  bool updatePlayers();
-  void pause();
-  void unpause();
   v8::Handle<v8::Object> getGameObject();
 
   void updateJS(v8::Handle<v8::Array> player_inputs, float dt);
@@ -85,6 +78,7 @@ class Game {
   void renderJS();
 
   std::mutex actionMutex_;
+  std::vector<PlayerAction> actions_;
 
   Map *map_;
   std::vector<Player *> players_;
@@ -93,12 +87,10 @@ class Game {
   // tid => float
   std::map<id_t, float> victoryPoints_;
   tick_t tick_;
-  tick_t tickOffset_;
   float elapsedTime_;
 
   GameScript script_;
 
-  bool paused_;
   bool running_;
 
   ChatListener chatListener_;
