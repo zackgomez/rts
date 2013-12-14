@@ -101,9 +101,9 @@ GameController::GameController(LocalPlayer *player)
 GameController::~GameController() {
 }
 
-void call_js_controller_init(v8::Persistent<v8::Object> controller) {
+void call_js_controller_init(v8::Handle<v8::Object> controller) {
   using namespace v8;
-  HandleScope handle_scope;
+  HandleScope handle_scope(Isolate::GetCurrent());
   TryCatch try_catch;
   auto js_init_func = controller->Get(v8::String::New("init"));
   invariant(
@@ -125,11 +125,14 @@ void call_js_controller_init(v8::Persistent<v8::Object> controller) {
   checkJSResult(js_ret, try_catch, "js controller init");
 }
 
+  v8::Handle<v8::Object> GameController::getJSController() {
+    return v8::Handle<v8::Object>::Cast(gameScript_->getInitReturn());
+  }
+
 void GameController::onCreate() {
-  auto js_init_ret = gameScript_->init("ui-main");
-  jsController_ = v8::Persistent<v8::Object>::Cast(js_init_ret);
+  gameScript_->init("ui-main");
   ENTER_GAMESCRIPT(gameScript_);
-  call_js_controller_init(jsController_);
+  call_js_controller_init(getJSController());
 
   grab_mouse();
   // TODO(zack): delete texture
@@ -451,8 +454,7 @@ std::string GameController::getCursorTexture() const {
   return texname;
 }
 
-void GameController::frameUpdate(float dt) {
-  float t = Renderer::get()->getGameTime();
+void GameController::updateVisibility(float t) {
   for (auto &pair : Renderer::get()->getEntities()) {
     auto *entity = pair.second;
     if (!entity->hasProperty(GameEntity::P_GAMEENTITY)) {
@@ -462,6 +464,25 @@ void GameController::frameUpdate(float dt) {
     game_entity->setVisible(
         game_entity->isVisibleTo(t, player_->getPlayerID()));
   }
+
+  for (int i = 0; i < visDim_.x * visDim_.y; i++) {
+    if (((char *)visData_)[i] != 0) {
+      break;
+    }
+  }
+  size_t len = visDim_.x * visDim_.y;
+  uint8_t *data = new uint8_t[len];
+  for (auto i = 0; i < len; i++) {
+    data[i] = 0;
+  }
+  glBindTexture(GL_TEXTURE_2D, visTex_);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, visDim_.x, visDim_.y, 0, GL_ALPHA, GL_UNSIGNED_BYTE, visData_);
+  delete[] data;
+}
+
+void GameController::frameUpdate(float dt) {
+  float t = Renderer::get()->getGameTime();
+  updateVisibility(t);
   // Remove done highlights
   for (size_t i = 0; i < highlights_.size(); ) {
     if (highlights_[i].remaining <= 0.f) {
@@ -1133,17 +1154,18 @@ void renderEntity(
 }
 
 void GameController::updateMapShader(Shader *shader) const {
-  // TODO fill visTex_
   shader->uniform1i("texture", 0);
 
   glActiveTexture(GL_TEXTURE0);
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, visTex_);
 }
-void GameController::setVisibilityData(void *data, size_t len) {
-  invariant(data == nullptr, "cannot set visibility data twice");
+
+void GameController::setVisibilityData(void *data, size_t len, const glm::ivec2 &dim) {
+  invariant(visData_ == nullptr, "cannot set visibility data twice");
   visData_ = data;
   visDataLength_ = len;
+  visDim_ = dim;
 }
 
 void GameController::handleUIAction(const UIAction &action) {

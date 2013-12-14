@@ -93,6 +93,7 @@ class Game {
   TickChecksum checksum();
   void pause();
   void unpause();
+  v8::Handle<v8::Object> getGameObject();
 
   void updateJS(v8::Handle<v8::Array> player_inputs, float dt);
   // Load the victory points from JS.
@@ -122,8 +123,6 @@ class Game {
 
   ChatListener chatListener_;
   GameRandom *random_;
-
-  v8::Persistent<v8::Object> gameObject_;
 
   static Game *instance_;
 };

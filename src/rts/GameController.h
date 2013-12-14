@@ -38,7 +38,10 @@ class GameController : public Controller {
   // returns glm::vec4(HUGE_VAL) for no rect, or glm::vec4(start, end)
   glm::vec4 getDragRect() const;
   // GameController takes ownership of the data
-  void setVisibilityData(void *data, size_t len);
+  void setVisibilityData(void *data, size_t len, const glm::ivec2 &dim);
+  GLuint getVisibilityTexture() const {
+    return visTex_;
+  }
 
  protected:
   virtual void frameUpdate(float dt) override;
@@ -50,7 +53,6 @@ class GameController : public Controller {
   //
   LocalPlayer *player_;
   GameScript *gameScript_;
-  v8::Persistent<v8::Object> jsController_;
 
   std::string state_;
   std::string order_;
@@ -75,8 +77,11 @@ class GameController : public Controller {
 
   void *visData_;
   size_t visDataLength_;
+  glm::ivec2 visDim_;
   GLuint visTex_;
 
+  v8::Handle<v8::Object> getJSController();
+  void updateVisibility(float t);
   void minimapUpdateCamera(const glm::vec2 &screenCoord);
   void handleUIAction(const UIAction &action);
   // returns null if no acceptable entity near click

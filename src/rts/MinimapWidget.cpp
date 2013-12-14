@@ -1,5 +1,6 @@
 #include "rts/MinimapWidget.h"
 #include "common/ParamReader.h"
+#include "rts/GameController.h"
 #include "rts/Game.h"
 #include "rts/Graphics.h"
 #include "rts/Player.h"
@@ -13,11 +14,6 @@ MinimapWidget::MinimapWidget(const std::string &name, id_t localPlayerID)
   : StaticWidget(name),
     localPlayerID_(localPlayerID),
     name_(name) {
-
-  glGenTextures(1, &visibilityTex_);
-  glBindTexture(GL_TEXTURE_2D, visibilityTex_);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
 MinimapWidget::~MinimapWidget() {
@@ -35,20 +31,19 @@ bool MinimapWidget::handleClick(const glm::vec2 &pos, int button) {
 
 void MinimapWidget::renderBase() {
   auto mapColor = Game::get()->getMap()->getColor();
+  auto tex = ((GameController*)Renderer::get()->getController())
+  ->getVisibilityTexture();
 
   auto shader = ResourceManager::get()->getShader("minimap");
   shader->makeActive();
   shader->uniform4f("color", mapColor);
-  shader->uniform1f("texture", 0);
   shader->uniform4f("texcoord", glm::vec4(0, 1, 1, 0));
-
-  // TODO(zack): fill visibilityTex_
-
+  shader->uniform1i("texture", 0);
   glActiveTexture(GL_TEXTURE0);
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, visibilityTex_);
-
+  glBindTexture(GL_TEXTURE_2D, tex);
   drawShaderCenter(getCenter(), getSize());
+  drawTexture(glm::vec2(200.f), glm::vec2(100.f), tex);
 }
 
 void MinimapWidget::render(float dt) {
@@ -57,7 +52,6 @@ void MinimapWidget::render(float dt) {
   // minimap so we can see the underlay image..
 
   // TODO(connor) support other aspect ratios so they don't stretch or distort
-
   // Render base image
   renderBase();
 

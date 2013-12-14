@@ -47,8 +47,7 @@ VisibilityMap.prototype.pointToCell = function (pid, pt) {
 
 VisibilityMap.prototype.clearCells = function () {
   for (var i = 0; i < this.data.length; i++) {
-    // TODO HACK XXX REMOVE ME
-    this.data[i] = 1;
+    this.data[i] = 0;
   }
 }
 

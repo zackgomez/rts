@@ -99,6 +99,14 @@ TickChecksum Game::checksum() {
   return ret;
 }
 
+v8::Handle<v8::Object> Game::getGameObject() {
+  auto obj = script_.getInitReturn();
+  invariant(
+    obj->IsObject(),
+    "expected js main function to return object");
+  return v8::Handle<v8::Object>::Cast(obj);
+}
+
 void Game::start() {
   // Lock the player update
   auto lock = std::unique_lock<std::mutex>(actionMutex_);
@@ -106,13 +114,9 @@ void Game::start() {
 
   using namespace v8;
   auto init_ret = script_.init("game-main");
-  invariant(
-      init_ret->IsObject(),
-      "expected js main function to return object");
-  gameObject_ = Persistent<Object>::Cast(init_ret);
   ENTER_GAMESCRIPT(&script_);
-  
-  HandleScope scope(script_.getIsolate());
+
+  auto game_object = getGameObject();
 
   Handle<Array> js_player_defs = Array::New();
   float starting_requisition = fltParam("global.startingRequisition");
@@ -139,8 +143,8 @@ void Game::start() {
     js_player_defs,
   };
   Handle<Function> game_init_method = Handle<Function>::Cast(
-      gameObject_->Get(String::New("init")));
-  auto ret = game_init_method->Call(gameObject_, argc, argv);
+      game_object->Get(String::New("init")));
+  auto ret = game_init_method->Call(game_object, argc, argv);
   checkJSResult(ret, try_catch, "Game.init:");
 
   // Initialize map
@@ -163,7 +167,6 @@ void Game::start() {
 
 void Game::update(float dt) {
   ENTER_GAMESCRIPT(&script_);
-  v8::HandleScope scope(script_.getIsolate());
 
   // First update players
   // TODO(zack): less hacky dependence on paused_
@@ -372,11 +375,12 @@ void Game::renderJS() {
   auto script = Game::get()->getScript();
   HandleScope scope(script->getIsolate());
   TryCatch try_catch;
+  auto game_object = getGameObject();
 
   Handle<Function> game_render_function = Handle<Function>::Cast(
-      gameObject_->Get(String::New("render")));
+      game_object->Get(String::New("render")));
   Handle<Value> js_render_result_ret =
-    game_render_function->Call(gameObject_, 0, nullptr);
+    game_render_function->Call(game_object, 0, nullptr);
   checkJSResult(js_render_result_ret, try_catch, "render");
   Handle<Object> js_render_result = Handle<Object>::Cast(js_render_result_ret);
 
@@ -409,7 +413,7 @@ void Game::updateJS(v8::Handle<v8::Array> player_inputs, float dt) {
   auto script = getScript();
   HandleScope scope(script->getIsolate());
   TryCatch try_catch;
-  auto global = script->getGlobal();
+  auto game_object = getGameObject();
 
   const int argc = 2;
   Handle<Value> argv[] = {
@@ -418,8 +422,8 @@ void Game::updateJS(v8::Handle<v8::Array> player_inputs, float dt) {
   };
 
   Handle<Value> ret =
-    Handle<Function>::Cast(gameObject_->Get(String::New("update")))
-    ->Call(global, argc, argv);
+    Handle<Function>::Cast(game_object->Get(String::New("update")))
+    ->Call(game_object, argc, argv);
   checkJSResult(ret, try_catch, "update:");
 }
 

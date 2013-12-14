@@ -9,7 +9,7 @@ using namespace rts;
 
 static Persistent<ObjectTemplate> entity_template;
 
-static Handle<Value> entitySetPosition2(const Arguments &args) {
+static void entitySetPosition2(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 2, "void setPosition2(float t, vec2 p)");
 
   HandleScope scope(args.GetIsolate());
@@ -25,10 +25,10 @@ static Handle<Value> entitySetPosition2(const Arguments &args) {
       js_pos->Get(Integer::New(1))->NumberValue());
   e->setPosition(t, new_pos);
 
-  return Undefined();
+  args.GetReturnValue().SetUndefined();
 }
 
-static Handle<Value> entitySetAngle(const Arguments &args) {
+static void entitySetAngle(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 2, "void setAngle(float t, float a)");
 
   HandleScope scope(args.GetIsolate());
@@ -38,10 +38,10 @@ static Handle<Value> entitySetAngle(const Arguments &args) {
 
   e->setAngle(args[0]->NumberValue(), args[1]->NumberValue());
 
-  return Undefined();
+  args.GetReturnValue().SetUndefined();
 }
 
-static Handle<Value> entitySetVisible(const Arguments &args) {
+static void entitySetVisible(const FunctionCallbackInfo<Value> &args) {
   invariant(
       args.Length() == 2,
       "void setVisible(float t, pid[] visibility_set)");
@@ -60,19 +60,19 @@ static Handle<Value> entitySetVisible(const Arguments &args) {
   }
   e->setVisibilitySet(t, set);
 
-  return Undefined();
+  args.GetReturnValue().SetUndefined();
 }
 
-static Handle<Value> entityGetID(const Arguments &args) {
+static void entityGetID(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 0, "int getID()");
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   GameEntity *e = static_cast<GameEntity *>(wrap->Value());
-  return scope.Close(Integer::New(e->getID()));
+  args.GetReturnValue().Set(scope.Close(Integer::New(e->getID())));
 }
 
-static Handle<Value> entitySetGameID(const Arguments &args) {
+static void entitySetGameID(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 1, "setGameID(string id)");
 
   HandleScope scope(args.GetIsolate());
@@ -81,10 +81,10 @@ static Handle<Value> entitySetGameID(const Arguments &args) {
   GameEntity *e = static_cast<GameEntity *>(wrap->Value());
 
   e->setGameID(*String::AsciiValue(args[0]->ToString()));
-  return Undefined();
+  args.GetReturnValue().SetUndefined();
 }
 
-static Handle<Value> entitySetModel(const Arguments &args) {
+static void entitySetModel(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 1, "setModel(string model)");
 
   HandleScope scope(args.GetIsolate());
@@ -93,10 +93,10 @@ static Handle<Value> entitySetModel(const Arguments &args) {
   GameEntity *e = static_cast<GameEntity *>(wrap->Value());
 
   e->setModelName(*String::AsciiValue(args[0]));
-  return Undefined();
+  args.GetReturnValue().SetUndefined();
 }
 
-static Handle<Value> entitySetSight(const Arguments &args) {
+static void entitySetSight(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 1, "setSetSight takes 1 arg");
 
   HandleScope scope(args.GetIsolate());
@@ -105,10 +105,10 @@ static Handle<Value> entitySetSight(const Arguments &args) {
   auto *e = static_cast<GameEntity *>(wrap->Value());
 
   e->setSight(args[0]->NumberValue());
-  return Undefined();
+  args.GetReturnValue().SetUndefined();
 }
 
-static Handle<Value> entitySetSize(const Arguments &args) {
+static void entitySetSize(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 1, "setSize takes 1 arg");
 
   HandleScope scope(args.GetIsolate());
@@ -120,10 +120,10 @@ static Handle<Value> entitySetSize(const Arguments &args) {
       Handle<Array>::Cast(args[0]));
   e->setSize(size);
 
-  return Undefined();
+  args.GetReturnValue().SetUndefined();
 }
 
-static Handle<Value> entitySetHeight(const Arguments &args) {
+static void entitySetHeight(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 1, "setHeight takes 1 arg");
 
   HandleScope scope(args.GetIsolate());
@@ -134,10 +134,10 @@ static Handle<Value> entitySetHeight(const Arguments &args) {
   float height = args[0]->NumberValue();
   e->setHeight(height);
 
-  return Undefined();
+  args.GetReturnValue().SetUndefined();
 }
 
-static Handle<Value> entitySetProperties(const Arguments &args) {
+static void entitySetProperties(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 1, "void entitySetProperties(array properties)");
 
   HandleScope scope(args.GetIsolate());
@@ -150,10 +150,10 @@ static Handle<Value> entitySetProperties(const Arguments &args) {
     e->addProperty(js_properties->Get(Integer::New(i))->IntegerValue());
   }
 
-  return Undefined();
+  args.GetReturnValue().SetUndefined();
 }
 
-static Handle<Value> entitySetActions(const Arguments &args) {
+static void entitySetActions(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 1, "void setAction(array actions)");
 
   HandleScope scope(args.GetIsolate());
@@ -195,10 +195,10 @@ static Handle<Value> entitySetActions(const Arguments &args) {
 
   e->setActions(actions);
 
-  return Undefined();
+  args.GetReturnValue().SetUndefined();
 }
 
-static Handle<Value> entitySetUIInfo(const Arguments &args) {
+static void entitySetUIInfo(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 1, "void setUIInfo(object ui_info)");
 
   HandleScope scope(args.GetIsolate());
@@ -294,13 +294,11 @@ static Handle<Value> entitySetUIInfo(const Arguments &args) {
 
   e->setUIInfo(ui_info);
 
-  return Undefined();
+  args.GetReturnValue().SetUndefined();
 }
 
-static Persistent<ObjectTemplate> make_entity_template() {
-  auto entity_template = Persistent<ObjectTemplate>::New(
-      Isolate::GetCurrent(),
-      ObjectTemplate::New());
+static Handle<ObjectTemplate> make_entity_template() {
+  auto entity_template = ObjectTemplate::New();
   entity_template->SetInternalFieldCount(1);
   entity_template->Set(
       String::New("getID"),
@@ -344,7 +342,12 @@ static Persistent<ObjectTemplate> make_entity_template() {
   return entity_template;
 }
 
-static Handle<Value> jsSpawnRenderEntity(const Arguments &args) {
+static Handle<ObjectTemplate> get_entity_template() {
+  invariant(!entity_template.IsEmpty(), "must have initialized entity template");
+  return Handle<ObjectTemplate>::New(Isolate::GetCurrent(), entity_template);
+}
+
+static void jsSpawnRenderEntity(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 0, "object spawnRenderEntity(void)");
   HandleScope scope(args.GetIsolate());
 
@@ -353,24 +356,24 @@ static Handle<Value> jsSpawnRenderEntity(const Arguments &args) {
   invariant(e, "couldn't allocate new entity");
   Renderer::get()->spawnEntity(e);
 
-  invariant(!entity_template.IsEmpty(), "must have initialized entity template");
+  auto entity_template = get_entity_template();
   Handle<Object> wrapper = entity_template->NewInstance();
   wrapper->SetInternalField(0, External::New(e));
 
-  return scope.Close(wrapper);
+  args.GetReturnValue().Set(scope.Close(wrapper));
 }
 
-static Handle<Value> jsDestroyRenderEntity(const Arguments &args) {
+static void jsDestroyRenderEntity(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 1, "void DestroyRenderEntity(int eid");
   HandleScope scope(args.GetIsolate());
 
   rts::id_t eid = args[0]->IntegerValue();
   Renderer::get()->removeEntity(eid);
 
-  return Undefined();
+  args.GetReturnValue().SetUndefined();
 }
 
-static Handle<Value> jsAddEffect(const Arguments &args) {
+static void jsAddEffect(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 2, "jsAddEffect(name, params)");
   HandleScope scope(args.GetIsolate());
 
@@ -379,14 +382,12 @@ static Handle<Value> jsAddEffect(const Arguments &args) {
 
   add_jseffect(name, params);
 
-  return Undefined();
+  args.GetReturnValue().SetUndefined();
 }
 
 Handle<Value> getRendererBinding() {
-  HandleScope scope;
-  if (entity_template.IsEmpty()) {
-    entity_template = make_entity_template();
-  }
+  HandleScope scope(Isolate::GetCurrent());
+  entity_template.Reset(Isolate::GetCurrent(), make_entity_template());
   auto binding = Object::New();
   binding->Set(
       String::New("spawnRenderEntity"),

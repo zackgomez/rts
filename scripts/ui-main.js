@@ -9,7 +9,6 @@ var UI = function () {
   this.visibilityMap = null;
 
   this.init = function (params) {
-    Log('init yoooo!');
     invariant(this.initialized === false, 'ui already initialized');
     this.initialized = true;
     var map_def = {
@@ -23,7 +22,7 @@ var UI = function () {
 
     NativeUI.setVisibilityBuffer(
       this.visibilityMap.getGridDim(),
-      this.visibilityMap.getRawData()
+      this.visibilityMap.getRawData().buffer
     );
   };
 
