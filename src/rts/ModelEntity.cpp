@@ -12,8 +12,8 @@ ModelEntity::ModelEntity(id_t id)
     posCurve_(glm::vec3(0.f)),
     angleCurve_(0.f),
     size_(0.f),
-    scale_(1.f),
     color_(0.f),
+    scale_(1.f),
     visible_(true) {
 }
 

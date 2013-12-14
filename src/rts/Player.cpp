@@ -18,7 +18,6 @@ LocalPlayer::~LocalPlayer() {
 void LocalPlayer::startTick(tick_t tick) {
   PlayerAction a;
   a["type"] = ActionTypes::DONE;
-  a["checksum"] = game_->getChecksum().toJson();
   a["tick"] = toJson(tick);
   game_->addAction(playerID_, a);
 }
@@ -58,7 +57,6 @@ DummyPlayer::DummyPlayer(id_t playerID, id_t teamID)
 void DummyPlayer::startTick(tick_t tick) {
   PlayerAction action;
   action["type"] = ActionTypes::DONE;
-  action["checksum"] = game_->getChecksum().toJson();
   action["tick"] = toJson(tick);
   actions_.push(action);
 }

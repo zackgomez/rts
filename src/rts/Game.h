@@ -18,17 +18,6 @@ namespace rts {
 class Map;
 class Player;
 struct ChatMessage;
-struct TickChecksum {
-  checksum_t entity_checksum;
-  checksum_t action_checksum;
-  float random_checksum;
-
-  TickChecksum() {}
-  TickChecksum(const Json::Value &val);
-  bool operator==(const TickChecksum &rhs) const;
-  bool operator!=(const TickChecksum &rhs) const;
-  Json::Value toJson() const;
-};
 class GameRandom;
 
 // Handles the game logic and player actions, is very multithread aware.
@@ -59,9 +48,6 @@ class Game {
   bool isRunning() const {
     return running_;
   }
-  TickChecksum getChecksum() const {
-    return checksums_.back();
-  }
   GameScript* getScript() {
     return &script_;
   }
@@ -90,7 +76,6 @@ class Game {
  private:
   // Returns true if all the players have submitted input for the current tick_
   bool updatePlayers();
-  TickChecksum checksum();
   void pause();
   void unpause();
 
@@ -111,11 +96,6 @@ class Game {
   float elapsedTime_;
 
   GameScript script_;
-
-  // holds checksums before the tick specified by the index
-  // checksums_[3] == checksum at the end of tick 2/beginning of tick 3
-  std::vector<TickChecksum> checksums_;
-  Checksum actionChecksummer_;
 
   bool paused_;
   bool running_;
