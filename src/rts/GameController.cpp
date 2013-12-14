@@ -631,24 +631,19 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
     Renderer::get()->zoomCamera(fltParam("local.mouseZoomSpeed"));
   }
 
-  if (!Game::get()->isPaused()) {
-    // Mutate, if game isn't paused
-    player_->setSelection(newSelect);
-    attemptIssueOrder(order);
-  }
+  // Mutate
+  player_->setSelection(newSelect);
+  attemptIssueOrder(order);
 }
 
 void GameController::attemptIssueOrder(Json::Value order) {
-  if (!Game::get()->isPaused() && order.isMember("type")) {
+  if (order.isMember("type")) {
     PlayerAction action;
     action["type"] = ActionTypes::ORDER;
     action["order"] = order;
     Game::get()->addAction(player_->getPlayerID(), action);
   }
 }
-
-
-
 
 Json::Value GameController::handleRightClick(
     const GameEntity *entity,
