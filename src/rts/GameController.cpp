@@ -88,12 +88,12 @@ GameController::GameController(LocalPlayer *player)
     alt_(false),
     leftDrag_(false),
     leftDragMinimap_(false),
-    renderNavMesh_(false),
     state_(PlayerState::DEFAULT),
+    renderNavMesh_(false),
     visData_(nullptr),
     visDataLength_(0),
-    zoom_(0.f),
     order_(),
+    zoom_(0.f),
     action_() {
   gameScript_ = new GameScript();
 }

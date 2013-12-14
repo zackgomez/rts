@@ -4,7 +4,6 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
-#include "common/Checksum.h"
 #include "common/ParamReader.h"
 #include "common/util.h"
 #include "rts/GameEntity.h"
@@ -87,18 +86,6 @@ bool Game::updatePlayers() {
   return true;
 }
 
-TickChecksum Game::checksum() {
-  Checksum chksum;
-
-  TickChecksum ret;
-  ret.entity_checksum = chksum.getChecksum();
-  ret.action_checksum = actionChecksummer_.getChecksum();
-  ret.random_checksum = random_->getLastValue();
-  actionChecksummer_ = Checksum();
-
-  return ret;
-}
-
 v8::Handle<v8::Object> Game::getGameObject() {
   auto obj = script_.getInitReturn();
   invariant(
@@ -150,8 +137,6 @@ void Game::start() {
   // Initialize map
   map_->init();
 
-  checksums_.push_back(checksum());
-
   // Queue up offset number of 'done' frames
   for (tick_ = -tickOffset_; tick_ < 0; tick_++) {
     LOG(INFO) << "Running sync tick " << tick_ << '\n';
@@ -194,22 +179,16 @@ void Game::update(float dt) {
   // Do actions
   // It MUST be true that all players have added exactly one action of type
   // none targetting this frame
-  tick_t idx = std::max((tick_t) 0, tick_ - tickOffset_);
-  TickChecksum recordedChecksum = checksums_[idx];
   auto js_player_inputs = v8::Array::New();
   for (auto &player : players_) {
     id_t pid = player->getPlayerID();
     auto actions = player->getActions();
     std::vector<Json::Value> orders;
 
-    TickChecksum remoteChecksum;
     bool done = false;
     for (const auto &action : actions) {
       invariant(!done, "Action after DONE message??");
       if (action["type"] == ActionTypes::DONE) {
-        // Check for sync error
-        // Index into checksum array, [0, n]
-        remoteChecksum = TickChecksum(action["checksum"]);
         done = true;
         invariant(
             toTick(action["tick"]) == (tick_ - tickOffset_),
@@ -224,7 +203,6 @@ void Game::update(float dt) {
         }
       } else if (action["type"] == ActionTypes::ORDER) {
         invariant(action.isMember("order"), "malformed ORDER action");
-        actionChecksummer_.process(action);
         Json::Value order = action["order"];
         order["from_pid"] = toJson(pid);
         js_player_inputs->Set(
@@ -235,25 +213,6 @@ void Game::update(float dt) {
       }
     }
     invariant(done, "Missing DONE message for player");
-
-    // TODO(zack): make this dump out a log so we can debug the reason why
-    if (TickChecksum(remoteChecksum) != recordedChecksum) {
-      if (remoteChecksum.entity_checksum != recordedChecksum.entity_checksum) {
-        LOG(ERROR) << tick_ << ": entity checksum mismatch (theirs): "
-          << remoteChecksum.entity_checksum << " vs (ours): "
-          << recordedChecksum.entity_checksum << '\n';
-      }
-      if (remoteChecksum.action_checksum != recordedChecksum.action_checksum) {
-        LOG(ERROR) << tick_ << ": action checksum mismatch (theirs): "
-          << remoteChecksum.action_checksum << " vs (ours): "
-          << recordedChecksum.action_checksum << '\n';
-      }
-      if (remoteChecksum.random_checksum != recordedChecksum.random_checksum) {
-        LOG(ERROR) << tick_ << ": random checksum mismatch (theirs): "
-          << remoteChecksum.random_checksum << " vs (ours): "
-          << recordedChecksum.random_checksum << '\n';
-      }
-    }
   }
   // Allow more actions
   actionLock.unlock();
@@ -283,9 +242,6 @@ void Game::update(float dt) {
       running_ = false;
     }
   }
-
-  // Checksum the tick
-  checksums_.push_back(checksum());
 
   // unlock entities automatically when lock goes out of scope
   // Next tick
@@ -435,27 +391,5 @@ void Game::pause() {
 void Game::unpause() {
   paused_ = false;
   Renderer::get()->setTimeMultiplier(1.f);
-}
-
-TickChecksum::TickChecksum(const Json::Value &val) {
-  invariant(
-    val.isMember("entity") && val.isMember("action"),
-    "malformed checksum");
-  entity_checksum = val["entity"].asUInt();
-  action_checksum = val["action"].asUInt();
-}
-bool TickChecksum::operator==(const TickChecksum &rhs) const {
-  return entity_checksum == rhs.entity_checksum
-    && action_checksum == rhs.action_checksum;
-}
-bool TickChecksum::operator!=(const TickChecksum &rhs) const {
-  return !(*this == rhs);
-}
-Json::Value TickChecksum::toJson() const {
-  Json::Value ret;
-  ret["action"] = action_checksum;
-  ret["entity"] = entity_checksum;
-  ret["random"] = random_checksum;
-  return ret;
 }
 };  // rts
