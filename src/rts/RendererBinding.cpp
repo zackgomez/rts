@@ -199,19 +199,21 @@ static void entitySetActions(const FunctionCallbackInfo<Value> &args) {
 }
 
 static void entitySetUIInfo(const FunctionCallbackInfo<Value> &args) {
-  invariant(args.Length() == 1, "void setUIInfo(object ui_info)");
+  invariant(args.Length() == 2, "void setUIInfo(float t, object ui_info)");
 
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   auto *e = static_cast<GameEntity *>(wrap->Value());
 
-  auto jsinfo = args[0]->ToObject();
+  const float t = args[0]->NumberValue();
+  auto jsinfo = args[1]->ToObject();
 
   auto ui_info = GameEntity::UIInfo();
   auto pid_str = String::New("pid");
   invariant(jsinfo->Has(pid_str), "UIInfo must have pid");
-  e->setPlayerID(jsinfo->Get(pid_str)->IntegerValue());
+  rts::id_t pid = jsinfo->Get(pid_str)->IntegerValue();
+  e->setPlayerID(t, pid);
 
   auto parts_str = String::New("parts");
   if (jsinfo->Has(parts_str)) {
@@ -265,7 +267,7 @@ static void entitySetUIInfo(const FunctionCallbackInfo<Value> &args) {
       ui_info.hotkey = hotkey_str[0];
       invariant(isControlGroupHotkey(ui_info.hotkey), "bad hotkey in uiinfo");
     }
-    auto *player = Game::get()->getPlayer(e->getPlayerID());
+    auto *player = Game::get()->getPlayer(pid);
     if (player && player->isLocal()) {
       std::set<std::string> sel;
       sel.insert(e->getGameID());

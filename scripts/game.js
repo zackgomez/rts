@@ -258,7 +258,7 @@ exports.render = function () {
     render_entity.setAngle(elapsed_time, game_entity.getAngle());
 
     var ui_info = game_entity.getUIInfo();
-    render_entity.setUIInfo(ui_info);
+    render_entity.setUIInfo(elapsed_time, ui_info);
     var actions = game_entity.getActions();
     render_entity.setActions(actions);
 

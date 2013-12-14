@@ -103,7 +103,7 @@ void MinimapWidget::render(float dt) {
       continue;
     }
     glm::vec2 pos = worldToMinimap(e->getPosition(t));
-    const Player *player = Game::get()->getPlayer(e->getPlayerID());
+    const Player *player = Game::get()->getPlayer(e->getPlayerID(t));
     glm::vec3 pcolor; 
     if (colorScheme == 0) {
       pcolor = player ? player->getColor() : vec3Param("global.defaultColor");
