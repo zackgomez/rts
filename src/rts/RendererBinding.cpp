@@ -97,42 +97,27 @@ static void entitySetModel(const FunctionCallbackInfo<Value> &args) {
 }
 
 static void entitySetSight(const FunctionCallbackInfo<Value> &args) {
-  invariant(args.Length() == 1, "setSetSight takes 1 arg");
-
+  invariant(args.Length() == 2, "void setSight(float t, float sight)");
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   auto *e = static_cast<GameEntity *>(wrap->Value());
 
-  e->setSight(args[0]->NumberValue());
+  e->setSight(args[0]->NumberValue(), args[1]->NumberValue());
   args.GetReturnValue().SetUndefined();
 }
 
 static void entitySetSize(const FunctionCallbackInfo<Value> &args) {
-  invariant(args.Length() == 1, "setSize takes 1 arg");
-
+  invariant(args.Length() == 2, "void setSize(float t, vec3 size)");
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
   GameEntity *e = static_cast<GameEntity *>(wrap->Value());
 
-  glm::vec2 size = jsToVec2(
-      Handle<Array>::Cast(args[0]));
-  e->setSize(size);
-
-  args.GetReturnValue().SetUndefined();
-}
-
-static void entitySetHeight(const FunctionCallbackInfo<Value> &args) {
-  invariant(args.Length() == 1, "setHeight takes 1 arg");
-
-  HandleScope scope(args.GetIsolate());
-  Local<Object> self = args.Holder();
-  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
-  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
-
-  float height = args[0]->NumberValue();
-  e->setHeight(height);
+  float t = args[0]->NumberValue();
+  glm::vec3 size = jsToVec3(
+      Handle<Array>::Cast(args[1]));
+  e->setSize(t, size);
 
   args.GetReturnValue().SetUndefined();
 }
@@ -154,7 +139,7 @@ static void entitySetProperties(const FunctionCallbackInfo<Value> &args) {
 }
 
 static void entitySetActions(const FunctionCallbackInfo<Value> &args) {
-  invariant(args.Length() == 1, "void setAction(array actions)");
+  invariant(args.Length() == 2, "void setAction(float t, array actions)");
 
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
@@ -171,7 +156,8 @@ static void entitySetActions(const FunctionCallbackInfo<Value> &args) {
   auto state = String::New("state");
   auto cooldown = String::New("cooldown");
 
-  auto jsactions = Handle<Array>::Cast(args[0]);
+  const float t = args[0]->NumberValue();
+  auto jsactions = Handle<Array>::Cast(args[1]);
   std::vector<UIAction> actions;
   for (int i = 0; i < jsactions->Length(); i++) {
     Handle<Object> jsaction = Handle<Object>::Cast(jsactions->Get(i));
@@ -193,7 +179,7 @@ static void entitySetActions(const FunctionCallbackInfo<Value> &args) {
     actions.push_back(uiaction);
   }
 
-  e->setActions(actions);
+  e->setActions(t, actions);
 
   args.GetReturnValue().SetUndefined();
 }
@@ -294,7 +280,7 @@ static void entitySetUIInfo(const FunctionCallbackInfo<Value> &args) {
   invariant(jsinfo->Has(extra), "UIInfo should have extra map");
   ui_info.extra = jsToJSON(jsinfo->Get(extra));
 
-  e->setUIInfo(ui_info);
+  e->setUIInfo(t, ui_info);
 
   args.GetReturnValue().SetUndefined();
 }
@@ -324,9 +310,6 @@ static Handle<ObjectTemplate> make_entity_template() {
   entity_template->Set(
       String::New("setSize"),
       FunctionTemplate::New(entitySetSize));
-  entity_template->Set(
-      String::New("setHeight"),
-      FunctionTemplate::New(entitySetHeight));
   entity_template->Set(
       String::New("setSight"),
       FunctionTemplate::New(entitySetSight));

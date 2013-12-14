@@ -466,9 +466,9 @@ void GameController::updateVisibility(float t) {
         game_entity->isVisibleTo(t, player_->getPlayerID()));
 
     // TODO(zack): this needs to be kept in sync with JS and is brittle
-    if (game_entity->getPlayerID() == player_->getPlayerID()) {
+    if (game_entity->getPlayerID(t) == player_->getPlayerID()) {
       auto js_ent = v8::Object::New();
-      js_ent->Set(v8::String::New("sight"), v8::Number::New(game_entity->getSight()));
+      js_ent->Set(v8::String::New("sight"), v8::Number::New(game_entity->getSight(t)));
       js_ent->Set(v8::String::New("pos"), vec2ToJS(game_entity->getPosition2(t)));
       js_entities->Set(js_entities->Length(), js_ent);
     }
@@ -1061,7 +1061,7 @@ void renderEntity(
   auto transform = glm::translate(glm::mat4(1.f), pos);
   record_section("renderActorInfo");
   // TODO(zack): only render for actors currently on screen/visible
-  auto entitySize = e->getSize();
+  auto entitySize = e->getSize2(t);
   auto circleTransform = glm::scale(
       glm::translate(
         transform,
@@ -1082,7 +1082,7 @@ void renderEntity(
   }
 
   glDisable(GL_DEPTH_TEST);
-  glm::vec3 placardPos(0.f, 0.f, e->getHeight() + 0.50f);
+  glm::vec3 placardPos(0.f, 0.f, e->getHeight(t) + 0.50f);
   auto ndc = getProjectionStack().current() * getViewStack().current()
     * transform * glm::vec4(placardPos, 1.f);
   ndc /= ndc.w;

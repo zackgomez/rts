@@ -75,11 +75,11 @@ class GameEntity : public ModelEntity {
   id_t getPlayerID(float t) const;
   id_t getTeamID(float t) const;
 
-  float getSight() const {
+  float getSight(float t) const {
     return sight_;
   }
 
-  void setSight(float sight) {
+  void setSight(float t, float sight) {
     sight_ = sight;
   }
   void setGameID(const std::string &id) {
@@ -87,10 +87,10 @@ class GameEntity : public ModelEntity {
   }
   void setPlayerID(float t, id_t pid);
 
-  void setUIInfo(const UIInfo &ui_info) {
+  void setUIInfo(float t, const UIInfo &ui_info) {
     uiInfo_ = ui_info;
   };
-  void setActions(const std::vector<UIAction> &actions) {
+  void setActions(float t, const std::vector<UIAction> &actions) {
     actions_ = actions;
   }
   void setTookDamage(int part_idx);
