@@ -516,7 +516,7 @@ void GameController::frameUpdate(float dt) {
   std::set<std::string> newsel;
   for (auto game_id : player_->getSelection()) {
     const GameEntity *e = Game::get()->getEntity(game_id);
-    if (e && e->getPlayerID() == player_->getPlayerID()) {
+    if (e && e->getPlayerID(t) == player_->getPlayerID()) {
       newsel.insert(game_id);
     }
   }
@@ -544,6 +544,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
   }
   Json::Value order;
   std::set<std::string> newSelect = player_->getSelection();
+  const float t = Renderer::get()->getGameTime();
 
   glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
   if (isinf(loc.x) || isinf(loc.y)) {
@@ -557,7 +558,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
       order["type"] = order_;
       order["entity"] = toJson(player_->getSelection());
       order["target"] = toJson(loc);
-      if (entity && entity->getTeamID() != player_->getTeamID()) {
+      if (entity && entity->getTeamID(t) != player_->getTeamID()) {
         order["target_id"] = entity->getGameID();
       }
       order_.clear();
@@ -578,8 +579,8 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
       } else if (action_.targeting == UIAction::TargetingType::ENEMY) {
         if (!entity
             || !entity->hasProperty(GameEntity::P_TARGETABLE)
-            || entity->getTeamID() == NO_TEAM
-            || entity->getTeamID() == player_->getTeamID()) {
+            || entity->getTeamID(t) == NO_TEAM
+            || entity->getTeamID(t) == player_->getTeamID()) {
           return;
         }
         order["type"] = OrderTypes::ACTION;
@@ -590,8 +591,8 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
       } else if (action_.targeting == UIAction::TargetingType::ALLY) {
         if (!entity
             || !entity->hasProperty(GameEntity::P_TARGETABLE)
-            || entity->getTeamID() == NO_TEAM
-            || entity->getTeamID() != player_->getTeamID()) {
+            || entity->getTeamID(t) == NO_TEAM
+            || entity->getTeamID(t) != player_->getTeamID()) {
           return;
         }
         order["type"] = OrderTypes::ACTION;
@@ -619,7 +620,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
         newSelect.clear();
       }
       // If there is an entity and its ours, select
-      if (entity && entity->getPlayerID() == player_->getPlayerID()) {
+      if (entity && entity->getPlayerID(t) == player_->getPlayerID()) {
         newSelect.insert(entity->getGameID());
       }
     }
@@ -649,6 +650,7 @@ Json::Value GameController::handleRightClick(
     const GameEntity *entity,
     const glm::vec3 &loc) {
   Json::Value order;
+  const float t = Renderer::get()->getGameTime();
   // TODO(connor) make right click actions on minimap
   // If there is an order, it is canceled by right click
   if (!order_.empty() || !action_.name.empty()) {
@@ -658,7 +660,7 @@ Json::Value GameController::handleRightClick(
     // Otherwise default to some right click actions
     // If right clicked on enemy unit (and we have a selection)
     // go attack them
-    if (entity && entity->getTeamID() != player_->getTeamID()
+    if (entity && entity->getTeamID(t) != player_->getTeamID()
         && !player_->getSelection().empty()) {
       // Visual feedback
       highlightEntity(entity->getID());
@@ -913,7 +915,7 @@ std::set<GameEntity *> GameController::selectEntities(
       continue;
     }
     auto ge = (GameEntity *) e;
-    if (ge->getPlayerID() == pid
+    if (ge->getPlayerID(t) == pid
         && boxInBox(dragRect, ge->getRect(t))) {
       boxedEntities.insert(ge);
       if (ge->hasProperty(GameEntity::P_UNIT)) {
@@ -947,6 +949,7 @@ void renderHealthBar(
     const std::vector<GameEntity::UIPart> &parts,
     const GameEntity *actor,
     const Player *player) {
+  const float t = Renderer::get()->getGameTime();
   float current_health = 0.f;
   float total_health = 0.f;
   for (auto part : parts) {
@@ -956,7 +959,7 @@ void renderHealthBar(
 
   glm::vec2 bottom_left = center - size / 2.f;
 
-  if (actor->getTeamID() != player->getTeamID()) {
+  if (actor->getTeamID(t) != player->getTeamID()) {
     auto bgcolor = vec4Param("hud.actor_health.bg_color");
     auto color = vec4Param("hud.actor_health.enemy_color");
     float factor = glm::clamp(current_health / total_health, 0.f, 1.f);
@@ -989,7 +992,7 @@ void renderHealthBar(
       ? vec4Param("hud.actor_health.bg_color")
       : vec4Param("hud.actor_health.disabled_bg_color");
     glm::vec4 healthBarColor;
-    if (actor->getPlayerID() == player->getPlayerID()) {
+    if (actor->getPlayerID(t) == player->getPlayerID()) {
       healthBarColor = vec4Param("hud.actor_health.local_color");
     } else {
       healthBarColor = vec4Param("hud.actor_health.team_color");
@@ -1057,7 +1060,7 @@ void renderEntity(
   const auto ui_info = actor->getUIInfo();
 
   // Hotkey
-  if (actor->getPlayerID() == localPlayer->getPlayerID()
+  if (actor->getPlayerID(t) == localPlayer->getPlayerID()
       && ui_info.hotkey >= '0' && ui_info.hotkey <= '9') {
     std::string s;
     s.append(FontManager::get()->makeColorCode(glm::vec3(1,1,1)));

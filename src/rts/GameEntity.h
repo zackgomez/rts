@@ -59,32 +59,33 @@ class GameEntity : public ModelEntity {
     }
     return properties_.count(property);
   }
-  void addProperty(uint32_t property) {
-    properties_.insert(property);
+
+  const std::string& getGameID() const {
+    return gameID_;
   }
-  void clearProperties() {
-    properties_.clear();
+  Clock::time_point getLastTookDamage(uint32_t part) const;
+  const std::vector<UIAction> &getActions() const {
+    return actions_;
+  }
+  UIInfo getUIInfo() const {
+    return uiInfo_;
   }
 
   // The player that owns this entity, or NO_PLAYER
-  id_t getPlayerID() const {
-    return playerID_;
-  }
-  id_t getTeamID() const;
+  id_t getPlayerID(float t) const;
+  id_t getTeamID(float t) const;
 
   float getSight() const {
     return sight_;
   }
+
   void setSight(float sight) {
     sight_ = sight;
   }
-  void setPlayerID(id_t pid);
   void setGameID(const std::string &id) {
     gameID_ = id;
   }
-  const std::string& getGameID() const {
-    return gameID_;
-  }
+  void setPlayerID(float t, id_t pid);
 
   void setUIInfo(const UIInfo &ui_info) {
     uiInfo_ = ui_info;
@@ -93,12 +94,12 @@ class GameEntity : public ModelEntity {
     actions_ = actions;
   }
   void setTookDamage(int part_idx);
-  Clock::time_point getLastTookDamage(uint32_t part) const;
-  const std::vector<UIAction> &getActions() const {
-    return actions_;
+
+  void addProperty(uint32_t property) {
+    properties_.insert(property);
   }
-  UIInfo getUIInfo() const {
-    return uiInfo_;
+  void clearProperties() {
+    properties_.clear();
   }
 
   bool isVisibleTo(float t, id_t pid) const;
@@ -108,17 +109,16 @@ class GameEntity : public ModelEntity {
   virtual void preRender(float t) final override;
 
  private:
-  id_t playerID_;
   std::string gameID_;
-
-  float sight_;
-
+  Curve<id_t> playerCurve_;
   Curve<VisibilitySet> visibilityCurve_;
 
-  std::set<uint32_t> properties_;
 
   // TODO(zack): kill this
   std::map<uint32_t, Clock::time_point> lastTookDamage_;
+
+  std::set<uint32_t> properties_;
+  float sight_;
   UIInfo uiInfo_;
   std::vector<UIAction> actions_;
 };
