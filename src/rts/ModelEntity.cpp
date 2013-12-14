@@ -68,12 +68,15 @@ void ModelEntity::addExtraEffect(const RenderFunction &func) {
 }
 
 void ModelEntity::render(float t) {
+  preRender(t);
+
   if (!isVisible()) {
     return;
   }
   if (meshName_.empty()) {
     return;
   }
+
   glm::mat4 transform = getTransform(t);
 
   // TODO(zack): make this part of a model object

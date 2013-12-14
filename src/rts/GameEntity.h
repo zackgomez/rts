@@ -104,6 +104,9 @@ class GameEntity : public ModelEntity {
   bool isVisibleTo(float t, id_t pid) const;
   void setVisibilitySet(float t, const VisibilitySet &map);
 
+ protected:
+  virtual void preRender(float t) final override;
+
  private:
   id_t playerID_;
   std::string gameID_;
@@ -118,8 +121,6 @@ class GameEntity : public ModelEntity {
   std::map<uint32_t, Clock::time_point> lastTookDamage_;
   UIInfo uiInfo_;
   std::vector<UIAction> actions_;
-
-  void resetTexture();
 };
 };  // namespace rts
 

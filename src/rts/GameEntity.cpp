@@ -15,13 +15,12 @@ GameEntity::GameEntity(id_t id) : ModelEntity(id),
     sight_(0.f),
     visibilityCurve_(VisibilitySet()),
     uiInfo_() {
-  resetTexture();
 }
 
 GameEntity::~GameEntity() {
 }
 
-void GameEntity::resetTexture() {
+void GameEntity::preRender(float t) {
   const Player *player = Game::get()->getPlayer(getPlayerID());
   auto color = player ? player->getColor() : ::vec3Param("global.defaultColor");
   setColor(color);
@@ -56,8 +55,6 @@ id_t GameEntity::getTeamID() const {
 void GameEntity::setPlayerID(id_t pid) {
   assertPid(pid);
   playerID_ = pid;
-
-  resetTexture();
 }
 
 void GameEntity::setTookDamage(int part_idx) {
