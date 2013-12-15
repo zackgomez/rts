@@ -111,9 +111,6 @@ void call_js_controller_init(v8::Handle<v8::Object> controller) {
     "must have jsController init func");
   auto jsparams = v8::Object::New();
   jsparams->Set(
-    v8::String::New("num_players"),
-    v8::Integer::New(Game::get()->getPlayers().size()));
-  jsparams->Set(
     v8::String::New("map_size"),
     vec2ToJS(Game::get()->getMap()->getSize()));
   const int argc = 1;
@@ -455,6 +452,10 @@ std::string GameController::getCursorTexture() const {
 }
 
 void GameController::updateVisibility(float t) {
+
+  ENTER_GAMESCRIPT(gameScript_);
+  auto js_controller = getJSController();
+  auto js_entities = v8::Array::New();
   for (auto &pair : Renderer::get()->getEntities()) {
     auto *entity = pair.second;
     if (!entity->hasProperty(GameEntity::P_GAMEENTITY)) {
@@ -463,13 +464,23 @@ void GameController::updateVisibility(float t) {
     auto *game_entity = (GameEntity *)entity;
     game_entity->setVisible(
         game_entity->isVisibleTo(t, player_->getPlayerID()));
-  }
 
-  for (int i = 0; i < visDim_.x * visDim_.y; i++) {
-    if (((char *)visData_)[i] != 0) {
-      break;
+    // TODO(zack): this needs to be kept in sync with JS and is brittle
+    if (game_entity->getPlayerID() == player_->getPlayerID()) {
+      auto js_ent = v8::Object::New();
+      js_ent->Set(v8::String::New("sight"), v8::Number::New(game_entity->getSight()));
+      js_ent->Set(v8::String::New("pos"), vec2ToJS(game_entity->getPosition2(t)));
+      js_entities->Set(js_entities->Length(), js_ent);
     }
   }
+
+  auto js_update_func = v8::Handle<v8::Function>::Cast(
+    js_controller->Get(v8::String::New("update")));
+  const int argc = 1;
+  v8::Handle<v8::Value> argv[] = { js_entities };
+  js_update_func->Call(js_controller, argc, argv);
+
+
   size_t len = visDim_.x * visDim_.y;
   uint8_t *data = new uint8_t[len];
   for (auto i = 0; i < len; i++) {

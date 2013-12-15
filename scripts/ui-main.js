@@ -15,10 +15,7 @@ var UI = function () {
       origin: [0, 0],
       size: must_have_idx(params, 'map_size'),
     };
-    this.visibilityMap = new VisibilityMap(
-      map_def,
-      must_have_idx(params, 'num_players')
-    );
+    this.visibilityMap = new VisibilityMap(map_def, 1);
 
     NativeUI.setVisibilityBuffer(
       this.visibilityMap.getGridDim(),
@@ -27,7 +24,7 @@ var UI = function () {
   };
 
   this.update = function (entities) {
-    this.visibilityMap.updateMap(entities);
+    this.visibilityMap.updateMap_UI(entities);
   };
 };
 
