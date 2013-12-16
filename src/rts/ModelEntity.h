@@ -59,6 +59,9 @@ public:
 
   void render(float t);
 
+protected:
+  virtual void preRender(float t) { }
+
 private:
   id_t id_;
   Vec3Curve posCurve_;
