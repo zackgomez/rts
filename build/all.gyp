@@ -89,6 +89,48 @@
       '../lib/stbi/stb_image.c',
     ],
     'conditions': [
+      ['OS=="win"', {
+        'defines': [
+          '_USE_MATH_DEFINES',
+          '_VARIADIC_MAX=8',
+          'GLFW_DLL',
+        ],
+        'include_dirs': [
+          '../lib/glew-1.7.0/include',
+          '../lib/boost_1_50_0',
+          '../lib/assimp/include',
+        ],
+        'link_settings': {
+          'libraries': [
+            'glew32',
+            'opengl32',
+            'glfw3dll',
+            'assimp',
+            'v8',
+            'glu32',
+          ],
+        },
+        'msvs_settings': {
+          'VCLinkerTool': {
+            'OutputFile': '../rts.exe',
+            'AdditionalLibraryDirectories': [
+              '../lib/assimp/lib-msvc',
+              '../lib/boost_1_50_msvc_32',
+              '../lib/glew-1.7.0/lib',
+              '../lib/glfw-3.0.1/lib-msvc110',
+              '../lib/v8/lib-msvs',
+            ],
+          },
+        },
+        'copies': [{
+          'destination': '../',
+          'files': [
+            '../msvc/DLLs/Assimp32.dll',
+            '../msvc/DLLs/glew32.dll',
+            '../msvc/DLLs/glfw3.dll',
+          ],
+        }],
+      }],
       ['OS=="mac"', {
         'defines': [
           'MACOSX',

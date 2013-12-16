@@ -1,2 +1,11 @@
 all.xcodeproj
 gyp
+Default
+all.gyp
+all.opensdf
+all.sdf
+all.sln
+all.v11.suo
+rts.vcxproj
+rts.vcxproj.filters
+rts.vcxproj.user
