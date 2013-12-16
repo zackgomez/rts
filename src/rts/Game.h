@@ -1,15 +1,11 @@
 #ifndef SRC_RTS_GAME_H_
 #define SRC_RTS_GAME_H_
 
-#include <set>
 #include <vector>
 #include <mutex>
-#include <queue>
 #include <glm/glm.hpp>
 #include "common/Clock.h"
-#include "common/Checksum.h"
 #include "common/Logger.h"
-#include "rts/GameEntity.h"
 #include "rts/GameScript.h"
 #include "rts/PlayerAction.h"
 
@@ -17,19 +13,8 @@ namespace rts {
 
 class Map;
 class Player;
+class GameEntity;
 struct ChatMessage;
-struct TickChecksum {
-  checksum_t entity_checksum;
-  checksum_t action_checksum;
-  float random_checksum;
-
-  TickChecksum() {}
-  TickChecksum(const Json::Value &val);
-  bool operator==(const TickChecksum &rhs) const;
-  bool operator!=(const TickChecksum &rhs) const;
-  Json::Value toJson() const;
-};
-class GameRandom;
 
 // Handles the game logic and player actions, is very multithread aware.
 class Game {
@@ -39,28 +24,18 @@ class Game {
 
   static Game* get() { return instance_; }
 
-  // Synchronizes game between players and does any other initialization
-  // required
   void start();
-
   void update(float dt);
+  void render();
+
   const Map * getMap() const {
     return map_;
-  }
-  tick_t getTick() const {
-    return tick_;
   }
   float getElapsedTime() const {
     return elapsedTime_;
   }
-  bool isPaused() const {
-    return paused_;
-  }
   bool isRunning() const {
     return running_;
-  }
-  TickChecksum getChecksum() const {
-    return checksums_.back();
   }
   GameScript* getScript() {
     return &script_;
@@ -69,10 +44,7 @@ class Game {
   // Can possibly block, but should never block long
   void addAction(id_t pid, const PlayerAction &act);
 
-  void destroyEntity(id_t eid);
-  GameEntity * getEntity(id_t eid);
   const GameEntity * getEntity(const std::string &game_id) const;
-  const GameEntity * findEntity(std::function<bool(const GameEntity *)> f) const;
   const Player * getPlayer(id_t pid) const;
   const std::vector<Player *>& getPlayers() const { return players_; }
 
@@ -84,21 +56,14 @@ class Game {
     chatListener_ = cl;
   }
 
-  // Returns a value [0, 1), should be the same across all clients
-  float gameRandom();
-
  private:
-  // Returns true if all the players have submitted input for the current tick_
-  bool updatePlayers();
-  TickChecksum checksum();
-  void pause();
-  void unpause();
-
+  const GameEntity * findEntity(std::function<bool(const GameEntity *)> f) const;
   void updateJS(v8::Handle<v8::Array> player_inputs, float dt);
-  // Load the victory points from JS.
-  void renderJS();
+
+  v8::Handle<v8::Object> getGameObject();
 
   std::mutex actionMutex_;
+  std::vector<PlayerAction> actions_;
 
   Map *map_;
   std::vector<Player *> players_;
@@ -106,24 +71,13 @@ class Game {
   std::map<id_t, float> requisition_;
   // tid => float
   std::map<id_t, float> victoryPoints_;
-  tick_t tick_;
-  tick_t tickOffset_;
   float elapsedTime_;
 
   GameScript script_;
 
-  // holds checksums before the tick specified by the index
-  // checksums_[3] == checksum at the end of tick 2/beginning of tick 3
-  std::vector<TickChecksum> checksums_;
-  Checksum actionChecksummer_;
-
-  bool paused_;
   bool running_;
 
   ChatListener chatListener_;
-  GameRandom *random_;
-
-  v8::Persistent<v8::Object> gameObject_;
 
   static Game *instance_;
 };

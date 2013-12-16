@@ -323,7 +323,7 @@ var Entity = function (id, name, params) {
         }
       });
       if (candidate_parts.length) {
-        var part_idx = Math.floor(GameRandom() * candidate_parts.length);
+        var part_idx = Math.floor(Math.random() * candidate_parts.length);
         var part = candidate_parts[part_idx];
         part.addHealth(amount);
         modified_parts.push(part_idx);

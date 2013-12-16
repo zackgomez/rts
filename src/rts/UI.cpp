@@ -3,6 +3,7 @@
 #include <sstream>
 #include <functional>
 #include "common/Clock.h"
+#include "common/Collision.h"
 #include "common/ParamReader.h"
 #include "rts/Controller.h"
 #include "rts/GameController.h"

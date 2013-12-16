@@ -3,29 +3,35 @@
 #include "common/util.h"
 #include "common/Logger.h"
 #include "rts/GameScript.h"
+#include "rts/GameController.h"
+#include "rts/Renderer.h"
 
 using namespace v8;
 using namespace rts;
 
-static Handle<Value> setVisibilityBuffer(const Arguments &args) {
-  HandleScope handle_scope;
+static void setVisibilityBuffer(const FunctionCallbackInfo<Value> &args) {
+  HandleScope handle_scope(args.GetIsolate());
   invariant(
     args.Length() == 2,
     "void setVisibilityBuffer(vec2 dim, ArrayBuffer data)");
 
-  auto dim = jsToVec2(Handle<Array>::Cast(args[0]));
+  auto dim = jsToIVec2(Handle<Array>::Cast(args[0]));
   auto data = Handle<ArrayBuffer>::Cast(args[1]);
   invariant(
     !data->IsExternal(),
     "cannot set visibility to externalized buffer");
+  LOG(DEBUG) << "buf byte len: " << data->ByteLength() << '\n';
 
-  // TODO(zack): set on game controller
+  auto contents = data->Externalize();
+  auto game_controller = (GameController *)Renderer::get()->getController();
+  LOG(DEBUG) << "byte len: " << contents.ByteLength() << '\n';
+  game_controller->setVisibilityData(contents.Data(), contents.ByteLength(), dim);
 
-  return Undefined();
-};
+  args.GetReturnValue().SetUndefined();
+}
 
 Handle<Value> getNativeUIBinding() {
-  HandleScope handle_scope;
+  HandleScope handle_scope(Isolate::GetCurrent());
   auto binding = Object::New();
   binding->Set(
     String::New("setVisibilityBuffer"),

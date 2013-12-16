@@ -27,19 +27,19 @@ var VisibilityMap = function (map_def, num_players) {
 // returns index of first player's flags in the cell
 VisibilityMap.prototype.pointToCell = function (pid, pt) {
   var cell_pos = Vector.compMul(
-    Vector.add(
-      Vector.compDiv(Vector.sub(pt, this.mapOrigin), this.mapSize),
+    Vector.clamp(Vector.add(Vector.compDiv(Vector.sub(pt, this.mapOrigin), this.mapSize),
       [0.5, 0.5]
-    ),
+    ), 0, 1),
     this.cellDims
   );
-  cell_pos = Vector.floor(Vector.clamp(cell_pos, 0, 1));
+
+  cell_pos = Vector.floor(cell_pos);
   invariant(cell_pos[0] >= 0, 'invalid cell position');
   invariant(cell_pos[1] >= 0, 'invalid cell position');
   invariant(cell_pos[0] < this.cellDims[0], 'invalid cell position');
   invariant(cell_pos[1] < this.cellDims[1], 'invalid cell position');
   var player_offset = pid - IDConst.STARTING_PID;
-  return 4 * (
+  return this.numPlayers * (
     cell_pos[1] * this.cellDims[0] + cell_pos[0]
   ) + player_offset;
 }
@@ -47,8 +47,8 @@ VisibilityMap.prototype.pointToCell = function (pid, pt) {
 
 VisibilityMap.prototype.clearCells = function () {
   for (var i = 0; i < this.data.length; i++) {
-    // TODO HACK XXX REMOVE ME
-    this.data[i] = 1;
+    // TODO(zack): this is a hack, change to 0 here when visibility implemented
+    this.data[i] = 255;
   }
 }
 
@@ -67,8 +67,23 @@ VisibilityMap.prototype.isPointVisible = function (pid, pt) {
   return this.data[cell_i] !== 0;
 }
 
+VisibilityMap.prototype.updateVisibilityFor = function (pid, pos, sight) {
+  var cell_i = this.pointToCell(pid, pos);
+  // TODO(zack): fill by sight this instead of just the cell
+  this.data[cell_i] = 255;
+}
 
-// entity needs getPlayerID(), getPosition2(), getSight()
+VisibilityMap.prototype.updateMap_UI = function (sight_positions) {
+  this.clearCells();
+  _.each(sight_positions, function (e) {
+    var pos = e.pos;
+    var sight = e.sight;
+    // HACK only one play for GUI usage
+    this.updateVisibilityFor(IDConst.STARTING_PID, pos, sight);
+ }, this);
+}
+
+// takes js entities
 VisibilityMap.prototype.updateMap = function (entities) {
   this.clearCells();
   _.each(entities, function (entity) {
@@ -78,8 +93,7 @@ VisibilityMap.prototype.updateMap = function (entities) {
     }
 
     // TODO(zack): fill out grid here
-    var cell_i = this.pointToCell(pid, entity.getPosition2());
-    this.data[cell_i] = 1;
+    this.updateVisibilityFor(pid, entity.getPosition2(), entity.getSight());
   }, this);
 }
 

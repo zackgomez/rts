@@ -7,21 +7,44 @@
 #include "rts/Map.h"
 #include "rts/Player.h"
 
+static const uint32_t P_GAMEENTITY = 293013864;
+
 namespace rts {
 
+GameEntity* GameEntity::cast(ModelEntity *e) {
+  if (!e) {
+    return nullptr;
+  }
+  if (!e->hasProperty(P_GAMEENTITY)) {
+    return nullptr;
+  }
+  return (GameEntity *)e;
+}
+
+const GameEntity* GameEntity::cast(const ModelEntity *e) {
+  return GameEntity::cast((ModelEntity*) e);
+}
+
 GameEntity::GameEntity(id_t id) : ModelEntity(id),
-    playerID_(NO_PLAYER),
     gameID_(),
-    sight_(0.f),
+    playerCurve_(NO_PLAYER),
     visibilityCurve_(VisibilitySet()),
+    sight_(0.f),
     uiInfo_() {
 }
 
 GameEntity::~GameEntity() {
 }
 
+bool GameEntity::hasProperty(uint32_t property) const {
+  if (property == P_GAMEENTITY) {
+    return true;
+  }
+  return properties_.count(property);
+}
+
 void GameEntity::preRender(float t) {
-  const Player *player = Game::get()->getPlayer(getPlayerID());
+  const Player *player = Game::get()->getPlayer(getPlayerID(t));
   auto color = player ? player->getColor() : ::vec3Param("global.defaultColor");
   setColor(color);
 }
@@ -43,18 +66,23 @@ Clock::time_point GameEntity::getLastTookDamage(uint32_t part) const {
   return Clock::time_point();
 }
 
-id_t GameEntity::getTeamID() const {
+id_t GameEntity::getPlayerID(float t) const {
+  return playerCurve_.stepSample(t);
+}
+
+id_t GameEntity::getTeamID(float t) const {
+  id_t pid = getPlayerID(t);
   // No player, no team
-  if (playerID_ == NO_PLAYER) {
+  if (pid == NO_PLAYER) {
     return NO_TEAM;
   }
   // A bit inefficient but OK for now
-  return Game::get()->getPlayer(playerID_)->getTeamID();
+  return Game::get()->getPlayer(pid)->getTeamID();
 }
 
-void GameEntity::setPlayerID(id_t pid) {
+void GameEntity::setPlayerID(float t, id_t pid) {
   assertPid(pid);
-  playerID_ = pid;
+  playerCurve_.addKeyframe(t, pid);
 }
 
 void GameEntity::setTookDamage(int part_idx) {

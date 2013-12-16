@@ -88,12 +88,11 @@ GameController::GameController(LocalPlayer *player)
     alt_(false),
     leftDrag_(false),
     leftDragMinimap_(false),
-    renderNavMesh_(false),
     state_(PlayerState::DEFAULT),
     visData_(nullptr),
     visDataLength_(0),
-    zoom_(0.f),
     order_(),
+    zoom_(0.f),
     action_() {
   gameScript_ = new GameScript();
 }
@@ -101,18 +100,15 @@ GameController::GameController(LocalPlayer *player)
 GameController::~GameController() {
 }
 
-void call_js_controller_init(v8::Persistent<v8::Object> controller) {
+void call_js_controller_init(v8::Handle<v8::Object> controller) {
   using namespace v8;
-  HandleScope handle_scope;
+  HandleScope handle_scope(Isolate::GetCurrent());
   TryCatch try_catch;
   auto js_init_func = controller->Get(v8::String::New("init"));
   invariant(
     js_init_func->IsFunction(),
     "must have jsController init func");
   auto jsparams = v8::Object::New();
-  jsparams->Set(
-    v8::String::New("num_players"),
-    v8::Integer::New(Game::get()->getPlayers().size()));
   jsparams->Set(
     v8::String::New("map_size"),
     vec2ToJS(Game::get()->getMap()->getSize()));
@@ -125,11 +121,14 @@ void call_js_controller_init(v8::Persistent<v8::Object> controller) {
   checkJSResult(js_ret, try_catch, "js controller init");
 }
 
+  v8::Handle<v8::Object> GameController::getJSController() {
+    return v8::Handle<v8::Object>::Cast(gameScript_->getInitReturn());
+  }
+
 void GameController::onCreate() {
-  auto js_init_ret = gameScript_->init("ui-main");
-  jsController_ = v8::Persistent<v8::Object>::Cast(js_init_ret);
+  gameScript_->init("ui-main");
   ENTER_GAMESCRIPT(gameScript_);
-  call_js_controller_init(jsController_);
+  call_js_controller_init(getJSController());
 
   grab_mouse();
   // TODO(zack): delete texture
@@ -283,6 +282,30 @@ void GameController::onCreate() {
       return ss.str();
   });
   Renderer::get()->resetCameraRotation();
+
+  // TODO(zack): make this 'loadMap'
+  auto *map = Game::get()->getMap();
+  Renderer::get()->setMapColor(map->getColor());
+  Renderer::get()->setMapSize(map->getSize());
+
+  Json::Value collision_objects =
+    must_have_idx(map->getMapDefinition(), "collision_objects");
+  for (int i = 0; i < collision_objects.size(); i++) {
+    Json::Value collision_object_def = collision_objects[i];
+
+    id_t eid = Renderer::get()->newEntityID();
+    glm::vec2 pos = toVec2(collision_object_def["pos"]);
+    glm::vec2 size = toVec2(collision_object_def["size"]);
+    ModelEntity *obj = new ModelEntity(eid);
+    obj->setSize(0.f, glm::vec3(size, 0.f));
+    obj->setPosition(0.f, glm::vec3(pos, 0.1f));
+    obj->setAngle(0.f, collision_object_def["angle"].asFloat());
+
+    obj->setScale(glm::vec3(2.f*size, 1.f));
+    // TODO(zack): could be prettier than just a square
+    obj->setModelName("square");
+    Renderer::get()->spawnEntity(obj);
+  }
 }
 
 void GameController::onDestroy() {
@@ -290,7 +313,9 @@ void GameController::onDestroy() {
   Renderer::get()->setEntityOverlayRenderer(Renderer::EntityOverlayRenderer());
   getUI()->clearWidgets();
   glDeleteTextures(1, &visTex_);
-  
+
+  // TODO(zack): Make this unload map
+  Renderer::get()->setMapSize(glm::vec2(0.f));
 }
 
 glm::vec4 GameController::getTeamColor(const id_t tid) const {
@@ -312,7 +337,7 @@ void GameController::renderExtra(float dt) {
   renderHighlights(highlights_, dt);
 
   if (!action_.name.empty()) {
-    GameEntity *e = Game::get()->getEntity(action_.render_id);
+    const GameEntity *e = GameEntity::cast(Renderer::get()->getEntity(action_.render_id));
     invariant(e, "Unable to find action owner");
 
     float t = Renderer::get()->getGameTime();
@@ -332,13 +357,6 @@ void GameController::renderExtra(float dt) {
           glm::vec3(2 * action_.radius));
       renderCircleColor(transform, glm::vec4(0, 0, 1, 1.0));
     }
-  }
-
-  // TODO(zack): bit of hack here
-  if (renderNavMesh_) {
-    renderNavMesh(*Game::get()->getMap()->getNavMesh(),
-        glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 0.15f)), glm::vec3(0.8)),
-        glm::vec4(0.6, 0.6, 0.2, 0.75f));
   }
 
   // Get vp infomation
@@ -451,17 +469,46 @@ std::string GameController::getCursorTexture() const {
   return texname;
 }
 
-void GameController::frameUpdate(float dt) {
-  float t = Renderer::get()->getGameTime();
+void GameController::updateVisibility(float t) {
+  ENTER_GAMESCRIPT(gameScript_);
+  v8::TryCatch try_catch;
+  auto js_controller = getJSController();
+  auto js_entities = v8::Array::New();
   for (auto &pair : Renderer::get()->getEntities()) {
-    auto *entity = pair.second;
-    if (!entity->hasProperty(GameEntity::P_GAMEENTITY)) {
-      continue;
-    }
-    auto *game_entity = (GameEntity *)entity;
+    auto *game_entity = GameEntity::cast(pair.second);
+    if (!game_entity) continue;
     game_entity->setVisible(
         game_entity->isVisibleTo(t, player_->getPlayerID()));
+
+    // TODO(zack): this needs to be kept in sync with JS and is brittle
+    if (game_entity->getPlayerID(t) == player_->getPlayerID()) {
+      auto js_ent = v8::Object::New();
+      js_ent->Set(v8::String::New("sight"), v8::Number::New(game_entity->getSight(t)));
+      js_ent->Set(v8::String::New("pos"), vec2ToJS(game_entity->getPosition2(t)));
+      js_entities->Set(js_entities->Length(), js_ent);
+    }
   }
+
+  auto js_update_func = v8::Handle<v8::Function>::Cast(
+    js_controller->Get(v8::String::New("update")));
+  const int argc = 1;
+  v8::Handle<v8::Value> argv[] = { js_entities };
+  auto ret = js_update_func->Call(js_controller, argc, argv);
+  checkJSResult(ret, try_catch, "ui_update");
+
+  size_t len = visDim_.x * visDim_.y;
+  uint8_t *data = new uint8_t[len];
+  for (auto i = 0; i < len; i++) {
+    data[i] = 0;
+  }
+  glBindTexture(GL_TEXTURE_2D, visTex_);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, visDim_.x, visDim_.y, 0, GL_ALPHA, GL_UNSIGNED_BYTE, visData_);
+  delete[] data;
+}
+
+void GameController::frameUpdate(float dt) {
+  float t = Renderer::get()->getGameTime();
+  updateVisibility(t);
   // Remove done highlights
   for (size_t i = 0; i < highlights_.size(); ) {
     if (highlights_[i].remaining <= 0.f) {
@@ -516,7 +563,7 @@ void GameController::frameUpdate(float dt) {
   std::set<std::string> newsel;
   for (auto game_id : player_->getSelection()) {
     const GameEntity *e = Game::get()->getEntity(game_id);
-    if (e && e->getPlayerID() == player_->getPlayerID()) {
+    if (e && e->getPlayerID(t) == player_->getPlayerID()) {
       newsel.insert(game_id);
     }
   }
@@ -544,6 +591,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
   }
   Json::Value order;
   std::set<std::string> newSelect = player_->getSelection();
+  const float t = Renderer::get()->getGameTime();
 
   glm::vec3 loc = Renderer::get()->screenToTerrain(screenCoord);
   if (isinf(loc.x) || isinf(loc.y)) {
@@ -557,7 +605,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
       order["type"] = order_;
       order["entity"] = toJson(player_->getSelection());
       order["target"] = toJson(loc);
-      if (entity && entity->getTeamID() != player_->getTeamID()) {
+      if (entity && entity->getTeamID(t) != player_->getTeamID()) {
         order["target_id"] = entity->getGameID();
       }
       order_.clear();
@@ -578,8 +626,8 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
       } else if (action_.targeting == UIAction::TargetingType::ENEMY) {
         if (!entity
             || !entity->hasProperty(GameEntity::P_TARGETABLE)
-            || entity->getTeamID() == NO_TEAM
-            || entity->getTeamID() == player_->getTeamID()) {
+            || entity->getTeamID(t) == NO_TEAM
+            || entity->getTeamID(t) == player_->getTeamID()) {
           return;
         }
         order["type"] = OrderTypes::ACTION;
@@ -590,8 +638,8 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
       } else if (action_.targeting == UIAction::TargetingType::ALLY) {
         if (!entity
             || !entity->hasProperty(GameEntity::P_TARGETABLE)
-            || entity->getTeamID() == NO_TEAM
-            || entity->getTeamID() != player_->getTeamID()) {
+            || entity->getTeamID(t) == NO_TEAM
+            || entity->getTeamID(t) != player_->getTeamID()) {
           return;
         }
         order["type"] = OrderTypes::ACTION;
@@ -600,12 +648,11 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
         order["target_id"] = entity->getGameID();
         highlightEntity(entity->getID());
       } else if (action_.targeting == UIAction::TargetingType::PATHABLE) {
-        if (Game::get()->getMap()->getNavMesh()->isPathable(glm::vec2(loc))) {
-          order["type"] = OrderTypes::ACTION;
-          order["entity"] = toJson(ids);
-          order["action"] = action_.name;
-          order["target"] = toJson(glm::vec2(loc));
-        }
+        // TODO(zack): check if location is pathable
+        order["type"] = OrderTypes::ACTION;
+        order["entity"] = toJson(ids);
+        order["action"] = action_.name;
+        order["target"] = toJson(glm::vec2(loc));
       } else {
         invariant_violation("Unsupported targeting type");
       }
@@ -619,7 +666,7 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
         newSelect.clear();
       }
       // If there is an entity and its ours, select
-      if (entity && entity->getPlayerID() == player_->getPlayerID()) {
+      if (entity && entity->getPlayerID(t) == player_->getPlayerID()) {
         newSelect.insert(entity->getGameID());
       }
     }
@@ -631,15 +678,13 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
     Renderer::get()->zoomCamera(fltParam("local.mouseZoomSpeed"));
   }
 
-  if (!Game::get()->isPaused()) {
-    // Mutate, if game isn't paused
-    player_->setSelection(newSelect);
-    attemptIssueOrder(order);
-  }
+  // Mutate
+  player_->setSelection(newSelect);
+  attemptIssueOrder(order);
 }
 
 void GameController::attemptIssueOrder(Json::Value order) {
-  if (!Game::get()->isPaused() && order.isMember("type")) {
+  if (order.isMember("type")) {
     PlayerAction action;
     action["type"] = ActionTypes::ORDER;
     action["order"] = order;
@@ -647,13 +692,11 @@ void GameController::attemptIssueOrder(Json::Value order) {
   }
 }
 
-
-
-
 Json::Value GameController::handleRightClick(
     const GameEntity *entity,
     const glm::vec3 &loc) {
   Json::Value order;
+  const float t = Renderer::get()->getGameTime();
   // TODO(connor) make right click actions on minimap
   // If there is an order, it is canceled by right click
   if (!order_.empty() || !action_.name.empty()) {
@@ -663,7 +706,7 @@ Json::Value GameController::handleRightClick(
     // Otherwise default to some right click actions
     // If right clicked on enemy unit (and we have a selection)
     // go attack them
-    if (entity && entity->getTeamID() != player_->getTeamID()
+    if (entity && entity->getTeamID(t) != player_->getTeamID()
         && !player_->getSelection().empty()) {
       // Visual feedback
       highlightEntity(entity->getID());
@@ -792,8 +835,6 @@ void GameController::keyPress(const KeyEvent &ev) {
       ctrl_ = true;
     } else if (key == INPUT_KEY_LEFT_ALT || key == INPUT_KEY_RIGHT_ALT) {
       alt_ = true;
-    } else if (key == INPUT_KEY_N) {
-      renderNavMesh_ = !renderNavMesh_;
     } else if (key == INPUT_KEY_BACKSPACE) {
       Renderer::get()->resetCameraRotation();
     } else if (!player_->getSelection().empty()) {
@@ -918,7 +959,7 @@ std::set<GameEntity *> GameController::selectEntities(
       continue;
     }
     auto ge = (GameEntity *) e;
-    if (ge->getPlayerID() == pid
+    if (ge->getPlayerID(t) == pid
         && boxInBox(dragRect, ge->getRect(t))) {
       boxedEntities.insert(ge);
       if (ge->hasProperty(GameEntity::P_UNIT)) {
@@ -952,6 +993,7 @@ void renderHealthBar(
     const std::vector<GameEntity::UIPart> &parts,
     const GameEntity *actor,
     const Player *player) {
+  const float t = Renderer::get()->getGameTime();
   float current_health = 0.f;
   float total_health = 0.f;
   for (auto part : parts) {
@@ -961,7 +1003,7 @@ void renderHealthBar(
 
   glm::vec2 bottom_left = center - size / 2.f;
 
-  if (actor->getTeamID() != player->getTeamID()) {
+  if (actor->getTeamID(t) != player->getTeamID()) {
     auto bgcolor = vec4Param("hud.actor_health.bg_color");
     auto color = vec4Param("hud.actor_health.enemy_color");
     float factor = glm::clamp(current_health / total_health, 0.f, 1.f);
@@ -994,7 +1036,7 @@ void renderHealthBar(
       ? vec4Param("hud.actor_health.bg_color")
       : vec4Param("hud.actor_health.disabled_bg_color");
     glm::vec4 healthBarColor;
-    if (actor->getPlayerID() == player->getPlayerID()) {
+    if (actor->getPlayerID(t) == player->getPlayerID()) {
       healthBarColor = vec4Param("hud.actor_health.local_color");
     } else {
       healthBarColor = vec4Param("hud.actor_health.team_color");
@@ -1031,7 +1073,7 @@ void renderEntity(
   auto transform = glm::translate(glm::mat4(1.f), pos);
   record_section("renderActorInfo");
   // TODO(zack): only render for actors currently on screen/visible
-  auto entitySize = e->getSize();
+  auto entitySize = e->getSize2(t);
   auto circleTransform = glm::scale(
       glm::translate(
         transform,
@@ -1052,7 +1094,7 @@ void renderEntity(
   }
 
   glDisable(GL_DEPTH_TEST);
-  glm::vec3 placardPos(0.f, 0.f, e->getHeight() + 0.50f);
+  glm::vec3 placardPos(0.f, 0.f, e->getHeight(t) + 0.50f);
   auto ndc = getProjectionStack().current() * getViewStack().current()
     * transform * glm::vec4(placardPos, 1.f);
   ndc /= ndc.w;
@@ -1062,7 +1104,7 @@ void renderEntity(
   const auto ui_info = actor->getUIInfo();
 
   // Hotkey
-  if (actor->getPlayerID() == localPlayer->getPlayerID()
+  if (actor->getPlayerID(t) == localPlayer->getPlayerID()
       && ui_info.hotkey >= '0' && ui_info.hotkey <= '9') {
     std::string s;
     s.append(FontManager::get()->makeColorCode(glm::vec3(1,1,1)));
@@ -1133,17 +1175,18 @@ void renderEntity(
 }
 
 void GameController::updateMapShader(Shader *shader) const {
-  // TODO fill visTex_
   shader->uniform1i("texture", 0);
 
   glActiveTexture(GL_TEXTURE0);
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, visTex_);
 }
-void GameController::setVisibilityData(void *data, size_t len) {
-  invariant(data == nullptr, "cannot set visibility data twice");
+
+void GameController::setVisibilityData(void *data, size_t len, const glm::ivec2 &dim) {
+  invariant(visData_ == nullptr, "cannot set visibility data twice");
   visData_ = data;
   visDataLength_ = len;
+  visDim_ = dim;
 }
 
 void GameController::handleUIAction(const UIAction &action) {

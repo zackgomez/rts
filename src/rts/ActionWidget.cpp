@@ -4,6 +4,7 @@
 #include "common/ParamReader.h"
 #include "rts/FontManager.h"
 #include "rts/Game.h"
+#include "rts/GameEntity.h"
 #include "rts/Input.h"
 #include "rts/Renderer.h"
 #include "rts/UIAction.h"
@@ -65,7 +66,7 @@ void ActionWidget::render(float dt) {
     }
 
     if (action_hover && action.radius > 0) {
-      auto ent = Game::get()->getEntity(action.render_id);
+      auto ent = GameEntity::cast(Renderer::get()->getEntity(action.render_id));
       if (ent) {
         auto pos = ent->getPosition(t) + glm::vec3(0, 0, 0.1f);
         glm::mat4 transform = glm::scale(

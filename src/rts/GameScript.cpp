@@ -33,7 +33,7 @@ static Handle<Value> runtimeEvalImpl(
     Handle<String> source,
     Handle<Object> kwargs);
 
-static Handle<Value> runtimeEval(const Arguments &args) {
+static void runtimeEval(const FunctionCallbackInfo<Value> &args) {
   if (args.Length() < 2) {
     invariant_violation("value runtimeEval(source, kwargs)");
   }
@@ -41,12 +41,13 @@ static Handle<Value> runtimeEval(const Arguments &args) {
 
   auto js_source = args[0]->ToString();
   auto js_kwargs = args[1]->ToObject();
-  return scope.Close(runtimeEvalImpl(js_source, js_kwargs));
+  args.GetReturnValue().Set(
+      scope.Close(runtimeEvalImpl(js_source, js_kwargs)));
 }
 
-static Handle<Value> jsPointInOBB2(const Arguments &args);
-static Handle<Value> getCollisionBinding() {
-  HandleScope scope;
+static void jsPointInOBB2(const FunctionCallbackInfo<Value> &args);
+static Handle<Object> getCollisionBinding() {
+  HandleScope scope(Isolate::GetCurrent());
   auto binding = Object::New();
   binding->Set(
       String::New("pointInOBB2"),
@@ -55,9 +56,9 @@ static Handle<Value> getCollisionBinding() {
   return scope.Close(binding);
 }
 
-static Handle<Value> jsResolveCollisions(const Arguments &args);
-static Handle<Value> getPathingBinding() {
-  HandleScope scope;
+static void jsResolveCollisions(const FunctionCallbackInfo<Value> &args);
+static Handle<Object> getPathingBinding() {
+  HandleScope scope(Isolate::GetCurrent());
   auto binding = Object::New();
   binding->Set(
       String::New("resolveCollisions"),
@@ -66,7 +67,7 @@ static Handle<Value> getPathingBinding() {
   return scope.Close(binding);
 }
 
-static Handle<Value> jsRuntimeBinding(const Arguments &args) {
+static void jsRuntimeBinding(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 1, "value runtime.binding(string name)");
   HandleScope scope(args.GetIsolate());
   LOG(DEBUG) << "isolate addr: " << args.GetIsolate() << '\n';
@@ -76,14 +77,10 @@ static Handle<Value> jsRuntimeBinding(const Arguments &args) {
   invariant(
     binding_map->Has(args[0]),
     std::string("unknown binding ") + *String::AsciiValue(name));
-  return scope.Close(binding_map->Get(name));
+  args.GetReturnValue().Set(scope.Close(binding_map->Get(name)));
 }
 
-static Handle<Value> jsGameRandom(const Arguments &args) {
-  return Number::New(Game::get()->gameRandom());
-}
-
-static Handle<Value> jsLog(const Arguments &args) {
+static void jsLog(const FunctionCallbackInfo<Value> &args) {
   HandleScope scope(args.GetIsolate());
   for (int i = 0; i < args.Length(); i++) {
     if (i != 0) std::cout << ' ';
@@ -91,10 +88,10 @@ static Handle<Value> jsLog(const Arguments &args) {
   }
   std::cout << '\n';
 
-  return Undefined();
+  args.GetReturnValue().SetUndefined();
 }
 
-static Handle<Value> jsPointInOBB2(const Arguments &args) {
+static void jsPointInOBB2(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 4, "bool pointInOBB2(p, center, size, angle)");
   HandleScope scope(args.GetIsolate());
 
@@ -104,10 +101,10 @@ static Handle<Value> jsPointInOBB2(const Arguments &args) {
   auto angle = args[3]->NumberValue();
 
   bool contains = pointInBox(pt, center, size, angle);
-  return scope.Close(Boolean::New(contains));
+  args.GetReturnValue().Set(scope.Close(Boolean::New(contains)));
 }
 
-static Handle<Value> jsResolveCollisions(const Arguments &args) {
+static void jsResolveCollisions(const FunctionCallbackInfo<Value> &args) {
   invariant(
       args.Length() == 3,
       "resolveCollisions(map<key, objecy> bodies, float dt, func callback): void");
@@ -156,8 +153,7 @@ static Handle<Value> jsResolveCollisions(const Arguments &args) {
       }
     }
   }
-
-  return Undefined();
+  args.GetReturnValue().SetUndefined();
 }
 
 GameScript::GameScript()
@@ -171,13 +167,31 @@ GameScript::~GameScript() {
     Context::Scope context_scope(isolate_, context_);
 
     jsBindings_.Dispose();
-    context_.Dispose(isolate_);
+    context_.Reset();
   }
   isolate_->Exit();
   isolate_->Dispose();
 }
 
+class MyAllocator : public v8::ArrayBuffer::Allocator {
+public:
+  virtual ~MyAllocator() { }
+  virtual void* Allocate(size_t length) override {
+    return calloc(1, length);
+  }
+  virtual void* AllocateUninitialized(size_t length) override {
+    return malloc(length);
+  }
+  virtual void Free(void* data, size_t length) override {
+    free(data);
+  }
+};
+
 void configure_v8() {
+  static bool configured = false;
+  if (configured) return;
+  
+  configured = true;
   const int v8_argc = 4;
   int argc = v8_argc;
   char *argv[] = {
@@ -188,11 +202,13 @@ void configure_v8() {
   };
   v8::V8::SetFlagsFromCommandLine(&argc, argv, true);
   for (int i = 0; i < v8_argc; i++) {
-    free(argv[i]);
+//    free(argv[i]);
   }
+
+  V8::SetArrayBufferAllocator(new MyAllocator());
 }
 
-v8::Persistent<v8::Value> GameScript::init(const std::string &main_module_name) {
+v8::Local<v8::Value> GameScript::init(const std::string &main_module_name) {
   configure_v8();
 
   isolate_ = Isolate::New();
@@ -208,28 +224,25 @@ v8::Persistent<v8::Value> GameScript::init(const std::string &main_module_name) 
   global->Set(
       String::New("Log"),
       FunctionTemplate::New(jsLog));
-  global->Set(
-      String::New("GameRandom"),
-      FunctionTemplate::New(jsGameRandom));
 
   context_.Reset(isolate_, Context::New(isolate_, nullptr, global));
   Context::Scope context_scope(isolate_, context_);
 
   // init bindings
-  jsBindings_ = Persistent<Object>::New(isolate_, Object::New());
-  jsBindings_->Set(
+  auto bindings = Object::New();
+  bindings->Set(
       String::New("collision"),
       getCollisionBinding());
-  jsBindings_->Set(
+  bindings->Set(
       String::New("pathing"),
       getPathingBinding());
-  jsBindings_->Set(
+  bindings->Set(
       String::New("renderer"),
       getRendererBinding());
-  jsBindings_->Set(
+  bindings->Set(
       String::New("nativeui"),
       getNativeUIBinding());
-
+  jsBindings_.Reset(isolate_, bindings);
   // set up runtime object
   auto source_map = getSourceMap();
   auto runtime_object = Object::New();
@@ -242,7 +255,7 @@ v8::Persistent<v8::Value> GameScript::init(const std::string &main_module_name) 
   runtime_object->Set(
       String::New("eval"),
       FunctionTemplate::New(runtimeEval)->GetFunction());
-  context_->Global()->Set(
+  getContext()->Global()->Set(
       String::New("runtime"),
       runtime_object);
 
@@ -271,10 +284,8 @@ v8::Persistent<v8::Value> GameScript::init(const std::string &main_module_name) 
   auto ret = Handle<Function>::Cast(bootstrap_func_val)
     ->Call(getGlobal(), argc, argv);
   checkJSResult(ret, try_catch, "bootstrap");
-  jsInitResult_ = v8::Persistent<v8::Value>(
-      Isolate::GetCurrent(),
-      ret);
-  return jsInitResult_;
+  jsInitResult_.Reset(isolate_, ret);
+  return Local<Value>::New(isolate_, jsInitResult_);
 }
 
 
@@ -308,11 +319,11 @@ Handle<Object> GameScript::getSourceMap() const {
 }
 
 Handle<Object> GameScript::getGlobal() {
-  return context_->Global();
+  return getContext()->Global();
 }
 
 Handle<Value> jsonToJS(const Json::Value &json) {
-  HandleScope handle_scope;
+  HandleScope handle_scope(Isolate::GetCurrent());
   Handle<Value> ret;
   if (json.isArray()) {
     Handle<Array> jsarr = Array::New();
@@ -374,6 +385,16 @@ Json::Value jsToJSON(const Handle<Value> js) {
   }
 }
 
+glm::ivec2 jsToIVec2(const Handle<Array> arr) {
+  invariant(
+      arr->Length() == 2,
+      "trying to convert an incorrectly sized array to ivec2");
+
+  glm::ivec2 ret;
+  ret.x = arr->Get(0)->ToInt32()->Int32Value();
+  ret.y = arr->Get(1)->ToInt32()->Int32Value();
+  return ret;
+}
 glm::vec2 jsToVec2(const Handle<Array> arr) {
   invariant(
       arr->Length() == 2,
@@ -397,7 +418,7 @@ glm::vec3 jsToVec3(const Handle<Array> arr) {
 }
 
 Handle<Array> vec2ToJS(const glm::vec2 &v) {
-  HandleScope scope;
+  HandleScope scope(Isolate::GetCurrent());
   Handle<Array> ret = Array::New();
   ret->Set(0, Number::New(v[0]));
   ret->Set(1, Number::New(v[1]));

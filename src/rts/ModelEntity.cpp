@@ -11,17 +11,27 @@ ModelEntity::ModelEntity(id_t id)
   : id_(id),
     posCurve_(glm::vec3(0.f)),
     angleCurve_(0.f),
-    size_(0.f),
-    scale_(1.f),
+    sizeCurve_(glm::vec3(0.f)),
     color_(0.f),
+    scale_(1.f),
     visible_(true) {
 }
 
 ModelEntity::~ModelEntity() {
 }
 
+
+glm::vec2 ModelEntity::getSize2(float t) const {
+  return glm::vec2(getSize3(t));
+}
+glm::vec3 ModelEntity::getSize3(float t) const {
+  return sizeCurve_.linearSample(t);
+}
+float ModelEntity::getHeight(float t) const {
+  return sizeCurve_.linearSample(t).z;
+}
 const Rect ModelEntity::getRect(float t) const {
-  return Rect(glm::vec2(getPosition(t)), getSize(), glm::radians(getAngle(t)));
+  return Rect(glm::vec2(getPosition(t)), getSize2(t), glm::radians(getAngle(t)));
 }
 
 void ModelEntity::setPosition(float t, const glm::vec2 &pos) {
@@ -31,14 +41,11 @@ void ModelEntity::setPosition(float t, const glm::vec2 &pos) {
 void ModelEntity::setPosition(float t, const glm::vec3 &pos) {
   posCurve_.addKeyframe(t, pos);
 }
-void ModelEntity::setSize(const glm::vec2 &size) {
-  size_.xy = size;
+void ModelEntity::setSize(float t, const glm::vec3 &size) {
+  sizeCurve_.addKeyframe(t, size);
 }
 void ModelEntity::setAngle(float t, float angle) {
 	angleCurve_.addKeyframe(t, angle);
-}
-void ModelEntity::setHeight(float height) {
-  size_.z = height;
 }
 
 bool ModelEntity::isVisible() const {
@@ -92,11 +99,11 @@ void ModelEntity::render(float t) {
     shader->makeActive();
     shader->uniform4f("color", glm::vec4(0.8f, 0.3f, 0.3f, 0.6f));
 
-    auto pos = getPosition(t) + glm::vec3(0.f, 0.f, getHeight()/2.f);
+    auto pos = getPosition(t) + glm::vec3(0.f, 0.f, getHeight(t)/2.f);
     ::renderModel(
         glm::scale(
           glm::translate(glm::mat4(1.f), pos),
-          0.5f * glm::vec3(getSize(), getHeight())),
+          0.5f * getSize3(t)),
         ResourceManager::get()->getModel("cube"));
   }
 

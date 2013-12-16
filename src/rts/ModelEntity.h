@@ -24,13 +24,10 @@ public:
   }
 
   // This unit's bounding box
-  glm::vec2 getSize() const {
-    return glm::vec2(size_);
-  }
+  glm::vec2 getSize2(float t) const;
+  glm::vec3 getSize3(float t) const;
   // Returns this entities height
-  float getHeight() const {
-    return size_.z;
-  }
+  float getHeight(float t) const;
 
   // Interpolation functions
   glm::vec2 getPosition2(float t) const;
@@ -46,8 +43,7 @@ public:
   void setAngle(float t, float angle);
   void setVisible(bool visible);
 
-  void setSize(const glm::vec2 &size);
-  void setHeight(float height);
+  void setSize(float t, const glm::vec3 &size);
 
   // Graphics setters
   void setModelName(const std::string &meshName);
@@ -66,8 +62,7 @@ private:
   id_t id_;
   Vec3Curve posCurve_;
 	FloatCurve angleCurve_;
-
-  glm::vec3 size_;
+  Vec3Curve sizeCurve_;
 
   bool visible_;
 
