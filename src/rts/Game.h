@@ -1,15 +1,11 @@
 #ifndef SRC_RTS_GAME_H_
 #define SRC_RTS_GAME_H_
 
-#include <set>
 #include <vector>
 #include <mutex>
-#include <queue>
 #include <glm/glm.hpp>
 #include "common/Clock.h"
-#include "common/Checksum.h"
 #include "common/Logger.h"
-#include "rts/GameEntity.h"
 #include "rts/GameScript.h"
 #include "rts/PlayerAction.h"
 
@@ -17,6 +13,7 @@ namespace rts {
 
 class Map;
 class Player;
+class GameEntity;
 struct ChatMessage;
 
 // Handles the game logic and player actions, is very multithread aware.

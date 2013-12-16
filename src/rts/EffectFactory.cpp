@@ -5,6 +5,7 @@
 #include "rts/EffectManager.h"
 #include "rts/FontManager.h"
 #include "rts/Game.h"
+#include "rts/GameEntity.h"
 #include "rts/GameScript.h"
 #include "rts/Graphics.h"
 #include "rts/ResourceManager.h"

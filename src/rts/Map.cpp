@@ -2,6 +2,7 @@
 #include <vector>
 #include "common/Collision.h"
 #include "rts/Game.h"
+#include "rts/ModelEntity.h"
 #include "rts/Player.h"
 #include "rts/Renderer.h"
 

@@ -1,6 +1,7 @@
 #include "rts/RendererBinding.h"
 #include <v8.h>
 #include "rts/Game.h"
+#include "rts/GameEntity.h"
 #include "rts/Player.h"
 #include "rts/Renderer.h"
 

@@ -4,6 +4,7 @@
 #include "common/ParamReader.h"
 #include "rts/FontManager.h"
 #include "rts/Game.h"
+#include "rts/GameEntity.h"
 #include "rts/Input.h"
 #include "rts/Renderer.h"
 #include "rts/UIAction.h"
