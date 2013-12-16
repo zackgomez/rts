@@ -92,8 +92,6 @@ void Game::start() {
 
   // Initialize map
   map_->init();
-
-  Renderer::get()->setGameTime(elapsedTime_);
 }
 
 void Game::update(float dt) {
@@ -149,6 +147,8 @@ void Game::addAction(id_t pid, const PlayerAction &act) {
     actions_.push_back(order);
   } else if (act["type"] == ActionTypes::LEAVE_GAME) {
     running_ = false;
+  } else if (act["type"] == ActionTypes::CHAT) {
+    LOG(WARN) << "Chat is unimplemented\n";
   } else {
     invariant_violation(std::string("Unknown action type ") + act["type"].asString());
   }
@@ -157,8 +157,8 @@ void Game::addAction(id_t pid, const PlayerAction &act) {
 const GameEntity * Game::getEntity(const std::string &game_id) const {
   // TODO this is horribly inefficient :-/
   return findEntity([=](const GameEntity *e) -> bool {
-        return e->getGameID() == game_id;
-      });
+    return e->getGameID() == game_id;
+  });
 }
 
 const GameEntity * Game::findEntity(

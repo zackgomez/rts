@@ -54,6 +54,7 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
     (rts::LocalPlayer *) Game::get()->getPlayer(localPlayerID));
   Renderer::get()->postToMainThread([=] () {
     Renderer::get()->setController(controller);
+    Renderer::get()->setGameTime(0.f);
   });
 
   Clock::time_point start = Clock::now();

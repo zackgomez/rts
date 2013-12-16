@@ -14,7 +14,6 @@
 #include "rts/Controller.h"
 #include "rts/EffectManager.h"
 #include "rts/FontManager.h"
-#include "rts/Game.h"
 #include "rts/Graphics.h"
 #include "rts/Map.h"
 #include "rts/ModelEntity.h"
