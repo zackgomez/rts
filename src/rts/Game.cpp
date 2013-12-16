@@ -46,14 +46,6 @@ Game::~Game() {
 
 }
 
-v8::Handle<v8::Object> Game::getGameObject() {
-  auto obj = script_.getInitReturn();
-  invariant(
-    obj->IsObject(),
-    "expected js main function to return object");
-  return v8::Handle<v8::Object>::Cast(obj);
-}
-
 void Game::start() {
   using namespace v8;
   auto init_ret = script_.init("game-main");
@@ -112,7 +104,6 @@ void Game::update(float dt) {
 
   // Update javascript, passing player input
   updateJS(js_player_inputs, dt);
-
 
   // TODO(zack): move this win condition into JS
   // Check to see if this player has won
