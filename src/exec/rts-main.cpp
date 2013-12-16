@@ -63,6 +63,11 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
   while (game->isRunning()) {
     game->update(simdt);
 
+    // Synchronize renderer with game
+    auto engine_lock = Renderer::get()->lockEngine();
+    game->render();
+    engine_lock.unlock();
+
 		tick_count++;
 		float delay = simdt * tick_count - Clock::secondsSince(start);
     std::chrono::milliseconds delayms(static_cast<int>(1000 * delay));

@@ -27,11 +27,10 @@ class Game {
 
   static Game* get() { return instance_; }
 
-  // Synchronizes game between players and does any other initialization
-  // required
   void start();
-
   void update(float dt);
+  void render();
+
   const Map * getMap() const {
     return map_;
   }
@@ -63,8 +62,6 @@ class Game {
  private:
   const GameEntity * findEntity(std::function<bool(const GameEntity *)> f) const;
   void updateJS(v8::Handle<v8::Array> player_inputs, float dt);
-  // Load the victory points from JS.
-  void renderJS();
 
   v8::Handle<v8::Object> getGameObject();
 

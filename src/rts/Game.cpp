@@ -116,10 +116,6 @@ void Game::update(float dt) {
   // Update javascript, passing player input
   updateJS(js_player_inputs, dt);
 
-  // Synchronize with JS about resources/vps/etc
-  auto engine_lock = Renderer::get()->lockEngine();
-  renderJS();
-  engine_lock.unlock();
 
   // TODO(zack): move this win condition into JS
   // Check to see if this player has won
@@ -131,6 +127,38 @@ void Game::update(float dt) {
       // TODO(connor) also, send a message to game
       running_ = false;
     }
+  }
+}
+
+// Reconcile javascript state with engine state
+void Game::render() {
+  using namespace v8;
+  auto script = getScript();
+  ENTER_GAMESCRIPT(script);
+  TryCatch try_catch;
+
+  auto game_object = getGameObject();
+  Handle<Function> game_render_function = Handle<Function>::Cast(
+      game_object->Get(String::New("render")));
+  Handle<Value> js_render_result_ret =
+    game_render_function->Call(game_object, 0, nullptr);
+  checkJSResult(js_render_result_ret, try_catch, "render");
+  Handle<Object> js_render_result = Handle<Object>::Cast(js_render_result_ret);
+
+  Handle<Array> js_players = Handle<Array>::Cast(
+      js_render_result->Get(String::New("players")));
+  for (int i = 0; i < js_players->Length(); i++) {
+    Handle<Object> js_player = Handle<Object>::Cast(js_players->Get(i));
+    id_t pid = js_player->Get(String::New("pid"))->IntegerValue();
+    requisition_[pid] = js_player->Get(String::New("req"))->NumberValue();
+  }
+
+  Handle<Array> js_teams = Handle<Array>::Cast(
+      js_render_result->Get(String::New("teams")));
+  for (int i = 0; i < js_teams->Length(); i++) {
+    auto js_team = Handle<Object>::Cast(js_teams->Get(i));
+    id_t tid = js_team->Get(String::New("tid"))->IntegerValue();
+    victoryPoints_[tid] = js_team->Get(String::New("vps"))->NumberValue();
   }
 }
 
@@ -196,38 +224,6 @@ float Game::getRequisition(id_t pid) const {
   invariant(it != requisition_.end(),
       "Unknown playerID to get requisition for");
   return it->second;
-}
-
-// Reconcile javascript state with engine state
-void Game::renderJS() {
-  using namespace v8;
-  auto script = &script_;
-  HandleScope scope(script->getIsolate());
-  TryCatch try_catch;
-  auto game_object = getGameObject();
-
-  Handle<Function> game_render_function = Handle<Function>::Cast(
-      game_object->Get(String::New("render")));
-  Handle<Value> js_render_result_ret =
-    game_render_function->Call(game_object, 0, nullptr);
-  checkJSResult(js_render_result_ret, try_catch, "render");
-  Handle<Object> js_render_result = Handle<Object>::Cast(js_render_result_ret);
-
-  Handle<Array> js_players = Handle<Array>::Cast(
-      js_render_result->Get(String::New("players")));
-  for (int i = 0; i < js_players->Length(); i++) {
-    Handle<Object> js_player = Handle<Object>::Cast(js_players->Get(i));
-    id_t pid = js_player->Get(String::New("pid"))->IntegerValue();
-    requisition_[pid] = js_player->Get(String::New("req"))->NumberValue();
-  }
-
-  Handle<Array> js_teams = Handle<Array>::Cast(
-      js_render_result->Get(String::New("teams")));
-  for (int i = 0; i < js_teams->Length(); i++) {
-    auto js_team = Handle<Object>::Cast(js_teams->Get(i));
-    id_t tid = js_team->Get(String::New("tid"))->IntegerValue();
-    victoryPoints_[tid] = js_team->Get(String::New("vps"))->NumberValue();
-  }
 }
 
 float Game::getVictoryPoints(id_t tid) const {
