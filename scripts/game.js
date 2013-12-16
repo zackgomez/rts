@@ -254,7 +254,6 @@ exports.render = function () {
 
     var size2 = game_entity.getSize();
     var size3 = [size2[0], size2[1], game_entity.getHeight()];
-    Log(JSON.stringify(size3));
     render_entity.setSize(elapsed_time, size3);
     render_entity.setSight(elapsed_time, game_entity.getSight());
 
