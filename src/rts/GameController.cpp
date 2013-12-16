@@ -89,7 +89,6 @@ GameController::GameController(LocalPlayer *player)
     leftDrag_(false),
     leftDragMinimap_(false),
     state_(PlayerState::DEFAULT),
-    renderNavMesh_(false),
     visData_(nullptr),
     visDataLength_(0),
     order_(),
@@ -332,13 +331,6 @@ void GameController::renderExtra(float dt) {
           glm::vec3(2 * action_.radius));
       renderCircleColor(transform, glm::vec4(0, 0, 1, 1.0));
     }
-  }
-
-  // TODO(zack): bit of hack here
-  if (renderNavMesh_) {
-    renderNavMesh(*Game::get()->getMap()->getNavMesh(),
-        glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 0.15f)), glm::vec3(0.8)),
-        glm::vec4(0.6, 0.6, 0.2, 0.75f));
   }
 
   // Get vp infomation
@@ -630,12 +622,11 @@ void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
         order["target_id"] = entity->getGameID();
         highlightEntity(entity->getID());
       } else if (action_.targeting == UIAction::TargetingType::PATHABLE) {
-        if (Game::get()->getMap()->getNavMesh()->isPathable(glm::vec2(loc))) {
-          order["type"] = OrderTypes::ACTION;
-          order["entity"] = toJson(ids);
-          order["action"] = action_.name;
-          order["target"] = toJson(glm::vec2(loc));
-        }
+        // TODO(zack): check if location is pathable
+        order["type"] = OrderTypes::ACTION;
+        order["entity"] = toJson(ids);
+        order["action"] = action_.name;
+        order["target"] = toJson(glm::vec2(loc));
       } else {
         invariant_violation("Unsupported targeting type");
       }
@@ -818,8 +809,6 @@ void GameController::keyPress(const KeyEvent &ev) {
       ctrl_ = true;
     } else if (key == INPUT_KEY_LEFT_ALT || key == INPUT_KEY_RIGHT_ALT) {
       alt_ = true;
-    } else if (key == INPUT_KEY_N) {
-      renderNavMesh_ = !renderNavMesh_;
     } else if (key == INPUT_KEY_BACKSPACE) {
       Renderer::get()->resetCameraRotation();
     } else if (!player_->getSelection().empty()) {

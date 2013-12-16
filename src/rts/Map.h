@@ -5,7 +5,6 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include "common/util.h"
-#include "common/NavMesh.h"
 
 namespace rts {
 
@@ -25,8 +24,6 @@ class Map {
 
   // Initializes the map and any start entities/etc
   void init();
-  
-  NavMesh* getNavMesh() const { return navmesh_; }
 
   // @param location_idx int in [0, max_players)
   // @return starting location defintion with keys pos -> vec2, angle -> float
@@ -36,8 +33,6 @@ class Map {
 
  private:
   Json::Value definition_;
-
-  NavMesh *navmesh_;
 };
 };  // rts
 
