@@ -45,7 +45,6 @@ void MinimapWidget::renderBase() {
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, tex);
   drawShaderCenter(getCenter(), getSize());
-  drawTexture(glm::vec2(200.f), glm::vec2(100.f), tex);
 }
 
 void MinimapWidget::render(float dt) {

@@ -47,7 +47,8 @@ VisibilityMap.prototype.pointToCell = function (pid, pt) {
 
 VisibilityMap.prototype.clearCells = function () {
   for (var i = 0; i < this.data.length; i++) {
-    this.data[i] = 0;
+    // TODO(zack): this is a hack, change to 0 here when visibility implemented
+    this.data[i] = 255;
   }
 }
 
@@ -66,15 +67,19 @@ VisibilityMap.prototype.isPointVisible = function (pid, pt) {
   return this.data[cell_i] !== 0;
 }
 
+VisibilityMap.prototype.updateVisibilityFor = function (pid, pos, sight) {
+  var cell_i = this.pointToCell(pid, pos);
+  // TODO(zack): fill by sight this instead of just the cell
+  this.data[cell_i] = 255;
+}
+
 VisibilityMap.prototype.updateMap_UI = function (sight_positions) {
   this.clearCells();
   _.each(sight_positions, function (e) {
     var pos = e.pos;
     var sight = e.sight;
     // HACK only one play for GUI usage
-    var cell_i = this.pointToCell(IDConst.STARTING_PID, pos);
-    // TODO(zack): fill by sight this instead of just the cell
-    this.data[cell_i] = 255;
+    this.updateVisibilityFor(STARTING_PID, pos, sight);
  }, this);
 }
 
@@ -88,8 +93,7 @@ VisibilityMap.prototype.updateMap = function (entities) {
     }
 
     // TODO(zack): fill out grid here
-    var cell_i = this.pointToCell(pid, entity.getPosition2());
-    this.data[cell_i] = 1;
+    this.updateVisibilityFor(pid, entity.getPosition2(), entity.getSight());
   }, this);
 }
 
