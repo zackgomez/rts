@@ -7,7 +7,23 @@
 #include "rts/Map.h"
 #include "rts/Player.h"
 
+static const uint32_t P_GAMEENTITY = 293013864;
+
 namespace rts {
+
+GameEntity* GameEntity::cast(ModelEntity *e) {
+  if (!e) {
+    return nullptr;
+  }
+  if (!e->hasProperty(P_GAMEENTITY)) {
+    return nullptr;
+  }
+  return (GameEntity *)e;
+}
+
+const GameEntity* GameEntity::cast(const ModelEntity *e) {
+  return GameEntity::cast((ModelEntity*) e);
+}
 
 GameEntity::GameEntity(id_t id) : ModelEntity(id),
     gameID_(),
@@ -18,6 +34,13 @@ GameEntity::GameEntity(id_t id) : ModelEntity(id),
 }
 
 GameEntity::~GameEntity() {
+}
+
+bool GameEntity::hasProperty(uint32_t property) const {
+  if (property == P_GAMEENTITY) {
+    return true;
+  }
+  return properties_.count(property);
 }
 
 void GameEntity::preRender(float t) {

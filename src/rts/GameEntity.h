@@ -16,13 +16,13 @@ namespace rts {
 
 typedef std::set<id_t> VisibilitySet;
 
-// TODO(zack): merge with actor
 class GameEntity : public ModelEntity {
  public:
+  static GameEntity* cast(ModelEntity *e);
+  static const GameEntity* cast(const ModelEntity *e);
   explicit GameEntity(id_t id);
   virtual ~GameEntity();
 
-  static const uint32_t P_GAMEENTITY = 293013864;
   static const uint32_t P_TARGETABLE = 463132888;
   static const uint32_t P_CAPPABLE = 815586235;
   static const uint32_t P_ACTOR = 913794634;
@@ -53,12 +53,7 @@ class GameEntity : public ModelEntity {
     std::vector<glm::vec3> path;
   };
 
-  virtual bool hasProperty(uint32_t property) const final override {
-    if (property == P_GAMEENTITY) {
-      return true;
-    }
-    return properties_.count(property);
-  }
+  virtual bool hasProperty(uint32_t property) const final override;
 
   const std::string& getGameID() const {
     return gameID_;

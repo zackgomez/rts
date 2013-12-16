@@ -312,7 +312,7 @@ void GameController::renderExtra(float dt) {
   renderHighlights(highlights_, dt);
 
   if (!action_.name.empty()) {
-    const GameEntity *e = Game::get()->getEntity(action_.render_id);
+    const GameEntity *e = GameEntity::cast(Renderer::get()->getEntity(action_.render_id));
     invariant(e, "Unable to find action owner");
 
     float t = Renderer::get()->getGameTime();
@@ -457,11 +457,8 @@ void GameController::updateVisibility(float t) {
   auto js_controller = getJSController();
   auto js_entities = v8::Array::New();
   for (auto &pair : Renderer::get()->getEntities()) {
-    auto *entity = pair.second;
-    if (!entity->hasProperty(GameEntity::P_GAMEENTITY)) {
-      continue;
-    }
-    auto *game_entity = (GameEntity *)entity;
+    auto *game_entity = GameEntity::cast(pair.second);
+    if (!game_entity) continue;
     game_entity->setVisible(
         game_entity->isVisibleTo(t, player_->getPlayerID()));
 

@@ -48,9 +48,7 @@ class Game {
   // Can possibly block, but should never block long
   void addAction(id_t pid, const PlayerAction &act);
 
-  const GameEntity * getEntity(id_t id) const;
   const GameEntity * getEntity(const std::string &game_id) const;
-  const GameEntity * findEntity(std::function<bool(const GameEntity *)> f) const;
   const Player * getPlayer(id_t pid) const;
   const std::vector<Player *>& getPlayers() const { return players_; }
 
@@ -63,11 +61,12 @@ class Game {
   }
 
  private:
-  v8::Handle<v8::Object> getGameObject();
-
+  const GameEntity * findEntity(std::function<bool(const GameEntity *)> f) const;
   void updateJS(v8::Handle<v8::Array> player_inputs, float dt);
   // Load the victory points from JS.
   void renderJS();
+
+  v8::Handle<v8::Object> getGameObject();
 
   std::mutex actionMutex_;
   std::vector<PlayerAction> actions_;

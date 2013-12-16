@@ -154,15 +154,6 @@ void Game::addAction(id_t pid, const PlayerAction &act) {
   }
 }
 
-const GameEntity * Game::getEntity(id_t eid) const {
-  auto entities = Renderer::get()->getEntities();
-  auto it = entities.find(eid);
-  if (it == entities.end() || !it->second->hasProperty(GameEntity::P_GAMEENTITY)) {
-    return nullptr;
-  }
-  return (GameEntity *)it->second;
-}
-
 const GameEntity * Game::getEntity(const std::string &game_id) const {
   // TODO this is horribly inefficient :-/
   return findEntity([=](const GameEntity *e) -> bool {
@@ -174,10 +165,8 @@ const GameEntity * Game::findEntity(
     std::function<bool(const GameEntity *)> f) const {
   auto entities = Renderer::get()->getEntities();
   for (auto pair : entities) {
-    if (!pair.second->hasProperty(GameEntity::P_GAMEENTITY)) {
-      continue;
-    }
-    const GameEntity *e = (const GameEntity *)pair.second;
+    const auto *e = GameEntity::cast(pair.second);
+    if (!e) continue;
     if (f(e)) {
       return e;
     }
