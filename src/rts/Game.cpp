@@ -89,9 +89,6 @@ void Game::start() {
       game_object->Get(String::New("init")));
   auto ret = game_init_method->Call(game_object, argc, argv);
   checkJSResult(ret, try_catch, "Game.init:");
-
-  // Initialize map
-  map_->init();
 }
 
 void Game::update(float dt) {

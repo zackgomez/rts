@@ -282,6 +282,30 @@ void GameController::onCreate() {
       return ss.str();
   });
   Renderer::get()->resetCameraRotation();
+
+  // TODO(zack): make this 'loadMap'
+  auto *map = Game::get()->getMap();
+  Renderer::get()->setMapColor(map->getColor());
+  Renderer::get()->setMapSize(map->getSize());
+
+  Json::Value collision_objects =
+    must_have_idx(map->getMapDefinition(), "collision_objects");
+  for (int i = 0; i < collision_objects.size(); i++) {
+    Json::Value collision_object_def = collision_objects[i];
+
+    id_t eid = Renderer::get()->newEntityID();
+    glm::vec2 pos = toVec2(collision_object_def["pos"]);
+    glm::vec2 size = toVec2(collision_object_def["size"]);
+    ModelEntity *obj = new ModelEntity(eid);
+    obj->setSize(0.f, glm::vec3(size, 0.f));
+    obj->setPosition(0.f, glm::vec3(pos, 0.1f));
+    obj->setAngle(0.f, collision_object_def["angle"].asFloat());
+
+    obj->setScale(glm::vec3(2.f*size, 1.f));
+    // TODO(zack): could be prettier than just a square
+    obj->setModelName("square");
+    Renderer::get()->spawnEntity(obj);
+  }
 }
 
 void GameController::onDestroy() {
@@ -289,7 +313,9 @@ void GameController::onDestroy() {
   Renderer::get()->setEntityOverlayRenderer(Renderer::EntityOverlayRenderer());
   getUI()->clearWidgets();
   glDeleteTextures(1, &visTex_);
-  
+
+  // TODO(zack): Make this unload map
+  Renderer::get()->setMapSize(glm::vec2(0.f));
 }
 
 glm::vec4 GameController::getTeamColor(const id_t tid) const {

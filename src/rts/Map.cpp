@@ -30,30 +30,6 @@ size_t Map::getMaxPlayers() const {
   return must_have_idx(definition_, "players").asUInt();
 }
 
-void Map::init() {
-  Renderer::get()->setMapSize(getSize());
-  Renderer::get()->setMapColor(getColor());
-
-  Json::Value collision_objects =
-    must_have_idx(definition_, "collision_objects");
-  for (int i = 0; i < collision_objects.size(); i++) {
-    Json::Value collision_object_def = collision_objects[i];
-
-    id_t eid = Renderer::get()->newEntityID();
-    glm::vec2 pos = toVec2(collision_object_def["pos"]);
-    glm::vec2 size = toVec2(collision_object_def["size"]);
-    ModelEntity *obj = new ModelEntity(eid);
-    obj->setSize(0.f, glm::vec3(size, 0.f));
-    obj->setPosition(0.f, glm::vec3(pos, 0.1f));
-    obj->setAngle(0.f, collision_object_def["angle"].asFloat());
-
-    obj->setScale(glm::vec3(2.f*size, 1.f));
-    // TODO(zack): could be prettier than just a square
-    obj->setModelName("square");
-    Renderer::get()->spawnEntity(obj);
-  }
-}
-
 Json::Value Map::getMapDefinition() const {
   return definition_;
 }

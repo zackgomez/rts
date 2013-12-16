@@ -22,9 +22,6 @@ class Map {
   float getMapHeight(const glm::vec2 &pos) const;
   size_t getMaxPlayers() const;
 
-  // Initializes the map and any start entities/etc
-  void init();
-
   // @param location_idx int in [0, max_players)
   // @return starting location defintion with keys pos -> vec2, angle -> float
   Json::Value getStartingLocation(int location_idx) const;
