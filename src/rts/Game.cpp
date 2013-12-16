@@ -46,6 +46,14 @@ Game::~Game() {
 
 }
 
+v8::Handle<v8::Object> Game::getGameObject() {
+  auto obj = script_.getInitReturn();
+  invariant(
+      obj->IsObject(),
+      "expected js main function to return object");
+  return v8::Handle<v8::Object>::Cast(obj);
+}
+
 void Game::start() {
   using namespace v8;
   auto init_ret = script_.init("game-main");
