@@ -444,8 +444,8 @@ std::string GameController::getCursorTexture() const {
 }
 
 void GameController::updateVisibility(float t) {
-
   ENTER_GAMESCRIPT(gameScript_);
+  v8::TryCatch try_catch;
   auto js_controller = getJSController();
   auto js_entities = v8::Array::New();
   for (auto &pair : Renderer::get()->getEntities()) {
@@ -467,8 +467,8 @@ void GameController::updateVisibility(float t) {
     js_controller->Get(v8::String::New("update")));
   const int argc = 1;
   v8::Handle<v8::Value> argv[] = { js_entities };
-  js_update_func->Call(js_controller, argc, argv);
-
+  auto ret = js_update_func->Call(js_controller, argc, argv);
+  checkJSResult(ret, try_catch, "ui_update");
 
   size_t len = visDim_.x * visDim_.y;
   uint8_t *data = new uint8_t[len];

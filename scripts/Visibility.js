@@ -79,7 +79,7 @@ VisibilityMap.prototype.updateMap_UI = function (sight_positions) {
     var pos = e.pos;
     var sight = e.sight;
     // HACK only one play for GUI usage
-    this.updateVisibilityFor(STARTING_PID, pos, sight);
+    this.updateVisibilityFor(IDConst.STARTING_PID, pos, sight);
  }, this);
 }
 
