@@ -69,17 +69,19 @@ class GameEntity : public ModelEntity {
   // The player that owns this entity, or NO_PLAYER
   id_t getPlayerID(float t) const;
   id_t getTeamID(float t) const;
+  bool getAlive(float t) const;
 
   float getSight(float t) const {
     return sight_;
   }
-
   void setSight(float t, float sight) {
     sight_ = sight;
   }
+
   void setGameID(const std::string &id) {
     gameID_ = id;
   }
+  void setAlive(float t, bool alive);
   void setPlayerID(float t, id_t pid);
   void setTeamID(float t, id_t tid);
 
@@ -108,8 +110,8 @@ class GameEntity : public ModelEntity {
   std::string gameID_;
   Curve<id_t> playerCurve_;
   Curve<id_t> teamCurve_;
+  Curve<bool> aliveCurve_;
   Curve<VisibilitySet> visibilityCurve_;
-
 
   // TODO(zack): kill this
   std::map<uint32_t, Clock::time_point> lastTookDamage_;

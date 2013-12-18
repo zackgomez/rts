@@ -85,6 +85,18 @@ static void entitySetGameID(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().SetUndefined();
 }
 
+static void entitySetAlive(const FunctionCallbackInfo<Value> &args) {
+  invariant(args.Length() == 2, "setAlive(float t, bool alive)");
+
+  HandleScope scope(args.GetIsolate());
+  Local<Object> self = args.Holder();
+  Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
+  GameEntity *e = static_cast<GameEntity *>(wrap->Value());
+
+  e->setAlive(args[0]->NumberValue(), args[1]->BooleanValue());
+  args.GetReturnValue().SetUndefined();
+}
+
 static void entitySetModel(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 1, "setModel(string model)");
 
@@ -301,6 +313,9 @@ static Handle<ObjectTemplate> make_entity_template() {
   entity_template->Set(
       String::New("setGameID"),
       FunctionTemplate::New(entitySetGameID));
+  entity_template->Set(
+      String::New("setAlive"),
+      FunctionTemplate::New(entitySetAlive));
   entity_template->Set(
       String::New("setModel"),
       FunctionTemplate::New(entitySetModel));

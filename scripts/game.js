@@ -24,6 +24,7 @@ var elapsed_time = 0;
 var entities = {};
 var players = {};
 var teams = {};
+var dead_entities = [];
 var eid_to_render_entity = {};
 var last_id = IDConst.STARTING_EID;
 var visibility_map = null;
@@ -234,11 +235,17 @@ exports.update = function (player_inputs, dt) {
 };
 
 exports.render = function () {
+  _.each(dead_entities, function (entity) {
+    var render_entity = eid_to_render_entity[entity.getID()];
+    render_entity.setAlive(elapsed_time, false);
+  });
+  dead_entities = [];
   for (var eid in entities) {
     var game_entity = entities[eid];
     var render_entity = eid_to_render_entity[eid];
     if (!render_entity) {
       render_entity = Renderer.spawnEntity();
+      render_entity.setAlive(elapsed_time, true);
       eid_to_render_entity[eid] = render_entity;
     }
 

@@ -29,6 +29,7 @@ GameEntity::GameEntity(id_t id) : ModelEntity(id),
     gameID_(),
     playerCurve_(NO_PLAYER),
     teamCurve_(NO_PLAYER),
+    aliveCurve_(false),
     visibilityCurve_(VisibilitySet()),
     sight_(0.f),
     uiInfo_() {
@@ -75,6 +76,10 @@ id_t GameEntity::getTeamID(float t) const {
   return teamCurve_.stepSample(t);
 }
 
+bool GameEntity::getAlive(float t) const {
+  return aliveCurve_.stepSample(t);
+}
+
 void GameEntity::setPlayerID(float t, id_t pid) {
   assertPid(pid);
   playerCurve_.addKeyframe(t, pid);
@@ -83,6 +88,10 @@ void GameEntity::setPlayerID(float t, id_t pid) {
 void GameEntity::setTeamID(float t, id_t tid) {
   assertTid(tid);
   teamCurve_.addKeyframe(t, tid);
+}
+
+void GameEntity::setAlive(float t, bool alive) {
+  aliveCurve_.addKeyframe(t, alive);
 }
 
 void GameEntity::setTookDamage(int part_idx) {
