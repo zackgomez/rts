@@ -193,13 +193,8 @@ exports.update = function (player_inputs, dt) {
     var entity = entities[eid];
     var status = entity.resolve(dt);
     if (status === EntityStatus.DEAD) {
+      dead_entities.push(entities[eid]);
       delete entities[eid];
-      if (eid in eid_to_render_entity) {
-        var render_entity = eid_to_render_entity[eid];
-        // TODO(zack): replace destruction here with setting alive curve to dead
-        Renderer.destroyEntity(render_entity.getID());
-        delete eid_to_render_entity[eid];
-      }
       continue;
     }
 

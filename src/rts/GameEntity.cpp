@@ -49,6 +49,9 @@ void GameEntity::preRender(float t) {
   const Player *player = Game::get()->getPlayer(getPlayerID(t));
   auto color = player ? player->getColor() : ::vec3Param("global.defaultColor");
   setColor(color);
+
+  bool visible = isVisible() && getAlive(t);
+  setVisible(visible);
 }
 
 bool GameEntity::isVisibleTo(float t, id_t pid) const {

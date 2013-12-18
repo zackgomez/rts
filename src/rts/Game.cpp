@@ -179,9 +179,11 @@ void Game::addAction(id_t pid, const PlayerAction &act) {
 }
 
 const GameEntity * Game::getEntity(const std::string &game_id) const {
+  // LOL this is a stupid hack
+  float t = Renderer::get()->getGameTime();
   // TODO this is horribly inefficient :-/
   return findEntity([=](const GameEntity *e) -> bool {
-    return e->getGameID() == game_id;
+    return e->getGameID() == game_id && e->getAlive(t);
   });
 }
 
