@@ -81,6 +81,7 @@ class GameEntity : public ModelEntity {
     gameID_ = id;
   }
   void setPlayerID(float t, id_t pid);
+  void setTeamID(float t, id_t tid);
 
   void setUIInfo(float t, const UIInfo &ui_info) {
     uiInfo_ = ui_info;
@@ -106,6 +107,7 @@ class GameEntity : public ModelEntity {
  private:
   std::string gameID_;
   Curve<id_t> playerCurve_;
+  Curve<id_t> teamCurve_;
   Curve<VisibilitySet> visibilityCurve_;
 
 

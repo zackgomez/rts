@@ -28,6 +28,7 @@ const GameEntity* GameEntity::cast(const ModelEntity *e) {
 GameEntity::GameEntity(id_t id) : ModelEntity(id),
     gameID_(),
     playerCurve_(NO_PLAYER),
+    teamCurve_(NO_PLAYER),
     visibilityCurve_(VisibilitySet()),
     sight_(0.f),
     uiInfo_() {
@@ -71,18 +72,17 @@ id_t GameEntity::getPlayerID(float t) const {
 }
 
 id_t GameEntity::getTeamID(float t) const {
-  id_t pid = getPlayerID(t);
-  // No player, no team
-  if (pid == NO_PLAYER) {
-    return NO_TEAM;
-  }
-  // A bit inefficient but OK for now
-  return Game::get()->getPlayer(pid)->getTeamID();
+  return teamCurve_.stepSample(t);
 }
 
 void GameEntity::setPlayerID(float t, id_t pid) {
   assertPid(pid);
   playerCurve_.addKeyframe(t, pid);
+}
+
+void GameEntity::setTeamID(float t, id_t tid) {
+  assertTid(tid);
+  teamCurve_.addKeyframe(t, tid);
 }
 
 void GameEntity::setTookDamage(int part_idx) {

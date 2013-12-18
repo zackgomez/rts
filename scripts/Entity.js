@@ -745,6 +745,7 @@ Entity.prototype.getUIInfo = function () {
     }
   }
   ui_info.pid = this.getPlayerID();
+  ui_info.tid = this.getTeamID();
   
   ui_info.parts = [];
   if (this.parts_) {
