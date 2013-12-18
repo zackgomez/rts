@@ -8,7 +8,10 @@
 using namespace v8;
 using namespace rts;
 
-static Persistent<ObjectTemplate> entity_template;
+struct binding_data {
+  binding_data() { }
+  Persistent<ObjectTemplate> entity_template;
+};
 
 static void entitySetPosition2(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 2, "void setPosition2(float t, vec2 p)");
@@ -348,9 +351,11 @@ static Handle<ObjectTemplate> make_entity_template() {
   return entity_template;
 }
 
-static Handle<ObjectTemplate> get_entity_template() {
+static Handle<ObjectTemplate> get_entity_template(binding_data *data) {
+  invariant(data, "missing binding data!");
+  auto& entity_template = data->entity_template;
   invariant(!entity_template.IsEmpty(), "must have initialized entity template");
-  return Handle<ObjectTemplate>::New(Isolate::GetCurrent(), entity_template);
+  return Local<ObjectTemplate>::New(Isolate::GetCurrent(), entity_template);
 }
 
 static void jsSpawnRenderEntity(const FunctionCallbackInfo<Value> &args) {
@@ -361,8 +366,9 @@ static void jsSpawnRenderEntity(const FunctionCallbackInfo<Value> &args) {
   GameEntity *e = new GameEntity(eid);
   invariant(e, "couldn't allocate new entity");
   Renderer::get()->spawnEntity(e);
+  auto data = (binding_data*)Handle<External>::Cast(args.Data())->Value();
 
-  auto entity_template = get_entity_template();
+  auto entity_template = get_entity_template(data);
   Handle<Object> wrapper = entity_template->NewInstance();
   wrapper->SetInternalField(0, External::New(e));
 
@@ -393,11 +399,18 @@ static void jsAddEffect(const FunctionCallbackInfo<Value> &args) {
 
 Handle<Value> getRendererBinding() {
   HandleScope scope(Isolate::GetCurrent());
-  entity_template.Reset(Isolate::GetCurrent(), make_entity_template());
-  auto binding = Object::New();
+  auto binding_template = ObjectTemplate::New();
+  binding_template->SetInternalFieldCount(1);
+  auto data = new binding_data();
+  data->entity_template.Reset(Isolate::GetCurrent(), make_entity_template());
+  auto binding = binding_template->NewInstance();
+  binding->SetInternalField(0, External::New(data));
+  binding->Set(
+    String::NewSymbol("__lolololol__"),
+    Null());
   binding->Set(
       String::New("spawnRenderEntity"),
-      FunctionTemplate::New(jsSpawnRenderEntity)->GetFunction());
+      FunctionTemplate::New(jsSpawnRenderEntity, External::New(data))->GetFunction());
   binding->Set(
       String::New("destroyRenderEntity"),
       FunctionTemplate::New(jsDestroyRenderEntity)->GetFunction());

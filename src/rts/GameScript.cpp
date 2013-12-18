@@ -70,7 +70,6 @@ static Handle<Object> getPathingBinding() {
 static void jsRuntimeBinding(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 1, "value runtime.binding(string name)");
   HandleScope scope(args.GetIsolate());
-  LOG(DEBUG) << "isolate addr: " << args.GetIsolate() << '\n';
 
   auto name = Handle<String>::Cast(args[0]);
   auto binding_map = GameScript::getActiveGameScript()->getBindings();
@@ -294,10 +293,9 @@ Handle<Value> runtimeEvalImpl(Handle<String> source, Handle<Object> kwargs) {
 
   auto jsfilename = kwargs->Get(String::New("filename"));
   auto filename = *String::AsciiValue(jsfilename);
-  LOG(DEBUG) << "Filename: " << filename << '\n';
 
   Handle<Script> script = Script::Compile(source, jsfilename);
-  checkJSResult(script, try_catch, "compile:");
+  checkJSResult(script, try_catch, std::string("compile: ") + filename);
 
   Handle<Value> result = script->Run();
   checkJSResult(result, try_catch, "execute:");
