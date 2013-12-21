@@ -56,7 +56,7 @@ v8::Handle<v8::Object> Game::getGameObject() {
 
 void Game::start() {
   using namespace v8;
-  auto init_ret = script_.init("game-main");
+  script_.init("game-main");
   ENTER_GAMESCRIPT(&script_);
 
   auto game_object = getGameObject();
@@ -139,22 +139,130 @@ void Game::render() {
   Handle<Value> js_render_result_ret =
     game_render_function->Call(game_object, 0, nullptr);
   checkJSResult(js_render_result_ret, try_catch, "render");
-  Handle<Object> js_render_result = Handle<Object>::Cast(js_render_result_ret);
+  Handle<String> js_render_result = Handle<String>::Cast(js_render_result_ret);
+  char* encoded_render = *String::Utf8Value(js_render_result);
+  char* encoded_end = encoded_render + js_render_result->Utf8Length();
 
-  Handle<Array> js_players = Handle<Array>::Cast(
-      js_render_result->Get(String::New("players")));
-  for (int i = 0; i < js_players->Length(); i++) {
-    Handle<Object> js_player = Handle<Object>::Cast(js_players->Get(i));
-    id_t pid = js_player->Get(String::New("pid"))->IntegerValue();
-    requisition_[pid] = js_player->Get(String::New("req"))->NumberValue();
+  Json::Value json_render;
+  Json::Reader().parse(encoded_render, encoded_end, json_render);
+  renderFromJSON(json_render);
+}
+
+void UIActionFromJSON(const Json::Value &v) {
+  UIAction uiaction;
+  uiaction.render_id = e->getID();
+  uiaction.owner_id = e->getGameID();
+  uiaction.name = *String::AsciiValue(jsaction->Get(name));
+  uiaction.icon = *String::AsciiValue(jsaction->Get(icon));
+  std::string hotkey_str = *String::AsciiValue(jsaction->Get(hotkey));
+  uiaction.hotkey = !hotkey_str.empty() ? hotkey_str[0] : '\0';
+  uiaction.tooltip = *String::AsciiValue(jsaction->Get(tooltip));
+  uiaction.targeting = static_cast<UIAction::TargetingType>(
+                                                            jsaction->Get(targeting)->IntegerValue());
+  uiaction.range = jsaction->Get(range)->NumberValue();
+  uiaction.radius = jsaction->Get(radius)->NumberValue();
+  uiaction.state = static_cast<UIAction::ActionState>(
+                                                      jsaction->Get(state)->Uint32Value());
+  uiaction.cooldown = jsaction->Get(cooldown)->NumberValue();
+}
+
+void renderEntityFromJSON(GameEntity *e, const Json::Value &v) {
+  invariant(e, "must have entity to render to");
+  if (v.isMember("alive")) {
+    for (auto &sample : v["alive"]) {
+      e->setAlive(sample[0].asFloat(), sample[1].asBool());
+    }
+  }
+  if (v.isMember("model")) {
+    for (auto &sample : v["model"]) {
+      e->setModelName(sample[1].asString());
+    }
+  }
+  if (v.isMember("properties")) {
+    for (auto &sample : v["properties"]) {
+      for (auto &prop : sample[1]) {
+        e->addProperty(prop.asInt());
+      }
+    }
+  }
+  if (v.isMember("pid")) {
+    for (auto &sample : v["pid"]) {
+      e->setPlayerID(sample[0].asFloat(), toID(sample[1]));
+    }
+  }
+  if (v.isMember("tid")) {
+    for (auto &sample : v["tid"]) {
+      e->setTeamID(sample[0].asFloat(), toID(sample[1]));
+    }
+  }
+  if (v.isMember("pos")) {
+    for (auto &sample : v["pos"]) {
+      e->setPosition(sample[0].asFloat(), toVec2(sample[1]));
+    }
+  }
+  if (v.isMember("size")) {
+    for (auto &sample : v["size"]) {
+      e->setSize(sample[0].asFloat(), toVec3(sample[1]));
+    }
+  }
+  if (v.isMember("angle")) {
+    for (auto &sample : v["angle"]) {
+      e->setAngle(sample[0].asFloat(), sample[1].asFloat());
+    }
+  }
+  if (v.isMember("sight")) {
+    for (auto &sample : v["sight"]) {
+      e->setSight(sample[0].asFloat(), sample[1].asFloat());
+    }
+  }
+  if (v.isMember("visible")) {
+    for (auto &sample : v["visible"]) {
+      float t = sample[0].asFloat();
+      VisibilitySet set;
+      for (auto pid : sample[1]) {
+        set.insert(toID(pid));
+      }
+      e->setVisibilitySet(t, set);
+    }
+  }
+  // TODO
+}
+
+void Game::renderFromJSON(const Json::Value &v) {
+  auto entities = must_have_idx(v, "entities");
+  invariant(entities.isObject(), "should have entities array");
+  auto entity_keys = entities.getMemberNames();
+  for (auto &eid : entity_keys) {
+    // find or create GameEntity corresponding to the
+    auto it = game_to_render_id.find(eid);
+    auto *entity = [&]() {
+      if (it == game_to_render_id.end()) {
+        id_t new_id = Renderer::get()->newEntityID();
+        auto game_entity = new GameEntity(new_id);
+        game_entity->setGameID(eid);
+        Renderer::get()->spawnEntity(game_entity);
+        game_to_render_id[eid] = new_id;
+        return game_entity;
+      }
+      return GameEntity::cast(Renderer::get()->getEntity(it->second));
+    }();
+    renderEntityFromJSON(entity, entities[eid]);
   }
 
-  Handle<Array> js_teams = Handle<Array>::Cast(
-      js_render_result->Get(String::New("teams")));
-  for (int i = 0; i < js_teams->Length(); i++) {
-    auto js_team = Handle<Object>::Cast(js_teams->Get(i));
-    id_t tid = js_team->Get(String::New("tid"))->IntegerValue();
-    victoryPoints_[tid] = js_team->Get(String::New("vps"))->NumberValue();
+
+  auto players = must_have_idx(v, "players");
+  invariant(players.isArray(), "players must be array");
+  for (int i = 0; i < players.size(); i++) {
+    auto player = players[i];
+    id_t pid = toID(must_have_idx(player, "pid"));
+    requisition_[pid] = must_have_idx(player, "req").asFloat();
+  }
+
+  auto teams = must_have_idx(v, "teams");
+  for (int i = 0; i < teams.size(); i++) {
+    auto team = teams[i];
+    id_t tid = toID(must_have_idx(team, "tid"));
+    victoryPoints_[tid] = must_have_idx(team, "vps").asFloat();
   }
 }
 

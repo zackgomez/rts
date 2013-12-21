@@ -230,69 +230,74 @@ exports.update = function (player_inputs, dt) {
 };
 
 exports.render = function () {
+  var t = elapsed_time;
+  var entity_renders = {};
+  var events = [];
+
   _.each(dead_entities, function (entity) {
-    var render_entity = eid_to_render_entity[entity.getID()];
-    render_entity.setAlive(elapsed_time, false);
+    entity_renders[entity.getID] = {
+      alive: [[t, false]],
+    };
   });
   dead_entities = [];
+
   for (var eid in entities) {
     var game_entity = entities[eid];
-    var render_entity = eid_to_render_entity[eid];
-    if (!render_entity) {
-      render_entity = Renderer.spawnEntity();
-      render_entity.setAlive(elapsed_time, true);
-      eid_to_render_entity[eid] = render_entity;
-    }
+    var render = {
+      alive: [[t, true]],
+    };
 
-    var render_id = render_entity.getID();
     var entity_def = game_entity.getDefinition();
-    // non curve data
-    render_entity.eid = eid;
-    render_entity.setGameID(eid);
-    if (entity_def.model) {
-      render_entity.setModel(entity_def.model);
-    }
-    render_entity.setProperties(game_entity.properties_);
+
+    render.model = [[t, entity_def.model]]
+    render.properties = [[t, game_entity.getProperties()]];
+    render.pid = [[t, game_entity.getPlayerID()]];
+    render.tid = [[t, game_entity.getTeamID()]];
 
     var size2 = game_entity.getSize();
     var size3 = [size2[0], size2[1], game_entity.getHeight()];
-    render_entity.setSize(elapsed_time, size3);
-    render_entity.setSight(elapsed_time, game_entity.getSight());
+    render.size = [[t, size3]]
 
-    render_entity.setPosition2(elapsed_time, game_entity.getPosition2());
-    render_entity.setAngle(elapsed_time, game_entity.getAngle());
+    render.sight = [[t, game_entity.getSight()]];
 
-    var ui_info = game_entity.getUIInfo();
-    render_entity.setUIInfo(elapsed_time, ui_info);
-    var actions = game_entity.getActions();
-    render_entity.setActions(elapsed_time, actions);
+    render.pos = [[t, game_entity.getPosition2()]];
+    render.angle = [[t, game_entity.getAngle()]];
+    render.ui_info = [[t, game_entity.getUIInfo()]];
+    render.actions = [[t, game_entity.getActions()]];
+    render.visible = [[t, game_entity.getVisibilitySet()]];
 
-    render_entity.setVisible(elapsed_time, game_entity.getVisibilitySet());
+    entity_renders[game_entity.getID()] = render;
 
     var events = game_entity.getEvents(); 
     game_entity.clearEvents();
     for (var i = 0; i < events.length; i++) {
       var event = events[i];
       event.params.eid = render_id;
-      Renderer.addEffect(event.name, event.params);
+      events.push(event);
     }
   }
 
   var vps = _.map(teams, function (team, tid) {
     return {
-      tid: tid,
+      tid: +tid,
       vps: team.getVictoryPoints(),
     };
   });
   var player_render = _.map(players, function (player, pid) {
     return {
-      pid: pid,
+      pid: +pid,
       req: player.getRequisition(),
     };
   });
 
-  return {
+  var full_render = {
+    entities: entity_renders,
+    events: events,
     players: player_render,
     teams: vps,
   };
+
+  // TODO(zack): minify and use futurize
+
+  return JSON.stringify(full_render);
 };

@@ -212,15 +212,6 @@ static void entitySetUIInfo(const FunctionCallbackInfo<Value> &args) {
   auto jsinfo = args[1]->ToObject();
 
   auto ui_info = GameEntity::UIInfo();
-  auto pid_str = String::New("pid");
-  invariant(jsinfo->Has(pid_str), "UIInfo must have pid");
-  rts::id_t pid = jsinfo->Get(pid_str)->IntegerValue();
-  e->setPlayerID(t, pid);
-
-  auto tid_str = String::New("tid");
-  invariant(jsinfo->Has(tid_str), "UIInfo must have tid");
-  rts::id_t tid = jsinfo->Get(tid_str)->IntegerValue();
-  e->setTeamID(t, tid);
 
   auto parts_str = String::New("parts");
   if (jsinfo->Has(parts_str)) {

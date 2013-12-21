@@ -24,6 +24,7 @@ class Game {
 
   static Game* get() { return instance_; }
 
+  void renderFromJSON(const Json::Value&);
   void start();
   void update(float dt);
   void render();
@@ -61,6 +62,7 @@ class Game {
   void updateJS(v8::Handle<v8::Array> player_inputs, float dt);
 
   v8::Handle<v8::Object> getGameObject();
+  std::map<std::string, id_t> game_to_render_id;
 
   std::mutex actionMutex_;
   std::vector<PlayerAction> actions_;
