@@ -267,6 +267,81 @@ var EntityDefs = {
       }),
     },
   },
+  cc_bot: {
+    properties: [
+      EntityProperties.P_ACTOR,
+      EntityProperties.P_UNIT,
+      EntityProperties.P_TARGETABLE,
+      EntityProperties.P_COLLIDABLE,
+      EntityProperties.P_MOBILE,
+    ],
+    model: 'cc_bot',
+    default_state: EntityStates.UnitIdleState,
+    size: [1.6, 1.6],
+    height: 1.0,
+    speed: 2.8,
+    sight: 6.0,
+    capture_range: 1.0,
+    mana: 100,
+    hotkey: '4',
+    weapons: ['cc_bot_powerfist', 'cc_bot_fist'],
+    getParts: function (entity) {
+      return [
+        makePart({
+          name: 'right',
+          health: 150,
+          description: 'Just Health',
+          upgrades: {
+            'powerfist': {
+              health: 50,
+              req_cost: 60,
+              tooltip: 'mo\' bitches mo\' damage. now with a targeted stun.',
+            },
+          },
+        }),
+        makePart({
+          name: 'left',
+          health: 150,
+          description: 'Just Health',
+        }),
+        makePart({
+          name: 'body',
+          health: 150,
+          description: 'Just Health',
+        }),
+        makePart({
+          name: 'legs',
+          health: 150,
+          description: 'Just Health',
+        }),
+      ];
+    },
+    getEffects: function (entity) {
+      return {
+        mana_regen: Effects.makeManaRegenEffect(2.0),
+      };
+    },
+    actions: {
+      powerfist: new Actions.PowerfistAction({
+        range: 1.0,
+        cooldown_name: 'powerfist',
+        cooldown: 8.0,
+        mana_cost: 30,
+        damage: 20,
+        duration: 3.0,
+        icon: 'cc_bot_icon',
+        hotkey: 'w',
+        part: 'right',
+        part_upgrade: 'powerfist',
+      }),
+      reinforce: new Actions.ReinforceAction({
+        req_cost: 5,
+        cooldown_name: 'reinforce',
+        cooldown: 5.0,
+        icon: 'repair_icon',
+      }),
+    },
+  },
   base: {
     properties: [
       EntityProperties.P_ACTOR,
@@ -313,6 +388,13 @@ var EntityDefs = {
         time_cost: 6.0,
         icon: 'melee_icon',
         hotkey: 'e',
+      }),
+      prod_cc_bot: new Actions.ProductionAction({
+        prod_name: 'cc_bot',
+        req_cost: 10,
+        time_cost: 1.0,
+        icon: 'cc_bot_icon',
+        hotkey: 'r',
       }),
     },
   },

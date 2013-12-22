@@ -72,7 +72,35 @@ var definitions = {
     on_hit_cooldowns: {
       melee_leash: 1.1,
     },
-  }
+  },
+  cc_bot_fist: {
+    range: 1.0,
+    damage: 10.0,
+    damage_type: 'melee',
+    health_target: DamageTypes.HEALTH_TARGET_RANDOM,
+    cooldown_name: 'melee_weapon',
+    cooldowns: {
+      melee_weapon: 1.5,
+      melee_leash: 1.6,
+    },
+    on_hit_cooldowns: {
+      melee_leash: 1.6,
+    },
+  },
+  cc_bot_powerfist: {
+    range: 1.0,
+    damage: 15.0,
+    damage_type: 'melee',
+    health_target: DamageTypes.HEALTH_TARGET_RANDOM,
+    cooldown_name: 'melee_weapon',
+    cooldowns: {
+      melee_weapon: 1.5,
+      melee_leash: 1.6,
+    },
+    on_hit_cooldowns: {
+      melee_leash: 1.6,
+    },
+  },
 };
 
 function Weapon(def) {

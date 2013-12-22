@@ -191,6 +191,7 @@
             '-Wall',
             '-std=c++11',
             '-stdlib=libc++',
+            '-Wno-reorder',
           ],
           'OTHER_LDFLAGS': [
             '-L/usr/local/lib',

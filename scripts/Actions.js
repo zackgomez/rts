@@ -190,7 +190,7 @@ Actions.TeleportAction = function (params) {
 
   this.exec = function (entity, target) {
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
-    entity.mana_ -= this.params.mana_cost;
+    entity.deltas.mana -= this.params.mana_cost;
     entity.warpPosition(target);
     entity.onEvent('teleport', {
       start: entity.getPosition2(),
@@ -221,7 +221,7 @@ Actions.SnipeAction = function (params) {
       return;
     }
 
-    entity.mana_ -= this.params.mana_cost;
+    entity.deltas.mana -= this.params.mana_cost;
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
     entity.turnTowards(target_entity.getPosition2());
 
@@ -257,7 +257,7 @@ Actions.CenteredAOEAction = function (params) {
   };
 
   this.exec = function (entity, target) {
-    entity.mana_ -= this.params.mana_cost;
+    entity.deltas.mana -= this.params.mana_cost;
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
 
     Log('AOE blast at', entity.getPosition2(), 'for', this.params.damage);
@@ -304,7 +304,7 @@ Actions.HealAction = function (params) {
       return;
     }
 
-    entity.mana_ -= this.params.mana_cost;
+    entity.deltas.mana -= this.params.mana_cost;
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
 
     Log('Healing', target, 'for', this.params.healing);
@@ -320,5 +320,52 @@ Actions.HealAction = function (params) {
   };
 }
 Actions.HealAction.prototype = ActionPrototype;
+
+Actions.PowerfistAction = function (params) {
+  this.targeting = TargetingTypes.ENEMY;
+  this.params = params;
+
+  this.getTooltip = function (entity) {
+    return 'Powerfist' +
+      '\nDamage:' + this.params.damage +
+      '\nDuration:' + this.params.duration +
+      '\nCooldown:' + this.params.cooldown;
+  };
+
+  this.isEnabled = function (entity) {
+    return entity.mana_ > this.params.mana_cost;
+  };
+
+  this.exec = function (entity, target) {
+    var target_entity = Game.getVisibleEntity(entity.getPlayerID(), target);
+    if (!target_entity || target_entity.getTeamID() == entity.getTeamID()) {
+      Log('not stunning', target, target_entity);
+      return;
+    }
+
+    entity.deltas.mana -= this.params.mana_cost;
+    entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
+
+    /*
+    Log('Stunning', target, 'for', this.params.duration);
+    MessageHub.sendMessage({
+      to: target,
+      from: entity.getID(),
+      type: MessageTypes.ADDBUFF,
+      buff: stun,
+      duration: this.params.duration,
+    });
+     */
+    MessageHub.sendMessage({
+      to: target,
+      from: entity.getID(),
+      type: MessageTypes.ATTACK,
+      damage: this.params.damage,
+      damage_type: 'melee',
+      health_target: DamageTypes.HEALTH_TARGET_RANDOM,
+    });
+  };
+}
+Actions.PowerfistAction.prototype = ActionPrototype;
 
 module.exports = Actions;
