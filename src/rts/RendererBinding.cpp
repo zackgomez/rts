@@ -178,7 +178,6 @@ static void entitySetActions(const FunctionCallbackInfo<Value> &args) {
   for (int i = 0; i < jsactions->Length(); i++) {
     Handle<Object> jsaction = Handle<Object>::Cast(jsactions->Get(i));
     UIAction uiaction;
-    uiaction.render_id = e->getID();
     uiaction.owner_id = e->getGameID();
     uiaction.name = *String::AsciiValue(jsaction->Get(name));
     uiaction.icon = *String::AsciiValue(jsaction->Get(icon));
@@ -203,6 +202,7 @@ static void entitySetActions(const FunctionCallbackInfo<Value> &args) {
 static void entitySetUIInfo(const FunctionCallbackInfo<Value> &args) {
   invariant(args.Length() == 2, "void setUIInfo(float t, object ui_info)");
 
+  /*
   HandleScope scope(args.GetIsolate());
   Local<Object> self = args.Holder();
   Local<External> wrap = Local<External>::Cast(self->GetInternalField(0));
@@ -293,7 +293,7 @@ static void entitySetUIInfo(const FunctionCallbackInfo<Value> &args) {
   ui_info.extra = jsToJSON(jsinfo->Get(extra));
 
   e->setUIInfo(t, ui_info);
-
+   */
   args.GetReturnValue().SetUndefined();
 }
 

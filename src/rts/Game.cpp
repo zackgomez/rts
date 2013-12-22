@@ -148,22 +148,23 @@ void Game::render() {
   renderFromJSON(json_render);
 }
 
-void UIActionFromJSON(const Json::Value &v) {
+UIAction UIActionFromJSON(const Json::Value &v) {
+  LOG(DEBUG) << "action json: " << v << '\n';
   UIAction uiaction;
-  uiaction.render_id = e->getID();
-  uiaction.owner_id = e->getGameID();
-  uiaction.name = *String::AsciiValue(jsaction->Get(name));
-  uiaction.icon = *String::AsciiValue(jsaction->Get(icon));
-  std::string hotkey_str = *String::AsciiValue(jsaction->Get(hotkey));
+  uiaction.name = must_have_idx(v, "name").asString();
+  uiaction.icon = must_have_idx(v, "icon").asString();
+  auto&& hotkey_str = must_have_idx(v, "hotkey").asString();
   uiaction.hotkey = !hotkey_str.empty() ? hotkey_str[0] : '\0';
-  uiaction.tooltip = *String::AsciiValue(jsaction->Get(tooltip));
+  uiaction.tooltip = must_have_idx(v, "tooltip").asString();
   uiaction.targeting = static_cast<UIAction::TargetingType>(
-                                                            jsaction->Get(targeting)->IntegerValue());
-  uiaction.range = jsaction->Get(range)->NumberValue();
-  uiaction.radius = jsaction->Get(radius)->NumberValue();
+      must_have_idx(v, "targeting").asInt());
+  uiaction.range = must_have_idx(v, "range").asFloat();
+  uiaction.radius = must_have_idx(v, "radius").asFloat();
   uiaction.state = static_cast<UIAction::ActionState>(
-                                                      jsaction->Get(state)->Uint32Value());
-  uiaction.cooldown = jsaction->Get(cooldown)->NumberValue();
+      must_have_idx(v, "state").asInt());
+  uiaction.cooldown = must_have_idx(v, "cooldown").asFloat();
+
+  return uiaction;
 }
 
 void renderEntityFromJSON(GameEntity *e, const Json::Value &v) {
@@ -223,6 +224,21 @@ void renderEntityFromJSON(GameEntity *e, const Json::Value &v) {
         set.insert(toID(pid));
       }
       e->setVisibilitySet(t, set);
+    }
+  }
+  if (v.isMember("actions")) {
+    for (auto &sample : v["actions"]) {
+      float t = sample[0].asFloat();
+
+      std::vector<UIAction> actions;
+      for (auto &action_json : sample[1]) {
+        auto uiaction = UIActionFromJSON(action_json);
+        uiaction.owner_id = e->getGameID();
+        actions.push_back(uiaction);
+      }
+      if (!actions.empty()) {
+        e->setActions(t, actions);
+      }
     }
   }
   // TODO
