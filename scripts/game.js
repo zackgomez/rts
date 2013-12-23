@@ -25,7 +25,6 @@ var entities = {};
 var players = {};
 var teams = {};
 var dead_entities = [];
-var eid_to_render_entity = {};
 var last_id = IDConst.STARTING_EID;
 var visibility_map = null;
 
@@ -147,8 +146,6 @@ exports.init = function (map_def, player_defs) {
   });
 
   handleMessages();
-
-  this.render();
 };
 
 exports.update = function (player_inputs, dt) {
@@ -268,11 +265,11 @@ exports.render = function () {
 
     entity_renders[game_entity.getID()] = render;
 
-    var events = game_entity.getEvents(); 
+    var entity_events = game_entity.getEvents();
     game_entity.clearEvents();
-    for (var i = 0; i < events.length; i++) {
-      var event = events[i];
-      event.params.eid = render_id;
+    for (var i = 0; i < entity_events.length; i++) {
+      var event = entity_events[i];
+      event.params.eid = game_entity.getID();
       events.push(event);
     }
   }

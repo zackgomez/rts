@@ -149,7 +149,6 @@ void Game::render() {
 }
 
 UIAction UIActionFromJSON(const Json::Value &v) {
-  LOG(DEBUG) << "action json: " << v << '\n';
   UIAction uiaction;
   uiaction.name = must_have_idx(v, "name").asString();
   uiaction.icon = must_have_idx(v, "icon").asString();
@@ -165,6 +164,53 @@ UIAction UIActionFromJSON(const Json::Value &v) {
   uiaction.cooldown = must_have_idx(v, "cooldown").asFloat();
 
   return uiaction;
+}
+
+GameEntity::UIPart UIPartFromJSON(const Json::Value &v) {
+  GameEntity::UIPart ret;
+  ret.health = toVec2(must_have_idx(v, "health"));
+  ret.name = must_have_idx(v, "name").asString();
+  ret.tooltip = must_have_idx(v, "tooltip").asString();
+  for (auto &&json_upgrade : must_have_idx(v, "upgrades")) {
+    GameEntity::UIPartUpgrade upgrade;
+    upgrade.name = must_have_idx(json_upgrade, "name").asString();
+    upgrade.part = ret.name;
+    ret.upgrades.push_back(upgrade);
+  }
+  return ret;
+}
+
+GameEntity::UIInfo UIInfoFromJSON(const Json::Value &v) {
+  GameEntity::UIInfo ret;
+  if (v.isMember("minimap_icon")) {
+    ret.minimap_icon = v["minimap_icon"].asString();
+  }
+  if (v.isMember("mana")) {
+    ret.mana = toVec2(v["mana"]);
+  }
+  if (v.isMember("retreat")) {
+    ret.retreat = v["retreat"].asBool();
+  }
+  if (v.isMember("capture")) {
+    ret.capture = toVec2(v["caption"]);
+  }
+  if (v.isMember("capture_pid")) {
+    ret.capture_pid = toID(v["capture_pid"]);
+  }
+  if (v.isMember("path")) {
+    for (auto &&pt : v["path"]) {
+      ret.path.push_back(glm::vec3(toVec2(pt), 0.));
+    }
+  }
+  if (v.isMember("parts")) {
+    for (auto &&json_part : v["parts"]) {
+      ret.parts.push_back(UIPartFromJSON(json_part));
+    }
+  }
+  if (v.isMember("extra")) {
+    ret.extra = v["extra"];
+  }
+  return ret;
 }
 
 void renderEntityFromJSON(GameEntity *e, const Json::Value &v) {
@@ -241,7 +287,13 @@ void renderEntityFromJSON(GameEntity *e, const Json::Value &v) {
       }
     }
   }
-  // TODO
+  if (v.isMember("ui_info")) {
+    for (auto &&sample : v["ui_info"]) {
+      const float t = sample[0].asFloat();
+      GameEntity::UIInfo uiinfo = UIInfoFromJSON(sample[1]);
+      e->setUIInfo(t, uiinfo);
+    }
+  }
 }
 
 void Game::renderFromJSON(const Json::Value &v) {
