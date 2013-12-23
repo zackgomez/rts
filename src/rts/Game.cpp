@@ -192,7 +192,7 @@ GameEntity::UIInfo UIInfoFromJSON(const Json::Value &v) {
     ret.retreat = v["retreat"].asBool();
   }
   if (v.isMember("capture")) {
-    ret.capture = toVec2(v["caption"]);
+    ret.capture = toVec2(v["capture"]);
   }
   if (v.isMember("capture_pid")) {
     ret.capture_pid = toID(v["capture_pid"]);
@@ -303,17 +303,17 @@ void Game::renderFromJSON(const Json::Value &v) {
   for (auto &eid : entity_keys) {
     // find or create GameEntity corresponding to the
     auto it = game_to_render_id.find(eid);
-    auto *entity = [&]() {
-      if (it == game_to_render_id.end()) {
-        id_t new_id = Renderer::get()->newEntityID();
-        auto game_entity = new GameEntity(new_id);
-        game_entity->setGameID(eid);
-        Renderer::get()->spawnEntity(game_entity);
-        game_to_render_id[eid] = new_id;
-        return game_entity;
-      }
-      return GameEntity::cast(Renderer::get()->getEntity(it->second));
-    }();
+    GameEntity *entity = nullptr;
+    if (it == game_to_render_id.end()) {
+      id_t new_id = Renderer::get()->newEntityID();
+      auto game_entity = new GameEntity(new_id);
+      game_entity->setGameID(eid);
+      Renderer::get()->spawnEntity(game_entity);
+      game_to_render_id[eid] = new_id;
+      entity = game_entity;
+    } else {
+      entity = GameEntity::cast(Renderer::get()->getEntity(it->second));
+    }
     renderEntityFromJSON(entity, entities[eid]);
   }
 

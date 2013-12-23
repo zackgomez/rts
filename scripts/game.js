@@ -16,7 +16,6 @@ var MessageHub = require('MessageHub');
 var Pathing = require('Pathing');
 var Player = require('Player');
 var Team = require('Team');
-var Renderer = require('Renderer');
 var Visibility = require('Visibility');
 
 

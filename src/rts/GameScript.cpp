@@ -7,7 +7,6 @@
 #include "rts/Map.h"
 #include "rts/Player.h"
 #include "rts/NativeUIBinding.h"
-#include "rts/RendererBinding.h"
 #include "rts/ResourceManager.h"
 
 using namespace v8;
@@ -235,9 +234,6 @@ v8::Local<v8::Value> GameScript::init(const std::string &main_module_name) {
   bindings->Set(
       String::New("pathing"),
       getPathingBinding());
-  bindings->Set(
-      String::New("renderer"),
-      getRendererBinding());
   bindings->Set(
       String::New("nativeui"),
       getNativeUIBinding());

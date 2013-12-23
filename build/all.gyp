@@ -77,8 +77,6 @@
       '../src/rts/PlayerAction.h',
       '../src/rts/Renderer.cpp',
       '../src/rts/Renderer.h',
-      '../src/rts/RendererBinding.cpp',
-      '../src/rts/RendererBinding.h',
       '../src/rts/ResourceManager.cpp',
       '../src/rts/ResourceManager.h',
       '../src/rts/Shader.cpp',
