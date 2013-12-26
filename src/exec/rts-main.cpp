@@ -15,8 +15,9 @@
 #include "common/NetConnection.h"
 #include "common/util.h"
 #include "rts/Controller.h"
-#include "rts/GameController.h"
 #include "rts/Game.h"
+#include "rts/GameController.h"
+#include "rts/GameServer.h"
 #include "rts/Graphics.h"
 #include "rts/Map.h"
 #include "rts/Matchmaker.h"
@@ -26,6 +27,7 @@
 #include "rts/Player.h"
 
 using rts::Game;
+using rts::GameServer;
 using rts::Renderer;
 using rts::Map;
 using rts::Matchmaker;
@@ -48,10 +50,30 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
 
   FPSCalculator updateTimer(10);
 
-  game->start();
+
+  Json::Value player_defs;
+  const float starting_requisition = fltParam("global.startingRequisition");
+  const auto& players = game->getPlayers();
+  for (int i = 0; i < players.size(); i++) {
+    auto *player = players[i];
+    auto starting_location = game->getMap()->getStartingLocation(i);
+    Json::Value json_player_def;
+    json_player_def["pid"] = toJson(player->getPlayerID());
+    json_player_def["tid"] = toJson(player->getTeamID());
+    json_player_def["starting_requisition"] = starting_requisition;
+    json_player_def["starting_location"] = starting_location;
+    player_defs[player_defs.size()] = json_player_def;
+  }
+
+  GameServer server;
+  server.start(game->getMap()->getMapDefinition(), player_defs);
+  auto action_func = [&](id_t pid, const PlayerAction &act) {
+    return server.addAction(pid, act);
+  };
 
   auto controller = new rts::GameController(
-    (rts::LocalPlayer *) Game::get()->getPlayer(localPlayerID));
+    (rts::LocalPlayer *) Game::get()->getPlayer(localPlayerID),
+    action_func);
   Renderer::get()->postToMainThread([=] () {
     Renderer::get()->setController(controller);
     Renderer::get()->setGameTime(0.f);
@@ -60,14 +82,15 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
   Clock::time_point start = Clock::now();
 	int tick_count = 0;
 
-  while (game->isRunning()) {
-    game->update(simdt);
+  while (server.isRunning()) {
+    auto json = server.update(simdt);
 
     // Synchronize renderer with game
     auto engine_lock = Renderer::get()->lockEngine();
-    game->render();
+    game->renderFromJSON(json);
     engine_lock.unlock();
 
+    // handle framerate
 		tick_count++;
 		float delay = simdt * tick_count - Clock::secondsSince(start);
     std::chrono::milliseconds delayms(static_cast<int>(1000 * delay));

@@ -52,6 +52,8 @@
       '../src/rts/GameEntity.h',
       '../src/rts/GameScript.cpp',
       '../src/rts/GameScript.h',
+      '../src/rts/GameServer.cpp',
+      '../src/rts/GameServer.h',
       '../src/rts/Graphics.cpp',
       '../src/rts/Graphics.h',
       '../src/rts/Input.cpp',
