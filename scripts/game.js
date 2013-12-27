@@ -146,6 +146,10 @@ exports.init = function (map_def, player_defs) {
   });
 
   handleMessages();
+
+  extra_renders.push({
+    type: 'start',
+  });
 };
 
 exports.update = function (player_inputs, dt) {

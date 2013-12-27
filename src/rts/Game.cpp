@@ -239,6 +239,9 @@ void Game::renderFromJSON(const Json::Value &msgs) {
     auto type = must_have_idx(msg, "type").asString();
     if (type == "render") {
       handleRenderMessage(msg);
+    } else if (type == "start") {
+      Renderer::get()->setGameTime(0.f);
+      Renderer::get()->setTimeMultiplier(1.f);
     } else {
       invariant_violation("unknown message type: " + type);
     }
