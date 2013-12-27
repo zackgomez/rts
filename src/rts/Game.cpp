@@ -194,7 +194,7 @@ void renderEntityFromJSON(GameEntity *e, const Json::Value &v) {
   }
 }
 
-void Game::renderFromJSON(const Json::Value &v) {
+void Game::handleRenderMessage(const Json::Value &v) {
   auto entities = must_have_idx(v, "entities");
   invariant(entities.isObject(), "should have entities array");
   auto entity_keys = entities.getMemberNames();
@@ -229,6 +229,19 @@ void Game::renderFromJSON(const Json::Value &v) {
     auto team = teams[i];
     id_t tid = toID(must_have_idx(team, "tid"));
     victoryPoints_[tid] = must_have_idx(team, "vps").asFloat();
+  }
+}
+
+void Game::renderFromJSON(const Json::Value &msgs) {
+  invariant(msgs.isArray(), "json messages must be array");
+  invariant(msgs.size() > 0, "messges must be nonempty");
+  for (auto msg : msgs) {
+    auto type = must_have_idx(msg, "type").asString();
+    if (type == "render") {
+      handleRenderMessage(msg);
+    } else {
+      invariant_violation("unknown message type: " + type);
+    }
   }
 }
 

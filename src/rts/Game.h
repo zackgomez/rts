@@ -22,6 +22,7 @@ class Game {
 
   static Game* get() { return nullthrows(instance_); }
 
+  // Takes in a json array of 'messages' to render
   void renderFromJSON(const Json::Value&);
 
   const Map * getMap() const {
@@ -42,11 +43,12 @@ class Game {
   float getVictoryPoints(id_t tid) const;
 
  private:
-  std::map<std::string, id_t> game_to_render_id;
+  void handleRenderMessage(const Json::Value &v);
 
   bool running_;
 
   Map *map_;
+  std::map<std::string, id_t> game_to_render_id;
   std::vector<Player *> players_;
   // pid => float
   std::map<id_t, float> requisition_;

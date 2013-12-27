@@ -26,6 +26,7 @@ var teams = {};
 var dead_entities = [];
 var last_id = IDConst.STARTING_EID;
 var visibility_map = null;
+var extra_renders = [];
 
 // returns the ID of the spawned entity
 var spawnEntity = function (name, params) {
@@ -287,13 +288,17 @@ exports.render = function () {
   });
 
   var full_render = {
+    type: 'render',
     entities: entity_renders,
     events: events,
     players: player_render,
     teams: vps,
   };
 
-  // TODO(zack): minify and use futurize
+  // TODO(zack): minify and futurize
 
-  return JSON.stringify(full_render);
+  var renders = extra_renders;
+  extra_renders = [];
+  renders.push(full_render);
+  return JSON.stringify(renders);
 };

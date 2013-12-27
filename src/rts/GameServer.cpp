@@ -102,20 +102,6 @@ Json::Value GameServer::update(float dt) {
   // Update javascript, passing player input
   updateJS(js_player_inputs, dt);
 
-  /*
-  // TODO(zack): move this win condition into JS
-  // Check to see if this player has won
-  for (auto it : victoryPoints_) {
-    if (it.second > intParam("global.pointsToWin")) {
-      // TODO(zack): print out each player on that team at least...
-      LOG(INFO) << "Team " << it.first << " has won the game!\n";
-      // TODO(connor) do something cooler than exit here, like give them candy.
-      // TODO(connor) also, send a message to game
-      running_ = false;
-    }
-  }
-  */
-
   TryCatch try_catch;
   Handle<Function> game_render_function = Handle<Function>::Cast(
       game_object->Get(String::New("render")));
