@@ -15,8 +15,7 @@ Game* Game::instance_ = nullptr;
 Game::Game(Map *map, const std::vector<Player *> &players)
   : map_(map),
     players_(players),
-    elapsedTime_(0.f),
-    running_(true) {
+    elapsedTime_(0.f) {
   std::set<int> team_ids;
   for (auto player : players) {
     player->setGame(this);
@@ -242,6 +241,10 @@ void Game::renderFromJSON(const Json::Value &msgs) {
     } else if (type == "start") {
       Renderer::get()->setGameTime(0.f);
       Renderer::get()->setTimeMultiplier(1.f);
+    } else if (type == "game_over") {
+      // TODO(zack/connor): do more here
+      auto winning_team = toID(must_have_idx(msg, "winning_team"));
+      LOG(DEBUG) << "Winning team : " << winning_team << '\n';
     } else {
       invariant_violation("unknown message type: " + type);
     }

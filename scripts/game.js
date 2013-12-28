@@ -20,6 +20,7 @@ var Visibility = require('Visibility');
 
 
 var elapsed_time = 0;
+var running = false;
 var entities = {};
 var players = {};
 var teams = {};
@@ -150,9 +151,13 @@ exports.init = function (map_def, player_defs) {
   extra_renders.push({
     type: 'start',
   });
+  running = true;
 };
 
 exports.update = function (player_inputs, dt) {
+  if (!running) {
+    return false;
+  }
   // reset state
   MessageHub.clearMessages();
 
@@ -225,9 +230,24 @@ exports.update = function (player_inputs, dt) {
   visibility_map.updateMap(entities);
   visibility_map.updateEntityVisibilities(entities);
 
-  // TODO(zack): check win condition
+  // check win condition
+  _.some(teams, function (team) {
+    // TODO(zack): vp victory amount is hardcoded here
+    if (team.getVictoryPoints() > 500) {
+         Log('Team ', team.getID(), ' has won');
+      running = false;
+      extra_renders.push({
+        type: "game_over",
+        winning_team: team.getID(),
+      });
+      return true;
+    }
+    return false;
+  });
 
   elapsed_time += dt;
+
+  return running;
 };
 
 exports.render = function () {

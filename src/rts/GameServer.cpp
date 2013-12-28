@@ -49,6 +49,7 @@ void GameServer::updateJS(v8::Handle<v8::Array> player_inputs, float dt) {
     Handle<Function>::Cast(game_object->Get(String::New("update")))
     ->Call(game_object, argc, argv);
   checkJSResult(ret, try_catch, "update:");
+  running_ = ret->BooleanValue();
 }
 
 v8::Handle<v8::Object> GameServer::getGameObject() {

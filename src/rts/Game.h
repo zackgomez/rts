@@ -31,9 +31,6 @@ class Game {
   float getElapsedTime() const {
     return elapsedTime_;
   }
-  bool isRunning() const {
-    return running_;
-  }
 
   const GameEntity * getEntity(const std::string &game_id) const;
   const Player * getPlayer(id_t pid) const;
@@ -44,8 +41,6 @@ class Game {
 
  private:
   void handleRenderMessage(const Json::Value &v);
-
-  bool running_;
 
   Map *map_;
   std::map<std::string, id_t> game_to_render_id;

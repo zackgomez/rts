@@ -8,8 +8,13 @@ var Game = require('game');
 // Team objects have the property 'victoryPoints'
 var Team = function (tid) {
   this.players = [];
+  this.id = tid;
   this.victoryPoints = 0;
 };
+
+Team.prototype.getID = function () {
+  return this.id;
+}
 
 Team.prototype.getVictoryPoints = function () {
   return this.victoryPoints;
