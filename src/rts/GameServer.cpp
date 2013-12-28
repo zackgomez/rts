@@ -1,5 +1,6 @@
 #include "rts/GameServer.h"
 #include "common/Logger.h"
+#include "common/ParamReader.h"
 #include "common/util.h"
 
 namespace rts {
@@ -67,11 +68,18 @@ void GameServer::start(const Json::Value &map_def, const Json::Value &player_def
 
   auto game_object = getGameObject();
 
+  auto game_def = Object::New();
+  game_def->Set(String::NewSymbol("map_def"), jsonToJS(map_def));
+  game_def->Set(String::NewSymbol("player_defs"), jsonToJS(player_defs));
+  // TODO(zack): Make this passed in
+  game_def->Set(
+    String::NewSymbol("vps_to_win"),
+    Number::New(fltParam("global.pointsToWin")));
+
   TryCatch try_catch;
-  const int argc = 2;
+  const int argc = 1;
   Handle<Value> argv[argc] = {
-    jsonToJS(map_def),
-    jsonToJS(player_defs),
+    game_def,
   };
   Handle<Function> game_init_method = Handle<Function>::Cast(
       game_object->Get(String::New("init")));

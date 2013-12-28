@@ -18,6 +18,7 @@ var Player = require('Player');
 var Team = require('Team');
 var Visibility = require('Visibility');
 
+var vps_to_win = null;
 
 var elapsed_time = 0;
 var running = false;
@@ -113,7 +114,9 @@ exports.getNearbyEntities = function (pos2, range, callback) {
   });
 };
 
-exports.init = function (map_def, player_defs) {
+exports.init = function (game_def) {
+  vps_to_win = must_have_idx(game_def, 'vps_to_win');
+  var map_def = must_have_idx(game_def, 'map_def');
   // Spawn map entities
   for (var i = 0; i < map_def.entities.length; i++) {
     var entity = map_def.entities[i];
@@ -124,6 +127,7 @@ exports.init = function (map_def, player_defs) {
   }
 
   // initialize players and teams
+  var player_defs = must_have_idx(game_def, 'player_defs');
   for (var i = 0; i < player_defs.length; i++) {
     var player_def = player_defs[i];
     var player = new Player(player_def);
