@@ -44,7 +44,7 @@ const std::string mmport = "11100";
 
 void matchmakerThread();
 
-void gameThread(Game *game, rts::id_t localPlayerID) {
+void gameThread(Game *game) {
   const float simrate = fltParam("game.simrate");
   const float simdt = 1.f / simrate;
 
@@ -71,8 +71,18 @@ void gameThread(Game *game, rts::id_t localPlayerID) {
     return server.addAction(pid, act);
   };
 
+  // find local player
+  Player *lp = nullptr;
+  for (auto&& player : Game::get()->getPlayers()) {
+    if (player->isLocal()) {
+      lp = player;
+      break;
+    }
+  }
+  invariant(lp != nullptr, "Unable to find local player");
+
   auto controller = new rts::GameController(
-    (rts::LocalPlayer *) Game::get()->getPlayer(localPlayerID),
+    (rts::LocalPlayer *) lp,
     action_func);
   Renderer::get()->postToMainThread([=] () {
     Renderer::get()->setController(controller);
@@ -136,7 +146,6 @@ void cleanup() {
 
 void matchmakerThread() {
   Matchmaker matchmaker(getParam("local.player"));
-  std::vector<Player *> players;
 
   rts::MatchmakerController *controller =
     new rts::MatchmakerController(&matchmaker);
@@ -144,9 +153,10 @@ void matchmakerThread() {
     Renderer::get()->setController(controller);
   });
 
-  while (players.empty()) {
+  Game *game = nullptr;
+  while (!game) {
     try {
-      players = matchmaker.waitPlayers();
+      game = matchmaker.waitGame();
     } catch (rts::matchmaker_quit_exception &e) {
       LOG(INFO) << "got quit signal from matchmaker\n";
       return;
@@ -155,11 +165,7 @@ void matchmakerThread() {
     }
   }
 
-  Map *map = new Map(
-      ResourceManager::get()->getMapDefinition(matchmaker.getMapName()));
-  Game *game = new Game(map, players);
-
-  std::thread gamet(gameThread, game, matchmaker.getLocalPlayerID());
+  std::thread gamet(gameThread, game);
   gamet.detach();
 }
 
