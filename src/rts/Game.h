@@ -40,6 +40,7 @@ class Game {
     return elapsedTime_;
   }
 
+  GameEntity * getEntity(const std::string &game_id);
   const GameEntity * getEntity(const std::string &game_id) const;
   const Player * getPlayer(id_t pid) const;
   const std::vector<Player *>& getPlayers() const { return players_; }

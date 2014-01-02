@@ -2,12 +2,12 @@
 #define SRC_RTS_EFFECTFACTORY_H_
 #include <functional>
 #include <string>
-#include <v8.h>
+#include <json/json.h>
 #include "rts/EffectManager.h"
 
 namespace rts {
 
-void add_jseffect(const std::string &name, v8::Handle<v8::Object> params);
+void add_effect(const std::string &name, const Json::Value& params);
 
 class ModelEntity;
 

@@ -217,6 +217,13 @@ void Game::handleRenderMessage(const Json::Value &v) {
     renderEntityFromJSON(entity, entities[eid]);
   }
 
+  auto events = must_have_idx(v, "events");
+  invariant(events.isArray(), "events must be array");
+  for (auto&& event : events) {
+    add_effect(
+        must_have_idx(event, "name").asString(),
+        must_have_idx(event, "params"));
+  }
 
   auto players = must_have_idx(v, "players");
   invariant(players.isArray(), "players must be array");
@@ -269,6 +276,14 @@ void Game::run() {
     auto engine_lock = Renderer::get()->lockEngine();
     renderFromJSON(messages);
   }
+}
+
+GameEntity * Game::getEntity(const std::string &game_id) {
+  auto it = game_to_render_id.find(game_id);
+  if (it == game_to_render_id.end()) {
+    return nullptr;
+  }
+  return GameEntity::cast(Renderer::get()->getEntity(it->second));
 }
 
 const GameEntity * Game::getEntity(const std::string &game_id) const {

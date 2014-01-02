@@ -312,7 +312,7 @@ exports.render = function () {
     game_entity.clearEvents();
     for (var i = 0; i < entity_events.length; i++) {
       var event = entity_events[i];
-      event.params.eid = game_entity.getID();
+      event.params.eid = eid;
       events.push(event);
     }
   }

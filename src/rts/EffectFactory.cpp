@@ -115,20 +115,19 @@ Effect * makeOnDamageEffect(
       });
 }
 
-void add_jseffect(const std::string &name, v8::Handle<v8::Object> params) {
+  void add_effect(const std::string &name, const Json::Value& params) {
   using namespace v8;
   // TODO(zack): this should be a param passed to this function
   float t = Renderer::get()->getGameTime();
 
-  auto json_params = jsToJSON(params);
   if (name == "teleport") {
-    glm::vec3 start = glm::vec3(toVec2(json_params["start"]), 0.5f);
-    glm::vec3 end = glm::vec3(toVec2(json_params["end"]), 0.5f);
+    glm::vec3 start = glm::vec3(toVec2(params["start"]), 0.5f);
+    glm::vec3 end = glm::vec3(toVec2(params["end"]), 0.5f);
     Renderer::get()->getEffectManager()->addEffect(
         makeCannedParticleEffect("effects.teleport", start, end, glm::vec3(0.f)));
   } else if (name == "snipe") {
-    id_t eid = params->Get(String::New("eid"))->IntegerValue();
-    auto *entity = Renderer::get()->getEntity(eid);
+    auto eid = must_have_idx(params, "eid").asString();
+    auto *entity = Game::get()->getEntity(eid);
     if (!entity) {
       return;
     }
@@ -147,24 +146,21 @@ void add_jseffect(const std::string &name, v8::Handle<v8::Object> params) {
           shot_pos,
           glm::normalize(shot_pos - pos)));
   } else if (name == "heal_target") {
-    id_t render_id = params->Get(String::New("eid"))->IntegerValue();
-    auto *entity = Renderer::get()->getEntity(render_id);
+    auto eid = must_have_idx(params, "eid").asString();
+    auto *entity = Game::get()->getEntity(eid);
 		entity->addExtraEffect(
         makeTextureBelowEffect(entity, 3.5f, "heal_icon", 2.f));
   } else if (name == "on_damage") {
-    id_t render_id = params->Get(String::New("eid"))->IntegerValue();
-    auto *entity = Renderer::get()->getEntity(render_id);
+    auto eid = params["eid"].asString();
+    auto *entity = Game::get()->getEntity(eid);
     if (!entity) {
       return;
     }
-    auto parts_handle = params->Get(String::New("parts"));
-    invariant(!parts_handle.IsEmpty(), "missing 'parts' for on_damage message");
-    auto parts = Handle<Array>::Cast(parts_handle);
-    invariant(!parts.IsEmpty(), "expected 'parts' array for on_damage message");
+    auto parts = must_have_idx(params, "parts");
     std::vector<int> parts_vec;
-    float amount = params->Get(String::New("amount"))->NumberValue();
-    for (int i = 0; i < parts->Length(); i++) {
-      int idx = parts->Get(i)->IntegerValue();
+    float amount = must_have_idx(params, "amount").asFloat();
+    for (auto &&part_json : parts) {
+      int idx = part_json.asInt();
       ((GameEntity *)entity)->setTookDamage(idx);
       parts_vec.push_back(idx);
       Renderer::get()->getEffectManager()->addEffect(makeOnDamageEffect(
