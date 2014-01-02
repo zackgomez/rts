@@ -21,11 +21,9 @@ void GameServer::addAction(const PlayerAction &act) {
 
   if (act["type"] == ActionTypes::ORDER) {
     std::unique_lock<std::mutex> lock(actionMutex_);
-    auto order = must_have_idx(act, "order");
-    order["from_pid"] = must_have_idx(act, "from_pid");
-    actions_.push_back(order);
+    actions_.push_back(act);
   } else if (act["type"] == ActionTypes::LEAVE_GAME) {
-    running_ = false;
+    actions_.push_back(act);
   } else if (act["type"] == ActionTypes::CHAT) {
     LOG(WARN) << "Chat is unimplemented\n";
   } else {

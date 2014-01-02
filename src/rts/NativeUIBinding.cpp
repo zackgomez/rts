@@ -20,11 +20,9 @@ static void setVisibilityBuffer(const FunctionCallbackInfo<Value> &args) {
   invariant(
     !data->IsExternal(),
     "cannot set visibility to externalized buffer");
-  LOG(DEBUG) << "buf byte len: " << data->ByteLength() << '\n';
 
   auto contents = data->Externalize();
   auto game_controller = (GameController *)Renderer::get()->getController();
-  LOG(DEBUG) << "byte len: " << contents.ByteLength() << '\n';
   game_controller->setVisibilityData(contents.Data(), contents.ByteLength(), dim);
 
   args.GetReturnValue().SetUndefined();

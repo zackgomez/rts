@@ -186,6 +186,7 @@ Game* Matchmaker::doSinglePlayerSetup() {
     client_conn->sendPacket(v);
   };
   auto render_provider = [=]() -> Json::Value {
+    // TODO(zack): handle exceptions here
     return client_conn->readNext();
   };
 

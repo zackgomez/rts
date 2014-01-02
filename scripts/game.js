@@ -158,6 +158,42 @@ exports.init = function (game_def) {
   running = true;
 };
 
+var handle_player_input = function (input) {
+  var type = must_have_idx(input, 'type');
+  var from_pid = must_have_idx(input, 'from_pid');
+  if (type == 'ORDER') {
+    var order = must_have_idx(input, 'order');
+    if (order.target) {
+      order.target = order.target.slice(0, 2);
+    }
+
+    // send to each ordered entity
+    var id_arr = must_have_idx(order, 'entity');
+    for (var j = 0; j < id_arr.length; j++) {
+      var entity = entities[id_arr[j]];
+      if (!entity) {
+        Log('message to unknown entity', id_arr[j]);
+        continue;
+      }
+      invariant(
+        from_pid === entity.getPlayerID(),
+        'can only recieve input from controlling player'
+      );
+      entity.handleOrder(order);
+    }
+  } else if (type == 'LEAVE_GAME') {
+    if (running) {
+      extra_renders.push({
+        type: "game_over",
+        winning_team: IDConst.NO_TEAM,
+      });
+    }
+    running = false;
+  } else {
+    Log('Warning got action of unknown type:', type);
+  }
+};
+
 exports.update = function (player_inputs, dt) {
   if (!running) {
     return false;
@@ -166,28 +202,7 @@ exports.update = function (player_inputs, dt) {
   MessageHub.clearMessages();
 
   // issue player input
-  for (var i = 0; i < player_inputs.length; i++) {
-    var input = player_inputs[i];
-    // clean up some input as entity expects
-    if (input.target) {
-      input.target = input.target.slice(0, 2);
-    }
-
-    // send to each ordered entity
-    var id_arr = must_have_idx(input, 'entity');
-    for (var j = 0; j < id_arr.length; j++) {
-      var entity = entities[id_arr[j]];
-      if (!entity) {
-        Log('message to unknown entity', id_arr[j]);
-        continue;
-      }
-      invariant(
-        must_have_idx(input, 'from_pid') === entity.getPlayerID(),
-        'can only recieve input from controlling player'
-      );
-      entity.handleOrder(input);
-    }
-  }
+  _.each(player_inputs, handle_player_input);
 
   // update entities
   for (var eid in entities) {
