@@ -14,7 +14,7 @@ GameServer::~GameServer() {
   delete script_;
 }
 
-void GameServer::addAction(id_t pid, const PlayerAction &act) {
+void GameServer::addAction(const PlayerAction &act) {
   // CAREFUL: this function is called from different threads
   invariant(act.isMember("type"),
       "malformed player action" + act.toStyledString());
@@ -22,7 +22,7 @@ void GameServer::addAction(id_t pid, const PlayerAction &act) {
   if (act["type"] == ActionTypes::ORDER) {
     std::unique_lock<std::mutex> lock(actionMutex_);
     auto order = must_have_idx(act, "order");
-    order["from_pid"] = toJson(pid);
+    order["from_pid"] = must_have_idx(act, "from_pid");
     actions_.push_back(order);
   } else if (act["type"] == ActionTypes::LEAVE_GAME) {
     running_ = false;
@@ -61,25 +61,17 @@ v8::Handle<v8::Object> GameServer::getGameObject() {
   return v8::Handle<v8::Object>::Cast(obj);
 }
 
-void GameServer::start(const Json::Value &map_def, const Json::Value &player_defs) {
+void GameServer::start(const Json::Value &game_def) {
   using namespace v8;
   script_->init("game-main");
   ENTER_GAMESCRIPT(script_);
 
   auto game_object = getGameObject();
 
-  auto game_def = Object::New();
-  game_def->Set(String::NewSymbol("map_def"), jsonToJS(map_def));
-  game_def->Set(String::NewSymbol("player_defs"), jsonToJS(player_defs));
-  // TODO(zack): Make this passed in
-  game_def->Set(
-    String::NewSymbol("vps_to_win"),
-    Number::New(fltParam("global.pointsToWin")));
-
   TryCatch try_catch;
   const int argc = 1;
   Handle<Value> argv[argc] = {
-    game_def,
+    jsonToJS(game_def),
   };
   Handle<Function> game_init_method = Handle<Function>::Cast(
       game_object->Get(String::New("init")));

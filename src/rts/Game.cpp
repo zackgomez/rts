@@ -12,9 +12,12 @@ namespace rts {
 
 Game* Game::instance_ = nullptr;
 
-Game::Game(Map *map, const std::vector<Player *> &players)
+Game::Game(Map *map, const std::vector<Player *> &players, RenderProvider render_provider, ActionFunc action_func)
   : map_(map),
     players_(players),
+    renderProvider_(render_provider),
+    actionFunc_(action_func),
+    running_(false),
     elapsedTime_(0.f) {
   std::set<int> team_ids;
   for (auto player : players) {
@@ -245,9 +248,26 @@ void Game::renderFromJSON(const Json::Value &msgs) {
       // TODO(zack/connor): do more here
       auto winning_team = toID(must_have_idx(msg, "winning_team"));
       LOG(DEBUG) << "Winning team : " << winning_team << '\n';
+      running_ = false;
     } else {
       invariant_violation("unknown message type: " + type);
     }
+  }
+}
+
+void Game::addAction(id_t pid, const Json::Value &v) {
+  auto act = v;
+  act["from_pid"] = toJson(pid);
+  actionFunc_(act);
+}
+
+void Game::run() {
+  running_ = true;
+  while (running_) {
+    auto messages = renderProvider_();
+
+    auto engine_lock = Renderer::get()->lockEngine();
+    renderFromJSON(messages);
   }
 }
 

@@ -15,8 +15,8 @@ class GameServer {
   }
 
   // Can possibly block, but should never block long
-  void addAction(id_t pid, const PlayerAction &act);
-  void start(const Json::Value &map_def, const Json::Value &player_defs);
+  void addAction(const PlayerAction &act);
+  void start(const Json::Value &game_def);
   Json::Value update(float dt);
 
  private:

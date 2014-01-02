@@ -17,13 +17,21 @@ struct ChatMessage;
 
 class Game {
  public:
-  explicit Game(Map *map, const std::vector<Player *> &players);
+  // Should return a json array of json object messages
+  // each message should have the 'type' field set at a minimum
+  typedef std::function<Json::Value(void)> RenderProvider;
+  typedef std::function<void(const Json::Value&)> ActionFunc;
+  explicit Game(
+      Map *map,
+      const std::vector<Player *> &players,
+      RenderProvider render_provider,
+      ActionFunc action_func);
   ~Game();
 
   static Game* get() { return nullthrows(instance_); }
 
-  // Takes in a json array of 'messages' to render
-  void renderFromJSON(const Json::Value&);
+  void run();
+  void addAction(id_t pid, const Json::Value &v);
 
   const Map * getMap() const {
     return map_;
@@ -40,11 +48,15 @@ class Game {
   float getVictoryPoints(id_t tid) const;
 
  private:
+  void renderFromJSON(const Json::Value &v);
   void handleRenderMessage(const Json::Value &v);
 
   Map *map_;
   std::map<std::string, id_t> game_to_render_id;
   std::vector<Player *> players_;
+  RenderProvider renderProvider_;
+  ActionFunc actionFunc_;
+  bool running_;
   // pid => float
   std::map<id_t, float> requisition_;
   // tid => float

@@ -72,8 +72,6 @@
       '../src/rts/ModelEntity.h',
       '../src/rts/NativeUIBinding.cpp',
       '../src/rts/NativeUIBinding.h',
-      '../src/rts/NetPlayer.cpp',
-      '../src/rts/NetPlayer.h',
       '../src/rts/Player.cpp',
       '../src/rts/Player.h',
       '../src/rts/PlayerAction.h',
