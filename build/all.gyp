@@ -58,6 +58,8 @@
       '../src/rts/Graphics.h',
       '../src/rts/Input.cpp',
       '../src/rts/Input.h',
+      '../src/rts/Lobby.cpp',
+      '../src/rts/Lobby.h',
       '../src/rts/Map.cpp',
       '../src/rts/Map.h',
       '../src/rts/Matchmaker.cpp',

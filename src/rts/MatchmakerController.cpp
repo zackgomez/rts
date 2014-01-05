@@ -55,8 +55,7 @@ void MatchmakerController::onCreate() {
 
   ((StaticWidget*)getUI()->getWidget("matchmaker_menu.matchmaking_button"))
     ->setOnPressListener([=] () -> bool {
-        // TODO(zack): this
-        LOG(WARNING) << "unimplemented\n";
+        matchmaker_->signalReady(Matchmaker::MODE_JOINGAME);
         return true;
         });
 

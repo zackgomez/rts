@@ -30,6 +30,7 @@ class matchmaker_quit_exception : public std::exception {
 class Matchmaker {
  public:
   static const std::string MODE_SINGLEPLAYER;
+  static const std::string MODE_JOINGAME;
 
   explicit Matchmaker(const Json::Value &player_config);
 
@@ -43,6 +44,7 @@ class Matchmaker {
    * map.
    */
   Game* doSinglePlayerSetup();
+  Game* doJoinGame();
 
   typedef std::function<void(const std::string &)> MatchmakerListener;
   
