@@ -18,19 +18,11 @@ void lobby_main(std::string listen_port, size_t num_players, size_t num_dummy_pl
   auto server_sock = kissnet::tcp_socket::create();
   server_sock->listen(listen_port, 11);
 
+  const float starting_requisition = fltParam("global.startingRequisition");
+
   Json::Value player_defs(Json::arrayValue);
   id_t pid = STARTING_PID;
   int tid_offset = 0;
-
-  for (int i = 0; i < num_dummy_players; i++) {
-    Json::Value dummy_player_def;
-    dummy_player_def["name"] = "dummy";
-    dummy_player_def["color"] = toJson(vec3Param("colors.dummyPlayer"));
-    dummy_player_def["pid"] = toJson(pid++);
-    dummy_player_def["tid"] = toJson(STARTING_TID + tid_offset);
-    tid_offset = (tid_offset + 1) % 2;
-    player_defs.append(dummy_player_def);
-  }
 
   std::map<id_t, NetConnectionPtr> pid_to_conn;
   while (conns.size() < num_players) {
@@ -45,6 +37,7 @@ void lobby_main(std::string listen_port, size_t num_players, size_t num_dummy_pl
       player_def["color"] = must_have_idx(network_player_def, "color");
       player_def["pid"] = toJson(pid);
       player_def["tid"] = toJson(STARTING_TID + tid_offset);
+      player_def["starting_requisition"] = starting_requisition;
 
       player_defs.append(player_def);
       pid_to_conn[pid] = conn;
@@ -55,6 +48,18 @@ void lobby_main(std::string listen_port, size_t num_players, size_t num_dummy_pl
     } catch (std::exception &e) {
       conn->stop();
     }
+  }
+
+  // Add any dummy players
+  for (int i = 0; i < num_dummy_players; i++) {
+    Json::Value dummy_player_def;
+    dummy_player_def["name"] = "dummy";
+    dummy_player_def["color"] = toJson(vec3Param("colors.dummyPlayer"));
+    dummy_player_def["pid"] = toJson(pid++);
+    dummy_player_def["tid"] = toJson(STARTING_TID + tid_offset);
+    dummy_player_def["starting_requisition"] = starting_requisition;
+    tid_offset = (tid_offset + 1) % 2;
+    player_defs.append(dummy_player_def);
   }
 
   game_def["player_defs"] = player_defs;
@@ -236,14 +241,6 @@ Game* Matchmaker::doSinglePlayerSetup() {
 
   lobby_thread.join();
   invariant(server_conns.size() == 1, "should have 1 client attached to server");
-
-  const float starting_requisition = fltParam("global.startingRequisition");
-  auto i = 0;
-  for (auto&& player_def : must_have_idx(game_def, "player_defs")) {
-    player_def["starting_requisition"] = starting_requisition;
-    player_def["starting_location"] = must_have_idx(must_have_idx(game_def, "map_def"), "starting_locations")[i];
-    i++;
-  }
 
   std::thread server_thread(game_server_thread, game_def, server_conns);
   server_thread.detach();

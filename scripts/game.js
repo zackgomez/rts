@@ -130,6 +130,7 @@ exports.init = function (game_def) {
   var player_defs = must_have_idx(game_def, 'player_defs');
   for (var i = 0; i < player_defs.length; i++) {
     var player_def = player_defs[i];
+    player_def.starting_location = map_def.starting_locations[i];
     var player = new Player(player_def);
     players[player.getPlayerID()] = player;
   }
