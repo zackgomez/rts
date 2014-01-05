@@ -109,11 +109,15 @@ Json::Value GameServer::update(float dt) {
   checkJSResult(js_render_result_ret, try_catch, "render");
 
   Handle<String> js_render_result = Handle<String>::Cast(js_render_result_ret);
-  char* encoded_render = *String::Utf8Value(js_render_result);
-  char* encoded_end = encoded_render + js_render_result->Utf8Length();
+  std::string encoded_render = *String::Utf8Value(js_render_result);
 
   Json::Value json_render;
-  Json::Reader().parse(encoded_render, encoded_end, json_render);
+  Json::Reader reader;
+  if (!reader.parse(encoded_render, json_render)) {
+      LOG(FATAL) << "Cannot parse rendered json: "
+        << reader.getFormattedErrorMessages() << '\n';
+      invariant_violation("error parsing game render json");
+  }
   return json_render;
 }
 };

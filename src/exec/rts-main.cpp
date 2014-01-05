@@ -44,7 +44,7 @@ const std::string mmport = "11100";
 void matchmakerThread();
 
 void gameThread(Game *game) {
-  auto action_func = [&](id_t pid, const PlayerAction &act) {
+  auto action_func = [&](rts::id_t pid, const PlayerAction &act) {
     return game->addAction(pid, act);
   };
 
@@ -125,11 +125,11 @@ void matchmakerThread() {
 }
 
 void set_working_directory(int argc, char **argv) {
-#ifndef _MSC_VER
   namespace fs = boost::filesystem;
 	fs::path full_path = fs::system_complete(fs::path(argv[0]));
 	auto exec_dir = full_path.branch_path();
 	fs::current_path(exec_dir);
+#ifndef _MSC_VER
 	// In bundle.app/Contents/MacOS
 	// going to bundle.app/Contents/Resources
 	auto resource_path = exec_dir/fs::path("../Resources");

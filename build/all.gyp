@@ -156,6 +156,7 @@
         },
         'msvs_settings': {
           'VCLinkerTool': {
+            'GenerateDebugInformation': 'true',
             'OutputFile': '../rts.exe',
             'AdditionalLibraryDirectories': [
               '../lib/assimp/lib-msvc',
@@ -172,6 +173,7 @@
             '../msvc/DLLs/Assimp32.dll',
             '../msvc/DLLs/glew32.dll',
             '../msvc/DLLs/glfw3.dll',
+            '../msvc/DLLs/v8.dll',
           ],
         }],
       }],

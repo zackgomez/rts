@@ -1,6 +1,8 @@
 #ifndef SRC_RTS_GAMESERVER_H_
 #define SRC_RTS_GAMESERVER_H_
 #include "rts/GameScript.h"
+#include <mutex>
+#include <vector>
 #include "rts/PlayerAction.h"
 
 namespace rts {
