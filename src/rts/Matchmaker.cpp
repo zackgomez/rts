@@ -14,34 +14,58 @@
 
 namespace rts {
 
-void lobby_main(size_t num_players, kissnet::tcp_socket_ptr server_sock, std::vector<NetConnectionPtr> &ret) {
-  while (ret.size() < num_players) {
+void lobby_main(std::string listen_port, size_t num_players, size_t num_dummy_players, std::vector<NetConnectionPtr> &conns, Json::Value &game_def) {
+  auto server_sock = kissnet::tcp_socket::create();
+  server_sock->listen(listen_port, 11);
+
+  Json::Value player_defs(Json::arrayValue);
+  id_t pid = STARTING_PID;
+  int tid_offset = 0;
+
+  for (int i = 0; i < num_dummy_players; i++) {
+    Json::Value dummy_player_def;
+    dummy_player_def["name"] = "dummy";
+    dummy_player_def["color"] = toJson(vec3Param("colors.dummyPlayer"));
+    dummy_player_def["pid"] = toJson(pid++);
+    dummy_player_def["tid"] = toJson(STARTING_TID + tid_offset);
+    tid_offset = (tid_offset + 1) % 2;
+    player_defs.append(dummy_player_def);
+  }
+
+  std::map<id_t, NetConnectionPtr> pid_to_conn;
+  while (conns.size() < num_players) {
     auto client_sock = server_sock->accept();
     NetConnectionPtr conn(new NetConnection(client_sock));
-    ret.push_back(conn);
-  }
-}
 
-Json::Value build_game_def(Map *map, std::vector<Player*> players) {
-  Json::Value player_defs;
-  const float starting_requisition = fltParam("global.startingRequisition");
-  for (int i = 0; i < players.size(); i++) {
-    auto *player = players[i];
-    auto starting_location = map->getStartingLocation(i);
-    Json::Value json_player_def;
-    json_player_def["pid"] = toJson(player->getPlayerID());
-    json_player_def["tid"] = toJson(player->getTeamID());
-    json_player_def["starting_requisition"] = starting_requisition;
-    json_player_def["starting_location"] = starting_location;
-    player_defs[player_defs.size()] = json_player_def;
+    try {
+      auto network_player_def = conn->readNext(500);
+
+      Json::Value player_def;
+      player_def["name"] = must_have_idx(network_player_def, "name");
+      player_def["color"] = must_have_idx(network_player_def, "color");
+      player_def["pid"] = toJson(pid);
+      player_def["tid"] = toJson(STARTING_TID + tid_offset);
+
+      player_defs.append(player_def);
+      pid_to_conn[pid] = conn;
+      conns.push_back(conn);
+
+      tid_offset = (tid_offset + 1) % 2;
+      pid++;
+    } catch (std::exception &e) {
+      conn->stop();
+    }
   }
 
-  Json::Value game_def;
   game_def["player_defs"] = player_defs;
-  game_def["map_def"] = map->getMapDefinition();
+  game_def["map_def"] = ResourceManager::get()->getMapDefinition("debugMap");
   game_def["vps_to_win"] = fltParam("global.pointsToWin");
 
-  return game_def;
+  for (auto &pair : pid_to_conn) {
+    auto personalized_game_def = game_def;
+    personalized_game_def["local_player_id"] = toJson(pair.first);
+    pair.second->sendPacket(personalized_game_def);
+  }
 }
 
 void game_server_thread(Json::Value game_def, std::vector<NetConnectionPtr> connections) {
@@ -99,7 +123,7 @@ NetConnectionPtr attemptConnection(
   double timeout = intParam("network.connectAttempts")
       * fltParam("network.connectInterval");
   while (timeout > 0) {
-    LOG(INFO) << "time to connect remaining: " << timeout << '\n';
+    //LOG(INFO) << "time to connect remaining: " << timeout << '\n';
     auto socks = sockset.poll_sockets(timeout);
     if (socks.empty()) {
       break;
@@ -161,26 +185,34 @@ void Matchmaker::signalStop() {
   doneCondVar_.notify_all();
 }
 
-Game* Matchmaker::doSinglePlayerSetup() {
-  auto map_def = ResourceManager::get()->getMapDefinition("debugMap");
-  Map *map = new Map(map_def);
+Game* Matchmaker::connectToServer(const std::string &addr, const std::string &port) {
+  NetConnectionPtr client_conn = attemptConnection(addr, port);
 
-  std::vector<Player *> players;
-  LocalPlayer *lp = makeLocalPlayer(STARTING_PID, STARTING_TID, playerDef_);
-  players.push_back(lp);
-  DummyPlayer *dp = new DummyPlayer(STARTING_PID + 1, STARTING_TID + 1);
-  players.push_back(dp);
+  // send the server our information
+  client_conn->sendPacket(playerDef_);
+  // read back the information necessary for the game
+  auto&& game_def = client_conn->readNext();
 
-  std::vector<NetConnectionPtr> server_conns;
-  NetConnectionPtr client_conn;
+  Map *map = new Map(must_have_idx(game_def, "map_def"));
 
-  auto listen_port = strParam("local.player.port");
-  auto server_sock = kissnet::tcp_socket::create();
-  server_sock->listen(listen_port, 11);
-  std::thread lobby_thread(lobby_main, 1, server_sock, std::ref(server_conns));
-  client_conn = attemptConnection("127.0.0.1", listen_port);
-  lobby_thread.join();
-  invariant(server_conns.size() == 1, "should have 1 client attached to server");
+  id_t local_pid = toID(must_have_idx(game_def, "local_player_id"));
+  auto&& player_defs = must_have_idx(game_def, "player_defs");
+  std::vector<Player*> players;
+  for (auto&& player_def : player_defs) {
+    id_t pid = toID(must_have_idx(player_def, "pid"));
+    id_t tid = toID(must_have_idx(player_def, "tid"));
+    auto name = must_have_idx(player_def, "name").asString();
+    auto color = toVec3(must_have_idx(player_def, "color"));
+
+    Player *p = nullptr;
+    if (pid == local_pid) {
+      p = new LocalPlayer(pid, tid, name, color);
+    } else {
+      p = new Player(pid, tid, name, color);
+    }
+    players.push_back(p);
+  }
+
 
   auto action_func = [=](const Json::Value &v) {
     client_conn->sendPacket(v);
@@ -190,19 +222,33 @@ Game* Matchmaker::doSinglePlayerSetup() {
     return client_conn->readNext();
   };
 
-  auto game_def = build_game_def(map, players);
-  std::thread server_thread(game_server_thread, game_def, server_conns);
-  server_thread.detach();
-
   return new Game(map, players, render_provider, action_func);
 }
 
-LocalPlayer* Matchmaker::makeLocalPlayer(id_t pid, id_t tid, const Json::Value &player_def) {
-  return new LocalPlayer(
-     pid,
-     tid,
-     must_have_idx(player_def, "name").asString(),
-     toVec3(must_have_idx(player_def, "color")));
+Game* Matchmaker::doSinglePlayerSetup() {
+  auto listen_port = strParam("local.player.port");
+
+  std::vector<NetConnectionPtr> server_conns;
+  Json::Value game_def;
+  std::thread lobby_thread(lobby_main, listen_port, 1, 1, std::ref(server_conns), std::ref(game_def));
+
+  Game* game = connectToServer("127.0.0.1", listen_port);
+
+  lobby_thread.join();
+  invariant(server_conns.size() == 1, "should have 1 client attached to server");
+
+  const float starting_requisition = fltParam("global.startingRequisition");
+  auto i = 0;
+  for (auto&& player_def : must_have_idx(game_def, "player_defs")) {
+    player_def["starting_requisition"] = starting_requisition;
+    player_def["starting_location"] = must_have_idx(must_have_idx(game_def, "map_def"), "starting_locations")[i];
+    i++;
+  }
+
+  std::thread server_thread(game_server_thread, game_def, server_conns);
+  server_thread.detach();
+
+  return game;
 }
 
 void Matchmaker::registerListener(MatchmakerListener func) {

@@ -49,11 +49,9 @@ class Matchmaker {
   void registerListener(MatchmakerListener func);
 
  private:
-  // requires name, color, pid, and tid be set
-  static LocalPlayer* makeLocalPlayer(
-      id_t pid,
-      id_t tid,
-      const Json::Value &player_config);
+  Game* connectToServer(
+      const std::string &addr,
+      const std::string &port);
 
   Json::Value playerDef_;
 
