@@ -1,5 +1,8 @@
 #include "rts/Lobby.h"
 #include <json/json.h>
+#define BOOST_FILESYSTEM_NO_DEPRECATED
+#include "boost/filesystem/operations.hpp"
+#include "boost/filesystem/path.hpp"
 #include "common/kissnet.h"
 #include "common/FPSCalculator.h"
 #include "common/NetConnection.h"
@@ -8,6 +11,59 @@
 #include "rts/ResourceManager.h"
 
 namespace rts {
+
+Json::Value get_map_definition(const std::string &map_name) {
+  std::string full_path = "maps/" + map_name + ".map";
+  std::ifstream file(full_path.c_str());
+  if (!file) {
+    throw new file_exception("Unable to open file " + full_path);
+  }
+  Json::Reader reader;
+  Json::Value map_def;
+  if (!reader.parse(file, map_def)) {
+    LOG(FATAL) << "Cannot parse param file " << full_path << " : "
+      << reader.getFormattedErrorMessages() << '\n';
+    invariant_violation("Couldn't parse " + full_path);
+  }
+  return map_def;
+  /*
+  namespace fs = boost::filesystem;
+  boost::system::error_code ec;
+  fs::path maps_path("maps");
+  auto status = fs::status(maps_path);
+  invariant(
+    fs::exists(status) && fs::is_directory(status),
+    "missing maps directory");
+
+  Json::Reader reader;
+  auto it = fs::directory_iterator(maps_path);
+  for ( ; it != fs::directory_iterator(); it++) {
+    auto dir_ent = *it;
+    if (fs::is_regular_file(dir_ent.status())) {
+      auto filepath = dir_ent.path().filename();
+      auto filename = filepath.string();
+      // TODO(zack): some logging here
+      if (filepath.extension() != ".map" || filename.empty() || filename[0] == '.') {
+        continue;
+      }
+      std::ifstream f(dir_ent.path().c_str());
+      if (!f) {
+        continue;
+      }
+      Json::Value mapDef;
+      if (!reader.parse(f, mapDef)) {
+        LOG(FATAL) << "Cannot parse param file " << filename << " : "
+          << reader.getFormattedErrorMessages() << '\n';
+        invariant_violation("Couldn't parse " + dir_ent.path().string());
+      }
+      invariant(mapDef.isMember("name"), "map missing name");
+      auto mapName = mapDef["name"].asString();
+      LOG(INFO) << "Read map " << mapName << " from file " << filename << '\n';
+      maps_[mapName] = mapDef;
+    }
+  }
+   */
+}
 
 void game_server_loop(Json::Value game_def, std::vector<NetConnectionPtr> connections) {
   const float simrate = fltParam("game.simrate");
@@ -99,7 +155,7 @@ void lobby_main(std::string listen_port, size_t num_players, size_t num_dummy_pl
   }
 
   game_def["player_defs"] = player_defs;
-  game_def["map_def"] = ResourceManager::get()->getMapDefinition("debugMap");
+  game_def["map_def"] = get_map_definition("debugMap");
   game_def["vps_to_win"] = fltParam("global.pointsToWin");
 
   for (auto &pair : pid_to_conn) {

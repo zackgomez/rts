@@ -28,7 +28,7 @@ static void setVisibilityBuffer(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().SetUndefined();
 }
 
-Handle<Value> getNativeUIBinding() {
+Handle<Object> getNativeUIBinding() {
   HandleScope handle_scope(Isolate::GetCurrent());
   auto binding = Object::New();
   binding->Set(

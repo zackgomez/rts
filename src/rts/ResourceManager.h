@@ -21,11 +21,6 @@ class ResourceManager {
   GLuint getTexture(const std::string &name);
   Shader* getShader(const std::string &name);
   DepthField *getDepthField(const std::string &name);
-  Json::Value getMapDefinition(const std::string &name);
-
-  // reads all script files from disk
-  // @return map of (module_name, contents) tuples
-  std::map<std::string, std::string> readScripts();
 
  private:
   ResourceManager();

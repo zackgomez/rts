@@ -14,6 +14,7 @@
 #include "rts/Map.h"
 #include "rts/Matchmaker.h"
 #include "rts/MinimapWidget.h"
+#include "rts/NativeUIBinding.h"
 #include "rts/Player.h"
 #include "rts/PlayerAction.h"
 #include "rts/Renderer.h"
@@ -127,7 +128,9 @@ void call_js_controller_init(v8::Handle<v8::Object> controller) {
   }
 
 void GameController::onCreate() {
-  gameScript_->init("ui-main");
+  std::map<std::string, GameScript::BindingFunction> bindings;
+  bindings["nativeui"] = getNativeUIBinding;
+  gameScript_->init("ui-main", bindings);
   ENTER_GAMESCRIPT(gameScript_);
   call_js_controller_init(getJSController());
 

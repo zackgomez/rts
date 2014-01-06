@@ -1,5 +1,10 @@
 {
   'target_defaults': {
+    'include_dirs': [
+      '../src',
+      '../lib/glm',
+      '../lib/jsoncpp',
+    ],
     'conditions': [
       ['OS=="mac"', {
         'defines': [
@@ -28,6 +33,11 @@
         'include_dirs': [
           '../lib/boost_1_50_0',
         ],
+        'msvs_settings': {
+          'VCLinkerTool': {
+            'GenerateDebugInformation': 'true',
+          },
+        },
       }],
     ],
   },

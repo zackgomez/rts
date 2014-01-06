@@ -4,7 +4,6 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <string>
-#include <stb_truetype.h>
 
 class Shader;
 
@@ -44,7 +43,7 @@ class FontManager {
 
   float glyphSize_;
   unsigned glyphTexSize_;
-  stbtt_bakedchar cdata_[96];
+  void *cdata_;
   GLuint glyphTex_;
 };
 

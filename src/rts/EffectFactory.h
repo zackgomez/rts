@@ -9,9 +9,5 @@ namespace rts {
 
 void add_effect(const std::string &name, const Json::Value& params);
 
-class ModelEntity;
-
-typedef std::function<bool(float)> RenderFunction;
-
 }  // rts
 #endif  // SRC_RTS_EFFECTFACTORY_H_

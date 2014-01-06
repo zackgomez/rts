@@ -1,13 +1,14 @@
 #include "rts/GameScript.h"
 #include <v8.h>
 #include <sstream>
+#define BOOST_FILESYSTEM_NO_DEPRECATED
+#include "boost/filesystem/operations.hpp"
+#include "boost/filesystem/path.hpp"
 #include "common/Collision.h"
 #include "common/util.h"
 #include "rts/Game.h"
 #include "rts/Map.h"
 #include "rts/Player.h"
-#include "rts/NativeUIBinding.h"
-#include "rts/ResourceManager.h"
 
 using namespace v8;
 
@@ -207,6 +208,13 @@ void configure_v8() {
 }
 
 v8::Local<v8::Value> GameScript::init(const std::string &main_module_name) {
+  std::map<std::string, GameScript::BindingFunction> bindings;
+  return init(main_module_name, bindings);
+}
+
+v8::Local<v8::Value> GameScript::init(
+    const std::string &main_module_name,
+    const std::map<std::string, GameScript::BindingFunction>& extra_bindings) {
   configure_v8();
 
   isolate_ = Isolate::New();
@@ -234,9 +242,11 @@ v8::Local<v8::Value> GameScript::init(const std::string &main_module_name) {
   bindings->Set(
       String::New("pathing"),
       getPathingBinding());
-  bindings->Set(
-      String::New("nativeui"),
-      getNativeUIBinding());
+  for (auto&& pair : extra_bindings) {
+    bindings->Set(
+        String::New(pair.first.c_str()),
+        pair.second());
+  }
   jsBindings_.Reset(isolate_, bindings);
   // set up runtime object
   auto source_map = getSourceMap();
@@ -299,10 +309,50 @@ Handle<Value> runtimeEvalImpl(Handle<String> source, Handle<Object> kwargs) {
   return result;
 }
 
+std::map<std::string, std::string> read_scripts() {
+  namespace fs = boost::filesystem;
+  boost::system::error_code ec;
+  fs::path scripts_path("scripts");
+  auto status = fs::status(scripts_path);
+  invariant(
+    fs::exists(status) && fs::is_directory(status),
+    "missing scripts directory");
+
+  std::map<std::string, std::string> path_files;
+  auto it = fs::directory_iterator(scripts_path);
+  for ( ; it != fs::directory_iterator(); it++) {
+    auto dir_ent = *it;
+    if (!fs::is_regular_file(dir_ent.status())) {
+      continue;
+    }
+    auto filepath = dir_ent.path().filename();
+    auto filename = filepath.string();
+    if (filepath.extension() != ".js" || filename.empty() || filename[0] == '.') {
+      continue;
+    }
+
+    std::string module_name = filepath.stem().string();
+
+    std::ifstream f(dir_ent.path().string());
+    if (!f) {
+      continue;
+    }
+
+    std::string contents;
+    std::getline(f, contents, (char)EOF);
+    invariant(
+        path_files.find(module_name) == path_files.end(),
+        "cannot have duplicate module names");
+    path_files[module_name] = std::move(contents);
+  }
+
+  return path_files;
+}
+
 Handle<Object> GameScript::getSourceMap() const {
   Handle<Object> js_source_map = Object::New();
 
-  auto scripts = ResourceManager::get()->readScripts();
+  auto scripts = read_scripts();
   for (auto pair : scripts) {
     js_source_map->Set(
         String::New(pair.first.c_str()),
