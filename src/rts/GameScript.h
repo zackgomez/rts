@@ -2,6 +2,7 @@
 #define SRC_RTS_GAMESCRIPT_H_
 #include <v8.h>
 #include <json/json.h>
+#include <functional>
 #include <unordered_map>
 #include "common/Types.h"
 

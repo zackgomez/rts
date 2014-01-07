@@ -8,7 +8,6 @@
 #include "common/NetConnection.h"
 #include "common/ParamReader.h"
 #include "rts/GameServer.h"
-#include "rts/ResourceManager.h"
 
 namespace rts {
 

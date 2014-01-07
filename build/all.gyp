@@ -48,6 +48,7 @@
     'target_name': 'libengine',
     'type': 'static_library',
     'include_dirs': [
+      '../lib/glew-1.7.0/include',
       '../lib/glfw-3.0.1/include',
       '../lib/stb_truetype/',
       '../lib/stbi/',
@@ -81,6 +82,14 @@
       '../src/rts/Widgets.cpp',
       '../src/rts/Widgets.h',
       '../lib/stbi/stb_image.c',
+    ],
+    'conditions': [
+      ['OS=="win"', {
+        'include_dirs': [
+          '../lib/glew-1.7.0/include',
+          '../lib/assimp/include',
+        ],
+      }],
     ],
   },
   {
