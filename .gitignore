@@ -27,3 +27,4 @@ msvc/rts/*.user
 nbproject
 .depend
 .DS_STORE
+rts-server

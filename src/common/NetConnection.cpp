@@ -52,9 +52,6 @@ void netThreadFunc(
     std::mutex &queueMutex,
     std::condition_variable &condVar,
     bool &running) {
-
-  sock->setNonBlocking();
-
   Json::Reader reader;
   while (running) {
     Json::Value msg;

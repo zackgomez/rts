@@ -2,8 +2,7 @@
   // Player Configuration
   "player" : {
     "name" : "DefaultPlayer",
-    "color" : [0.1, 0.1, 0.8],
-    "port" : "10110"
+    "color" : [0.1, 0.1, 0.8]
   },
 
   // Graphics
@@ -12,8 +11,8 @@
 
   // Game Preferences
   "minimap_color_scheme" : 1, 
-    //0 = player colors (red player is red...)
-    //1 = ally (you are green, allies blue, enemies red...)
+  //0 = player colors (red player is red...)
+  //1 = ally (you are green, allies blue, enemies red...)
   "tooltipDelay" : 0.3,
   "tooltipFontHeight" : 20.0,
 
@@ -28,8 +27,10 @@
   "mouseZoomSpeed" : 1.0,
 
   // Server preferences
-  "matchmakingHost" : "zackgomez.com",
-  "matchmakingPort" : "11100",
+  "matchmaker": {
+    "host": "localhost",
+    "port" : "11100"
+  },
 
   // Debug preferences
   "debug" : {

@@ -133,19 +133,20 @@ Game* Matchmaker::connectToServer(const std::string &addr, const std::string &po
 }
 
 Game* Matchmaker::doSinglePlayerSetup() {
-  auto listen_port = strParam("local.player.port");
+  auto port = strParam("local.matchmaker.port");
 
-  std::thread lobby_thread(lobby_main, listen_port, 1, 1);
+  std::thread lobby_thread(lobby_main, port, 1, 1);
   lobby_thread.detach();
 
-  Game* game = connectToServer("127.0.0.1", listen_port);
+  Game* game = connectToServer("localhost", port);
 
   return game;
 }
 
 Game* Matchmaker::doJoinGame() {
-  auto port = strParam("local.player.port");
-  Game* game = connectToServer("127.0.0.1", port);
+  auto host = strParam("local.matchmaker.host");
+  auto port = strParam("local.matchmaker.port");
+  Game* game = connectToServer(host, port);
 
   return game;
 }
