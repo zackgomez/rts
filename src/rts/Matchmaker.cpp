@@ -94,6 +94,7 @@ void Matchmaker::signalStop() {
 
 Game* Matchmaker::connectToServer(const std::string &addr, const std::string &port) {
   NetConnectionPtr client_conn = attemptConnection(addr, port);
+  matchmakerStatusCallback_("Connected to server at " + addr + " : " + port);
 
   // send the server our information
   client_conn->sendPacket(playerDef_);
