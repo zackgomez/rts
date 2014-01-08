@@ -93,6 +93,7 @@ void Matchmaker::signalStop() {
 }
 
 Game* Matchmaker::connectToServer(const std::string &addr, const std::string &port) {
+  matchmakerStatusCallback_("trying server at " + addr + " : " + port);
   NetConnectionPtr client_conn = attemptConnection(addr, port);
   matchmakerStatusCallback_("Connected to server at " + addr + " : " + port);
 
