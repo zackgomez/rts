@@ -107,6 +107,10 @@ GameEntity::UIInfo UIInfoFromJSON(const Json::Value &v) {
       ret.parts.push_back(UIPartFromJSON(json_part));
     }
   }
+  if (v.isMember("hotkey")) {
+    auto&& hotkeystr = v["hotkey"].asString();
+    ret.hotkey = hotkeystr.empty() ? '\0' : hotkeystr[0];
+  }
   if (v.isMember("extra")) {
     ret.extra = v["extra"];
   }

@@ -573,10 +573,23 @@ void GameController::frameUpdate(float dt) {
       newsel.insert(game_id);
     }
   }
+  player_->setSelection(newsel);
   if (!action_.name.empty() && !newsel.count(action_.owner_id)) {
     action_.name.clear();
   }
-  player_->setSelection(newsel);
+
+  // update hotkey groups
+  for (auto pair : Renderer::get()->getEntities()) {
+    auto *ge = GameEntity::cast(pair.second);
+    if (!ge) {
+      continue;
+    }
+    if (ge->getPlayerID(t) == player_->getPlayerID() && ge->getUIInfo().hotkey) {
+      std::set<std::string> hotkey_sel;
+      hotkey_sel.insert(ge->getGameID());
+      player_->addSavedSelection(ge->getUIInfo().hotkey, hotkey_sel);
+    }
+  }
 
   if (leftDragMinimap_) {
     minimapUpdateCamera(mouse_state.screenpos);
