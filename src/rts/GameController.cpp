@@ -14,6 +14,7 @@
 #include "rts/Map.h"
 #include "rts/Matchmaker.h"
 #include "rts/MinimapWidget.h"
+#include "rts/NativeUIBinding.h"
 #include "rts/Player.h"
 #include "rts/PlayerAction.h"
 #include "rts/Renderer.h"
@@ -81,8 +82,9 @@ std::string getVPString(id_t team) {
   return std::to_string((int)Game::get()->getVictoryPoints(team));
 }
 
-GameController::GameController(LocalPlayer *player)
+GameController::GameController(LocalPlayer *player, ActionFunc actionFunc)
   : player_(player),
+    actionFunc_(actionFunc),
     shift_(false),
     ctrl_(false),
     alt_(false),
@@ -126,7 +128,9 @@ void call_js_controller_init(v8::Handle<v8::Object> controller) {
   }
 
 void GameController::onCreate() {
-  gameScript_->init("ui-main");
+  std::map<std::string, GameScript::BindingFunction> bindings;
+  bindings["nativeui"] = getNativeUIBinding;
+  gameScript_->init("ui-main", bindings);
   ENTER_GAMESCRIPT(gameScript_);
   call_js_controller_init(getJSController());
 
@@ -216,11 +220,12 @@ void GameController::onCreate() {
     // In future add additional check for whisper
     if (!text.empty()) {
       msg["chat"] = text;
-      Game::get()->addAction(player_->getPlayerID(), msg);
+      actionFunc_(player_->getPlayerID(), msg);
     }
   });
   getUI()->addWidget("ui.widgets.chat", chatWidget);
 
+  /* TODO(zack): reenable this
   Game::get()->setChatListener([&](id_t pid, const Json::Value &m) {
     const Player* from = Game::get()->getPlayer(pid);
     invariant(from, "No playyayayaya");
@@ -236,6 +241,7 @@ void GameController::onCreate() {
         ->show(fltParam("ui.chat.chatDisplayTime"));
     } // Note: When we add whisper, append additional conditional
   });
+   */
 
   Renderer::get()->setEntityOverlayRenderer(
       std::bind(
@@ -337,7 +343,7 @@ void GameController::renderExtra(float dt) {
   renderHighlights(highlights_, dt);
 
   if (!action_.name.empty()) {
-    const GameEntity *e = GameEntity::cast(Renderer::get()->getEntity(action_.render_id));
+    const GameEntity *e = Game::get()->getEntity(action_.owner_id);
     invariant(e, "Unable to find action owner");
 
     float t = Renderer::get()->getGameTime();
@@ -567,10 +573,23 @@ void GameController::frameUpdate(float dt) {
       newsel.insert(game_id);
     }
   }
+  player_->setSelection(newsel);
   if (!action_.name.empty() && !newsel.count(action_.owner_id)) {
     action_.name.clear();
   }
-  player_->setSelection(newsel);
+
+  // update hotkey groups
+  for (auto pair : Renderer::get()->getEntities()) {
+    auto *ge = GameEntity::cast(pair.second);
+    if (!ge) {
+      continue;
+    }
+    if (ge->getPlayerID(t) == player_->getPlayerID() && ge->getUIInfo().hotkey) {
+      std::set<std::string> hotkey_sel;
+      hotkey_sel.insert(ge->getGameID());
+      player_->addSavedSelection(ge->getUIInfo().hotkey, hotkey_sel);
+    }
+  }
 
   if (leftDragMinimap_) {
     minimapUpdateCamera(mouse_state.screenpos);
@@ -582,7 +601,7 @@ void GameController::quitEvent()
   // Send the quit game event
   PlayerAction action;
   action["type"] = ActionTypes::LEAVE_GAME;
-  Game::get()->addAction(player_->getPlayerID(), action);
+  actionFunc_(player_->getPlayerID(), action);
 }
 
 void GameController::mouseDown(const glm::vec2 &screenCoord, int button) {
@@ -688,7 +707,7 @@ void GameController::attemptIssueOrder(Json::Value order) {
     PlayerAction action;
     action["type"] = ActionTypes::ORDER;
     action["order"] = order;
-    Game::get()->addAction(player_->getPlayerID(), action);
+    actionFunc_(player_->getPlayerID(), action);
   }
 }
 
@@ -781,7 +800,7 @@ void GameController::keyPress(const KeyEvent &ev) {
   if (key == INPUT_KEY_F10) {
     PlayerAction action;
     action["type"] = ActionTypes::LEAVE_GAME;
-    Game::get()->addAction(player_->getPlayerID(), action);
+    actionFunc_(player_->getPlayerID(), action);
   // Camera panning
   } else if (key == INPUT_KEY_UP) {
     if (alt_) {
@@ -851,7 +870,7 @@ void GameController::keyPress(const KeyEvent &ev) {
         PlayerAction action;
         action["type"] = ActionTypes::ORDER;
         action["order"] = order;
-        Game::get()->addAction(player_->getPlayerID(), action);
+        actionFunc_(player_->getPlayerID(), action);
       } else if (key == INPUT_KEY_H) {
         Json::Value order;
         order["type"] = OrderTypes::HOLD_POSITION;
@@ -859,7 +878,7 @@ void GameController::keyPress(const KeyEvent &ev) {
         PlayerAction action;
         action["type"] = ActionTypes::ORDER;
         action["order"] = order;
-        Game::get()->addAction(player_->getPlayerID(), action);
+        actionFunc_(player_->getPlayerID(), action);
       } else if (key == INPUT_KEY_S) {
         Json::Value order;
         order["type"] = OrderTypes::STOP;
@@ -867,7 +886,7 @@ void GameController::keyPress(const KeyEvent &ev) {
         PlayerAction action;
         action["type"] = ActionTypes::ORDER;
         action["order"] = order;
-        Game::get()->addAction(player_->getPlayerID(), action);
+        actionFunc_(player_->getPlayerID(), action);
       } else {
         auto sel = player_->getSelection().begin();
         auto actor = Game::get()->getEntity(*sel);
@@ -1202,7 +1221,7 @@ void GameController::handleUIAction(const UIAction &action) {
     order["entity"] = toJson(ids);
     order["action"] = action.name;
     player_action["order"] = order;
-    Game::get()->addAction(player_->getPlayerID(), player_action);
+    actionFunc_(player_->getPlayerID(), player_action);
     // No extra params
   } else {
     action_ = action;

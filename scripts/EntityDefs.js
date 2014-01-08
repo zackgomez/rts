@@ -355,6 +355,7 @@ var EntityDefs = {
     getParts: function (entity) {
       return [
         makePart({
+          name: 'base',
           health: 700,
           description: 'Base model',
         }),

@@ -1,7 +1,6 @@
 #define GLM_SWIZZLE
 #include "rts/ModelEntity.h"
 #include "common/ParamReader.h"
-#include "rts/Game.h"
 #include "rts/Map.h"
 #include "rts/ResourceManager.h"
 

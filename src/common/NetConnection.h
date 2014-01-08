@@ -13,7 +13,14 @@ class NetConnection {
   explicit NetConnection(kissnet::tcp_socket_ptr sock);
   ~NetConnection();
 
-  std::queue<Json::Value>& getQueue() {
+  std::vector<Json::Value> drainQueue() {
+    std::unique_lock<std::mutex>(mutex_);
+    std::vector<Json::Value> ret;
+    ret.swap(queue_);
+    return ret;
+  }
+
+  std::vector<Json::Value>& getQueue() {
     return queue_;
   }
 
@@ -42,7 +49,7 @@ class NetConnection {
  private:
   bool running_;
   kissnet::tcp_socket_ptr sock_;
-  std::queue<Json::Value> queue_;
+  std::vector<Json::Value> queue_;
   std::mutex mutex_;
   std::condition_variable condVar_;
   std::thread netThread_;

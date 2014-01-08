@@ -34,6 +34,12 @@ void invariant_violation(const std::string &message);
 
 void __invariant(bool condition, const std::string &message);
 
+template<typename T>
+T* nullthrows(T* v) {
+  invariant(v != nullptr, "nullthrows");
+  return v;
+}
+
 std::ostream& operator<< (std::ostream &os, const glm::vec2 &v);
 std::ostream& operator<< (std::ostream &os, const glm::vec3 &v);
 std::ostream& operator<< (std::ostream &os, const glm::vec4 &v);

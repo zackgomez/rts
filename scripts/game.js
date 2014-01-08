@@ -16,18 +16,19 @@ var MessageHub = require('MessageHub');
 var Pathing = require('Pathing');
 var Player = require('Player');
 var Team = require('Team');
-var Renderer = require('Renderer');
 var Visibility = require('Visibility');
 
+var vps_to_win = null;
 
 var elapsed_time = 0;
+var running = false;
 var entities = {};
 var players = {};
 var teams = {};
 var dead_entities = [];
-var eid_to_render_entity = {};
 var last_id = IDConst.STARTING_EID;
 var visibility_map = null;
+var extra_renders = [];
 
 // returns the ID of the spawned entity
 var spawnEntity = function (name, params) {
@@ -113,7 +114,9 @@ exports.getNearbyEntities = function (pos2, range, callback) {
   });
 };
 
-exports.init = function (map_def, player_defs) {
+exports.init = function (game_def) {
+  vps_to_win = must_have_idx(game_def, 'vps_to_win');
+  var map_def = must_have_idx(game_def, 'map_def');
   // Spawn map entities
   for (var i = 0; i < map_def.entities.length; i++) {
     var entity = map_def.entities[i];
@@ -124,8 +127,10 @@ exports.init = function (map_def, player_defs) {
   }
 
   // initialize players and teams
+  var player_defs = must_have_idx(game_def, 'player_defs');
   for (var i = 0; i < player_defs.length; i++) {
     var player_def = player_defs[i];
+    player_def.starting_location = map_def.starting_locations[i];
     var player = new Player(player_def);
     players[player.getPlayerID()] = player;
   }
@@ -148,23 +153,23 @@ exports.init = function (map_def, player_defs) {
 
   handleMessages();
 
-  this.render();
+  extra_renders.push({
+    type: 'start',
+  });
+  running = true;
 };
 
-exports.update = function (player_inputs, dt) {
-  // reset state
-  MessageHub.clearMessages();
-
-  // issue player input
-  for (var i = 0; i < player_inputs.length; i++) {
-    var input = player_inputs[i];
-    // clean up some input as entity expects
-    if (input.target) {
-      input.target = input.target.slice(0, 2);
+var handle_player_input = function (input) {
+  var type = must_have_idx(input, 'type');
+  var from_pid = must_have_idx(input, 'from_pid');
+  if (type == 'ORDER') {
+    var order = must_have_idx(input, 'order');
+    if (order.target) {
+      order.target = order.target.slice(0, 2);
     }
 
     // send to each ordered entity
-    var id_arr = must_have_idx(input, 'entity');
+    var id_arr = must_have_idx(order, 'entity');
     for (var j = 0; j < id_arr.length; j++) {
       var entity = entities[id_arr[j]];
       if (!entity) {
@@ -172,12 +177,33 @@ exports.update = function (player_inputs, dt) {
         continue;
       }
       invariant(
-        must_have_idx(input, 'from_pid') === entity.getPlayerID(),
+        from_pid === entity.getPlayerID(),
         'can only recieve input from controlling player'
       );
-      entity.handleOrder(input);
+      entity.handleOrder(order);
     }
+  } else if (type == 'LEAVE_GAME') {
+    if (running) {
+      extra_renders.push({
+        type: "game_over",
+        winning_team: IDConst.NO_TEAM,
+      });
+    }
+    running = false;
+  } else {
+    Log('Warning got action of unknown type:', type);
   }
+};
+
+exports.update = function (player_inputs, dt) {
+  if (!running) {
+    return false;
+  }
+  // reset state
+  MessageHub.clearMessages();
+
+  // issue player input
+  _.each(player_inputs, handle_player_input);
 
   // update entities
   for (var eid in entities) {
@@ -224,75 +250,99 @@ exports.update = function (player_inputs, dt) {
   visibility_map.updateMap(entities);
   visibility_map.updateEntityVisibilities(entities);
 
-  // TODO(zack): check win condition
+  // check win condition
+  _.some(teams, function (team) {
+    // TODO(zack): vp victory amount is hardcoded here
+    if (team.getVictoryPoints() > 500) {
+      Log('Team ', team.getID(), ' has won');
+      running = false;
+      extra_renders.push({
+        type: "game_over",
+        winning_team: team.getID(),
+      });
+      return true;
+    }
+    return false;
+  });
 
   elapsed_time += dt;
+
+  return running;
 };
 
 exports.render = function () {
+  var t = elapsed_time;
+  var entity_renders = {};
+  var events = [];
+
   _.each(dead_entities, function (entity) {
-    var render_entity = eid_to_render_entity[entity.getID()];
-    render_entity.setAlive(elapsed_time, false);
+    entity_renders[entity.getID()] = {
+      alive: [[t, false]],
+    };
   });
   dead_entities = [];
+
   for (var eid in entities) {
     var game_entity = entities[eid];
-    var render_entity = eid_to_render_entity[eid];
-    if (!render_entity) {
-      render_entity = Renderer.spawnEntity();
-      render_entity.setAlive(elapsed_time, true);
-      eid_to_render_entity[eid] = render_entity;
-    }
+    var render = {
+      alive: [[t, true]],
+    };
 
-    var render_id = render_entity.getID();
     var entity_def = game_entity.getDefinition();
-    // non curve data
-    render_entity.eid = eid;
-    render_entity.setGameID(eid);
-    if (entity_def.model) {
-      render_entity.setModel(entity_def.model);
-    }
-    render_entity.setProperties(game_entity.properties_);
+
+    render.model = [[t, entity_def.model]]
+    render.properties = [[t, game_entity.getProperties()]];
+    render.pid = [[t, game_entity.getPlayerID()]];
+    render.tid = [[t, game_entity.getTeamID()]];
 
     var size2 = game_entity.getSize();
     var size3 = [size2[0], size2[1], game_entity.getHeight()];
-    render_entity.setSize(elapsed_time, size3);
-    render_entity.setSight(elapsed_time, game_entity.getSight());
+    render.size = [[t, size3]]
 
-    render_entity.setPosition2(elapsed_time, game_entity.getPosition2());
-    render_entity.setAngle(elapsed_time, game_entity.getAngle());
+    render.sight = [[t, game_entity.getSight()]];
 
-    var ui_info = game_entity.getUIInfo();
-    render_entity.setUIInfo(elapsed_time, ui_info);
-    var actions = game_entity.getActions();
-    render_entity.setActions(elapsed_time, actions);
+    render.pos = [[t, game_entity.getPosition2()]];
+    render.angle = [[t, game_entity.getAngle()]];
+    render.ui_info = [[t, game_entity.getUIInfo()]];
+    render.actions = [[t, game_entity.getActions()]];
+    render.visible = [[t, game_entity.getVisibilitySet()]];
 
-    render_entity.setVisible(elapsed_time, game_entity.getVisibilitySet());
+    entity_renders[game_entity.getID()] = render;
 
-    var events = game_entity.getEvents(); 
+    var entity_events = game_entity.getEvents();
     game_entity.clearEvents();
-    for (var i = 0; i < events.length; i++) {
-      var event = events[i];
-      event.params.eid = render_id;
-      Renderer.addEffect(event.name, event.params);
+    for (var i = 0; i < entity_events.length; i++) {
+      var event = entity_events[i];
+      event.params.eid = eid;
+      events.push(event);
     }
   }
 
   var vps = _.map(teams, function (team, tid) {
     return {
-      tid: tid,
+      tid: +tid,
       vps: team.getVictoryPoints(),
     };
   });
   var player_render = _.map(players, function (player, pid) {
     return {
-      pid: pid,
+      pid: +pid,
       req: player.getRequisition(),
     };
   });
 
-  return {
+  var full_render = {
+    type: 'render',
+    entities: entity_renders,
+    events: events,
     players: player_render,
     teams: vps,
   };
+
+  // TODO(zack): minify and futurize
+
+  var renders = extra_renders;
+  extra_renders = [];
+  renders.push(full_render);
+  return JSON.stringify(renders);
 };

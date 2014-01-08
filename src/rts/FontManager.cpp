@@ -66,7 +66,7 @@ float FontManager::computeStringWidth(
       i += 3;
       continue;
     }
-    width += fact * cdata_[c - 32].xadvance;
+    width += fact * ((stbtt_bakedchar*)cdata_)[c - 32].xadvance;
   }
   return width;
 }
@@ -102,8 +102,8 @@ glm::vec3 FontManager::parseColor(const std::string &s, size_t i) {
 
 float FontManager::drawCharacter(char c, const glm::vec2 &pos, float fact,
     Shader *program) {
-  invariant(c >= 32 && c < 32 + 96, "invalid character to render");
-  stbtt_bakedchar bc = cdata_[c - 32];
+  invariant(c >= 32, "invalid character to render");
+  stbtt_bakedchar bc = ((stbtt_bakedchar*)cdata_)[c - 32];
 
   glm::vec4 texcoord = glm::vec4(bc.x0, bc.y0, bc.x1, bc.y1) / glyphTexSize_;
   glm::vec2 size = fact * glm::vec2(bc.x1 - bc.x0, bc.y1 - bc.y0);
@@ -145,12 +145,13 @@ void FontManager::initialize() {
   glyphSize_ = fltParam("fonts.FreeSans.size");
   unsigned char *temp_bitmap = (unsigned char *)
       malloc(sizeof(*temp_bitmap) * glyphTexSize_ * glyphTexSize_);
+  cdata_ = malloc(sizeof(stbtt_bakedchar) * 96);
   stbtt_BakeFontBitmap((unsigned char*) fontstr.c_str(), 0,  // font data
       glyphSize_,  // font size
       temp_bitmap,
       glyphTexSize_, glyphTexSize_,
       32, 96,  // character range
-      cdata_);
+      (stbtt_bakedchar*)cdata_);
 
   glGenTextures(1, &glyphTex_);
   glBindTexture(GL_TEXTURE_2D, glyphTex_);

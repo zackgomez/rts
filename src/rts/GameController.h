@@ -4,6 +4,7 @@
 #include "rts/Controller.h"
 #include <GL/glew.h>
 #include "rts/GameScript.h"
+#include "rts/PlayerAction.h"
 #include "rts/UIAction.h"
 
 namespace rts {
@@ -19,7 +20,8 @@ struct MapHighlight {
 
 class GameController : public Controller {
  public:
-  explicit GameController(LocalPlayer *player);
+  typedef std::function<void(id_t, const PlayerAction &)> ActionFunc;
+  explicit GameController(LocalPlayer *player, ActionFunc func);
   ~GameController();
 
   virtual void onCreate() override;
@@ -53,6 +55,7 @@ class GameController : public Controller {
   //
   LocalPlayer *player_;
   GameScript *gameScript_;
+  ActionFunc actionFunc_;
 
   std::string state_;
   std::string order_;

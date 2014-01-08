@@ -105,6 +105,9 @@ var Entity = function (id, name, params) {
     }
     return false;
   };
+  entity.getProperties = function () {
+    return this.properties_;
+  }
   entity.hasCooldown = function (name) {
     return name in this.cooldowns_;
   };
@@ -744,9 +747,7 @@ Entity.prototype.getUIInfo = function () {
       ui_info.cappingPlayerID = this.cappingPlayerID_;
     }
   }
-  ui_info.pid = this.getPlayerID();
-  ui_info.tid = this.getTeamID();
-  
+
   ui_info.parts = [];
   if (this.parts_) {
     for (var i = 0; i < this.parts_.length; i++) {

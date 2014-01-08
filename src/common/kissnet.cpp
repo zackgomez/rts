@@ -237,8 +237,9 @@ void tcp_socket::listen(const std::string &port, int backlog) {
 
 tcp_socket_ptr tcp_socket::accept() {
   int newsock;
-  if ((newsock = ::accept(sock, nullptr, nullptr)) < 0)
+  if ((newsock = ::accept(sock, nullptr, nullptr)) < 0) {
     throw socket_exception("Unable to accept", true);
+  }
 
   tcp_socket_ptr ret = create(newsock);
   return ret;

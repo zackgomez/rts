@@ -7,7 +7,6 @@
 #include "common/Clock.h"
 #include "common/Logger.h"
 #include "rts/GameScript.h"
-#include "rts/PlayerAction.h"
 
 namespace rts {
 
@@ -16,17 +15,23 @@ class Player;
 class GameEntity;
 struct ChatMessage;
 
-// Handles the game logic and player actions, is very multithread aware.
 class Game {
  public:
-  explicit Game(Map *map, const std::vector<Player *> &players);
+  // Should return a json array of json object messages
+  // each message should have the 'type' field set at a minimum
+  typedef std::function<Json::Value(void)> RenderProvider;
+  typedef std::function<void(const Json::Value&)> ActionFunc;
+  explicit Game(
+      Map *map,
+      const std::vector<Player *> &players,
+      RenderProvider render_provider,
+      ActionFunc action_func);
   ~Game();
 
-  static Game* get() { return instance_; }
+  static Game* get() { return nullthrows(instance_); }
 
-  void start();
-  void update(float dt);
-  void render();
+  void run();
+  void addAction(id_t pid, const Json::Value &v);
 
   const Map * getMap() const {
     return map_;
@@ -34,16 +39,8 @@ class Game {
   float getElapsedTime() const {
     return elapsedTime_;
   }
-  bool isRunning() const {
-    return running_;
-  }
-  GameScript* getScript() {
-    return &script_;
-  }
 
-  // Can possibly block, but should never block long
-  void addAction(id_t pid, const PlayerAction &act);
-
+  GameEntity * getEntity(const std::string &game_id);
   const GameEntity * getEntity(const std::string &game_id) const;
   const Player * getPlayer(id_t pid) const;
   const std::vector<Player *>& getPlayers() const { return players_; }
@@ -51,33 +48,21 @@ class Game {
   float getRequisition(id_t pid) const;
   float getVictoryPoints(id_t tid) const;
 
-  typedef std::function<void(id_t pid, const Json::Value&)> ChatListener;
-  void setChatListener(ChatListener cl) {
-    chatListener_ = cl;
-  }
-
  private:
-  const GameEntity * findEntity(std::function<bool(const GameEntity *)> f) const;
-  void updateJS(v8::Handle<v8::Array> player_inputs, float dt);
-
-  v8::Handle<v8::Object> getGameObject();
-
-  std::mutex actionMutex_;
-  std::vector<PlayerAction> actions_;
+  void renderFromJSON(const Json::Value &v);
+  void handleRenderMessage(const Json::Value &v);
 
   Map *map_;
+  std::map<std::string, id_t> game_to_render_id;
   std::vector<Player *> players_;
+  RenderProvider renderProvider_;
+  ActionFunc actionFunc_;
+  bool running_;
   // pid => float
   std::map<id_t, float> requisition_;
   // tid => float
   std::map<id_t, float> victoryPoints_;
   float elapsedTime_;
-
-  GameScript script_;
-
-  bool running_;
-
-  ChatListener chatListener_;
 
   static Game *instance_;
 };

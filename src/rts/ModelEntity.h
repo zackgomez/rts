@@ -9,6 +9,8 @@
 
 namespace rts {
 
+typedef std::function<bool(float)> RenderFunction;
+
 class ModelEntity {
 public:
   ModelEntity(id_t id);

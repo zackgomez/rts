@@ -39,8 +39,15 @@ net_msg readPacket(kissnet::tcp_socket_ptr sock, double timeout)
 
   // Then allocate and read payload
   ret.msg = std::string(ret.sz, '\0');
-  if (sock->recv(&ret.msg[0], ret.sz) < ret.sz) {
-    assert(false && "Didn't read a full message");
+  size_t offset = 0;
+  while (offset < ret.sz) {
+    auto bytes_read = sock->recv(&ret.msg[offset], ret.sz - offset);
+    if (bytes_read == 0) {
+      ret.sz = 0;
+      ret.msg = std::string();
+      throw kissnet::socket_exception("client disconnected gracefully");
+    }
+    offset += bytes_read;
   }
 
   return ret;
@@ -48,13 +55,10 @@ net_msg readPacket(kissnet::tcp_socket_ptr sock, double timeout)
 
 void netThreadFunc(
     kissnet::tcp_socket_ptr sock,
-    std::queue<Json::Value> &queue,
+    std::vector<Json::Value> &queue,
     std::mutex &queueMutex,
     std::condition_variable &condVar,
     bool &running) {
-
-  sock->setNonBlocking();
-
   Json::Reader reader;
   while (running) {
     Json::Value msg;
@@ -80,7 +84,7 @@ void netThreadFunc(
     // Lock and queue
     std::unique_lock<std::mutex> lock(queueMutex);
     if (running) {
-      queue.push(msg);
+      queue.push_back(msg);
     }
     // Wake waiting thread, if applicable
     condVar.notify_one();
@@ -135,7 +139,7 @@ Json::Value NetConnection::readNext() {
 
   invariant(!queue_.empty(), "queue shouldn't be empty");
   Json::Value ret = queue_.front();
-  queue_.pop();
+  queue_.erase(queue_.begin());
 
   // Lock automatically goes out of scope
   return ret;
@@ -159,7 +163,7 @@ Json::Value NetConnection::readNext(size_t millis) {
 
   invariant(!queue_.empty(), "queue should not be empty!");
   Json::Value ret = queue_.front();
-  queue_.pop();
+  queue_.erase(queue_.begin());
 
   // Lock automatically goes out of scope
   return ret;

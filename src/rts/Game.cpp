@@ -12,11 +12,13 @@ namespace rts {
 
 Game* Game::instance_ = nullptr;
 
-Game::Game(Map *map, const std::vector<Player *> &players)
+Game::Game(Map *map, const std::vector<Player *> &players, RenderProvider render_provider, ActionFunc action_func)
   : map_(map),
     players_(players),
-    elapsedTime_(0.f),
-    running_(true) {
+    renderProvider_(render_provider),
+    actionFunc_(action_func),
+    running_(false),
+    elapsedTime_(0.f) {
   std::set<int> team_ids;
   for (auto player : players) {
     player->setGame(this);
@@ -45,160 +47,255 @@ Game::~Game() {
   instance_ = nullptr;
 
 }
+  
+UIAction UIActionFromJSON(const Json::Value &v) {
+  UIAction uiaction;
+  uiaction.name = must_have_idx(v, "name").asString();
+  uiaction.icon = must_have_idx(v, "icon").asString();
+  auto&& hotkey_str = must_have_idx(v, "hotkey").asString();
+  uiaction.hotkey = !hotkey_str.empty() ? hotkey_str[0] : '\0';
+  uiaction.tooltip = must_have_idx(v, "tooltip").asString();
+  uiaction.targeting = static_cast<UIAction::TargetingType>(
+      must_have_idx(v, "targeting").asInt());
+  uiaction.range = must_have_idx(v, "range").asFloat();
+  uiaction.radius = must_have_idx(v, "radius").asFloat();
+  uiaction.state = static_cast<UIAction::ActionState>(
+      must_have_idx(v, "state").asInt());
+  uiaction.cooldown = must_have_idx(v, "cooldown").asFloat();
 
-v8::Handle<v8::Object> Game::getGameObject() {
-  auto obj = script_.getInitReturn();
-  invariant(
-      obj->IsObject(),
-      "expected js main function to return object");
-  return v8::Handle<v8::Object>::Cast(obj);
+  return uiaction;
 }
 
-void Game::start() {
-  using namespace v8;
-  auto init_ret = script_.init("game-main");
-  ENTER_GAMESCRIPT(&script_);
-
-  auto game_object = getGameObject();
-
-  Handle<Array> js_player_defs = Array::New();
-  float starting_requisition = fltParam("global.startingRequisition");
-  for (int i = 0; i < players_.size(); i++) {
-    auto *player = players_[i];
-    auto starting_location = map_->getStartingLocation(i);
-    Handle<Object> js_player_def = Object::New();
-    js_player_def->Set(String::New("pid"), Integer::New(player->getPlayerID()));
-    js_player_def->Set(String::New("tid"), Integer::New(player->getTeamID()));
-    js_player_def->Set(
-        String::New("starting_requisition"),
-        Number::New(starting_requisition));
-    js_player_def->Set(
-        String::New("starting_location"),
-        jsonToJS(starting_location));
-
-    js_player_defs->Set(js_player_defs->Length(), js_player_def);
+GameEntity::UIPart UIPartFromJSON(const Json::Value &v) {
+  GameEntity::UIPart ret;
+  ret.health = toVec2(must_have_idx(v, "health"));
+  ret.name = must_have_idx(v, "name").asString();
+  ret.tooltip = must_have_idx(v, "tooltip").asString();
+  for (auto &&json_upgrade : must_have_idx(v, "upgrades")) {
+    GameEntity::UIPartUpgrade upgrade;
+    upgrade.name = must_have_idx(json_upgrade, "name").asString();
+    upgrade.part = ret.name;
+    ret.upgrades.push_back(upgrade);
   }
-
-  TryCatch try_catch;
-  const int argc = 2;
-  Handle<Value> argv[argc] = {
-    jsonToJS(map_->getMapDefinition()),
-    js_player_defs,
-  };
-  Handle<Function> game_init_method = Handle<Function>::Cast(
-      game_object->Get(String::New("init")));
-  auto ret = game_init_method->Call(game_object, argc, argv);
-  checkJSResult(ret, try_catch, "Game.init:");
+  return ret;
 }
 
-void Game::update(float dt) {
-  ENTER_GAMESCRIPT(&script_);
-
-  elapsedTime_ += dt;
-
-  // Don't allow new actions during this time
-  std::unique_lock<std::mutex> actionLock(actionMutex_);
-  // Do actions
-  auto js_player_inputs = v8::Array::New();
-  for (const auto action : actions_) {
-    js_player_inputs->Set(
-        js_player_inputs->Length(),
-        jsonToJS(action));
-
+GameEntity::UIInfo UIInfoFromJSON(const Json::Value &v) {
+  GameEntity::UIInfo ret;
+  if (v.isMember("minimap_icon")) {
+    ret.minimap_icon = v["minimap_icon"].asString();
   }
-  actions_.clear();
-  // Allow more actions
-  actionLock.unlock();
+  if (v.isMember("mana")) {
+    ret.mana = toVec2(v["mana"]);
+  }
+  if (v.isMember("retreat")) {
+    ret.retreat = v["retreat"].asBool();
+  }
+  if (v.isMember("capture")) {
+    ret.capture = toVec2(v["capture"]);
+  }
+  if (v.isMember("capture_pid")) {
+    ret.capture_pid = toID(v["capture_pid"]);
+  }
+  if (v.isMember("path")) {
+    for (auto &&pt : v["path"]) {
+      ret.path.push_back(glm::vec3(toVec2(pt), 0.));
+    }
+  }
+  if (v.isMember("parts")) {
+    for (auto &&json_part : v["parts"]) {
+      ret.parts.push_back(UIPartFromJSON(json_part));
+    }
+  }
+  if (v.isMember("hotkey")) {
+    auto&& hotkeystr = v["hotkey"].asString();
+    ret.hotkey = hotkeystr.empty() ? '\0' : hotkeystr[0];
+  }
+  if (v.isMember("extra")) {
+    ret.extra = v["extra"];
+  }
+  return ret;
+}
 
-  // Update javascript, passing player input
-  updateJS(js_player_inputs, dt);
+void renderEntityFromJSON(GameEntity *e, const Json::Value &v) {
+  invariant(e, "must have entity to render to");
+  if (v.isMember("alive")) {
+    for (auto &sample : v["alive"]) {
+      e->setAlive(sample[0].asFloat(), sample[1].asBool());
+    }
+  }
+  if (v.isMember("model")) {
+    for (auto &sample : v["model"]) {
+      e->setModelName(sample[1].asString());
+    }
+  }
+  if (v.isMember("properties")) {
+    for (auto &sample : v["properties"]) {
+      for (auto &prop : sample[1]) {
+        e->addProperty(prop.asInt());
+      }
+    }
+  }
+  if (v.isMember("pid")) {
+    for (auto &sample : v["pid"]) {
+      e->setPlayerID(sample[0].asFloat(), toID(sample[1]));
+    }
+  }
+  if (v.isMember("tid")) {
+    for (auto &sample : v["tid"]) {
+      e->setTeamID(sample[0].asFloat(), toID(sample[1]));
+    }
+  }
+  if (v.isMember("pos")) {
+    for (auto &sample : v["pos"]) {
+      e->setPosition(sample[0].asFloat(), toVec2(sample[1]));
+    }
+  }
+  if (v.isMember("size")) {
+    for (auto &sample : v["size"]) {
+      e->setSize(sample[0].asFloat(), toVec3(sample[1]));
+    }
+  }
+  if (v.isMember("angle")) {
+    for (auto &sample : v["angle"]) {
+      e->setAngle(sample[0].asFloat(), sample[1].asFloat());
+    }
+  }
+  if (v.isMember("sight")) {
+    for (auto &sample : v["sight"]) {
+      e->setSight(sample[0].asFloat(), sample[1].asFloat());
+    }
+  }
+  if (v.isMember("visible")) {
+    for (auto &sample : v["visible"]) {
+      float t = sample[0].asFloat();
+      VisibilitySet set;
+      for (auto pid : sample[1]) {
+        set.insert(toID(pid));
+      }
+      e->setVisibilitySet(t, set);
+    }
+  }
+  if (v.isMember("actions")) {
+    for (auto &sample : v["actions"]) {
+      float t = sample[0].asFloat();
 
-  // TODO(zack): move this win condition into JS
-  // Check to see if this player has won
-  for (auto it : victoryPoints_) {
-    if (it.second > intParam("global.pointsToWin")) {
-      // TODO(zack): print out each player on that team at least...
-      LOG(INFO) << "Team " << it.first << " has won the game!\n";
-      // TODO(connor) do something cooler than exit here, like give them candy.
-      // TODO(connor) also, send a message to game
-      running_ = false;
+      std::vector<UIAction> actions;
+      for (auto &action_json : sample[1]) {
+        auto uiaction = UIActionFromJSON(action_json);
+        uiaction.owner_id = e->getGameID();
+        actions.push_back(uiaction);
+      }
+      if (!actions.empty()) {
+        e->setActions(t, actions);
+      }
+    }
+  }
+  if (v.isMember("ui_info")) {
+    for (auto &&sample : v["ui_info"]) {
+      const float t = sample[0].asFloat();
+      GameEntity::UIInfo uiinfo = UIInfoFromJSON(sample[1]);
+      e->setUIInfo(t, uiinfo);
     }
   }
 }
 
-// Reconcile javascript state with engine state
-void Game::render() {
-  using namespace v8;
-  auto script = getScript();
-  ENTER_GAMESCRIPT(script);
-  TryCatch try_catch;
-
-  auto game_object = getGameObject();
-  Handle<Function> game_render_function = Handle<Function>::Cast(
-      game_object->Get(String::New("render")));
-  Handle<Value> js_render_result_ret =
-    game_render_function->Call(game_object, 0, nullptr);
-  checkJSResult(js_render_result_ret, try_catch, "render");
-  Handle<Object> js_render_result = Handle<Object>::Cast(js_render_result_ret);
-
-  Handle<Array> js_players = Handle<Array>::Cast(
-      js_render_result->Get(String::New("players")));
-  for (int i = 0; i < js_players->Length(); i++) {
-    Handle<Object> js_player = Handle<Object>::Cast(js_players->Get(i));
-    id_t pid = js_player->Get(String::New("pid"))->IntegerValue();
-    requisition_[pid] = js_player->Get(String::New("req"))->NumberValue();
+void Game::handleRenderMessage(const Json::Value &v) {
+  auto entities = must_have_idx(v, "entities");
+  invariant(entities.isObject(), "should have entities array");
+  auto entity_keys = entities.getMemberNames();
+  for (auto &eid : entity_keys) {
+    // find or create GameEntity corresponding to the
+    auto it = game_to_render_id.find(eid);
+    GameEntity *entity = nullptr;
+    if (it == game_to_render_id.end()) {
+      id_t new_id = Renderer::get()->newEntityID();
+      auto game_entity = new GameEntity(new_id);
+      game_entity->setGameID(eid);
+      Renderer::get()->spawnEntity(game_entity);
+      game_to_render_id[eid] = new_id;
+      entity = game_entity;
+    } else {
+      entity = GameEntity::cast(Renderer::get()->getEntity(it->second));
+    }
+    renderEntityFromJSON(entity, entities[eid]);
   }
 
-  Handle<Array> js_teams = Handle<Array>::Cast(
-      js_render_result->Get(String::New("teams")));
-  for (int i = 0; i < js_teams->Length(); i++) {
-    auto js_team = Handle<Object>::Cast(js_teams->Get(i));
-    id_t tid = js_team->Get(String::New("tid"))->IntegerValue();
-    victoryPoints_[tid] = js_team->Get(String::New("vps"))->NumberValue();
+  auto events = must_have_idx(v, "events");
+  invariant(events.isArray(), "events must be array");
+  for (auto&& event : events) {
+    add_effect(
+        must_have_idx(event, "name").asString(),
+        must_have_idx(event, "params"));
+  }
+
+  auto players = must_have_idx(v, "players");
+  invariant(players.isArray(), "players must be array");
+  for (int i = 0; i < players.size(); i++) {
+    auto player = players[i];
+    id_t pid = toID(must_have_idx(player, "pid"));
+    requisition_[pid] = must_have_idx(player, "req").asFloat();
+  }
+
+  auto teams = must_have_idx(v, "teams");
+  for (int i = 0; i < teams.size(); i++) {
+    auto team = teams[i];
+    id_t tid = toID(must_have_idx(team, "tid"));
+    victoryPoints_[tid] = must_have_idx(team, "vps").asFloat();
   }
 }
 
-void Game::addAction(id_t pid, const PlayerAction &act) {
-  // CAREFUL: this function is called from different threads
-  invariant(act.isMember("type"),
-      "malformed player action" + act.toStyledString());
-  invariant(getPlayer(pid), "action from unknown player");
-
-  if (act["type"] == ActionTypes::ORDER) {
-    std::unique_lock<std::mutex> lock(actionMutex_);
-    auto order = must_have_idx(act, "order");
-    order["from_pid"] = toJson(pid);
-    actions_.push_back(order);
-  } else if (act["type"] == ActionTypes::LEAVE_GAME) {
-    running_ = false;
-  } else if (act["type"] == ActionTypes::CHAT) {
-    LOG(WARN) << "Chat is unimplemented\n";
-  } else {
-    invariant_violation(std::string("Unknown action type ") + act["type"].asString());
+void Game::renderFromJSON(const Json::Value &msgs) {
+  invariant(msgs.isArray(), "json messages must be array");
+  invariant(msgs.size() > 0, "messges must be nonempty");
+  for (auto msg : msgs) {
+    auto type = must_have_idx(msg, "type").asString();
+    if (type == "render") {
+      handleRenderMessage(msg);
+    } else if (type == "start") {
+      Renderer::get()->setGameTime(0.f);
+      Renderer::get()->setTimeMultiplier(1.f);
+    } else if (type == "game_over") {
+      // TODO(zack/connor): do more here
+      auto winning_team = toID(must_have_idx(msg, "winning_team"));
+      LOG(DEBUG) << "Winning team : " << winning_team << '\n';
+      running_ = false;
+    } else {
+      invariant_violation("unknown message type: " + type);
+    }
   }
+}
+
+void Game::addAction(id_t pid, const Json::Value &v) {
+  auto act = v;
+  act["from_pid"] = toJson(pid);
+  actionFunc_(act);
+}
+
+void Game::run() {
+  running_ = true;
+  while (running_) {
+    auto messages = renderProvider_();
+
+    auto engine_lock = Renderer::get()->lockEngine();
+    renderFromJSON(messages);
+  }
+}
+
+GameEntity * Game::getEntity(const std::string &game_id) {
+  auto it = game_to_render_id.find(game_id);
+  if (it == game_to_render_id.end()) {
+    return nullptr;
+  }
+  return GameEntity::cast(Renderer::get()->getEntity(it->second));
 }
 
 const GameEntity * Game::getEntity(const std::string &game_id) const {
-  // LOL this is a stupid hack
-  float t = Renderer::get()->getGameTime();
-  // TODO this is horribly inefficient :-/
-  return findEntity([=](const GameEntity *e) -> bool {
-    return e->getGameID() == game_id && e->getAlive(t);
-  });
-}
-
-const GameEntity * Game::findEntity(
-    std::function<bool(const GameEntity *)> f) const {
-  auto entities = Renderer::get()->getEntities();
-  for (auto pair : entities) {
-    const auto *e = GameEntity::cast(pair.second);
-    if (!e) continue;
-    if (f(e)) {
-      return e;
-    }
+  auto it = game_to_render_id.find(game_id);
+  if (it == game_to_render_id.end()) {
+    return nullptr;
   }
-
-  return nullptr;
+  return GameEntity::cast(Renderer::get()->getEntity(it->second));
 }
 
 const Player * Game::getPlayer(id_t pid) const {
@@ -229,24 +326,5 @@ float Game::getVictoryPoints(id_t tid) const {
   invariant(it != victoryPoints_.end(),
       "Unknown teamID to get victory points for");
   return it->second;
-}
-
-void Game::updateJS(v8::Handle<v8::Array> player_inputs, float dt) {
-  using namespace v8;
-  auto script = getScript();
-  HandleScope scope(script->getIsolate());
-  TryCatch try_catch;
-  auto game_object = getGameObject();
-
-  const int argc = 2;
-  Handle<Value> argv[] = {
-    player_inputs,
-    Number::New(dt),
-  };
-
-  Handle<Value> ret =
-    Handle<Function>::Cast(game_object->Get(String::New("update")))
-    ->Call(game_object, argc, argv);
-  checkJSResult(ret, try_catch, "update:");
 }
 };  // rts

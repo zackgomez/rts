@@ -55,7 +55,7 @@ void MatchmakerController::onCreate() {
 
   ((StaticWidget*)getUI()->getWidget("matchmaker_menu.matchmaking_button"))
     ->setOnPressListener([=] () -> bool {
-        matchmaker_->signalReady(Matchmaker::MODE_MATCHMAKING);
+        matchmaker_->signalReady(Matchmaker::MODE_JOINGAME);
         return true;
         });
 

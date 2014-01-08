@@ -2,6 +2,7 @@
 #define SRC_RTS_GAMESCRIPT_H_
 #include <v8.h>
 #include <json/json.h>
+#include <functional>
 #include <unordered_map>
 #include "common/Types.h"
 
@@ -28,6 +29,10 @@ public:
   GameScript();
   ~GameScript();
 
+  typedef std::function<v8::Handle<v8::Object>(void)> BindingFunction;
+  v8::Local<v8::Value> init(
+      const std::string &main_module_name,
+      const std::map<std::string, BindingFunction>& extra_bindings);
   v8::Local<v8::Value> init(const std::string &main_module_name);
   v8::Local<v8::Value> getInitReturn() {
     return v8::Local<v8::Value>::New(isolate_, jsInitResult_);

@@ -3,7 +3,6 @@
 #include "common/ParamReader.h"
 #include "rts/BorderWidget.h"
 #include "rts/FontManager.h"
-#include "rts/Game.h"
 #include "rts/Renderer.h"
 
 namespace rts {

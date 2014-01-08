@@ -8,15 +8,15 @@
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 #include "common/Clock.h"
-#include "common/FPSCalculator.h"
 #include "common/kissnet.h"
 #include "common/Logger.h"
 #include "common/ParamReader.h"
 #include "common/NetConnection.h"
 #include "common/util.h"
 #include "rts/Controller.h"
-#include "rts/GameController.h"
 #include "rts/Game.h"
+#include "rts/GameController.h"
+#include "rts/GameServer.h"
 #include "rts/Graphics.h"
 #include "rts/Map.h"
 #include "rts/Matchmaker.h"
@@ -26,6 +26,7 @@
 #include "rts/Player.h"
 
 using rts::Game;
+using rts::GameServer;
 using rts::Renderer;
 using rts::Map;
 using rts::Matchmaker;
@@ -42,43 +43,31 @@ const std::string mmport = "11100";
 
 void matchmakerThread();
 
-void gameThread(Game *game, rts::id_t localPlayerID) {
-  const float simrate = fltParam("game.simrate");
-  const float simdt = 1.f / simrate;
+void gameThread(Game *game) {
+  auto action_func = [&](rts::id_t pid, const PlayerAction &act) {
+    return game->addAction(pid, act);
+  };
 
-  FPSCalculator updateTimer(10);
-
-  game->start();
+  // find local player
+  Player *lp = nullptr;
+  for (auto&& player : Game::get()->getPlayers()) {
+    if (player->isLocal()) {
+      lp = player;
+      break;
+    }
+  }
+  invariant(lp != nullptr, "Unable to find local player");
 
   auto controller = new rts::GameController(
-    (rts::LocalPlayer *) Game::get()->getPlayer(localPlayerID));
+    (rts::LocalPlayer *) lp,
+    action_func);
   Renderer::get()->postToMainThread([=] () {
     Renderer::get()->setController(controller);
     Renderer::get()->setGameTime(0.f);
+    Renderer::get()->setTimeMultiplier(0.f);
   });
 
-  Clock::time_point start = Clock::now();
-	int tick_count = 0;
-
-  while (game->isRunning()) {
-    game->update(simdt);
-
-    // Synchronize renderer with game
-    auto engine_lock = Renderer::get()->lockEngine();
-    game->render();
-    engine_lock.unlock();
-
-		tick_count++;
-		float delay = simdt * tick_count - Clock::secondsSince(start);
-    std::chrono::milliseconds delayms(static_cast<int>(1000 * delay));
-    std::this_thread::sleep_for(delayms);
-
-    float fps = updateTimer.sample();
-    if (fabs(fps - simrate) / simrate > 0.01) {
-      LOG(WARNING) << "Simulation update rate off: "
-        << fps << " / " << simrate << '\n';
-    }
-  }
+  game->run();
 
   Renderer::get()->postToMainThread([=]() {
     Renderer::get()->clearEntities();
@@ -112,7 +101,6 @@ void cleanup() {
 
 void matchmakerThread() {
   Matchmaker matchmaker(getParam("local.player"));
-  std::vector<Player *> players;
 
   rts::MatchmakerController *controller =
     new rts::MatchmakerController(&matchmaker);
@@ -120,9 +108,10 @@ void matchmakerThread() {
     Renderer::get()->setController(controller);
   });
 
-  while (players.empty()) {
+  Game *game = nullptr;
+  while (!game) {
     try {
-      players = matchmaker.waitPlayers();
+      game = matchmaker.waitGame();
     } catch (rts::matchmaker_quit_exception &e) {
       LOG(INFO) << "got quit signal from matchmaker\n";
       return;
@@ -131,20 +120,16 @@ void matchmakerThread() {
     }
   }
 
-  Map *map = new Map(
-      ResourceManager::get()->getMapDefinition(matchmaker.getMapName()));
-  Game *game = new Game(map, players);
-
-  std::thread gamet(gameThread, game, matchmaker.getLocalPlayerID());
+  std::thread gamet(gameThread, game);
   gamet.detach();
 }
 
 void set_working_directory(int argc, char **argv) {
-#ifndef _MSC_VER
   namespace fs = boost::filesystem;
 	fs::path full_path = fs::system_complete(fs::path(argv[0]));
 	auto exec_dir = full_path.branch_path();
 	fs::current_path(exec_dir);
+#ifndef _MSC_VER
 	// In bundle.app/Contents/MacOS
 	// going to bundle.app/Contents/Resources
 	auto resource_path = exec_dir/fs::path("../Resources");
