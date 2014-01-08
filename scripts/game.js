@@ -254,7 +254,7 @@ exports.update = function (player_inputs, dt) {
   _.some(teams, function (team) {
     // TODO(zack): vp victory amount is hardcoded here
     if (team.getVictoryPoints() > 500) {
-         Log('Team ', team.getID(), ' has won');
+      Log('Team ', team.getID(), ' has won');
       running = false;
       extra_renders.push({
         type: "game_over",
@@ -276,7 +276,7 @@ exports.render = function () {
   var events = [];
 
   _.each(dead_entities, function (entity) {
-    entity_renders[entity.getID] = {
+    entity_renders[entity.getID()] = {
       alive: [[t, false]],
     };
   });
