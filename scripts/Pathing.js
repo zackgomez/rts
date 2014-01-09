@@ -47,10 +47,12 @@ var update_body = function (body, dt) {
     invariant(path.length >= 1, 'path must have at least one node');
     var node = path[0];
     angle = Vector.angle(Vector.sub(node, pos));
-    vel = Vector.mul(
-      Vector.normalize(Vector.sub(node, pos)),
-      body.getSpeed()
-    );
+    var max_speed = body.getSpeed();
+    var diff = Vector.sub(node, pos);
+    var length = Vector.length(diff);
+    var dir = Vector.div(diff, length);
+    var speed = Math.min(length / dt, max_speed);
+    vel = Vector.mul(dir, speed);
   }
   return {
     pos: pos,

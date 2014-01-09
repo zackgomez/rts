@@ -137,7 +137,7 @@ Game* Matchmaker::connectToServer(const std::string &addr, const std::string &po
 Game* Matchmaker::doSinglePlayerSetup() {
   auto port = strParam("local.matchmaker.port");
 
-  std::thread lobby_thread(lobby_main, port, 1, 1);
+  std::thread lobby_thread(lobby_main, port, 1, 1, "debugMap");
   lobby_thread.detach();
 
   Game* game = connectToServer("localhost", port);

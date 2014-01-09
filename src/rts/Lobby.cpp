@@ -103,7 +103,7 @@ void game_server_loop(Json::Value game_def, std::vector<NetConnectionPtr> connec
   }
 }
 
-void lobby_main(std::string listen_port, size_t num_players, size_t num_dummy_players) {
+void lobby_main(std::string listen_port, size_t num_players, size_t num_dummy_players, std::string map_name) {
   auto server_sock = kissnet::tcp_socket::create();
   server_sock->listen(listen_port, 11);
 
@@ -154,7 +154,7 @@ void lobby_main(std::string listen_port, size_t num_players, size_t num_dummy_pl
   }
 
   game_def["player_defs"] = player_defs;
-  game_def["map_def"] = get_map_definition("debugMap");
+  game_def["map_def"] = get_map_definition(map_name);
   game_def["vps_to_win"] = fltParam("global.pointsToWin");
 
   for (auto &pair : pid_to_conn) {

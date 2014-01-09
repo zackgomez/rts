@@ -1,3 +1,8 @@
+all: build/all.xcodeproj local.json
+
+local.json: local.json.default
+	cp $^ $@
+
 build/all.xcodeproj: build/gyp/gyp build/all.gyp
 	build/gyp/gyp build/all.gyp --depth=.
 
