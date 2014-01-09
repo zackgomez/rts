@@ -48,6 +48,11 @@ class Game {
   float getRequisition(id_t pid) const;
   float getVictoryPoints(id_t tid) const;
 
+  typedef std::function<void(const ChatMessage &)> ChatListener;
+  void setChatListener(ChatListener listener) {
+    chatListener_ = listener;
+  }
+
  private:
   void renderFromJSON(const Json::Value &v);
   void handleRenderMessage(const Json::Value &v);
@@ -64,13 +69,16 @@ class Game {
   std::map<id_t, float> victoryPoints_;
   float elapsedTime_;
 
+  ChatListener chatListener_;
+
   static Game *instance_;
 };
 
 struct ChatMessage {
-  ChatMessage(const std::string &m, const Clock::time_point &t)
-      : msg(m), time(t) { }
+  ChatMessage(id_t inpid, const std::string &m, const Clock::time_point &t)
+      : pid(inpid), msg(m), time(t) { }
 
+  id_t pid;
   std::string msg;
   Clock::time_point time;
 };

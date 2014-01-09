@@ -243,6 +243,16 @@ void Game::handleRenderMessage(const Json::Value &v) {
     id_t tid = toID(must_have_idx(team, "tid"));
     victoryPoints_[tid] = must_have_idx(team, "vps").asFloat();
   }
+
+  auto chats = must_have_idx(v, "chats");
+  for (int i = 0; i < chats.size(); i++) {
+    auto json_chat = chats[i];
+    auto chat = ChatMessage(
+        toID(must_have_idx(json_chat, "pid")),
+        must_have_idx(json_chat, "msg").asString(),
+        Clock::now());
+    chatListener_(chat);
+  }
 }
 
 void Game::renderFromJSON(const Json::Value &msgs) {

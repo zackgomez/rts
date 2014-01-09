@@ -25,7 +25,7 @@ void GameServer::addAction(const PlayerAction &act) {
   } else if (act["type"] == ActionTypes::LEAVE_GAME) {
     actions_.push_back(act);
   } else if (act["type"] == ActionTypes::CHAT) {
-    LOG(WARN) << "Chat is unimplemented\n";
+    actions_.push_back(act);
   } else {
     invariant_violation(std::string("Unknown action type ") + act["type"].asString());
   }

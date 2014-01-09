@@ -219,29 +219,22 @@ void GameController::onCreate() {
     }
     // In future add additional check for whisper
     if (!text.empty()) {
-      msg["chat"] = text;
+      msg["msg"] = text;
       actionFunc_(player_->getPlayerID(), msg);
     }
   });
-  getUI()->addWidget("ui.widgets.chat", chatWidget);
-
-  /* TODO(zack): reenable this
-  Game::get()->setChatListener([&](id_t pid, const Json::Value &m) {
-    const Player* from = Game::get()->getPlayer(pid);
-    invariant(from, "No playyayayaya");
+  Game::get()->setChatListener([=](ChatMessage msg) {
+    auto player = Game::get()->getPlayer(msg.pid);
+    if (!player) {
+      return;
+    }
     std::stringstream ss;
-    if (m["target"] == "all" || (m["target"] == "team" && from->getTeamID() == player_->getTeamID())) {
-      ss << from->getName();
-      if (m["target"] == "all") {
-        ss << " (all)";
-      }
-      ss << ": " << m["chat"].asString();
-      ((CommandWidget *)getUI()->getWidget("ui.widgets.chat"))
-        ->addMessage(ss.str())
-        ->show(fltParam("ui.chat.chatDisplayTime"));
-    } // Note: When we add whisper, append additional conditional
+    ss << player->getName() << ": " << msg.msg;
+    ((CommandWidget *)getUI()->getWidget("ui.widgets.chat"))
+      ->addMessage(ss.str())
+      ->show(fltParam("ui.chat.chatDisplayTime"));
   });
-   */
+  getUI()->addWidget("ui.widgets.chat", chatWidget);
 
   Renderer::get()->setEntityOverlayRenderer(
       std::bind(

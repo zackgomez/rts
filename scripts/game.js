@@ -28,6 +28,7 @@ var teams = {};
 var dead_entities = [];
 var last_id = IDConst.STARTING_EID;
 var visibility_map = null;
+var chats = [];
 var extra_renders = [];
 
 // returns the ID of the spawned entity
@@ -190,6 +191,11 @@ var handle_player_input = function (input) {
       });
     }
     running = false;
+  } else if (type == 'CHAT') {
+    chats.push({
+      pid: from_pid,
+      msg: must_have_idx(input, 'msg'),
+    });
   } else {
     Log('Warning got action of unknown type:', type);
   }
@@ -337,7 +343,9 @@ exports.render = function () {
     events: events,
     players: player_render,
     teams: vps,
+    chats: chats,
   };
+  chats = [];
 
   // TODO(zack): minify and futurize
 
