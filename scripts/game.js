@@ -31,6 +31,8 @@ var visibility_map = null;
 var chats = [];
 var extra_renders = [];
 
+var last_update_dt = 0;
+
 // returns the ID of the spawned entity
 var spawnEntity = function (name, params) {
   var id = last_id++;
@@ -202,6 +204,7 @@ var handle_player_input = function (input) {
 };
 
 exports.update = function (player_inputs, dt) {
+  last_update_dt = dt;
   if (!running) {
     return false;
   }
@@ -342,6 +345,8 @@ exports.render = function () {
 
   var full_render = {
     type: 'render',
+    t: t,
+    dt: last_update_dt,
     entities: entity_renders,
     events: events,
     players: player_render,

@@ -253,6 +253,17 @@ void Game::handleRenderMessage(const Json::Value &v) {
         Clock::now());
     chatListener_(chat);
   }
+  const float t = must_have_idx(v, "t").asFloat();
+  const float dt = must_have_idx(v, "dt").asFloat();
+  const float render_t = Renderer::get()->getGameTime();
+  if (render_t + dt > t) {
+    LOG(WARNING) << "Renderer is ahead of game: " << render_t << " vs " << t << '\n';
+    Renderer::get()->setGameTime(t - dt);
+  }
+  if (render_t < t - 2 * dt) {
+    LOG(WARNING) << "Renderer is behind server " << render_t << " vs " << t << '\n';
+    Renderer::get()->setGameTime(t - dt);
+  }
 }
 
 void Game::renderFromJSON(const Json::Value &msgs) {
