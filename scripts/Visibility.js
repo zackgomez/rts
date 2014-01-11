@@ -25,7 +25,7 @@ var VisibilityMap = function (map_def, num_players) {
 };
 
 // returns index of first player's flags in the cell
-VisibilityMap.prototype.pointToCell = function (pid, pt) {
+VisibilityMap.prototype.pointToCell = function (pt) {
   var e = 0.0001;
   if (pt[0] < this.mapOrigin[0] - this.mapSize[0] / 2 || pt[0] + e >= this.mapOrigin[0] + this.mapSize[0] / 2) {
     return null;
@@ -45,10 +45,18 @@ VisibilityMap.prototype.pointToCell = function (pid, pt) {
   invariant(cell_pos[1] >= 0, 'invalid cell position');
   invariant(cell_pos[0] < this.cellDims[0], 'invalid cell position');
   invariant(cell_pos[1] < this.cellDims[1], 'invalid cell position ' + cell_pos);
+  return cell_pos;
+}
+
+VisibilityMap.prototype.cellToIndex = function (pid, cell) {
   var player_offset = pid - IDConst.STARTING_PID;
   return this.numPlayers * (
-    cell_pos[1] * this.cellDims[0] + cell_pos[0]
+    cell[1] * this.cellDims[0] + cell[0]
   ) + player_offset;
+}
+
+VisibilityMap.prototype.pointToIndex = function (pid, pt) {
+  return this.cellToIndex(pid, this.pointToCell(pt));
 }
 
 
@@ -69,24 +77,43 @@ VisibilityMap.prototype.getRawData = function () {
 // returns true if the player given by pid can see the passed point
 // id pid, vec2 pt
 VisibilityMap.prototype.isPointVisible = function (pid, pt) {
-  var cell_i = this.pointToCell(pid, pt);
+  var cell_i = this.pointToIndex(pid, pt);
   return this.data[cell_i] !== 0;
 }
 
+// Takes in integer cell positions
+VisibilityMap.prototype.fillHorizontalLine = function (pid, x0, x1, y) {
+  if (x0 < 0) x0 = 0;
+  if (x0 >= this.cellDims[0]) x0 = this.cellDims[0] - 1;
+  if (x1 < 0) x1 = 0;
+  if (x1 >= this.cellDims[0]) x1 = this.cellDims[0] - 1;
+  if (y < 0) y = 0;
+  if (y >= this.cellDims[1]) y = this.cellDims[1] - 1;
+
+  for (var cell = this.cellToIndex(pid, [x0, y]); x0 <= x1; x0++, cell += this.numPlayers) {
+    this.data[cell] = 255;
+  }
+}
+
 VisibilityMap.prototype.updateVisibilityFor = function (pid, pos, sight) {
-  var y = pos[1] - sight;
-  for (; y <= pos[1] + sight; y += cell_size) {
-    var x = pos[0] - sight;
-    for (; x <= pos[0] + sight; x += cell_size) {
-      var curpos = [x, y];
-      var dist = Vector.distance2(pos, curpos);
-      if (dist > sight * sight) {
-        continue;
-      }
-      var cell = this.pointToCell(pid, curpos);
-      if (cell) {
-        this.data[cell] = 255;
-      }
+  var center = this.pointToCell(pos);
+  var r = Math.floor(sight / cell_size);
+  var x = r;
+  var y = 0;
+  var re = 1 - x;
+  while (x >= y) {
+    this.fillHorizontalLine(pid, center[0] - x, center[0] + x, center[1] + y);
+    this.fillHorizontalLine(pid, center[0] - x, center[0] + x, center[1] - y);
+
+    this.fillHorizontalLine(pid, center[0] - y, center[0] + y, center[1] + x);
+    this.fillHorizontalLine(pid, center[0] - y, center[0] + y, center[1] - x);
+
+    y++;
+    if (re < 0) {
+      re += 2 * y + 1;
+    } else {
+      x--;
+      re += 2 * (y - x + 1);
     }
   }
 }
@@ -110,7 +137,6 @@ VisibilityMap.prototype.updateMap = function (entities) {
       return;
     }
 
-    // TODO(zack): fill out grid here
     this.updateVisibilityFor(pid, entity.getPosition2(), entity.getSight());
   }, this);
 }
