@@ -477,7 +477,11 @@ void GameController::updateVisibility(float t) {
     auto *game_entity = GameEntity::cast(pair.second);
     if (!game_entity) continue;
     game_entity->setVisible(
-        game_entity->isVisibleTo(t, player_->getPlayerID()));
+        game_entity->getAlive(t)
+        && game_entity->isVisibleTo(t, player_->getPlayerID()));
+    if (!game_entity->getAlive(t)) {
+      continue;
+    }
 
     // TODO(zack): this needs to be kept in sync with JS and is brittle
     if (game_entity->getPlayerID(t) == player_->getPlayerID()) {
@@ -562,7 +566,7 @@ void GameController::frameUpdate(float dt) {
   std::set<std::string> newsel;
   for (auto game_id : player_->getSelection()) {
     const GameEntity *e = Game::get()->getEntity(game_id);
-    if (e && e->getPlayerID(t) == player_->getPlayerID()) {
+    if (e && e->getPlayerID(t) == player_->getPlayerID() && e->getAlive(t)) {
       newsel.insert(game_id);
     }
   }

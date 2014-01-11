@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
   Logger::initLogger();
 
   // Defaults
-  int num_players = 3;
+  int num_players = 2;
   int num_bots = 0;
   std::string map_name = "gg";
   std::string port = strParam("local.matchmaker.port");
