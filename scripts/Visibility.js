@@ -6,7 +6,7 @@ var IDConst = require('constants').IDConst;
 var EntityProperties = require('constants').EntityProperties;
 var Vector = require('Vector');
 
-var cell_size = 0.5;
+var cell_size = 0.125;
 
 var VisibilityMap = function (map_def, num_players) {
   this.mapOrigin = map_def.origin || [0, 0];
@@ -26,6 +26,12 @@ var VisibilityMap = function (map_def, num_players) {
 
 // returns index of first player's flags in the cell
 VisibilityMap.prototype.pointToCell = function (pid, pt) {
+  if (pt[0] < this.mapOrigin[0] - this.mapSize[0] / 2 || pt[0] >= this.mapOrigin[0] + this.mapSize[0] / 2) {
+    return null;
+  }
+  if (pt[1] < this.mapOrigin[1] - this.mapSize[1] / 2 || pt[1] >= this.mapOrigin[1] + this.mapSize[1] / 2) {
+    return null;
+  }
   var cell_pos = Vector.compMul(
     Vector.clamp(Vector.add(Vector.compDiv(Vector.sub(pt, this.mapOrigin), this.mapSize),
       [0.5, 0.5]
@@ -47,8 +53,7 @@ VisibilityMap.prototype.pointToCell = function (pid, pt) {
 
 VisibilityMap.prototype.clearCells = function () {
   for (var i = 0; i < this.data.length; i++) {
-    // TODO(zack): this is a hack, change to 0 here when visibility implemented
-    this.data[i] = 255;
+    this.data[i] = 0;
   }
 }
 
@@ -68,9 +73,21 @@ VisibilityMap.prototype.isPointVisible = function (pid, pt) {
 }
 
 VisibilityMap.prototype.updateVisibilityFor = function (pid, pos, sight) {
-  var cell_i = this.pointToCell(pid, pos);
-  // TODO(zack): fill by sight this instead of just the cell
-  this.data[cell_i] = 255;
+  var y = pos[1] - sight / 2;
+  for (; y <= pos[1] + sight / 2; y += cell_size) {
+    var x = pos[0] - sight / 2;
+    for (; x <= pos[0] + sight / 2; x += cell_size) {
+      var curpos = [x, y];
+      var dist = Vector.distance2(pos, curpos);
+      if (dist > sight) {
+        continue;
+      }
+      var cell = this.pointToCell(pid, curpos);
+      if (cell) {
+        this.data[cell] = 255;
+      }
+    }
+  }
 }
 
 VisibilityMap.prototype.updateMap_UI = function (sight_positions) {

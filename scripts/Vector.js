@@ -88,6 +88,10 @@ module.exports = {
     return this.length(this.sub(v1, v2));
   },
 
+  distance2: function (v1, v2) {
+    return this.length2(this.sub(v1, v2));
+  },
+
   // Returns angle between vector and [1, 0] in degrees
   angle: function (v) {
     invariant(v.length === 2, 'can only get angle between 2d vectors');
