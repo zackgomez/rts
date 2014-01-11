@@ -120,7 +120,7 @@ var EntityDefs = {
     size: [0.6, 0.6],
     height: 1.0,
     speed: 4.0,
-    sight: 6.0,
+    sight: 7.5,
     capture_range: 1.0,
     mana: 100,
     hotkey: '1',

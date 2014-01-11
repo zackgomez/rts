@@ -6,7 +6,7 @@ var IDConst = require('constants').IDConst;
 var EntityProperties = require('constants').EntityProperties;
 var Vector = require('Vector');
 
-var cell_size = 0.125;
+var cell_size = 0.25;
 
 var VisibilityMap = function (map_def, num_players) {
   this.mapOrigin = map_def.origin || [0, 0];
@@ -73,13 +73,13 @@ VisibilityMap.prototype.isPointVisible = function (pid, pt) {
 }
 
 VisibilityMap.prototype.updateVisibilityFor = function (pid, pos, sight) {
-  var y = pos[1] - sight / 2;
-  for (; y <= pos[1] + sight / 2; y += cell_size) {
-    var x = pos[0] - sight / 2;
-    for (; x <= pos[0] + sight / 2; x += cell_size) {
+  var y = pos[1] - sight;
+  for (; y <= pos[1] + sight; y += cell_size) {
+    var x = pos[0] - sight;
+    for (; x <= pos[0] + sight; x += cell_size) {
       var curpos = [x, y];
       var dist = Vector.distance2(pos, curpos);
-      if (dist > sight) {
+      if (dist > sight * sight) {
         continue;
       }
       var cell = this.pointToCell(pid, curpos);
@@ -119,21 +119,18 @@ VisibilityMap.prototype.updateEntityVisibilities = function (entities) {
     IDConst.STARTING_PID,
     IDConst.STARTING_PID + this.numPlayers
   );
-  _.each(entities, function (entity) {
-    entity.setVisibilitySet(all_players);
-    return;
-    /*
+  var get_visibility = function (entity) {
     if (entity.hasProperty(EntityProperties.P_CAPPABLE)) {
-      entity.setVisibilitySet(all_players);
-      return;
+      return all_players;
     }
-    var pid = entity.getPlayerID();
-    if (pid === IDConst.NO_PLAYER) {
-      entity.setVisibilitySet([])
-      return;
-    }
-    entity.setVisibilitySet([pid]);
-    */
+    var ret = _.filter(all_players, function (pid) {
+      return this.isPointVisible(pid, entity.getPosition2());
+    }, this);
+    return ret;
+  }.bind(this);
+
+  _.each(entities, function (entity) {
+    entity.setVisibilitySet(get_visibility(entity));
   }, this);
 }
 
