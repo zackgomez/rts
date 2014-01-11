@@ -220,7 +220,10 @@ exports.update = function (player_inputs, dt) {
   // TODO(zack): remove this, and replace with 'state creation'
   // when the time comes
   // 'resolve' entities
-  var eids_by_player = object_fill_keys(_.keys(players), {});
+  var eids_by_player = {};
+  _.each(_.keys(players), function (pid) {
+    eids_by_player[pid] = {};
+  });
   for (var eid in entities) {
     var entity = entities[eid];
     var status = entity.resolve(dt);
