@@ -3,24 +3,34 @@ var invariant = require('invariant').invariant;
 
 module.exports = {
   add: function (v1, v2) {
-    invariant(v1.length === v2.length, "vectors must have same length");
-
-    var ret = [];
-    for (var i = 0; i < v1.length; i++) {
-      ret.push(v1[i] + v2[i]);
+    if (_.isArray(v2)) {
+      invariant(v1.length === v2.length, "vectors must have same length");
+      
+      var ret = [];
+      for (var i = 0; i < v1.length; i++) {
+        ret.push(v1[i] + v2[i]);
+      }
+      return ret;
+    } else {
+      invariant(_.isNumber(v2), 'add takes vector or scalar argument');
+      return _.map(v1, function (x) { return x + v2; });
     }
-    return ret;
   },
 
   // returns v1 - v2
   sub: function (v1, v2) {
-    invariant(v1.length === v2.length, "vectors must have same length");
-
-    var ret = [];
-    for (var i = 0; i < v1.length; i++) {
-      ret.push(v1[i] - v2[i]);
+    if (_.isArray(v2)) {
+      invariant(v1.length === v2.length, "vectors must have same length");
+      
+      var ret = [];
+      for (var i = 0; i < v1.length; i++) {
+        ret.push(v1[i] - v2[i]);
+      }
+      return ret;
+    } else {
+      invariant(_.isNumber(v2), 'add takes vector or scalar argument');
+      return _.map(v1, function (x) { return x - v2; });
     }
-    return ret;
   },
 
   compMul: function (v1, v2) {

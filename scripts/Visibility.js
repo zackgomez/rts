@@ -26,10 +26,11 @@ var VisibilityMap = function (map_def, num_players) {
 
 // returns index of first player's flags in the cell
 VisibilityMap.prototype.pointToCell = function (pid, pt) {
-  if (pt[0] < this.mapOrigin[0] - this.mapSize[0] / 2 || pt[0] >= this.mapOrigin[0] + this.mapSize[0] / 2) {
+  var e = 0.0001;
+  if (pt[0] < this.mapOrigin[0] - this.mapSize[0] / 2 || pt[0] + e >= this.mapOrigin[0] + this.mapSize[0] / 2) {
     return null;
   }
-  if (pt[1] < this.mapOrigin[1] - this.mapSize[1] / 2 || pt[1] >= this.mapOrigin[1] + this.mapSize[1] / 2) {
+  if (pt[1] < this.mapOrigin[1] - this.mapSize[1] / 2 || pt[1] + e >= this.mapOrigin[1] + this.mapSize[1] / 2) {
     return null;
   }
   var cell_pos = Vector.compMul(
@@ -39,11 +40,11 @@ VisibilityMap.prototype.pointToCell = function (pid, pt) {
     this.cellDims
   );
 
-  cell_pos = Vector.floor(cell_pos);
+  cell_pos = Vector.floor(Vector.add(cell_pos, 0.0001));
   invariant(cell_pos[0] >= 0, 'invalid cell position');
   invariant(cell_pos[1] >= 0, 'invalid cell position');
   invariant(cell_pos[0] < this.cellDims[0], 'invalid cell position');
-  invariant(cell_pos[1] < this.cellDims[1], 'invalid cell position');
+  invariant(cell_pos[1] < this.cellDims[1], 'invalid cell position ' + cell_pos);
   var player_offset = pid - IDConst.STARTING_PID;
   return this.numPlayers * (
     cell_pos[1] * this.cellDims[0] + cell_pos[0]
