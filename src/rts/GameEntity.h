@@ -51,6 +51,8 @@ class GameEntity : public ModelEntity {
     std::string minimap_icon;
     Json::Value extra;
     std::vector<glm::vec3> path;
+
+    UIInfo();
   };
 
   virtual bool hasProperty(uint32_t property) const final override;

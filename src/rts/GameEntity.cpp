@@ -100,4 +100,8 @@ void GameEntity::setAlive(float t, bool alive) {
 void GameEntity::setTookDamage(int part_idx) {
   lastTookDamage_[part_idx] = Clock::now();
 }
+
+GameEntity::UIInfo::UIInfo()
+  : mana(0.f), retreat(false), capture(0.f), capture_pid(NO_PLAYER), hotkey('\0') {
+}
 };  // rts
