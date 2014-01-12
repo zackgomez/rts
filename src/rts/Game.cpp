@@ -23,6 +23,7 @@ Game::Game(Map *map, const std::vector<Player *> &players, RenderProvider render
   for (auto player : players) {
     player->setGame(this);
     requisition_[player->getPlayerID()] = 0.f;
+    power_[player->getPlayerID()] = 0.f;
     team_ids.insert(player->getTeamID());
   }
   for (int tid : team_ids) {
@@ -235,6 +236,7 @@ void Game::handleRenderMessage(const Json::Value &v) {
     auto player = players[i];
     id_t pid = toID(must_have_idx(player, "pid"));
     requisition_[pid] = must_have_idx(player, "req").asFloat();
+    power_[pid] = must_have_idx(player, "power").asFloat();
   }
 
   auto teams = must_have_idx(v, "teams");
@@ -339,6 +341,13 @@ float Game::getRequisition(id_t pid) const {
   auto it = requisition_.find(pid);
   invariant(it != requisition_.end(),
       "Unknown playerID to get requisition for");
+  return it->second;
+}
+
+float Game::getPower(id_t pid) const {
+  auto it = power_.find(pid);
+  invariant(it != power_.end(),
+      "Unknown playerID to get power for");
   return it->second;
 }
 

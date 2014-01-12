@@ -336,7 +336,14 @@
       "reqdisplay" : {
         "type"       : "TextWidget",
         "pos"        : [-150, 0],
-        "dim"        : [150, 50],
+        "dim"        : [150, 40],
+        "fontHeight" : 32.0,
+        "bgcolor"    : [0.4, 0.4, 0.4, 1.0]
+      },
+      "powerdisplay" : {
+        "type"       : "TextWidget",
+        "pos"        : [-150, 40],
+        "dim"        : [150, 40],
         "fontHeight" : 32.0,
         "bgcolor"    : [0.4, 0.4, 0.4, 1.0]
       },

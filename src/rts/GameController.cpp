@@ -260,6 +260,12 @@ void GameController::onCreate() {
       return "Req: " + std::to_string(req);
     });
 
+  ((TextWidget *)getUI()->getWidget("ui.widgets.powerdisplay"))
+    ->setTextFunc([&]() -> std::string {
+      int power = Game::get()->getPower(player_->getPlayerID());
+      return "Power: " + std::to_string(power);
+    });
+
   ((TextWidget *)getUI()->getWidget("ui.widgets.perfinfo"))
     ->setTextFunc([]() -> std::string {
         glm::vec3 color(0.1f, 1.f, 0.1f);

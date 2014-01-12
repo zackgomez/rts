@@ -46,6 +46,7 @@ class Game {
   const std::vector<Player *>& getPlayers() const { return players_; }
 
   float getRequisition(id_t pid) const;
+  float getPower(id_t pid) const;
   float getVictoryPoints(id_t tid) const;
 
   typedef std::function<void(const ChatMessage &)> ChatListener;
@@ -65,6 +66,7 @@ class Game {
   bool running_;
   // pid => float
   std::map<id_t, float> requisition_;
+  std::map<id_t, float> power_;
   // tid => float
   std::map<id_t, float> victoryPoints_;
   float elapsedTime_;

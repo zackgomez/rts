@@ -340,6 +340,8 @@ exports.render = function () {
     return {
       pid: +pid,
       req: player.getRequisition(),
+// TODO(calvin): change this to player power
+      power: 0,
     };
   });
 
