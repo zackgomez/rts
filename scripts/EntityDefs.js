@@ -364,7 +364,7 @@ var EntityDefs = {
     hotkey: '`',
     getEffects: function (entity) {
       return {
-        req_gen: Effects.makeReqGenEffect(1.0),
+        req_gen: Effects.makeReqGenEffect(0.75),
         base_healing: Effects.makeHealingAura(5.0, 5.0),
       };
     },
@@ -431,7 +431,7 @@ var EntityDefs = {
     cap_time: 5.0,
     getEffects: function (entity) {
       return {
-        req_gen: Effects.makeReqGenEffect(1.0),
+        req_gen: Effects.makeReqGenEffect(0.25),
       };
     },
   },
