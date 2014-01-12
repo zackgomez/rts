@@ -199,6 +199,13 @@ var Entity = function (id, name, params) {
     } else {
       Log('not enough req to build', upgrade, 'on part', part);
     }
+    var power = player.getPower();
+    if (upgrade.power_cost < power) {
+      player.addPower(-upgrade.power_cost);
+      part.purchaseUpgrade(upgrade_name);
+    } else {
+      Log('not enough power to build', upgrade, 'on part', part);
+    }
   };
 
   // Basic movement intent setters
@@ -402,6 +409,7 @@ Entity.prototype.resetDeltas = function () {
     healing_rate: 0,
     vp_rate: 0,
     req_rate: 0,
+    power_rate: 0,
     mana_regen_rate: 0,
     max_speed_percent: 1,
     damage_factor: 1,
@@ -455,6 +463,15 @@ Entity.prototype.resolve = function (dt) {
       from: this.getID(),
       type: MessageTypes.ADD_REQUISITION,
       amount: req,
+    });
+  }
+  if (this.deltas.power_rate) {
+    var power = dt * this.deltas.power_rate;
+    MessageHub.sendMessage({
+      to: this.getTeamID(),
+      from: this.getID(),
+      type: MessageTypes.ADD_POWER,
+      amount: power,
     });
   }
   if (this.deltas.vp_rate) {

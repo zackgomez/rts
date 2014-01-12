@@ -127,4 +127,15 @@ module.exports = {
       return true;
     };
   },
+    
+  makePowerGenEffect: function (amount) {
+    return function(entity) {
+      if (entity.getPlayerID() == IDConst.NO_PLAYER) {
+        return true;
+      }
+
+      entity.deltas.power_rate += amount;
+      return true;
+    };
+  },
 };

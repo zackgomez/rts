@@ -88,7 +88,8 @@ Actions.ReinforceAction = function (params) {
 
   this.getTooltip = function (entity) {
     return 'Reinforce' +
-      '\nreq: ' + this.params.req_cost;
+      '\nreq: ' + this.params.req_cost +
+      '\npower: ' + this.params.power_cost;
   };
 
   this.isEnabled = function (entity) {
@@ -109,7 +110,9 @@ Actions.ReinforceAction = function (params) {
       }
     }
     var req = Game.getPlayer(entity.getPlayerID()).getRequisition();
-    return req >= this.params.req_cost && disabled_part && near_base;
+    var power = Game.getPlayer(entity.getPlayerID()).getPower();
+    return (req >= this.params.req_cost && disabled_part && near_base) &&
+      (power >= this.params.power_cost && disabled_part && near_base);
   };
 
   this.exec = function (entity, target) {
@@ -126,6 +129,7 @@ Actions.ReinforceAction = function (params) {
     }
     var player = Game.getPlayer(entity.getPlayerID());
     player.addRequisition(-this.params.req_cost);
+    player.addPower(-this.params.power_cost);
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
   };
 }
@@ -140,6 +144,7 @@ Actions.ProductionAction = function (params) {
   this.getTooltip = function (entity) {
     return this.params.prod_name +
       '\nreq: ' + this.params.req_cost +
+      '\npower: ' + this.params.power_cost +
       '\ntime: ' + this.params.time_cost;
   };
 
@@ -158,13 +163,18 @@ Actions.ProductionAction = function (params) {
       return true;
     }
     var req = Game.getPlayer(entity.getPlayerID()).getRequisition();
-    return req > this.params.req_cost;
+    var power = Game.getPlayer(entity.getPlayerID()).getPower();
+    return (req > this.params.req_cost) && (power > this.params.power_cost);
   };
 
   this.exec = function (entity, target) {
     entity.addCooldown(this.params.cooldown_name, this.params.cooldown);
     Game.getPlayer(entity.getPlayerID()).addRequisition(
       -this.params.req_cost
+    );
+
+    Game.getPlayer(entity.getPlayerID()).addPower(
+      -this.params.power_cost
     );
 
     entity.effects_['production'] = Effects.makeProductionEffect({

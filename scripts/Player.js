@@ -13,6 +13,7 @@ var Player = function (def) {
   this.tid = def.tid;
   this.units = {};
   this.requisition = def.starting_requisition;
+  this.power = def.starting_power;
   this.spawned = false;
 
   this.base_location = def.starting_location;
@@ -72,5 +73,11 @@ Player.prototype.getRequisition = function () {
 Player.prototype.addRequisition = function (amount) {
   this.requisition += amount;
 };
+Player.prototype.getPower = function () {
+  return this.power;
+};
+Player.prototype.addPower = function (amount) {
+  this.power += power;
+}
 
 module.exports = Player;

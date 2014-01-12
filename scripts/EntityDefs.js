@@ -36,6 +36,7 @@ var EntityDefs = {
             'heal': {
               health: 20,
               req_cost: 50,
+              power_cost: 10,
               tooltip: 'improves health, and adds heal ability',
             },
           },
@@ -48,6 +49,7 @@ var EntityDefs = {
             'advanced_rifle': {
               health: 20,
               req_cost: 50,
+              power_cost: 15,
               tooltip: 'improves health, range, dps and adds snipe ability',
             },
           },
@@ -101,6 +103,7 @@ var EntityDefs = {
       }),
       reinforce: new Actions.ReinforceAction({
         req_cost: 10,
+        power_cost: 0,
         cooldown_name: 'reinforce',
         cooldown: 7.0,
         icon: 'repair_icon',
@@ -150,6 +153,7 @@ var EntityDefs = {
             'teleport': {
               health: 50,
               req_cost: 30,
+              power_cost: 5,
               tooltip: 'Adds health and teleport ability',
             },
           },
@@ -180,6 +184,7 @@ var EntityDefs = {
 
       reinforce: new Actions.ReinforceAction({
         req_cost: 5,
+        power_cost: 0,
         cooldown_name: 'reinforce',
         cooldown: 5.0,
         icon: 'repair_icon',
@@ -224,6 +229,7 @@ var EntityDefs = {
             'damage_aura': {
               health: 50,
               req_cost: 70,
+              power_cost: 20,
               tooltip: 'improves health, and grants a damage buff aura',
             },
           },
@@ -261,6 +267,7 @@ var EntityDefs = {
       }),
       reinforce: new Actions.ReinforceAction({
         req_cost: 5,
+        power_cost: 0,
         cooldown_name: 'reinforce',
         cooldown: 5.0,
         icon: 'repair_icon',
@@ -295,6 +302,7 @@ var EntityDefs = {
             'powerfist': {
               health: 50,
               req_cost: 60,
+              power_cost: 0,
               tooltip: 'mo\' bitches mo\' damage. now with a targeted stun.',
             },
           },
@@ -336,6 +344,7 @@ var EntityDefs = {
       }),
       reinforce: new Actions.ReinforceAction({
         req_cost: 5,
+        power_cost: 0,
         cooldown_name: 'reinforce',
         cooldown: 5.0,
         icon: 'repair_icon',
@@ -367,6 +376,7 @@ var EntityDefs = {
     getEffects: function (entity) {
       return {
         req_gen: Effects.makeReqGenEffect(0.75),
+        power_gen: Effects.makePowerGenEffect(0.25),
         base_healing: Effects.makeHealingAura(5.0, 5.0),
       };
     },
@@ -374,6 +384,7 @@ var EntityDefs = {
       prod_melee: new Actions.ProductionAction({
         prod_name: 'melee_unit',
         req_cost: 70,
+        power_cost: 0,
         time_cost: 2.5,
         icon: 'melee_icon',
         hotkey: 'q',
@@ -381,6 +392,7 @@ var EntityDefs = {
       prod_ranged: new Actions.ProductionAction({
         prod_name: 'unit',
         req_cost: 100,
+        power_cost: 0,
         time_cost: 5.0,
         icon: 'ranged_icon',
         hotkey: 'w',
@@ -388,6 +400,7 @@ var EntityDefs = {
       prod_tanky_melee: new Actions.ProductionAction({
         prod_name: 'tanky_melee_unit',
         req_cost: 190,
+        power_cost: 0,
         time_cost: 6.0,
         icon: 'melee_icon',
         hotkey: 'e',
@@ -395,6 +408,7 @@ var EntityDefs = {
       prod_cc_bot: new Actions.ProductionAction({
         prod_name: 'cc_bot',
         req_cost: 90,
+        power_cost: 0,
         time_cost: 5.0,
         icon: 'cc_bot_icon',
         hotkey: 'r',
@@ -437,6 +451,25 @@ var EntityDefs = {
       };
     },
   },
+  power_point: {
+    properties: [
+      EntityProperties.P_ACTOR,
+      EntityProperties.P_CAPPABLE,
+      EntityProperties.P_COLLIDABLE,
+    ],
+    model: 'cube',
+    minimap_icon: 'req_minimap_icon',
+    size: [0.9, 0.9],
+    height: 0.25,
+    sight: 2.0,
+    cap_time: 5.0,
+    getEffects: function (entity) {
+      return {
+        power_gen: Effects.makePowerGenEffect(0.25),
+      };
+    },
+  },
+
   projectile: {
     properties: [
       EntityProperties.P_MOBILE,
