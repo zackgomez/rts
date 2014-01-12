@@ -419,7 +419,7 @@ var EntityDefs = {
       };
     },
   },
-  req_point: 4{
+  req_point: {
     properties: [
       EntityProperties.P_ACTOR,
       EntityProperties.P_CAPPABLE,
