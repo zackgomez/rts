@@ -191,7 +191,7 @@
   {
     "defaultColor"  : [1, 1, 1],
     "pointsToWin"   : 500,
-    "startingRequisition" : 100,
+    "startingRequisition" : 125,
 
     "bumpSpeed" : 1.0
   },
