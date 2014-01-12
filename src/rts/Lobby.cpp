@@ -108,6 +108,7 @@ void lobby_main(std::string listen_port, size_t num_players, size_t num_dummy_pl
   server_sock->listen(listen_port, 11);
 
   const float starting_requisition = fltParam("global.startingRequisition");
+  const float starting_power = fltParam("global.startingPower");
 
   Json::Value player_defs(Json::arrayValue);
   id_t pid = STARTING_PID;
@@ -129,6 +130,7 @@ void lobby_main(std::string listen_port, size_t num_players, size_t num_dummy_pl
       player_def["pid"] = toJson(pid);
       player_def["tid"] = toJson(STARTING_TID + tid_offset);
       player_def["starting_requisition"] = starting_requisition;
+      player_def["starting_power"] = starting_power;
 
       player_defs.append(player_def);
       pid_to_conn[pid] = conn;
@@ -149,6 +151,7 @@ void lobby_main(std::string listen_port, size_t num_players, size_t num_dummy_pl
     dummy_player_def["pid"] = toJson(pid++);
     dummy_player_def["tid"] = toJson(STARTING_TID + tid_offset);
     dummy_player_def["starting_requisition"] = starting_requisition;
+    dummy_player_def["starting_power"] = starting_power;
     tid_offset = (tid_offset + 1) % 2;
     player_defs.append(dummy_player_def);
   }

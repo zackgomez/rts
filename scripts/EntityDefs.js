@@ -392,7 +392,7 @@ var EntityDefs = {
       prod_ranged: new Actions.ProductionAction({
         prod_name: 'unit',
         req_cost: 100,
-        power_cost: 0,
+        power_cost: 5,
         time_cost: 5.0,
         icon: 'ranged_icon',
         hotkey: 'w',
