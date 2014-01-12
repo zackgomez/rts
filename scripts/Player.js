@@ -77,7 +77,7 @@ Player.prototype.getPower = function () {
   return this.power;
 };
 Player.prototype.addPower = function (amount) {
-  this.power += power;
+  this.power += amount;
 }
 
 module.exports = Player;

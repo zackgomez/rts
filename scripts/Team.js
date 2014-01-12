@@ -39,6 +39,11 @@ Team.prototype.update = function (messages) {
       for (var j = 0; j < this.players.length; j++) {
         Game.getPlayer(this.players[j]).addRequisition(req);
       }
+    } else if (message.type === MessageTypes.ADD_POWER) {
+      var power = must_have_idx(message, 'amount');
+      for (var j = 0; j < this.players.length; j++) {
+        Game.getPlayer(this.players[j]).addPower(power);
+      }
     } else {
       invariant_violation(
         'Unknown message of type \'' + message.type + '\' sent to team'
