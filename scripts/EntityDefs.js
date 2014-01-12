@@ -348,10 +348,12 @@ var EntityDefs = {
       EntityProperties.P_TARGETABLE,
       EntityProperties.P_COLLIDABLE,
     ],
+    default_state: EntityStates.UnitIdleState,
     model: 'building',
     size: [2.5, 2.5],
     height: 1.65,
     sight: 5.0,
+    weapons: ['base_turret_weapon'],
     getParts: function (entity) {
       return [
         makePart({

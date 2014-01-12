@@ -31,6 +31,17 @@ var definitions = {
     },
     on_hit_cooldowns: {},
   },
+  base_turret_weapon: {
+    range: 9.0,
+    damage: 25.0,
+    damage_type: 'ranged',
+    health_target: DamageTypes.HEALTH_TARGET_RANDOM,
+    cooldown_name: 'turret_weapon',
+    cooldowns: {
+      turret_weapon: 1.0,
+    },
+    on_hit_cooldowns: {},
+  },
   basic_melee: {
     range: 1.0,
     damage: 5.0,
