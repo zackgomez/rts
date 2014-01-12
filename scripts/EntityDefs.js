@@ -392,8 +392,8 @@ var EntityDefs = {
       }),
       prod_cc_bot: new Actions.ProductionAction({
         prod_name: 'cc_bot',
-        req_cost: 10,
-        time_cost: 1.0,
+        req_cost: 90,
+        time_cost: 5.0,
         icon: 'cc_bot_icon',
         hotkey: 'r',
       }),
@@ -417,7 +417,7 @@ var EntityDefs = {
       };
     },
   },
-  req_point: {
+  req_point: 4{
     properties: [
       EntityProperties.P_ACTOR,
       EntityProperties.P_CAPPABLE,
