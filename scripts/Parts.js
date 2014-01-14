@@ -60,6 +60,7 @@ function Part(params) {
       _.each(this.availableUpgrades_, function (upgrade, name) {
         tooltip += '\n' + name;
         tooltip += '\nReq: ' + upgrade.req_cost;
+        tooltip += '\nPower: ' + upgrade.power_cost;
         if (upgrade.health) {
           tooltip += '\nHealth: ' + upgrade.health;
         }
