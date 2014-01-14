@@ -59,7 +59,7 @@ float FontManager::computeStringWidth(
   float width = 0.f;
   const float fact = height / glyphSize_;
   for (size_t i = 0; i < s.length(); i++) {
-    char c = s[i];
+    unsigned char c = s[i];
     invariant(c >= 32 && c < 32 + 96, "invalid character to render");
     if (c == COLOR_CNTRL_CH) {
       // advance past next 3 characters
