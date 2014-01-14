@@ -60,7 +60,7 @@ bool TooltipWidget::handleClick(const glm::vec2 &pos, int button) {
 
 void TooltipWidget::render(float dt) {
   child_->render(dt);
-  if (!drawTooltip_) {
+  if (!drawTooltip_ || !tooltipFunc_) {
     return;
   }
   auto tooltip = tooltipFunc_();

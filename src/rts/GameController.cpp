@@ -278,7 +278,7 @@ void GameController::onCreate() {
   ((TextWidget *)getUI()->getWidget("ui.widgets.clock"))
     ->setTextFunc([]() -> std::string {
       glm::vec3 color(0.1f, 1.f, 0.1f);
-      float t = Game::get()->getElapsedTime();
+      float t = Renderer::get()->getGameTime();
       float minutes = glm::floor(t / 60.f);
       float seconds = glm::floor(fmodf(t, 60.f));
       std::stringstream ss;

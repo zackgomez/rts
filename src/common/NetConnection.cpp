@@ -10,8 +10,7 @@ struct net_msg {
 };
 
 // TODO(zack): don't require reading header/payload in one shot
-net_msg readPacket(kissnet::tcp_socket_ptr sock, double timeout)
-    throw (kissnet::socket_exception) {
+net_msg readPacket(kissnet::tcp_socket_ptr sock, double timeout) throw (kissnet::socket_exception) {
   net_msg ret;
 
   kissnet::socket_set set;
@@ -25,14 +24,16 @@ net_msg readPacket(kissnet::tcp_socket_ptr sock, double timeout)
 
   // TODO(zack): check for socket error
 
+  size_t header_size = 4;
+  size_t header_offset = 0;
   int bytes_read;
   // First read header
-  if ((bytes_read = sock->recv((char *)&ret.sz, 4)) < 4) {
+  while (header_offset < header_size) {
+    bytes_read = sock->recv((char *)&ret.sz + header_offset, header_size - header_offset);
     if (bytes_read == 0) {
       throw kissnet::socket_exception("client disconnected gracefully");
     }
-    LOG(FATAL) << "Read " << bytes_read << " as header.\n";
-    assert(false && "Didn't read a full 4 byte header");
+    header_offset += bytes_read;
   }
 
   // TODO(zack) don't assume byte order is the same
