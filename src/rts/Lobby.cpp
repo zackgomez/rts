@@ -107,7 +107,7 @@ void game_server_loop(Json::Value game_def, std::vector<NetConnectionPtr> connec
       size_t current_up = 0, current_down = 0;
       for (auto &&conn : connections) {
         current_down += conn->getBytesReceived();
-        current_upt  += conn->getBytesSent();
+        current_up += conn->getBytesSent();
       }
       float down_bytes_per_second = (current_down - last_bytes_down) / since_last_stat;
       float up_bytes_per_second = (current_up - last_bytes_up) / since_last_stat;
