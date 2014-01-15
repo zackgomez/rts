@@ -31,8 +31,12 @@ class NetConnection {
   std::mutex& getMutex() {
     return mutex_;
   }
-
-  void stop();
+  size_t getBytesSent() {
+    return bytesSent_;
+  }
+  size_t getBytesReceived() {
+    return bytesReceived_;
+  }
 
   bool running() const {
     return running_;
@@ -46,6 +50,8 @@ class NetConnection {
 
   void sendPacket(const Json::Value &msg);
 
+  void stop();
+
  private:
   bool running_;
   kissnet::tcp_socket_ptr sock_;
@@ -53,6 +59,8 @@ class NetConnection {
   std::mutex mutex_;
   std::condition_variable condVar_;
   std::thread netThread_;
+  size_t bytesSent_;
+  size_t bytesReceived_;
 };
 
 typedef std::shared_ptr<NetConnection> NetConnectionPtr;

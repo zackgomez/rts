@@ -73,6 +73,8 @@ void game_server_loop(Json::Value game_def, std::vector<NetConnectionPtr> connec
 
   FPSCalculator updateTimer(10);
   Clock::time_point start = Clock::now();
+  Clock::time_point last_net_stat = start;
+  size_t last_bytes_down = 0, last_bytes_up = 0;
 	int tick_count = 0;
   while (server.isRunning()) {
     // TODO(zack): add actions here
@@ -99,6 +101,21 @@ void game_server_loop(Json::Value game_def, std::vector<NetConnectionPtr> connec
     if (fabs(fps - simrate) / simrate > 0.01) {
       LOG(WARNING) << "Simulation update rate off: "
         << fps << " / " << simrate << '\n';
+    }
+    float since_last_stat = Clock::secondsSince(last_net_stat);
+    if (since_last_stat > 2.f) {
+      size_t current_up = 0, current_down = 0;
+      for (auto &&conn : connections) {
+        current_down += conn->getBytesReceived();
+        current_upt  += conn->getBytesSent();
+      }
+      float down_bytes_per_second = (current_down - last_bytes_down) / since_last_stat;
+      float up_bytes_per_second = (current_up - last_bytes_up) / since_last_stat;
+      last_bytes_down = current_down;
+      last_bytes_up = current_up;
+      LOG(INFO) << "Downstream rate: " << down_bytes_per_second / 1024.f << " KB/s\n";
+      LOG(INFO) << "Upstream rate: " << up_bytes_per_second / 1024.f << " KB/s\n";
+      last_net_stat = Clock::now();
     }
   }
 }

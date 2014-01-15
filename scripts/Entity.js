@@ -413,6 +413,7 @@ Entity.prototype.resetDeltas = function () {
     mana_regen_rate: 0,
     max_speed_percent: 1,
     damage_factor: 1,
+    damage_reduction: 1,
   };
 }
 
@@ -503,7 +504,9 @@ Entity.prototype.resolve = function (dt) {
     var nparts = this.parts_.length;
     for (var j = 0; j < ndamages; j++) {
       var damage_obj = this.deltas.damage_list[j];
-      if (damage_obj.damage <= 0) {
+      var damage = damage_obj.damage * this.deltas.damage_reduction;
+
+      if (damage <= 0) {
         continue;
       }
 
@@ -513,10 +516,10 @@ Entity.prototype.resolve = function (dt) {
 
       var modified_parts = this.updatePartHealth(
         damage_obj.health_target,
-        -damage_obj.damage
+        -damage
       );
       this.onEvent('on_damage', {
-        amount: damage_obj.damage,
+        amount: damage,
         parts: modified_parts
       });
     }

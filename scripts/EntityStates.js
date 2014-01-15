@@ -8,7 +8,7 @@
 // it should return a new state if the state is to transition, and null
 // otherwise
 var invariant = require('invariant').invariant;
-var EntityConsts = require('constants').EntityConsts;
+var EntityConst = require('EntityConst');
 var EntityProperties = require('constants').EntityProperties;
 var Game = require('game');
 var MessageHub = require('MessageHub');
@@ -189,7 +189,8 @@ function RetreatState(params) {
 
     var threshold = 0.1;
     if (entity.distanceToPoint(retreat_point) > threshold) {
-      entity.deltas.max_speed_percent *= EntityConsts.retreat_speed;
+      entity.deltas.max_speed_percent *= EntityConst.RetreatSpeedModifier;
+      entity.deltas.damage_reduction *= EntityConst.RetreatDamageReduction;
       entity.moveTowards(retreat_point);
     } else {
       entity.retreat_ = false;

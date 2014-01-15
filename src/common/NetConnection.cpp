@@ -59,7 +59,8 @@ void netThreadFunc(
     std::vector<Json::Value> &queue,
     std::mutex &queueMutex,
     std::condition_variable &condVar,
-    bool &running) {
+    bool &running,
+    size_t &bytes_received) {
   Json::Reader reader;
   while (running) {
     Json::Value msg;
@@ -72,6 +73,7 @@ void netThreadFunc(
       if (packet.sz == 0) {
         continue;
       }
+      bytes_received += packet.sz + 4;
 
       // Parse
       reader.parse(packet.msg, msg);
@@ -97,14 +99,17 @@ void netThreadFunc(
 
 NetConnection::NetConnection(kissnet::tcp_socket_ptr sock)
   : running_(true),
-  sock_(sock) {
+    sock_(sock),
+    bytesReceived_(0),
+    bytesSent_(0) {
   netThread_ = std::thread(
     netThreadFunc,
     sock_,
     std::ref(queue_),
     std::ref(mutex_),
     std::ref(condVar_),
-    std::ref(running_));
+    std::ref(running_),
+    std::ref(bytesReceived_));
 }
 
 NetConnection::~NetConnection() {
@@ -126,6 +131,7 @@ void NetConnection::sendPacket(const Json::Value &message) {
 
   // Just send out the message
   sock_->send(msg);
+  bytesSent_ += msg.length();
 }
 
 Json::Value NetConnection::readNext() {

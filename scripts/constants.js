@@ -20,10 +20,6 @@ exports.IDConst = {
   STARTING_EID: 3000,
 };
 
-exports.EntityConsts = {
-  retreat_speed: 1.5,
-};
-
 exports.DamageTypes = {
   HEALTH_TARGET_AOE: -1,
   HEALTH_TARGET_RANDOM: -2,
