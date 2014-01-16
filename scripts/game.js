@@ -310,7 +310,6 @@ var simplify_entity_renders = function (t, previous_renders, current_renders) {
     simple_renders[id] = simple_render;
   });
 
-  Log(JSON.stringify(simple_renders));
   return simple_renders;
 }
 

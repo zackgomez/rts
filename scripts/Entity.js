@@ -410,6 +410,7 @@ Entity.prototype.resetDeltas = function () {
     vp_rate: 0,
     req_rate: 0,
     power_rate: 0,
+    mana: 0,
     mana_regen_rate: 0,
     max_speed_percent: 1,
     damage_factor: 1,
@@ -536,8 +537,8 @@ Entity.prototype.resolve = function (dt) {
   }
 
   // Mana
-  var mana_delta = dt * this.deltas.mana_regen_rate;
-  this.mana_ = Math.min(this.mana_ + mana_delta, this.maxMana_);
+  var mana_delta = dt * this.deltas.mana_regen_rate + this.deltas.mana;
+  this.mana_ = Math.max(Math.min(this.mana_ + mana_delta, this.maxMana_), 0);
 
   // Capture
   var capture_values = this.deltas.capture;
