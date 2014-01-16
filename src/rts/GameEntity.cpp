@@ -11,6 +11,15 @@ static const uint32_t P_GAMEENTITY = 293013864;
 
 namespace rts {
 
+template<>
+GameEntity::UIInfo curve_sample<GameEntity::UIInfo>::interpolateFrom(float interpt, const curve_sample<GameEntity::UIInfo> &s0) {
+  float u = (interpt - s0.t) / (t - s0.t);
+
+  GameEntity::UIInfo ret = s0.val;
+  ret.mana = val.mana * u + s0.val.mana * (1.f - u);
+  return ret;
+}
+
 GameEntity* GameEntity::cast(ModelEntity *e) {
   if (!e) {
     return nullptr;
@@ -84,7 +93,7 @@ bool GameEntity::getAlive(float t) const {
 }
 
 GameEntity::UIInfo GameEntity::getUIInfo(float t) const {
-return uiInfoCurve_.stepSample(t);
+return uiInfoCurve_.linearSample(t);
 }
 
 void GameEntity::setPlayerID(float t, id_t pid) {

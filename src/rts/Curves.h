@@ -28,6 +28,10 @@ public:
 
   T linearSample(float t) const;
   T stepSample(float t) const;
+
+  const curve_sample<T>& back() const {
+    return data_.back();
+  }
   
 private:
   std::vector<curve_sample<T>> data_;
