@@ -282,6 +282,11 @@ exports.update = function (player_inputs, dt) {
   return running;
 };
 
+var simplify_render = function (previous_render, current_render) {
+  return current_render;
+}
+
+var previous_render = {};
 exports.render = function () {
   var t = elapsed_time;
   var entity_renders = {};
@@ -357,6 +362,7 @@ exports.render = function () {
   chats = [];
 
   // TODO(zack): minify and futurize
+  simplify_render(previous_render, full_render);
 
   var renders = extra_renders;
   extra_renders = [];

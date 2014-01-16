@@ -28,45 +28,39 @@ module.exports = {
       }
       return ret;
     } else {
-      invariant(_.isNumber(v2), 'add takes vector or scalar argument');
+      invariant(_.isNumber(v2), 'sub takes vector or scalar argument');
       return _.map(v1, function (x) { return x - v2; });
     }
   },
 
-  compMul: function (v1, v2) {
-    invariant(v1.length === v2.length, "vectors must have same length");
-
-    var ret = [];
-    for (var i = 0; i < v1.length; i++) {
-      ret.push(v1[i] * v2[i]);
+  mul: function (v1, v2) {
+    if (_.isArray(v2)) {
+      invariant(v1.length === v2.length, "vectors must have same length");
+      
+      var ret = [];
+      for (var i = 0; i < v1.length; i++) {
+        ret.push(v1[i] * v2[i]);
+      }
+      return ret;
+    } else {
+      invariant(_.isNumber(v2), 'mul takes vector or scalar argument');
+      return _.map(v1, function (x) { return x * v2; });
     }
-    return ret;
   },
 
-  compDiv: function (v1, v2) {
-    invariant(v1.length === v2.length, "vectors must have same length");
-
-    var ret = [];
-    for (var i = 0; i < v1.length; i++) {
-      ret.push(v1[i] / v2[i]);
+  div: function (v1, v2) {
+    if (_.isArray(v2)) {
+      invariant(v1.length === v2.length, "vectors must have same length");
+      
+      var ret = [];
+      for (var i = 0; i < v1.length; i++) {
+        ret.push(v1[i] / v2[i]);
+      }
+      return ret;
+    } else {
+      invariant(_.isNumber(v2), 'div takes vector or scalar argument');
+      return _.map(v1, function (x) { return x / v2; });
     }
-    return ret;
-  },
-
-  mul: function (v, s) {
-    var ret = [];
-    for (var i = 0; i < v.length; i++) {
-      ret.push(v[i] * s);
-    }
-    return ret;
-  },
-
-  div: function (v, s) {
-    var ret = [];
-    for (var i = 0; i < v.length; i++) {
-      ret.push(v[i] / s);
-    }
-    return ret;
   },
 
   dot: function (v1, v2) {

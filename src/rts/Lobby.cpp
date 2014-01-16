@@ -113,8 +113,8 @@ void game_server_loop(Json::Value game_def, std::vector<NetConnectionPtr> connec
       float up_bytes_per_second = (current_up - last_bytes_up) / since_last_stat;
       last_bytes_down = current_down;
       last_bytes_up = current_up;
-      LOG(INFO) << "Downstream rate: " << down_bytes_per_second / 1024.f << " KB/s\n";
-      LOG(INFO) << "Upstream rate: " << up_bytes_per_second / 1024.f << " KB/s\n";
+      std::cout << "Downstream rate: " << down_bytes_per_second / 1024.f << " KB/s\n";
+      std::cout << "Upstream rate: " << up_bytes_per_second / 1024.f << " KB/s\n";
       last_net_stat = Clock::now();
     }
   }

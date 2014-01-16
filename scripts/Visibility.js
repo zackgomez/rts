@@ -33,8 +33,8 @@ VisibilityMap.prototype.pointToCell = function (pt) {
   if (pt[1] < this.mapOrigin[1] - this.mapSize[1] / 2 || pt[1] + e >= this.mapOrigin[1] + this.mapSize[1] / 2) {
     return null;
   }
-  var cell_pos = Vector.compMul(
-    Vector.clamp(Vector.add(Vector.compDiv(Vector.sub(pt, this.mapOrigin), this.mapSize),
+  var cell_pos = Vector.mul(
+    Vector.clamp(Vector.add(Vector.div(Vector.sub(pt, this.mapOrigin), this.mapSize),
       [0.5, 0.5]
     ), 0, 1),
     this.cellDims
