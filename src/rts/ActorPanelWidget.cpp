@@ -92,7 +92,8 @@ bool ActorPanelWidget::handleClick(const glm::vec2 &pos, int button) {
     return false;
   }
 
-  auto ui_info = actor->getUIInfo();
+  const auto t = Renderer::get()->getGameTime();
+  auto ui_info = actor->getUIInfo(t);
   for (int i = 0; i < partWidgets_.size() && i < ui_info.parts.size(); i++) {
     auto *widget = partWidgets_[i];
     if (pointInBox(pos, widget->getCenter(), widget->getSize(), 0.f)) {
@@ -143,7 +144,8 @@ void ActorPanelWidget::render(float dt) {
   if (!actor) {
     return;
   }
-  auto ui_info = actor->getUIInfo();
+  const auto t = Renderer::get()->getGameTime();
+  auto ui_info = actor->getUIInfo(t);
 
   // Background
   drawRectCenter(center_, size_, bgcolor_);
@@ -184,7 +186,8 @@ void ActorPanelWidget::update(const glm::vec2 &pos, int buttons) {
   if (!actor) {
     return;
   }
-  auto ui_info = actor->getUIInfo();
+  const auto t = Renderer::get()->getGameTime();
+  auto ui_info = actor->getUIInfo(t);
   auto nparts = ui_info.parts.size();
   invariant(nparts <= partWidgets_.size(), "too many parts to render");
 

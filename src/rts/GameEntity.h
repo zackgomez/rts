@@ -64,9 +64,7 @@ class GameEntity : public ModelEntity {
   const std::vector<UIAction> &getActions() const {
     return actions_;
   }
-  UIInfo getUIInfo() const {
-    return uiInfo_;
-  }
+  UIInfo getUIInfo(float t) const;
 
   // The player that owns this entity, or NO_PLAYER
   id_t getPlayerID(float t) const;
@@ -86,10 +84,7 @@ class GameEntity : public ModelEntity {
   void setAlive(float t, bool alive);
   void setPlayerID(float t, id_t pid);
   void setTeamID(float t, id_t tid);
-
-  void setUIInfo(float t, const UIInfo &ui_info) {
-    uiInfo_ = ui_info;
-  };
+  void setUIInfo(float t, const UIInfo &ui_info);
   void setActions(float t, const std::vector<UIAction> &actions) {
     actions_ = actions;
   }
@@ -114,6 +109,7 @@ class GameEntity : public ModelEntity {
   Curve<id_t> teamCurve_;
   Curve<bool> aliveCurve_;
   Curve<VisibilitySet> visibilityCurve_;
+  Curve<UIInfo> uiInfoCurve_;
 
   // TODO(zack): kill this
   std::map<uint32_t, Clock::time_point> lastTookDamage_;

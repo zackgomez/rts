@@ -30,9 +30,9 @@ GameEntity::GameEntity(id_t id) : ModelEntity(id),
     playerCurve_(NO_PLAYER),
     teamCurve_(NO_PLAYER),
     aliveCurve_(false),
+    uiInfoCurve_(UIInfo()),
     visibilityCurve_(VisibilitySet()),
-    sight_(0.f),
-    uiInfo_() {
+    sight_(0.f) {
 }
 
 GameEntity::~GameEntity() {
@@ -83,6 +83,10 @@ bool GameEntity::getAlive(float t) const {
   return aliveCurve_.stepSample(t);
 }
 
+GameEntity::UIInfo GameEntity::getUIInfo(float t) const {
+return uiInfoCurve_.stepSample(t);
+}
+
 void GameEntity::setPlayerID(float t, id_t pid) {
   assertPid(pid);
   playerCurve_.addKeyframe(t, pid);
@@ -95,6 +99,10 @@ void GameEntity::setTeamID(float t, id_t tid) {
 
 void GameEntity::setAlive(float t, bool alive) {
   aliveCurve_.addKeyframe(t, alive);
+}
+
+void GameEntity::setUIInfo(float t, const UIInfo &ui_info) {
+  uiInfoCurve_.addKeyframe(t, ui_info);
 }
 
 void GameEntity::setTookDamage(int part_idx) {

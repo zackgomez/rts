@@ -341,11 +341,11 @@ void GameController::renderExtra(float dt) {
   renderDragRect(leftDrag_, leftStart_, lastMousePos_, dt);
   renderHighlights(highlights_, dt);
 
+  const auto t = Renderer::get()->getGameTime();
   if (!action_.name.empty()) {
     const GameEntity *e = Game::get()->getEntity(action_.owner_id);
     invariant(e, "Unable to find action owner");
 
-    float t = Renderer::get()->getGameTime();
     glm::vec3 owner_pos = e->getPosition(t) + glm::vec3(0, 0, 0.1f);
     glm::mat4 transform = glm::scale(
         glm::translate(glm::mat4(1.f), owner_pos),
@@ -368,7 +368,7 @@ void GameController::renderExtra(float dt) {
   std::vector<VPInfo> vp_infos;
   for (auto it : Renderer::get()->getEntities()) {
     if (it.second->hasProperty(GameEntity::P_ACTOR)) {
-      auto ui_info = ((GameEntity *)it.second)->getUIInfo();
+      auto ui_info = ((GameEntity *)it.second)->getUIInfo(t);
       if (ui_info.extra.isMember("vp_status")) {
         auto vp_status = ui_info.extra["vp_status"];
         auto owner_json = must_have_idx(vp_status, "owner");
@@ -420,8 +420,8 @@ void GameController::renderExtra(float dt) {
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, tex);
   shader->uniform1i("tex", 0);
-  float t = Renderer::get()->getRenderTime();
-  shader->uniform1f("t", t);
+  float render_time = Renderer::get()->getRenderTime();
+  shader->uniform1f("t", render_time);
 
   drawShaderCenter(center, size);
 
@@ -459,7 +459,7 @@ void GameController::renderExtra(float dt) {
     shader->uniform4f("player_color", ownerColor);
     shader->uniform4f("cap_color", capColor);
     shader->uniform4f("texcoord", glm::vec4(0, 0, 1, 1));
-    shader->uniform1f("t", t);
+    shader->uniform1f("t", render_time);
     drawShaderCenter(center, size);
   }
 
@@ -587,10 +587,10 @@ void GameController::frameUpdate(float dt) {
     if (!ge) {
       continue;
     }
-    if (ge->getPlayerID(t) == player_->getPlayerID() && ge->getUIInfo().hotkey) {
+    if (ge->getPlayerID(t) == player_->getPlayerID() && ge->getUIInfo(t).hotkey) {
       std::set<std::string> hotkey_sel;
       hotkey_sel.insert(ge->getGameID());
-      player_->addSavedSelection(ge->getUIInfo().hotkey, hotkey_sel);
+      player_->addSavedSelection(ge->getUIInfo(t).hotkey, hotkey_sel);
     }
   }
 
@@ -1123,7 +1123,7 @@ void renderEntity(
   auto resolution = Renderer::get()->getResolution();
   auto coord = (glm::vec2(ndc.x, -ndc.y) / 2.f + 0.5f) * resolution;
   auto actor = (const GameEntity *)e;
-  const auto ui_info = actor->getUIInfo();
+  const auto ui_info = actor->getUIInfo(t);
 
   // Hotkey
   if (actor->getPlayerID(t) == localPlayer->getPlayerID()
