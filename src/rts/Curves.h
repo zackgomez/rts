@@ -12,6 +12,12 @@ struct curve_sample {
   curve_sample(float tt, const T& vval) : t(tt), val(vval) { }
   float t;
   T val;
+
+  T interpolateFrom(float interpt, const curve_sample<T> &s0) {
+    float u = (interpt - s0.t) / (t - s0.t);
+    T ret = val * u + s0.val * (1.f - u);
+    return ret;
+  }
 };
 
 template<typename T>
@@ -65,9 +71,7 @@ T Curve<T>::linearSample(float t) const {
   // samples are now t0 @ (i-1), t @ (i)
   auto s0 = data_[i - 1];
   auto s1 = data_[i];
-  float u = (t - s0.t) / (s1.t - s0.t);
-  T val = s1.val * u + s0.val * (1.f - u);
-  return val;
+  return s1.interpolateFrom(t, s0);
 }
 
 template<typename T>
