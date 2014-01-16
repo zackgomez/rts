@@ -282,11 +282,39 @@ exports.update = function (player_inputs, dt) {
   return running;
 };
 
-var simplify_render = function (previous_render, current_render) {
-  return current_render;
+var name_to_diff_func = {
+  __default: function (t, prev, next) {
+    if (prev === next) {
+      return null;
+    }
+    return [[t, next]];
+  },
+};
+var simplify_entity_renders = function (t, previous_renders, current_renders) {
+  var simple_renders = {};
+  _.each(current_renders, function (entity, id) {
+    var previous_render = previous_renders[id];
+    var simple_render = {};
+    _.each(entity, function (value, name) {
+      var differ = name_to_diff_func[name] || must_have_idx(name_to_diff_func, '__default');
+      var diff = differ(
+        t,
+        previous_render ? previous_render[name] : null,
+        value
+      );
+      // skip if value has no diff
+      if (diff) {
+        simple_render[name] = diff;
+      }
+    });
+    simple_renders[id] = simple_render;
+  });
+
+  Log(JSON.stringify(simple_renders));
+  return simple_renders;
 }
 
-var previous_render = {};
+var previous_entity_renders = {};
 exports.render = function () {
   var t = elapsed_time;
   var entity_renders = {};
@@ -294,7 +322,7 @@ exports.render = function () {
 
   _.each(dead_entities, function (entity) {
     entity_renders[entity.getID()] = {
-      alive: [[t, false]],
+      alive: false,
     };
   });
   dead_entities = [];
@@ -302,27 +330,27 @@ exports.render = function () {
   for (var eid in entities) {
     var game_entity = entities[eid];
     var render = {
-      alive: [[t, true]],
+      alive: true,
     };
 
     var entity_def = game_entity.getDefinition();
 
-    render.model = [[t, entity_def.model]]
-    render.properties = [[t, game_entity.getProperties()]];
-    render.pid = [[t, game_entity.getPlayerID()]];
-    render.tid = [[t, game_entity.getTeamID()]];
+    render.model = entity_def.model;
+    render.properties = game_entity.getProperties();
+    render.pid = game_entity.getPlayerID();
+    render.tid = game_entity.getTeamID();
 
     var size2 = game_entity.getSize();
     var size3 = [size2[0], size2[1], game_entity.getHeight()];
-    render.size = [[t, size3]]
+    render.size = size3;
 
-    render.sight = [[t, game_entity.getSight()]];
+    render.sight = game_entity.getSight();
 
-    render.pos = [[t, game_entity.getPosition2()]];
-    render.angle = [[t, game_entity.getAngle()]];
-    render.ui_info = [[t, game_entity.getUIInfo()]];
-    render.actions = [[t, game_entity.getActions()]];
-    render.visible = [[t, game_entity.getVisibilitySet()]];
+    render.pos = game_entity.getPosition2();
+    render.angle = game_entity.getAngle();
+    render.ui_info = game_entity.getUIInfo();
+    render.actions = game_entity.getActions();
+    render.visible = game_entity.getVisibilitySet();
 
     entity_renders[game_entity.getID()] = render;
 
@@ -349,20 +377,24 @@ exports.render = function () {
     };
   });
 
+  var final_entity_renders = simplify_entity_renders(
+    t,
+    previous_entity_renders,
+    entity_renders
+  );
+  previous_entity_renders = entity_renders;
+
   var full_render = {
     type: 'render',
     t: t,
     dt: last_update_dt,
-    entities: entity_renders,
+    entities: final_entity_renders,
     events: events,
     players: player_render,
     teams: vps,
     chats: chats,
   };
   chats = [];
-
-  // TODO(zack): minify and futurize
-  simplify_render(previous_render, full_render);
 
   var renders = extra_renders;
   extra_renders = [];
