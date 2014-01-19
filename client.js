@@ -11,6 +11,9 @@ var startServer = function (port) {
       server.close();
     });
   });
+  server.listen(port, function () {
+    console.log('started server on port', port);
+  });
   server.on('error', function (e) {
     if (e.code == 'EADDRINUSE') {
       console.log('Address in use, retrying...');
@@ -19,9 +22,6 @@ var startServer = function (port) {
         server.listen(port);
       }, 100);
     }
-  });
-  server.listen(port, function () {
-    console.log('started server on port', port);
   });
 };
 var connectToServer = function (addr, port) {
