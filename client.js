@@ -11,6 +11,15 @@ var startServer = function (port) {
       server.close();
     });
   });
+  server.on('error', function (e) {
+    if (e.code == 'EADDRINUSE') {
+      console.log('Address in use, retrying...');
+      setTimeout(function () {
+        server.close();
+        server.listen(port);
+      }, 100);
+    }
+  });
   server.listen(port, function () {
     console.log('started server on port', port);
   });
@@ -44,6 +53,7 @@ var matchmaker_conn = net.createConnection({
   console.log('connected to matchmaker');
 });
 matchmaker_conn.on('data', function (data) {
+  matchmaker_conn.end();
   var message = JSON.parse(data);
   console.log('got data', message);
   if (message.operation === 'host') {
