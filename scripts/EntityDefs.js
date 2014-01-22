@@ -172,10 +172,10 @@ var EntityDefs = {
     },
     actions: {
       teleport: new Actions.TeleportAction({
-        range: 15.0,
+        range: 13.0,
         cooldown_name: 'teleport',
         cooldown: 2.0,
-        mana_cost: 60,
+        mana_cost: 70,
         icon: 'teleport_icon',
         hotkey: 'q',
         part: 'body',
