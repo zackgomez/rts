@@ -39,7 +39,18 @@ void Controller::processInput(float dt) {
         }
         keyPress(ev);
       },
-      std::bind(&Controller::keyRelease, this, _1),
+      [=] (const KeyEvent &ev) {
+        if (ui_->handleKeyRelease(ev)) {
+          return;
+        }
+        keyRelease(ev);
+      },
+      [=] (unsigned int unicode) {
+        if (ui_->handleCharInput(unicode)) {
+          return;
+        }
+        charInput(unicode);
+      },
       std::bind(&Controller::quitEvent, this));
 
   frameUpdate(dt);

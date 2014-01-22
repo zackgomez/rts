@@ -36,6 +36,7 @@ class Controller {
   virtual void mouseMotion(const glm::vec2 &screenCoord) { }
   virtual void keyPress(const KeyEvent &ev) { }
   virtual void keyRelease(const KeyEvent &ev) { }
+  virtual void charInput(unsigned int unicode) { }
 
  protected:
   virtual void frameUpdate(float dt) { }

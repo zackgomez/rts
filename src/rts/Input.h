@@ -98,6 +98,7 @@ void handleEvents(
     std::function<void(const glm::vec2 &, int)> mouseMotionHandler,
     std::function<void(const KeyEvent &)> keyPressHandler,
     std::function<void(const KeyEvent &)> keyReleaseHandler,
+    std::function<void(unsigned int)> charHandler,
     std::function<void()> quitEventHandler);
 
 void hide_mouse_cursor();

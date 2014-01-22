@@ -37,14 +37,19 @@ class UI {
   void update(const glm::vec2 &loc, int buttons);
   bool handleMousePress(const glm::vec2 &loc, int button);
   bool handleKeyPress(const KeyEvent &ev);
+  bool handleKeyRelease(const KeyEvent &ev);
+  bool handleCharInput(unsigned int unicode);
 
   // Key capturing
   typedef std::function<bool(const KeyEvent &ev)> KeyCapturer;
-  void setKeyCapturer(KeyCapturer kc) {
-    capturer_ = kc;
+  typedef std::function<bool(unsigned int unicode)> CharCapturer;
+  void setKeyCapturer(KeyCapturer kc);
+  void clearKeyCapturer();
+  void setCharCapturer(CharCapturer cc) {
+    charCapturer_ = cc;
   }
-  void clearKeyCapturer() {
-    capturer_ = KeyCapturer();
+  void clearCharCapturer() {
+    charCapturer_ = CharCapturer();
   }
 
   typedef std::function<void()> DeferedRenderFunc;
@@ -56,6 +61,7 @@ class UI {
   std::map<std::string, UIWidget *> widgets_;
   std::vector<DeferedRenderFunc> deferedRenderers_;
   KeyCapturer capturer_;
+  CharCapturer charCapturer_;
 };
 };  // rts
 #endif  // SRC_RTS_UI_H_

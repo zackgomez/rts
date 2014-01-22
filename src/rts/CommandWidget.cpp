@@ -36,6 +36,7 @@ CommandWidget* CommandWidget::hide() {
 void CommandWidget::stopCapturing() {
   capturing_ = false;
   getUI()->clearKeyCapturer();
+  getUI()->clearCharCapturer();
 }
 
 CommandWidget* CommandWidget::captureText(const std::string &prefix) {
@@ -44,7 +45,6 @@ CommandWidget* CommandWidget::captureText(const std::string &prefix) {
   getUI()->setKeyCapturer([&](const KeyEvent &ev) -> bool {
     if (ev.key == INPUT_KEY_ESC) {
       stopCapturing();
-      return true;
     } else if (ev.key == INPUT_KEY_RETURN) {
       if (!buffer_.empty() && textSubmittedHandler_) {
         textSubmittedHandler_(buffer_);
@@ -55,10 +55,12 @@ CommandWidget* CommandWidget::captureText(const std::string &prefix) {
       }
     } else if (ev.key == INPUT_KEY_BACKSPACE) {
       buffer_.pop_back();
-    } else if (isprint(ev.key)) {
-      buffer_.push_back((char)ev.key);
-    } else {
-      return false;
+    }
+    return true;
+  });
+  getUI()->setCharCapturer([&](int unicode) -> bool {
+    if (unicode >= 32 && unicode < 128) {
+      buffer_.push_back(unicode);
     }
     return true;
   });

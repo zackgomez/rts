@@ -63,6 +63,13 @@ bool UI::handleMousePress(const glm::vec2 &screen_coord, int button) {
   return false;
 }
 
+bool UI::handleCharInput(unsigned int unicode) {
+  if (charCapturer_) {
+    return charCapturer_(unicode);
+  }
+  return false;
+}
+
 bool UI::handleKeyPress(const KeyEvent &ev) {
   if (capturer_) {
     return capturer_(ev);
@@ -70,11 +77,28 @@ bool UI::handleKeyPress(const KeyEvent &ev) {
   return false;
 }
 
+bool UI::handleKeyRelease(const KeyEvent &ev) {
+  if (capturer_) {
+    return true;
+  }
+  return false;
+  return static_cast<bool>(capturer_);
+}
+
 void UI::clearWidgets() {
   for (auto pair : widgets_) {
     delete pair.second;
   }
   widgets_.clear();
+}
+
+void UI::setKeyCapturer(UI::KeyCapturer kc) {
+  invariant(!capturer_, "already have capturer");
+  capturer_ = kc;
+}
+
+void UI::clearKeyCapturer() {
+  capturer_ = UI::KeyCapturer();
 }
 
 void UI::render(float dt) {

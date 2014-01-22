@@ -72,6 +72,7 @@ static std::function<void(const glm::vec2 &, int)> mouse_up_handler;
 static std::function<void(const glm::vec2 &, int)> mouse_motion_handler;
 static std::function<void(const KeyEvent &)> key_press_handler;
 static std::function<void(const KeyEvent &)> key_release_handler;
+static std::function<void(unsigned int)> char_handler;
 
 static void glfw_mouse_button_fun(GLFWwindow *w, int button, int action, int mods) {
   double x, y;
@@ -111,7 +112,6 @@ static void glfw_mouse_motion_fun(GLFWwindow *w, double x, double y) {
   mouse_motion_handler(glm::vec2(x, y), getMouseButtonState());
 }
 
-// TODO (key fun)
 static void glfw_key_fun(
     GLFWwindow *window,
     int key,
@@ -133,6 +133,12 @@ static void glfw_key_fun(
   }
 }
 
+static void glfw_char_fun(
+    GLFWwindow *window,
+    unsigned int unicode) {
+  char_handler(unicode);
+}
+
 
 void handleEvents(
     std::function<void(const glm::vec2 &, int)> mouseDownHandler,
@@ -140,17 +146,20 @@ void handleEvents(
     std::function<void(const glm::vec2 &, int)> mouseMotionHandler,
     std::function<void(const KeyEvent &)> keyPressHandler,
     std::function<void(const KeyEvent &)> keyReleaseHandler,
+    std::function<void(unsigned int)> charHandler,
     std::function<void()> quitEventHandler) {
   mouse_down_handler = mouseDownHandler;
   mouse_up_handler = mouseUpHandler;
   mouse_motion_handler = mouseMotionHandler;
   key_press_handler = keyPressHandler;
   key_release_handler = keyReleaseHandler;
+  char_handler = charHandler;
 
   glfwSetMouseButtonCallback(get_glfw_window(), glfw_mouse_button_fun);
   glfwSetScrollCallback(get_glfw_window(), glfw_scroll_fun);
   glfwSetCursorPosCallback(get_glfw_window(), glfw_mouse_motion_fun);
   glfwSetKeyCallback(get_glfw_window(), glfw_key_fun);
+  glfwSetCharCallback(get_glfw_window(), glfw_char_fun);
 
   glfwPollEvents();
   if (glfwWindowShouldClose(get_glfw_window())) {
