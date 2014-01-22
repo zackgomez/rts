@@ -58,7 +58,7 @@ CommandWidget* CommandWidget::captureText(const std::string &prefix) {
     }
     return true;
   });
-  getUI()->setCharCapturer([&](int unicode) -> bool {
+  getUI()->setCharCapturer([&](unsigned int unicode) -> bool {
     if (unicode >= 32 && unicode < 128) {
       buffer_.push_back(unicode);
     }
