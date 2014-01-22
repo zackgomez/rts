@@ -85,10 +85,15 @@ void game_server_loop(Json::Value game_def, std::vector<NetConnectionPtr> connec
       }
     }
 
-    auto json = server.update(simdt);
+    auto render_start_time = Clock::now();
+    auto render = server.update(simdt);
+    auto render_duration = Clock::secondsSince(render_start_time);
+    if (render_duration > 0.9 * simdt) {
+      LOG(WARNING) << "long update time: " << render_duration << '\n';
+    }
 
     for (auto&& conn : connections) {
-      conn->sendPacket(json);
+      conn->sendPacket(render);
     }
 
     // handle framerate
