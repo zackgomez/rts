@@ -322,7 +322,7 @@
       },
       "perfinfo" : {
         "type"       : "TextWidget",
-        "pos"        : [-100, 50],
+        "pos"        : [-20.0, 10],
         "dim"        : [100, 50],
         "fontHeight" : 24.0,
         "bgcolor"    : [0.0, 0.0, 0.0, 0.0]
