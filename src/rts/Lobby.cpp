@@ -76,7 +76,9 @@ void game_server_loop(Json::Value game_def, std::vector<NetConnectionPtr> connec
   Clock::time_point last_net_stat = start;
   size_t last_bytes_down = 0, last_bytes_up = 0;
 	int tick_count = 0;
+  float average_tick_duration = 0.f;
   while (server.isRunning()) {
+    auto tick_start_time = Clock::now();
     // TODO(zack): add actions here
     for (auto &&conn : connections) {
       auto actions = conn->drainQueue();
@@ -88,13 +90,21 @@ void game_server_loop(Json::Value game_def, std::vector<NetConnectionPtr> connec
     auto render_start_time = Clock::now();
     auto render = server.update(simdt);
     auto render_duration = Clock::secondsSince(render_start_time);
-    if (render_duration > 0.9 * simdt) {
+    if (render_duration > 0.5 * simdt) {
       LOG(WARNING) << "long update time: " << render_duration << '\n';
     }
 
+    auto send_start_time = Clock::now();
     for (auto&& conn : connections) {
       conn->sendPacket(render);
     }
+    auto send_duration = Clock::secondsSince(send_start_time);
+    if (send_duration > 0.5 * simdt) {
+      LOG(WARNING) << "long send time: " << send_duration << '\n';
+    }
+
+    auto tick_duration = Clock::secondsSince(tick_start_time);
+    average_tick_duration = average_tick_duration * 0.95 + tick_duration * 0.05;
 
     // handle framerate
 		tick_count++;
@@ -120,6 +130,7 @@ void game_server_loop(Json::Value game_def, std::vector<NetConnectionPtr> connec
       last_bytes_up = current_up;
       std::cout << "Downstream rate: " << down_bytes_per_second / 1024.f << " KB/s\n";
       std::cout << "Upstream rate: " << up_bytes_per_second / 1024.f << " KB/s\n";
+      std::cout << "Average tick computation time: " << average_tick_duration << " s/tick\n";
       last_net_stat = Clock::now();
     }
   }
